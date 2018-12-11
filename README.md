@@ -1,0 +1,1 @@
+# adabas-go-api
