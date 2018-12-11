@@ -10,3 +10,27 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# Destination directories
+bin
+pkg
+vendor
+vendor/
+.vendor-new
+.vscode/
+tmp_gopath/
+
+# Ignore log files
+*.log
+*.log.swp
+
+# Ignore system specific objects (obsolete)
+*.syso
+*.swo
+
+# Ignore Apple Mac cacheing
+.DS_Store
+
+# Ignore Go checkstyle output
+gostyle.xml
+
