@@ -114,7 +114,7 @@ func TestReadRequestLogicalBy(t *testing.T) {
 	defer request.Close()
 	request.QueryFields("AA,AC,AD")
 	result := &RequestResult{}
-	err := request.ReadLogicalWithByWithParser("AA", nil, result)
+	err := request.ReadLogicalByWithParser("AA", nil, result)
 	fmt.Println("Dump result received ...")
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
@@ -133,7 +133,7 @@ func TestReadRequestLogicalByAll(t *testing.T) {
 	defer request.Close()
 	request.Limit = 2
 	result := &RequestResult{}
-	err := request.ReadLogicalWithByWithParser("AA", nil, result)
+	err := request.ReadLogicalByWithParser("AA", nil, result)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -172,7 +172,7 @@ func TestRequestRemoteLogicalByAll(t *testing.T) {
 	defer request.Close()
 	request.Limit = 2
 	result := &RequestResult{}
-	err := request.ReadLogicalWithByWithParser("AA", nil, result)
+	err := request.ReadLogicalByWithParser("AA", nil, result)
 	fmt.Println("Dump result received ...")
 	assert.Error(t, err)
 	assert.Equal(t, "Entire Network client not supported, use port 0 and Entire Network native access", err.Error())
@@ -193,7 +193,7 @@ func TestRequestRemoteLogicalByAll(t *testing.T) {
 	// }
 }
 
-func ExampleReadRequest_ReadLogicalWithBy() {
+func ExampleReadRequest_ReadLogicalBy() {
 	f, err := initLogWithFile("request.log")
 	if err != nil {
 		fmt.Println(err)
@@ -207,7 +207,7 @@ func ExampleReadRequest_ReadLogicalWithBy() {
 	request.Limit = 2
 	request.QueryFields("AA,AC,AD")
 	result := &RequestResult{}
-	err = request.ReadLogicalWithByWithParser("AA", nil, result)
+	err = request.ReadLogicalByWithParser("AA", nil, result)
 	fmt.Println("Dump result received ...")
 	if result != nil {
 		result.DumpValues()
@@ -238,7 +238,7 @@ func TestReadRequestLogicalBySuperDescriptor(t *testing.T) {
 	defer request.Close()
 	request.QueryFields("AA,AC,AD")
 	result := &RequestResult{}
-	err := request.ReadLogicalWithByWithParser("S1", nil, result)
+	err := request.ReadLogicalByWithParser("S1", nil, result)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	if result != nil {
@@ -378,7 +378,7 @@ func BenchmarkReadRequest_Small(b *testing.B) {
 	request.Limit = 0
 	request.QueryFields("AA,AC,AD")
 	result := &RequestResult{}
-	err = request.ReadLogicalWithByWithParser("AA", nil, result)
+	err = request.ReadLogicalByWithParser("AA", nil, result)
 	fmt.Println("Dump result received ...")
 	if result != nil {
 		assert.Equal(b, 1107, result.NrRecords())
@@ -396,7 +396,7 @@ func BenchmarkReadRequest(b *testing.B) {
 	request.Limit = 0
 	defer request.Close()
 	result := &RequestResult{}
-	err = request.ReadLogicalWithByWithParser("AA", nil, result)
+	err = request.ReadLogicalByWithParser("AA", nil, result)
 	assert.NoError(b, err)
 	assert.NotNil(b, result)
 	if result != nil {
@@ -434,7 +434,7 @@ func TestRequestWithMapLogicalBy(t *testing.T) {
 		}
 		fmt.Println("After query fields")
 		result := &RequestResult{}
-		err = request.ReadLogicalWithByWithParser("PERSONNEL-ID", nil, result)
+		err = request.ReadLogicalByWithParser("PERSONNEL-ID", nil, result)
 		if assert.NoError(t, err) {
 			fmt.Println("Dump result received ...")
 			result.DumpValues()
@@ -465,7 +465,7 @@ func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
 		}
 		fmt.Println("After query fields")
 		result := &RequestResult{}
-		err := request.ReadLogicalWithByWithParser("PERSONNEL-ID", nil, result)
+		err := request.ReadLogicalByWithParser("PERSONNEL-ID", nil, result)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		if result != nil {
@@ -496,7 +496,7 @@ func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
 		}
 		fmt.Println("After query fields")
 		result := &RequestResult{}
-		err := request.ReadLogicalWithByWithParser("PERSONNEL-ID", nil, result)
+		err := request.ReadLogicalByWithParser("PERSONNEL-ID", nil, result)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		if result != nil {

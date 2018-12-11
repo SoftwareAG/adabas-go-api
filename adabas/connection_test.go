@@ -1431,7 +1431,7 @@ func readAll(b *testing.B) error {
 	}
 	request.Limit = 0
 	fmt.Println("Read logigcal data:")
-	result, rErr := request.ReadLogicalWithBy("NAME")
+	result, rErr := request.ReadLogicalBy("NAME")
 	if !assert.NoError(b, rErr) {
 		return rErr
 	}
@@ -1468,7 +1468,7 @@ func BenchmarkConnection_noreconnect(b *testing.B) {
 		request.Limit = 0
 		result := &RequestResult{}
 		fmt.Println("Read logigcal data:")
-		err = request.ReadLogicalWithByWithParser("NAME", nil, result)
+		err = request.ReadLogicalByWithParser("NAME", nil, result)
 		if !assert.NoError(b, err) {
 			return
 		}
@@ -1529,7 +1529,7 @@ func TestConnectionRemoteMap(t *testing.T) {
 		}
 		request.Limit = 0
 		result := &RequestResult{}
-		err = request.ReadLogicalWithByWithParser("NAME", nil, result)
+		err = request.ReadLogicalByWithParser("NAME", nil, result)
 		if !assert.NoError(t, err) {
 			return
 		}
@@ -1565,7 +1565,7 @@ func BenchmarkConnection_noreconnectremote(b *testing.B) {
 		}
 		request.Limit = 0
 		result := &RequestResult{}
-		err = request.ReadLogicalWithByWithParser("NAME", nil, result)
+		err = request.ReadLogicalByWithParser("NAME", nil, result)
 		if !assert.NoError(b, err) {
 			return
 		}

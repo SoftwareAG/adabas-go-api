@@ -304,7 +304,7 @@ func (repository *Repository) LoadRepositoryMapsWithAdabas(adabas *Adabas) (err 
 	adabas.Acbx.Acbxdbid = repository.DatabaseURL.URL.Dbid
 	request := NewRequestAdabas(adabas, repository.Fnr)
 	request.QueryFields(mapFieldName.fieldName())
-	err = request.ReadLogicalWithByWithParser(mapFieldName.fieldName(), parseMapNames, repository)
+	err = request.ReadLogicalByWithParser(mapFieldName.fieldName(), parseMapNames, repository)
 	if err != nil {
 		adatypes.Central.Log.Debugf("Err %v Read all data from dbid=%d(%s) / %d\n", err, adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.Fnr)
 		return err

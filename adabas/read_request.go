@@ -326,18 +326,18 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 	return
 }
 
-// ReadLogicalWithBy read in logical order given by the descriptor argument
-func (request *ReadRequest) ReadLogicalWithBy(descriptors string) (result *RequestResult, err error) {
+// ReadLogicalBy read in logical order given by the descriptor argument
+func (request *ReadRequest) ReadLogicalBy(descriptors string) (result *RequestResult, err error) {
 	result = &RequestResult{}
-	err = request.ReadLogicalWithByWithParser("NAME", nil, result)
+	err = request.ReadLogicalByWithParser("NAME", nil, result)
 	if err != nil {
 		return nil, err
 	}
 	return
 }
 
-// ReadLogicalWithByWithParser read in logical order given by the descriptor argument
-func (request *ReadRequest) ReadLogicalWithByWithParser(descriptors string, resultParser adatypes.RequestParser, x interface{}) (err error) {
+// ReadLogicalByWithParser read in logical order given by the descriptor argument
+func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultParser adatypes.RequestParser, x interface{}) (err error) {
 	err = request.Open()
 	if err != nil {
 		return
