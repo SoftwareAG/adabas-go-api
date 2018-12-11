@@ -1,0 +1,53 @@
+*H**ANAT6313201308281624087WNT-X86                          4CANG     03.9          
+*C**                                SYSEXDDMVEHICLES                        V S   NN
+*D01NAT6313V SYSEXDDMVEHICLES                        NATURAL NATURAL         S      
+*D02            2012083002030702012083002030700000001921    
+*D03WNT-X86 
+*D040000000012       windows-1252   
+*S** 1AAREG-NUM                         A0150ND LOCAL FORMAT
+*S*** LOAL FORMAT       
+*S*** CA'S REGISTRATION NUMBER      
+*S** 1ABCHASSIS-NUM                     B0040F  NUMERIC     
+*S*** NUERIC
+*S*** UNQUE MANIFACTURER NO FOR C   
+*S** 1ACPERSONNEL-ID                    A0080 D INTERN.     
+*S*** INERN.
+*S*** IDNTIFIER OF CAR USER/OWNER   
+*S**G1CDCAR-DETAILS                      0000   LOCAL/GENERIC           
+*S**HD=CAR DETAILS      
+*S*** LOAL/GENERIC      
+*S*** DECRIPTION OF THE CAR         
+*S** 2ADMAKE                            A0200ND LOCAL/GENERIC           
+*S*** LOAL/GENERIC      
+*S*** NAE OF CAR MAKE/MANUFACTURE   
+*S** 2AEMODEL                           A0200N  LOCAL/GENERIC           
+*S*** LOAL/GENERIC      
+*S*** NAE OF CAR MODEL  
+*S** 2AFCOLOR                           A0100ND LOCAL/GENERIC           
+*S*** LOAL/GENERIC      
+*S*** CA MODEL'S COLOR NAME         
+*S** 2AFCOLOUR                          A0100ND LOCAL/GENERIC           
+*S*** LOAL/GENERIC      
+*S*** CA MODEL'S COLOR NAME         
+*S** 1AGYEAR                            N0040N  INTERN.     
+*S*** INERN.
+*S*** YER OF THE CAR'S MANUFACTUR   
+*S** 1AHCLASS                           A0010FD INTERN.     
+*S*** INERN.
+*S*** COE FOR OWNERSHIP (P/C)       
+*S** 1AILEASE-PUR                       A0010F  INTERN.     
+*S*** INERN.
+*S*** COE HOW CAR WAS AQUIRED       
+*S** 1AJDATE-ACQ                        N0080N  INTERN.     
+*S*** INERN.
+*S*** DAE WHEN CAR WAS ACQUIRED     
+*S** 1ALCURR-CODE                       A0030N  INTERN.     
+*S*** INERN.
+*S*** CURENCY OF MAINTENANCE COST   
+*S**M1AMMAINT-COST                      P0070N  INTERN.     
+*S*** INERN.
+*S*** MANTENANCE COST IN CURR.UNI   
+*S** 1AOMODEL-YEAR-MAKE                 A0240 S LOCAL/GENERIC           
+*S*** LOAL/GENERIC      
+*S*** CA MAKE + MODEL YEAR          
+*E          

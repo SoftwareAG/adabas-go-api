@@ -1,0 +1,53 @@
+*H**ENAT8204201811280940566MVS/ESA                          4AEMB     04.2                     U
+*C**                                SYSTEM  VEHICLES                        V S
+*D01NAT8204V SYSTEM  VEHICLES                        MM      MM
+*D02            2018071012185402018071012185400000001555
+*D03
+*D040    3    A
+*S***   Generation started
+*S***   at 2018-07-10 12:18:54
+*S***   by user MM
+*S***
+*S** 1AAREG_NUM                         A0150NDThis field was incor
+*S***   This field was incorporated
+*S***   from FDT on 2015-06-08
+*S** 1ABCHASSIS_NUM                     I0040F This field was incor
+*S***   This field was incorporated
+*S***   from FDT on 2015-06-08
+*S** 1ACPERSONNEL_ID                    A0080 DThis field was incor
+*S***   This field was incorporated
+*S***   from FDT on 2015-06-08
+*S**G1CDCAR_DETAILS                      0000  This field was incor
+*S***   This field was incorporated
+*S***   from FDT on 2015-06-08
+*S** 2ADMAKE                            A0200NDThis field was incor
+*S***   This field was incorporated
+*S***   from FDT on 2015-06-08
+*S** 2AEMODEL                           A0200N This field was incor
+*S***   This field was incorporated
+*S***   from FDT on 2015-06-08
+*S** 2AFCOLOR                           A0100NDThis field was incor
+*S***   This field was incorporated
+*S***   from FDT on 2015-06-08
+*S** 1AGYEAR                            N0040N This field was incor
+*S***   This field was incorporated
+*S***   from FDT on 2015-06-08
+*S** 1AHCLASS                           A0010FDThis field was incor
+*S***   This field was incorporated
+*S***   from FDT on 2015-06-08
+*S** 1AILEASE_PUR                       A0010F This field was incor
+*S***   This field was incorporated
+*S***   from FDT on 2015-06-08
+*S** 1AJDATE_ACQ                        N0080N This field was incor
+*S***   This field was incorporated
+*S***   from FDT on 2015-06-08
+*S**G1AKCAR_MAINTENCE                    0000  This field was incor
+*S***   This field was incorporated
+*S***   from FDT on 2015-06-08
+*S** 2ALCURR_CODE                       A0030N This field was incor
+*S***   This field was incorporated
+*S***   from FDT on 2015-06-08
+*S**M2AMMAINT_COST                      P0070N This field was incor
+*S***   This field was incorporated
+*S***   from FDT on 2015-06-08
+*E

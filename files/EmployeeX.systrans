@@ -1,0 +1,76 @@
+*H**ANAT6307201006081629280WNT-X86                          4CANG     03.7
+*C**                                SAGSIS  EMPLOYEES                       V S   NN
+*D01NAT6307V SAGSIS  EMPLOYEES                       ADASQL  ADASQL          S
+*D02            2010060816225802010060816225800000003726
+*D03WNT-X86
+*D040000000011A      windows-1252
+*S** 1AAPERSONNEL-ID                    A0080 D
+*S**HD=PERSONNEL/ID
+*S***   CNNNNNNN
+*S***   C=COUNTRY
+*S**G1ABFULL-NAME                        0000
+*S** 2ACFIRST-NAME                      A0200N
+*S** 2ADMIDDLE-I                        A0010N
+*S** 2AENAME                            A0200 D
+*S** 1ADMIDDLE-NAME                     A0200N
+*S** 1AFMAR-STAT                        A0010F
+*S**HD=MARITAL/STATUS
+*S***   M=MARRIED
+*S***   S=SINGLE
+*S***   D=DIVORCED
+*S***   W=WIDOWED
+*S** 1AGSEX                             A0010F
+*S**HD=S/E/X
+*S** 1AHBIRTH                           P0110 D
+*S**HD=DATE/OF/BIRTH
+*S** 1AHN@BIRTH                         I0020 D
+*S**G1A1FULL-ADDRESS                     0000
+*S**M2AIADDRESS-LINE                    A0200N
+*S**HD=ADDRESS
+*S** 2AJCITY                            A0200ND
+*S** 2AKZIP                             A0100N
+*S**HD=POSTAL/ADDRESS
+*S** 2AKPOST-CODE                       A0100N
+*S**HD=POSTAL/ADDRESS
+*S** 2ALCOUNTRY                         A0030N
+*S**G1A2TELEPHONE                        0000
+*S** 2ANAREA-CODE                       A0060N
+*S**HD=AREA/CODE
+*S** 2AMPHONE                           A0150N
+*S**HD=TELEPHONE
+*S** 1AODEPT                            A0060 D
+*S**HD=DEPARTMENT/CODE
+*S** 1APJOB-TITLE                       A0250ND
+*S**HD=CURRENT/POSITION
+*S**P1AQINCOME                           0000
+*S***   ANNUAL INCOMES
+*S***   DURING YEARS WITH THE INTER-
+*S***   NATIONAL ENTERPRISE
+*S** 2ARCURR-CODE                       A0030N
+*S**HD=CURRENCY/CODE
+*S** 2ASSALARY                          P0090N
+*S**HD=ANNUAL/SALARY
+*S**M2ATBONUS                           P0090N
+*S***   BONUS PER YEAR
+*S***   IN CURRRENCY UNIT
+*S**G1A3LEAVE-DATA                       0000
+*S***   LEAVE/VACATION INFO
+*S***   FOR EMPLOYEE WITHIN 1 YEAR
+*S** 2AULEAVE-DUE                       N0020
+*S**HD=LEAVE/DUE
+*S***   VACATION DAYS/YEAR
+*S***   EMPLOYEE IS ENTITLED TO
+*S** 2AVLEAVE-TAKEN                     N0020N
+*S***   VACATION DAYS TAKEN
+*S***   IN THIS YEAR
+*S**P1AWLEAVE-BOOKED                     0000
+*S** 2AXLEAVE-START                     N0080N
+*S**HD=LEAVE/START
+*S**EM=9999/99/99
+*S** 2AYLEAVE-END                       N0080N
+*S**HD=LEAVE/END
+*S**EM=9999/99/99
+*S**M1AZLANG                            A0030ND
+*S**HD=LANG/SPOKEN
+*S******DDM OUTPUT TERMINATED******
+*E

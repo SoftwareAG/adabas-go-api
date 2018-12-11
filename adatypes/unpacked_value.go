@@ -1,0 +1,156 @@
+/*
+* Copyright © 2018 Software AG, Darmstadt, Germany and/or its licensors
+*
+* SPDX-License-Identifier: Apache-2.0
+*
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+ */
+
+package adatypes
+
+import (
+	"bytes"
+	"strconv"
+)
+
+type unpackedValue struct {
+	adaValue
+	value []byte
+}
+
+func newUnpackedValue(initType IAdaType) *unpackedValue {
+	value := unpackedValue{adaValue: adaValue{adatype: initType}}
+	value.value = make([]byte, initType.Length())
+	return &value
+}
+
+func (value *unpackedValue) ByteValue() byte {
+	return value.value[0]
+}
+
+func (value *unpackedValue) String() string {
+	unpackedInt := value.unpackedToLong(false)
+	return strconv.FormatInt(unpackedInt, 10)
+}
+
+func (value *unpackedValue) Value() interface{} {
+	return value.value
+}
+
+func (value *unpackedValue) Bytes() []byte {
+	return value.value
+}
+
+// SetStringValue set the string value of the value
+func (value *unpackedValue) SetStringValue(stValue string) {
+	iv, err := strconv.ParseInt(stValue, 10, 64)
+	if err == nil {
+		value.LongToUnpacked(iv, int(value.adaValue.adatype.Length()), false)
+	}
+}
+
+func (value *unpackedValue) SetValue(v interface{}) error {
+	return nil
+}
+
+func (value *unpackedValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
+	len := value.commonFormatBuffer(buffer, option)
+	if len == 0 {
+		len = 29
+	}
+	return len
+}
+
+func (value *unpackedValue) StoreBuffer(helper *BufferHelper) error {
+	return helper.putBytes(value.value)
+}
+
+func (value *unpackedValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
+	value.value, err = helper.ReceiveBytes(uint32(len(value.value)))
+	Central.Log.Debugf("Buffer get unpacked offset=%d", helper.offset)
+	Central.Log.Debugf("GOT: %s", FormatBytes("UNPACK -> ", value.value, 0, -1))
+	return
+}
+
+func (value *unpackedValue) Int32() (int32, error) {
+	return int32(value.unpackedToLong(false)), nil
+}
+
+func (value *unpackedValue) UInt32() (uint32, error) {
+	return uint32(value.unpackedToLong(false)), nil
+}
+func (value *unpackedValue) Int64() (int64, error) {
+	return int64(value.unpackedToLong(false)), nil
+}
+func (value *unpackedValue) UInt64() (uint64, error) {
+	return uint64(value.unpackedToLong(false)), nil
+}
+func (value *unpackedValue) Float() (float64, error) {
+	return float64(value.unpackedToLong(false)), nil
+}
+
+func (value *unpackedValue) unpackedToLong(ebcdic bool) int64 {
+	end := len(value.value) - 1
+	for (end > 0) && (value.value[end] == 0) {
+		end--
+	}
+
+	v := make([]byte, end+1)
+	copy(v[:], value.value[:end+1])
+	longValue := int64(0)
+	base := int64(1)
+	for i := end; i >= 0; i-- {
+		longValue += (int64(v[i]) & 0xf) * base
+		base *= 10
+	}
+	if ebcdic {
+		if (v[end+1-1] & 0xf0) < 0xf0 {
+			longValue = -longValue
+		}
+	} else {
+		if (v[end+1-1] & 0xf0) > 0x30 {
+			longValue = -longValue
+		}
+	}
+	Central.Log.Debugf("unpacked to long %v -> %d", ebcdic, longValue)
+
+	return longValue
+}
+
+func (value *unpackedValue) LongToUnpacked(intValue int64, len int, ebcdic bool) {
+	Central.Log.Debugf("Convert integer ", intValue)
+	b := make([]byte, len)
+	upperByte := uint8(0x30)
+	negativByte := uint8(0x70)
+	if ebcdic {
+		upperByte = uint8(0xf0)
+		negativByte = uint8(0xd0)
+	}
+	var v int64
+	if intValue < 0 {
+		v = -intValue
+	} else {
+		v = intValue
+	}
+	for i := len - 1; i >= 0; i-- {
+		x := int64(v % 10)
+		v = (v - x) / 10
+		b[i] = uint8(int64(upperByte) | x)
+	}
+	if intValue < 0 {
+		b[len-1] = uint8(negativByte | (b[len-1] & 0xf))
+	}
+	Central.Log.Debugf("Unpacked byte array %X", b)
+	value.value = b
+}
