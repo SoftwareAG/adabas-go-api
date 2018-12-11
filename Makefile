@@ -57,7 +57,7 @@ prepare: $(LOGPATH) $(CURLOGPATH) $(BIN) $(BASE)
 $(LIBS): | $(BASE) ; $(info $(M) building libraries…) @ ## Build program binary
 	$Q cd $(BASE) && \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" $(GO) build $(GO_FLAGS) \
-		-tags $(GO_TAGS) -buildmode=c-shared \
+		-buildmode=c-shared \
 		-ldflags '-X $(PACKAGE)/cmd.Version=$(VERSION) -X $(PACKAGE)/cmd.BuildDate=$(DATE)' \
 		-o $(BIN)/$@ $@.go
 
@@ -65,7 +65,6 @@ $(EXECS): | $(BASE) ; $(info $(M) building executable…) @ ## Build program bin
 	$Q cd $(BASE) && \
 	echo $(BIN)/$@ && \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" $(GO) build $(GO_FLAGS) \
-		-tags $(GO_TAGS) \
 		-ldflags '-X $(PACKAGE)/cmd.Version=$(VERSION) -X $(PACKAGE)/cmd.BuildDate=$(DATE)' \
 		-o $(BIN)/$@ $@.go
 
@@ -132,7 +131,7 @@ test-xml: prepare fmt lint vendor $(TESTOUTPUT) | $(BASE) $(GO2XUNIT) ; $(info $
 	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(CURDIR)/ICE/$(SAGTARGET)" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
 	    ENABLE_DEBUG=0 WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) \
-	    $(GO) test -timeout $(TIMEOUT)s -v -tags $(GO_TAGS) $(GO_FLAGS) $(TESTPKGS) | tee $(TESTOUTPUT)/tests.output
+	    $(GO) test -timeout $(TIMEOUT)s -v $(GO_FLAGS) $(TESTPKGS) | tee $(TESTOUTPUT)/tests.output
 	sh $(CURDIR)/sh/evaluteQueues.sh
 	$(GO2XUNIT) -input $(TESTOUTPUT)/tests.output -output $(TESTOUTPUT)/tests.xml
 
