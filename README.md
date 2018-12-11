@@ -6,7 +6,7 @@
   - [Introduction](#introduction)
   - [Usage](#usage)
   - [Adabas Go API example](#adabas-go-api-example)
-    - [New Map repository](#new-map-repository)
+  - [New Map repository](#new-map-repository)
   - [First step](#first-step)
   - [Summary](#summary)
 
@@ -50,7 +50,7 @@ result,err := request.ReadLogicalWith("AA=60010001")
 
 See detail documentation [here](.//doc//README.md)
 
-### New Map repository
+## New Map repository
 
 The logical view to the data can be defined using Adabas maps. A detailed description about Adabas maps is described [here](.//doc//AdabasMap.md)
 
