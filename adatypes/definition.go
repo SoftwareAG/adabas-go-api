@@ -1110,6 +1110,8 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	if len(fieldMap.set) > 0 {
 		for f := range fieldMap.set {
 			err = NewGenericError(50, f)
+			def.DumpTypes(false, false)
+			def.DumpTypes(false, true)
 			return
 		}
 	}
@@ -1162,7 +1164,7 @@ func findType(adaType IAdaType, parentType IAdaType, level int, x interface{}) e
 	if adaType.Name() == search.name {
 		search.adaType = adaType
 		Central.Log.Debugf("Found type ...")
-		return NewGenericError(40, search.name)
+		return errors.New("Found") // NewGenericError(40, search.name)
 	}
 	return nil
 }

@@ -24,6 +24,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -96,11 +97,16 @@ func callAdabas(c caller) {
 	if !close {
 		connection, err = c.createConnection()
 		if err != nil {
+			fmt.Printf("Error create connection to thread %d\n", c.threadNr)
 			return
 		}
 		defer connection.Close()
 
-		connection.Open()
+		err = connection.Open()
+		if err != nil {
+			fmt.Printf("Error opening connection to thread %d\n", c.threadNr)
+			return
+		}
 	}
 
 	steps := c.counter / 10
@@ -108,23 +114,32 @@ func callAdabas(c caller) {
 		steps = 50
 	}
 
+	tid := strconv.Itoa(int(c.threadNr))
 	for i := 0; i < c.counter; i++ {
+		l := adatypes.Central.Log.(*log.Logger)
+		l.WithFields(log.Fields{
+			"thread": tid,
+		}).Errorf("Start counter")
 		if close {
 			connection, err = c.createConnection()
 			if err != nil {
+				fmt.Printf("Error create connection to thread %d\n", c.threadNr)
 				return
 			}
-			connection.Open()
+			err = connection.Open()
+			if err != nil {
+				fmt.Printf("Error opening connection to thread %d\n", c.threadNr)
+				return
+			}
 		}
 		readRequest, rerr := connection.CreateReadRequest(11)
 		if rerr != nil {
-			fmt.Println("Error create read reference of database:", rerr)
-
+			fmt.Println("Error creating read reference of database:", rerr)
 			return
 		}
 		err = readRequest.QueryFields("AA,AB,AS[N]")
 		if err != nil {
-			fmt.Println("Error query fields of database:", err)
+			fmt.Println("Error query fields of database file:", err)
 			return
 		}
 
@@ -132,8 +147,8 @@ func callAdabas(c caller) {
 			fmt.Printf("Call thread %d counter %d query for %s\n", c.threadNr,
 				i, c.name)
 		}
-		result := &adabas.RequestResult{}
-		err = readRequest.ReadLogicalWithWithParser("AE="+c.name, nil, result)
+		var result *adabas.RequestResult
+		result, err = readRequest.ReadLogicalWith("AE=" + c.name)
 		if err != nil {
 			fmt.Printf("Error reading thread %d with %d loops: %v\n", c.threadNr, i, err)
 			return

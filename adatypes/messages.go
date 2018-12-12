@@ -22,6 +22,7 @@ package adatypes
 import (
 	"fmt"
 	"regexp"
+	"sync"
 	"time"
 )
 
@@ -32,6 +33,12 @@ type errorCode int
 const messageFilePattern = `^\w+\.[a-zA-Z]{2}$`
 
 var locales map[string]map[string]string
+var once sync.Once
+var loadErr *Error
+var onceBody = func() {
+	Central.Log.Debugf("Only once load messages")
+	loadErr = loadMessagesOnce()
+}
 
 // Error error message with code and time
 type Error struct {
@@ -49,7 +56,6 @@ func (e Error) Error() string {
 // NewGenericError create a genernic non Adabas response error
 func NewGenericError(code errorCode, args ...interface{}) *Error {
 	Central.Log.Debugf("Generate generice error for error code %d", code)
-	LoadMessages()
 	msgCode := fmt.Sprintf("ADG%07d", code)
 	// fmt.Printf("Generated out of %d -> %s\n", code, msgCode)
 	msg := Translate("en", msgCode)
@@ -62,9 +68,16 @@ func NewGenericError(code errorCode, args ...interface{}) *Error {
 	return &Error{When: time.Now(), Code: msgCode, Message: msg}
 }
 
+// initMessages loads messages from all message files on the given path.
+func initMessages() *Error {
+	once.Do(onceBody)
+	return loadErr
+}
+
 // LoadMessages loads messages from all message files on the given path.
-func LoadMessages() *Error {
+func loadMessagesOnce() *Error {
 	Central.Log.Debugf("Load messages")
+	fmt.Println("Load messages")
 	locales = make(map[string]map[string]string)
 	for _, m := range statisMessages {
 		var messages map[string]string
@@ -77,11 +90,15 @@ func LoadMessages() *Error {
 		messages[m.code] = m.message
 	}
 	Central.Log.Debugf("Loaded messages: %d", len(statisMessages))
+
 	return nil
 }
 
 // Translate translates content to target language.
 func Translate(locale, message string, args ...interface{}) string {
+	if err := initMessages(); err != nil {
+		return "Error initialize Adabas messages"
+	}
 	if localeMap, ok := locales[locale]; ok {
 		if message, ok := localeMap[message]; ok {
 			return message
