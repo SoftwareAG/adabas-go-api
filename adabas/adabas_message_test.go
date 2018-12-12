@@ -20,8 +20,9 @@
 package adabas
 
 import (
-	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"testing"
+
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -41,7 +42,6 @@ func TestAdabasMessage(t *testing.T) {
 	f := initTestLogWithFile(t, "messages.log")
 	defer f.Close()
 
-	adatypes.LoadMessages()
 	// Return: Hello, i18n
 	assert.Equal(t, "Normal successful completion", adatypes.Translate("en", "ADAGE00000"))
 	assert.Equal(t, "Invalid command ID value was detected", adatypes.Translate("en", "ADAGE15000"))

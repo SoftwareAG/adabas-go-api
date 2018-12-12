@@ -32,8 +32,6 @@ type errorCode int
 
 // getAdabasMessage get the current Adabas message dependent on the response and sub code
 func (adabas *Adabas) getAdabasMessage() []string {
-	adatypes.LoadMessages()
-
 	message := make([]string, 2)
 	msgCode := fmt.Sprintf("%s%02X%03X", messagePrefix, adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxerrc)
 	message[0] = msgCode
@@ -63,8 +61,6 @@ type Error struct {
 
 // NewError create new Adabas errror
 func NewError(adbas *Adabas) *Error {
-	adatypes.LoadMessages()
-
 	msgCode := fmt.Sprintf("%s%02X%03X", messagePrefix, adbas.Acbx.Acbxrsp, adbas.Acbx.Acbxerrc)
 	msg := adatypes.Translate("en", msgCode)
 	if msg == "" && adbas.Acbx.Acbxerrc > 0 {

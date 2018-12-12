@@ -319,7 +319,6 @@ func (adabas *Adabas) ReadFileDefinition(fileNr uint32) (definition *adatypes.De
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("B Open flag %p %v readfile", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	adatypes.Central.Log.Debugf("Read file definition with %v", lf.code())
 	adabas.Acbx.Acbxcmd = lf.code()
 	adabas.Acbx.Acbxcop[0] = adaEmptOpt
