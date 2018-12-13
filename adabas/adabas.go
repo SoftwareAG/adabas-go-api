@@ -314,7 +314,12 @@ func (adabas *Adabas) sendTCP() (err error) {
 
 // ReadFileDefinition Read file definition out of Adabas file
 func (adabas *Adabas) ReadFileDefinition(fileNr uint32) (definition *adatypes.Definition, err error) {
-	adatypes.Central.Log.Debugf("B Open flag %p %v readfilev", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
+	cacheName := adabas.URL.String() + "_" + strconv.Itoa(int(fileNr))
+	definition = adatypes.CreateDefinitionByCache(cacheName)
+	if definition != nil {
+		return
+	}
+
 	err = adabas.Open()
 	if err != nil {
 		return
@@ -336,10 +341,10 @@ func (adabas *Adabas) ReadFileDefinition(fileNr uint32) (definition *adatypes.De
 	adabas.Acbx.Acbxfnr = fileNr
 	err = adabas.CallAdabas()
 	adatypes.Central.Log.Debugf("Read file definition %v rsp=%d", err, adabas.Acbx.Acbxrsp)
-	fdtDefinition := createFdtDefintion()
 	if err == nil {
 		/* Create new helper to parse returned buffer */
 		helper := adatypes.NewHelper(adabas.AdabasBuffers[1].buffer, int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())
+		fdtDefinition := createFdtDefintion()
 		fdtDefinition.Values = nil
 		fdtDefinition.ParseBuffer(helper, adatypes.NewBufferOption(false, false))
 		adatypes.Central.Log.Debugf("Format read field definition")
@@ -348,6 +353,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr uint32) (definition *adatypes.De
 			adatypes.Central.Log.Debugf("ERROR create FDT:", err)
 			return
 		}
+		definition.PutCache(cacheName)
 		// definition.DumpTypes(true, true)
 		adatypes.Central.Log.Debugf("Ready parse Format read field definition")
 	}

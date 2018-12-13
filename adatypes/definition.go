@@ -24,6 +24,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 // Isn Adabas Internal ISN
@@ -39,6 +40,11 @@ type Definition struct {
 type parserBufferTr struct {
 	helper *BufferHelper
 	option *BufferOption
+}
+
+func init() {
+	definitionCache = make(map[string]*cacheEntry)
+	go cacheClearer()
 }
 
 func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
@@ -1254,4 +1260,46 @@ func (def *Definition) Descriptors(descriptors string) (desc []string, err error
 	}
 	Central.Log.Debugf("Descriptors: %v", desc)
 	return
+}
+
+type cacheEntry struct {
+	timestamp     time.Time
+	fileFieldTree *StructureType
+}
+
+var definitionCache map[string]*cacheEntry
+
+// CreateDefinitionByCache create definition out of cache if available
+func CreateDefinitionByCache(reference string) *Definition {
+	e, ok := definitionCache[reference]
+	if !ok {
+		fmt.Println("Mis cache entry", reference)
+		return nil
+	}
+	fmt.Println("Get cache entry", reference)
+	definition := NewDefinition()
+	definition.fileFieldTree = e.fileFieldTree
+	definition.InitReferences()
+	return definition
+}
+
+// PutCache put cache entry of current definition
+func (def *Definition) PutCache(reference string) {
+	definitionCache[reference] = &cacheEntry{timestamp: time.Now(), fileFieldTree: def.fileFieldTree}
+	fmt.Println("Put cache entry", reference)
+}
+
+func cacheClearer() {
+	last := time.Now()
+	for {
+		time.Sleep(60 * time.Second)
+		t := time.Now()
+		for r, e := range definitionCache {
+			if e.timestamp.Before(last) {
+				delete(definitionCache, r)
+				fmt.Println("Remove cache entry", r)
+			}
+		}
+		last = t
+	}
 }
