@@ -25,13 +25,14 @@ import (
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
-var fdtFieldEntry []adatypes.IAdaType
-var fdtHyperFieldEntry []adatypes.IAdaType
-var fdt []adatypes.IAdaType
-var fdtGeneralLayout []adatypes.IAdaType
+//var fdtFieldEntry []adatypes.IAdaType
+//var fdtHyperFieldEntry []adatypes.IAdaType
+//var fdt []adatypes.IAdaType
+//var fdtGeneralLayout []adatypes.IAdaType
+
 var fdtDefinition *adatypes.Definition
 
-var fdtCondition map[byte][]byte
+//var fdtCondition map[byte][]byte
 
 const fieldNameLength = 2
 
@@ -92,76 +93,74 @@ func (cc option) iv() int {
 	return int(cc)
 }
 
+var fdtFieldEntry = []adatypes.IAdaType{
+	adatypes.NewTypeWithLength(adatypes.FieldTypeString, "fieldName", 2),
+	adatypes.NewType(adatypes.FieldTypeUInt2, "fieldFrom"),
+	adatypes.NewType(adatypes.FieldTypeUInt2, "fieldTo"),
+}
+var fdtHyperFieldEntry = []adatypes.IAdaType{
+	adatypes.NewTypeWithLength(adatypes.FieldTypeString, "fieldName", 2),
+}
+var fdt = []adatypes.IAdaType{
+	adatypes.NewType(adatypes.FieldTypeCharacter, "FieldIdentifier"),                   // 0
+	adatypes.NewType(adatypes.FieldTypeLength, "FieldDefLength"),                       // 1
+	adatypes.NewTypeWithLength(adatypes.FieldTypeString, "fieldName", fieldNameLength), // 2
+	adatypes.NewType(adatypes.FieldTypeCharacter, "fieldFormat"),                       // 3
+	adatypes.NewType(adatypes.FieldTypeUByte, "fieldOption"),                           // 4
+	adatypes.NewType(adatypes.FieldTypeUByte, "fieldOption2"),                          // 5
+	adatypes.NewType(adatypes.FieldTypeUByte, "fieldLevel"),
+	adatypes.NewType(adatypes.FieldTypeUByte, "fieldEditMask"),
+	adatypes.NewType(adatypes.FieldTypeUByte, "fieldSubOption"),
+	adatypes.NewType(adatypes.FieldTypeUByte, "fieldSYfunction"),
+	adatypes.NewType(adatypes.FieldTypeUByte, "fieldDeactivate"), // 10
+	adatypes.NewType(adatypes.FieldTypeUInt4, "fieldLength"),
+	adatypes.NewType(adatypes.FieldTypeUInt2, "superLength"),
+	adatypes.NewType(adatypes.FieldTypeByte, "superOption2"),
+	adatypes.NewStructureList(adatypes.FieldTypeStructure, "superList", adatypes.OccByte, fdtFieldEntry),
+	adatypes.NewType(adatypes.FieldTypeUInt2, "subLength"), // 15
+	adatypes.NewType(adatypes.FieldTypeUByte, "subOption2"),
+	adatypes.NewTypeWithLength(adatypes.FieldTypeFiller, "FILL1", 2),
+	adatypes.NewTypeWithLength(adatypes.FieldTypeString, "parentName", 2),
+	adatypes.NewType(adatypes.FieldTypeUInt2, "subFrom"),
+	adatypes.NewType(adatypes.FieldTypeUInt2, "subTo"), // 20
+	adatypes.NewType(adatypes.FieldTypeUInt2, "colLength"),
+	adatypes.NewType(adatypes.FieldTypeString, "colParentName"),
+	adatypes.NewType(adatypes.FieldTypeUInt2, "colInternalLength"),
+	adatypes.NewType(adatypes.FieldTypeUByte, "colOption2"),
+	adatypes.NewTypeWithLength(adatypes.FieldTypeString, "colAttribute", 0), // 25
+	adatypes.NewType(adatypes.FieldTypeUInt2, "hyperLength"),
+	adatypes.NewType(adatypes.FieldTypeUByte, "hyperFExit"),
+	adatypes.NewType(adatypes.FieldTypeUByte, "hyperOption2"),
+	adatypes.NewTypeWithLength(adatypes.FieldTypeFiller, "FILL2", 1),
+	adatypes.NewStructureList(adatypes.FieldTypeStructure, "hyperList",
+		adatypes.OccByte, fdtHyperFieldEntry), // 30
+	adatypes.NewType(adatypes.FieldTypeUInt4, "refFile"),
+	adatypes.NewType(adatypes.FieldTypeString, "refPrimaryKey"),
+	adatypes.NewType(adatypes.FieldTypeString, "refForeignKey"),
+	adatypes.NewType(adatypes.FieldTypeUByte, "refType"),
+	adatypes.NewType(adatypes.FieldTypeUByte, "refUpdateAction"), // 35
+	adatypes.NewType(adatypes.FieldTypeUByte, "refDeleteAction"),
+}
+var fdtCondition = map[byte][]byte{
+	fieldIdentifierField.code(): {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
+	fieldIdentifierSuper.code(): {1, 2, 3, 4, 12, 13, 14},
+	fieldIdentifierSub.code():   {1, 2, 3, 4, 12, 13, 14},
+	//		fieldIdentifierSub.code():         []byte{1, 2, 3, 4, 15, 16, 17, 18, 19, 20},
+	fieldIdentifierPhonetic.code():    {1, 2, 3, 4, 12, 17, 18},
+	fieldIdentifierCollation.code():   {1, 2, 3, 4, 12, 18, 23, 24, 25},
+	fieldIdentifierHyperexit.code():   {1, 2, 3, 4, 26, 27, 28, 29, 30},
+	fieldIdentifierReferential.code(): {1, 2, 31, 32, 33, 34, 35, 36},
+}
+var fdtGeneralLayout = []adatypes.IAdaType{
+	adatypes.NewType(adatypes.FieldTypeUInt4, "fdtLength"),
+	adatypes.NewType(adatypes.FieldTypeByte, "fdtStrLevel"),
+	adatypes.NewType(adatypes.FieldTypeUByte, "fdtFlag"),
+	adatypes.NewType(adatypes.FieldTypeUInt2, "fdtCount"),
+	adatypes.NewType(adatypes.FieldTypeUInt8, "fdtTime"),
+	adatypes.NewStructureCondition(adatypes.FieldTypeStructure, "fdt", fdt, adatypes.NewFieldCondition(1, 0, fdtCondition)),
+}
+
 func init() {
-	fdtFieldEntry = []adatypes.IAdaType{
-		adatypes.NewTypeWithLength(adatypes.FieldTypeString, "fieldName", 2),
-		adatypes.NewType(adatypes.FieldTypeUInt2, "fieldFrom"),
-		adatypes.NewType(adatypes.FieldTypeUInt2, "fieldTo"),
-	}
-	fdtHyperFieldEntry = []adatypes.IAdaType{
-		adatypes.NewTypeWithLength(adatypes.FieldTypeString, "fieldName", 2),
-	}
-	fdt = []adatypes.IAdaType{
-		adatypes.NewType(adatypes.FieldTypeCharacter, "FieldIdentifier"),                   // 0
-		adatypes.NewType(adatypes.FieldTypeLength, "FieldDefLength"),                       // 1
-		adatypes.NewTypeWithLength(adatypes.FieldTypeString, "fieldName", fieldNameLength), // 2
-		adatypes.NewType(adatypes.FieldTypeCharacter, "fieldFormat"),                       // 3
-		adatypes.NewType(adatypes.FieldTypeUByte, "fieldOption"),                           // 4
-		adatypes.NewType(adatypes.FieldTypeUByte, "fieldOption2"),                          // 5
-		adatypes.NewType(adatypes.FieldTypeUByte, "fieldLevel"),
-		adatypes.NewType(adatypes.FieldTypeUByte, "fieldEditMask"),
-		adatypes.NewType(adatypes.FieldTypeUByte, "fieldSubOption"),
-		adatypes.NewType(adatypes.FieldTypeUByte, "fieldSYfunction"),
-		adatypes.NewType(adatypes.FieldTypeUByte, "fieldDeactivate"), // 10
-		adatypes.NewType(adatypes.FieldTypeUInt4, "fieldLength"),
-		adatypes.NewType(adatypes.FieldTypeUInt2, "superLength"),
-		adatypes.NewType(adatypes.FieldTypeByte, "superOption2"),
-		adatypes.NewStructureList(adatypes.FieldTypeStructure, "superList", adatypes.OccByte, fdtFieldEntry),
-		adatypes.NewType(adatypes.FieldTypeUInt2, "subLength"), // 15
-		adatypes.NewType(adatypes.FieldTypeUByte, "subOption2"),
-		adatypes.NewTypeWithLength(adatypes.FieldTypeFiller, "FILL1", 2),
-		adatypes.NewTypeWithLength(adatypes.FieldTypeString, "parentName", 2),
-		adatypes.NewType(adatypes.FieldTypeUInt2, "subFrom"),
-		adatypes.NewType(adatypes.FieldTypeUInt2, "subTo"), // 20
-		adatypes.NewType(adatypes.FieldTypeUInt2, "colLength"),
-		adatypes.NewType(adatypes.FieldTypeString, "colParentName"),
-		adatypes.NewType(adatypes.FieldTypeUInt2, "colInternalLength"),
-		adatypes.NewType(adatypes.FieldTypeUByte, "colOption2"),
-		adatypes.NewTypeWithLength(adatypes.FieldTypeString, "colAttribute", 0), // 25
-		adatypes.NewType(adatypes.FieldTypeUInt2, "hyperLength"),
-		adatypes.NewType(adatypes.FieldTypeUByte, "hyperFExit"),
-		adatypes.NewType(adatypes.FieldTypeUByte, "hyperOption2"),
-		adatypes.NewTypeWithLength(adatypes.FieldTypeFiller, "FILL2", 1),
-		adatypes.NewStructureList(adatypes.FieldTypeStructure, "hyperList",
-			adatypes.OccByte, fdtHyperFieldEntry), // 30
-		adatypes.NewType(adatypes.FieldTypeUInt4, "refFile"),
-		adatypes.NewType(adatypes.FieldTypeString, "refPrimaryKey"),
-		adatypes.NewType(adatypes.FieldTypeString, "refForeignKey"),
-		adatypes.NewType(adatypes.FieldTypeUByte, "refType"),
-		adatypes.NewType(adatypes.FieldTypeUByte, "refUpdateAction"), // 35
-		adatypes.NewType(adatypes.FieldTypeUByte, "refDeleteAction"),
-	}
-	fdtCondition = map[byte][]byte{
-		fieldIdentifierField.code(): {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
-		fieldIdentifierSuper.code(): {1, 2, 3, 4, 12, 13, 14},
-		fieldIdentifierSub.code():   {1, 2, 3, 4, 12, 13, 14},
-		//		fieldIdentifierSub.code():         []byte{1, 2, 3, 4, 15, 16, 17, 18, 19, 20},
-		fieldIdentifierPhonetic.code():    {1, 2, 3, 4, 12, 17, 18},
-		fieldIdentifierCollation.code():   {1, 2, 3, 4, 12, 18, 23, 24, 25},
-		fieldIdentifierHyperexit.code():   {1, 2, 3, 4, 26, 27, 28, 29, 30},
-		fieldIdentifierReferential.code(): {1, 2, 31, 32, 33, 34, 35, 36},
-	}
-	fieldCondition := adatypes.NewFieldCondition(1, 0, fdtCondition)
-	fdtGeneralLayout = []adatypes.IAdaType{
-		adatypes.NewType(adatypes.FieldTypeUInt4, "fdtLength"),
-		adatypes.NewType(adatypes.FieldTypeByte, "fdtStrLevel"),
-		adatypes.NewType(adatypes.FieldTypeUByte, "fdtFlag"),
-		adatypes.NewType(adatypes.FieldTypeUInt2, "fdtCount"),
-		adatypes.NewType(adatypes.FieldTypeUInt8, "fdtTime"),
-		adatypes.NewStructureCondition(adatypes.FieldTypeStructure, "fdt", fdt, fieldCondition),
-	}
-	//	fdtCondition := adatypes.NewFieldCondition(0, adatypes.NoReferenceField, nil)
-	//	fdtDefinition = adatypes.NewDefinitionWithCondition(fdtGeneralLayout,fdtCondition)
 	fdtDefinition = adatypes.NewDefinitionWithTypes(fdtGeneralLayout)
 }
 
@@ -178,9 +177,9 @@ func traverserFieldDefinitionCreator(adaValue adatypes.IAdaValue, level int, x i
 }
 
 // Create field definition table
-func createFieldDefinitionTable(values *adatypes.Definition) (definition *adatypes.Definition, err error) {
+func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatypes.Definition, err error) {
 	definition = adatypes.NewDefinition()
-	fdtSearch := fdtDefinition.Search("fdt")
+	fdtSearch := fdtDef.Search("fdt")
 	fdt := fdtSearch.(*adatypes.StructureValue)
 	nrFdtEntries := len(fdt.Elements)
 	stack := adatypes.NewStack()
@@ -529,23 +528,24 @@ func evaluateOption(fieldType *adatypes.AdaType, option uint8, option2 uint8) {
 }
 
 // Parse FDT table defintion
-func parseFieldDefinition(buffer []byte) (definition *adatypes.Definition, err error) {
-	adatypes.Central.Log.Debugf("Format field definition")
-	helper := adatypes.NewHelper(buffer, len(buffer), Endian())
+// func parseFieldDefinition(buffer []byte) (definition *adatypes.Definition, err error) {
+// 	adatypes.Central.Log.Debugf("Format field definition")
+// 	helper := adatypes.NewHelper(buffer, len(buffer), Endian())
 
-	// Get length of overall data, fdtLength entry
-	length, herr := helper.ReceiveUInt32()
-	if herr != nil {
-		err = herr
-		return
-	}
+// 	// Get length of overall data, fdtLength entry
+// 	length, herr := helper.ReceiveUInt32()
+// 	if herr != nil {
+// 		err = herr
+// 		return
+// 	}
 
-	// Shrink the buffer to the given length
-	helper.Shrink(length)
-	option := adatypes.NewBufferOption(false, false)
-	fdtDefinition.ParseBuffer(helper, option)
+// 	// Shrink the buffer to the given length
+// 	helper.Shrink(length)
+// 	option := adatypes.NewBufferOption(false, false)
+// 	fdtDefinition := fdtGeneralDefinition()
+// 	fdtDefinition.ParseBuffer(helper, option)
 
-	// Create the field table, convert out of FDT table entries
-	definition, err = createFieldDefinitionTable(fdtDefinition)
-	return
-}
+// 	// Create the field table, convert out of FDT table entries
+// 	definition, err = createFieldDefinitionTable(fdtDefinition)
+// 	return
+// }
