@@ -346,9 +346,11 @@ func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (
 						return
 					}
 				}
-				Central.Log.Debugf("%s-%s: Got structure return directive : %d", value.Type().Name(), v.Type().Name(),
-					ret)
-				LogMultiLineString(FormatByteBuffer("DATA: ", v.Bytes()))
+				if log.GetLevel() == log.DebugLevel {
+					Central.Log.Debugf("%s-%s: Got structure return directive : %d", value.Type().Name(), v.Type().Name(),
+						ret)
+					LogMultiLineString(FormatByteBuffer("DATA: ", v.Bytes()))
+				}
 				if ret == SkipStructure {
 					Central.Log.Debugf("Skip structure tree ... ")
 					return Continue, nil
@@ -495,8 +497,10 @@ func (value *StructureValue) StoreBuffer(helper *BufferHelper) error {
 
 // addValue Add sub value with given index
 func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
-	Central.Log.Debugf("Add value to list for %s[%d,%d], appending %s[%d,%d]", value.Type().Name(), value.PeriodIndex(), value.MultipleIndex(),
-		subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
+	if log.GetLevel() == log.DebugLevel {
+		Central.Log.Debugf("Add value to list for %s[%d,%d], appending %s[%d,%d]", value.Type().Name(), value.PeriodIndex(), value.MultipleIndex(),
+			subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
+	}
 	var element *structureElement
 	var ok bool
 	if value.Elements == nil {
@@ -514,11 +518,15 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 		Central.Log.Debugf("Create new Elements on index %d", curIndex)
 	}
 	s := fmt.Sprintf("%s-%d-%d", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
-	Central.Log.Debugf("Search for %s", s)
+	if log.GetLevel() == log.DebugLevel {
+		Central.Log.Debugf("Search for %s", s)
+	}
 	var v IAdaValue
 	if v, ok = element.valueMap[s]; ok {
-		Central.Log.Debugf("Add sub value found %s[%d:%d] %T",
-			v.Type().Name(), v.PeriodIndex(), v.MultipleIndex(), v)
+		if log.GetLevel() == log.DebugLevel {
+			Central.Log.Debugf("Add sub value found %s[%d:%d] %T",
+				v.Type().Name(), v.PeriodIndex(), v.MultipleIndex(), v)
+		}
 	} else {
 		if value.Elements == nil {
 			Central.Log.Debugf("Create new list for %s and append", value.Type().Name())
@@ -544,8 +552,10 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 		}
 		element.valueMap[fmt.Sprintf("%s-%d-%d", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())] = subValue
 	}
-	Central.Log.Debugf("Final list for %s[%d,%d] = %d elements for %s[%d,%d]", value.Type().Name(), value.PeriodIndex(),
-		value.MultipleIndex(), len(value.Elements), subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
+	if log.GetLevel() == log.DebugLevel {
+		Central.Log.Debugf("Final list for %s[%d,%d] = %d elements for %s[%d,%d]", value.Type().Name(), value.PeriodIndex(),
+			value.MultipleIndex(), len(value.Elements), subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
+	}
 	return nil
 }
 

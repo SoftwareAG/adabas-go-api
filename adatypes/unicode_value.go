@@ -24,6 +24,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // unicodeValue unicode/wide character structure
@@ -161,9 +163,10 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 				return EndTraverser, err
 			}
 			value.value = append(value.value, data...)
-			LogMultiLineString(FormatByteBuffer("(2)LOB Buffer: ", value.value))
-
-			Central.Log.Debugf("New size of lob data %d", len(value.value))
+			if log.GetLevel() == log.DebugLevel {
+				LogMultiLineString(FormatByteBuffer("(2)LOB Buffer: ", value.value))
+				Central.Log.Debugf("New size of lob data %d", len(value.value))
+			}
 		}
 		if !value.Type().HasFlagSet(FlagOptionSecondCall) {
 			Central.Log.Debugf("Skip parsing %s offset=%d", value.Type().Name(), helper.offset)
@@ -207,8 +210,10 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 			option.NeedSecondCall = true
 		default:
 		}
-		Central.Log.Debugf("Buffer get lob string offset=%d %s size=%d/%d", helper.offset, value.Type().Name(), len(value.value), value.lobSize)
-		LogMultiLineString(FormatByteBuffer("LOB Buffer: ", value.value))
+		if log.GetLevel() == log.DebugLevel {
+			Central.Log.Debugf("Buffer get lob string offset=%d %s size=%d/%d", helper.offset, value.Type().Name(), len(value.value), value.lobSize)
+			LogMultiLineString(FormatByteBuffer("LOB Buffer: ", value.value))
+		}
 
 	} else {
 		Central.Log.Debugf("Buffer get string offset=%d %s:%s size=%d", helper.offset, value.Type().Name(), value.value, len(value.value))

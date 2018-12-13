@@ -22,9 +22,10 @@
 package adabas
 
 import (
-	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"time"
 	"unsafe"
+
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -204,8 +205,11 @@ func (adabasBuffer *Buffer) putCAbd(pabdArray *C.PABD, index int) {
 func (adabas *Adabas) CallAdabas() (err error) {
 	defer adatypes.TimeTrack(time.Now(), "CallAdabas "+string(adabas.Acbx.Acbxcmd[:]))
 
-	adatypes.Central.Log.Debugf("Call Adabas %p %s\n%v", adabas, adabas.URL.String(), adabas.ID.String())
-	adatypes.LogMultiLineString(adabas.Acbx.String())
+	if log.GetLevel() == log.DebugLevel {
+		adatypes.Central.Log.Debugf("Call Adabas %p %s\n%v", adabas, adabas.URL.String(), adabas.ID.String())
+		adatypes.LogMultiLineString(adabas.Acbx.String())
+	}
+
 	if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
 		return adatypes.NewGenericError(2, string(adabas.Acbx.Acbxcmd[:]))
 	}
@@ -224,12 +228,16 @@ func (adabas *Adabas) CallAdabas() (err error) {
 		}
 		ret := int(C.go_eadabasx((*C.ADAID_T)(unsafe.Pointer(adabas.ID)),
 			(*C.ACBX)(unsafe.Pointer(adabas.Acbx)), C.int(len(adabas.AdabasBuffers)), pabdArray))
-		adatypes.Central.Log.Debugf("Local Adabas call returns: %d", ret)
-		adatypes.LogMultiLineString(adabas.Acbx.String())
+		if log.GetLevel() == log.DebugLevel {
+			adatypes.Central.Log.Debugf("Local Adabas call returns: %d", ret)
+			adatypes.LogMultiLineString(adabas.Acbx.String())
+		}
 		for index := range adabas.AdabasBuffers {
 			//	adatypes.Central.Log.Debugf(index, ".ABD out : ", adabas.AdabasBuffers[index].abd.Abdsize)
 			adabas.AdabasBuffers[index].putCAbd(pabdArray, index)
-			adatypes.LogMultiLineString(adabas.AdabasBuffers[index].String())
+			if log.GetLevel() == log.DebugLevel {
+				adatypes.LogMultiLineString(adabas.AdabasBuffers[index].String())
+			}
 		}
 		adatypes.Central.Log.Debugf("Destroy temporary ABD")
 		C.destroy_abd(pabdArray, C.int(len(adabas.AdabasBuffers)))

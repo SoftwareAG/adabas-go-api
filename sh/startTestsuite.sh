@@ -10,7 +10,7 @@ ENABLE_DEBUG=${ENABLE_DEBUG:-0}
 LOGPATH=`pwd`/logs
 TESTFILES=`pwd`/files
 GO_ADA_MESSAGES=`pwd`/messages
-GOPATH=/tmp/tmp_gopath.503:$GOPATH
+GOPATH=/tmp/tmp_gopath.`id -u`:$GOPATH
 export ENABLE_DEBUG LOGPATH TESTFILES GO_ADA_MESSAGES GOPATH
 rm -f ./logs/*.log
 
