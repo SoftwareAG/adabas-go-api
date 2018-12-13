@@ -58,7 +58,7 @@ func TestPackedData(t *testing.T) {
 
 	pa.value = []byte{0x00, 0x00, 0x24, 0x61, 0x5c}
 	assert.Equal(t, int64(24615), pa.packedToLong())
-	if log.GetLevel() == log.DebugLevel {
+	if Central.IsDebugLevel() {
 		fmt.Println(FormatByteBuffer("Packed format", pa.value))
 	}
 

@@ -170,7 +170,7 @@ func (adabasBuffer *Buffer) createCAbd(pabdArray *C.PABD, index int) {
 	cabd := adabasBuffer.abd
 	C.copy_to_abd(pabdArray, C.int(index), (C.PABD)(unsafe.Pointer(&cabd)),
 		pbuffer, C.uint32_t(uint32(adabasBuffer.abd.Abdsize)))
-	if log.GetLevel() == log.DebugLevel {
+	if adatypes.Central.IsDebugLevel() {
 		adatypes.Central.Log.Debugf("C ABD %c: send=%d", cabd.Abdid, cabd.Abdsend)
 		adatypes.LogMultiLineString(adatypes.FormatByteBuffer("Buffer content:", adabasBuffer.buffer))
 	}
@@ -194,7 +194,7 @@ func (adabasBuffer *Buffer) putCAbd(pabdArray *C.PABD, index int) {
 	C.copy_from_abd(pabdArray, C.int(index), pabd,
 		pbuffer, C.uint32_t(uint32(adabasBuffer.abd.Abdsize)))
 	adabasBuffer.abd = cabd
-	if log.GetLevel() == log.DebugLevel {
+	if adatypes.Central.IsDebugLevel() {
 		adatypes.Central.Log.Debugf("C ABD %c: recv=%d", cabd.Abdid, cabd.Abdrecv)
 		adatypes.LogMultiLineString(adatypes.FormatByteBuffer("Buffer content:", adabasBuffer.buffer))
 	}
@@ -205,7 +205,7 @@ func (adabasBuffer *Buffer) putCAbd(pabdArray *C.PABD, index int) {
 func (adabas *Adabas) CallAdabas() (err error) {
 	defer adatypes.TimeTrack(time.Now(), "CallAdabas "+string(adabas.Acbx.Acbxcmd[:]))
 
-	if log.GetLevel() == log.DebugLevel {
+	if adatypes.Central.IsDebugLevel() {
 		adatypes.Central.Log.Debugf("Call Adabas %p %s\n%v", adabas, adabas.URL.String(), adabas.ID.String())
 		adatypes.LogMultiLineString(adabas.Acbx.String())
 	}
@@ -228,14 +228,14 @@ func (adabas *Adabas) CallAdabas() (err error) {
 		}
 		ret := int(C.go_eadabasx((*C.ADAID_T)(unsafe.Pointer(adabas.ID)),
 			(*C.ACBX)(unsafe.Pointer(adabas.Acbx)), C.int(len(adabas.AdabasBuffers)), pabdArray))
-		if log.GetLevel() == log.DebugLevel {
+		if adatypes.Central.IsDebugLevel() {
 			adatypes.Central.Log.Debugf("Local Adabas call returns: %d", ret)
 			adatypes.LogMultiLineString(adabas.Acbx.String())
 		}
 		for index := range adabas.AdabasBuffers {
 			//	adatypes.Central.Log.Debugf(index, ".ABD out : ", adabas.AdabasBuffers[index].abd.Abdsize)
 			adabas.AdabasBuffers[index].putCAbd(pabdArray, index)
-			if log.GetLevel() == log.DebugLevel {
+			if adatypes.Central.IsDebugLevel() {
 				adatypes.LogMultiLineString(adabas.AdabasBuffers[index].String())
 			}
 		}

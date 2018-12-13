@@ -34,11 +34,20 @@ type Log interface {
 
 // centralOptions central structure containing the current log reference
 type centralOptions struct {
-	Log Log
+	Log   Log
+	debug bool
 }
 
 // Central central configuration
-var Central = centralOptions{Log: logrus.New()}
+var Central = centralOptions{Log: logrus.New(), debug: false}
+
+func (log centralOptions) IsDebugLevel() bool {
+	return log.debug
+}
+
+func (log centralOptions) SetDebugLevel(debug bool) {
+	log.debug = debug
+}
 
 // LogMultiLineString log multi line string to log. This prevent the \n display in log.
 // Instead multiple lines are written to log

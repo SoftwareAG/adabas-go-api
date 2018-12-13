@@ -78,8 +78,10 @@ func (value *unpackedValue) StoreBuffer(helper *BufferHelper) error {
 
 func (value *unpackedValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 	value.value, err = helper.ReceiveBytes(uint32(len(value.value)))
-	Central.Log.Debugf("Buffer get unpacked offset=%d", helper.offset)
-	Central.Log.Debugf("GOT: %s", FormatBytes("UNPACK -> ", value.value, 0, -1))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Buffer get unpacked offset=%d", helper.offset)
+		Central.Log.Debugf("GOT: %s", FormatBytes("UNPACK -> ", value.value, 0, -1))
+	}
 	return
 }
 

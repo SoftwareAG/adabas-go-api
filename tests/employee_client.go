@@ -179,6 +179,7 @@ func main() {
 	ed := os.Getenv("ENABLE_DEBUG")
 	if ed == "1" {
 		level = log.DebugLevel
+		adatypes.Central.SetDebugLevel(true)
 	}
 
 	f, err := initLogLevelWithFile("employee_client.log", level)

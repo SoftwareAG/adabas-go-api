@@ -23,7 +23,6 @@ import (
 	"fmt"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
 )
 
 //var fdtFieldEntry []adatypes.IAdaType
@@ -237,7 +236,7 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 			for {
 				if lastStruct != nil {
 					if lastStruct.Level() == fieldType.Level()-1 {
-						if log.GetLevel() == log.DebugLevel {
+						if adatypes.Central.IsDebugLevel() {
 							adatypes.Central.Log.Debugf("Append to Structure %s add %s %d", lastStruct.Name(), fieldType.String(), fieldType.Level())
 						}
 						lastStruct.(*adatypes.StructureType).AddField(fieldType)
@@ -247,16 +246,16 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 						if popElement == nil {
 							lastStruct = nil
 							definition.AppendType(fieldType)
-							if log.GetLevel() == log.DebugLevel {
+							if adatypes.Central.IsDebugLevel() {
 								adatypes.Central.Log.Debugf("%s append to main %v", fieldType.Name(), fieldType.Type())
 							}
 							break
 						} else {
-							if log.GetLevel() == log.DebugLevel {
+							if adatypes.Central.IsDebugLevel() {
 								adatypes.Central.Log.Debugf("Pop from Stack %v", popElement)
 							}
 							lastStruct = popElement.(adatypes.IAdaType)
-							if log.GetLevel() == log.DebugLevel {
+							if adatypes.Central.IsDebugLevel() {
 								adatypes.Central.Log.Debugf("Level equal last=%s %d current=%s %d",
 									lastStruct.String(), lastStruct.Level(), fieldType.String(), fieldType.Level())
 							}
@@ -270,12 +269,12 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 			}
 			if fieldType.IsStructure() && fieldType.Type() != adatypes.FieldTypeMultiplefield {
 				lastStruct = fieldType
-				if log.GetLevel() == log.DebugLevel {
+				if adatypes.Central.IsDebugLevel() {
 					adatypes.Central.Log.Debugf("Pop to MU Stack %v", lastStruct)
 				}
 				stack.Push(lastStruct)
 			}
-			if log.GetLevel() == log.DebugLevel {
+			if adatypes.Central.IsDebugLevel() {
 				adatypes.Central.Log.Debugf("Current structure %v", lastStruct)
 			}
 		}

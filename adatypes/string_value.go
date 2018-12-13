@@ -25,8 +25,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // PartialLobSize partial lob read size of first read
@@ -192,7 +190,7 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 				return EndTraverser, err
 			}
 			value.value = append(value.value, data...)
-			if log.GetLevel() == log.DebugLevel {
+			if Central.IsDebugLevel() {
 				LogMultiLineString(FormatByteBuffer("(2)LOB Buffer: ", value.value))
 			}
 
@@ -240,7 +238,7 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 			option.NeedSecondCall = true
 		default:
 		}
-		if log.GetLevel() == log.DebugLevel {
+		if Central.IsDebugLevel() {
 			Central.Log.Debugf("Buffer get lob string offset=%d %s size=%d/%d", helper.offset, value.Type().Name(), len(value.value), value.lobSize)
 			LogMultiLineString(FormatByteBuffer("LOB Buffer: ", value.value))
 		}

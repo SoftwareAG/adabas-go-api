@@ -195,6 +195,7 @@ func main() {
 	switch ed {
 	case "1":
 		level = log.DebugLevel
+		adatypes.Central.SetDebugLevel(true)
 	case "2":
 		level = log.InfoLevel
 	default:

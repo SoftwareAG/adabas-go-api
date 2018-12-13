@@ -24,8 +24,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // Isn Adabas Internal ISN
@@ -127,12 +125,12 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 			Central.Log.Debugf("Value nil, not in parent structure")
 			value, err = types[i].Value()
 			if err != nil {
-				if log.GetLevel() == log.DebugLevel {
+				if Central.IsDebugLevel() {
 					Central.Log.Debugf("Error create value for type ", types[i].String())
 				}
 				return
 			}
-			if log.GetLevel() == log.DebugLevel {
+			if Central.IsDebugLevel() {
 				Central.Log.Debugf("Append value to values : %v", parentStructure)
 			}
 			adaValues = append(adaValues, value)
@@ -166,14 +164,14 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 		// If reference field found, get condition matrix
 		if parent != nil && i == parent.condition.refField {
 			refValue := value.(*ubyteValue)
-			if log.GetLevel() == log.DebugLevel {
+			if Central.IsDebugLevel() {
 				Central.Log.Debugf("Value : %v offset=%d", refValue.ByteValue(), helper.offset)
 				Central.Log.Debugf("Found reference field %d %v %s %v", i, refValue.ByteValue(),
 					parent.Name(), parent.condition)
 			}
 			conditionMatrix = parent.condition.conditionMatrix[refValue.ByteValue()]
 			if conditionMatrix == nil {
-				if log.GetLevel() == log.DebugLevel {
+				if Central.IsDebugLevel() {
 					Central.Log.Debugf("Allthough refernce value given, condition matrix missing offset=%d refField=%v",
 						helper.offset, parent.condition.refField, parent)
 				}
@@ -187,12 +185,12 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 	if conditionMatrix != nil {
 		Central.Log.Debugf("Condition matrix %v", conditionMatrix)
 		for _, ref := range conditionMatrix {
-			if log.GetLevel() == log.DebugLevel {
+			if Central.IsDebugLevel() {
 				Central.Log.Debugf("Get reference field %s %v %d offset=%d", types[ref].String(), ref, len(types), helper.offset)
 			}
 			value, subErr := types[ref].Value()
 			if subErr != nil {
-				if log.GetLevel() == log.DebugLevel {
+				if Central.IsDebugLevel() {
 					Central.Log.Debugf("Error creating field value for %s", types[ref].String())
 				}
 				err = subErr
@@ -206,7 +204,7 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 				Central.Log.Debugf("Found end of buffer at %d", endOfBuffer)
 			}
 
-			if log.GetLevel() == log.DebugLevel {
+			if Central.IsDebugLevel() {
 				Central.Log.Debugf("Got value for type %s: %p", types[ref].String(), value)
 			}
 			adaValues = append(adaValues, value)
@@ -223,7 +221,7 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 		}
 	}
 
-	if log.GetLevel() == log.DebugLevel {
+	if Central.IsDebugLevel() {
 		Central.Log.Debugf("================== Ending Parse buffer for IAdaTypes of %v", parent)
 	}
 
@@ -611,7 +609,7 @@ func (def *Definition) DumpTypes(doLog bool, activeTree bool) {
 		}
 		buffer.WriteString("Dump all file field types:\n")
 	}
-	if !doLog || log.GetLevel() == log.DebugLevel {
+	if !doLog || Central.IsDebugLevel() {
 		t := TraverserMethods{EnterFunction: dumpType}
 		def.TraverseTypes(t, activeTree, &buffer)
 		if doLog {
@@ -1137,7 +1135,7 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 		removeFromTree(strType)
 	}
 	def.activeFieldTree = fieldMap.parentStructure
-	if log.GetLevel() == log.DebugLevel {
+	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Final restricted type tree .........")
 		def.DumpTypes(true, true)
 	}

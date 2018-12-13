@@ -24,8 +24,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // unicodeValue unicode/wide character structure
@@ -163,7 +161,7 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 				return EndTraverser, err
 			}
 			value.value = append(value.value, data...)
-			if log.GetLevel() == log.DebugLevel {
+			if Central.IsDebugLevel() {
 				LogMultiLineString(FormatByteBuffer("(2)LOB Buffer: ", value.value))
 				Central.Log.Debugf("New size of lob data %d", len(value.value))
 			}
@@ -210,7 +208,7 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 			option.NeedSecondCall = true
 		default:
 		}
-		if log.GetLevel() == log.DebugLevel {
+		if Central.IsDebugLevel() {
 			Central.Log.Debugf("Buffer get lob string offset=%d %s size=%d/%d", helper.offset, value.Type().Name(), len(value.value), value.lobSize)
 			LogMultiLineString(FormatByteBuffer("LOB Buffer: ", value.value))
 		}
