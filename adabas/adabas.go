@@ -336,6 +336,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr uint32) (definition *adatypes.De
 	adabas.Acbx.Acbxfnr = fileNr
 	err = adabas.CallAdabas()
 	adatypes.Central.Log.Debugf("Read file definition %v rsp=%d", err, adabas.Acbx.Acbxrsp)
+	fdtDefinition := createFdtDefintion()
 	if err == nil {
 		/* Create new helper to parse returned buffer */
 		helper := adatypes.NewHelper(adabas.AdabasBuffers[1].buffer, int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())
