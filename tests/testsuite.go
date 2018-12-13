@@ -24,6 +24,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
+	"runtime/pprof"
 	"strconv"
 	"strings"
 	"sync"
@@ -104,7 +106,7 @@ func callAdabas(c caller) {
 
 		err = connection.Open()
 		if err != nil {
-			fmt.Printf("Error opening connection to thread %d\n", c.threadNr)
+			fmt.Printf("Error opening connection to thread %d: %v\n", c.threadNr, err)
 			return
 		}
 	}
@@ -119,7 +121,7 @@ func callAdabas(c caller) {
 		l := adatypes.Central.Log.(*log.Logger)
 		l.WithFields(log.Fields{
 			"thread": tid,
-		}).Errorf("Start counter")
+		}).Debugf("Start counter")
 		if close {
 			connection, err = c.createConnection()
 			if err != nil {
@@ -193,6 +195,7 @@ func main() {
 	switch ed {
 	case "1":
 		level = log.DebugLevel
+		adatypes.Central.SetDebugLevel(true)
 	case "2":
 		level = log.InfoLevel
 	default:
@@ -210,6 +213,8 @@ func main() {
 	var countValue int
 	var threadValue int
 	var name string
+	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
+	var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
 	//flag.StringVar(&gopherType, "gopher_type", defaultGopher, usage)
 	flag.IntVar(&countValue, "c", 1, "Number of loops")
@@ -225,7 +230,16 @@ func main() {
 		return
 	}
 
-	fmt.Println("Start testsuite test")
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal("could not create CPU profile: ", err)
+		}
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("could not start CPU profile: ", err)
+		}
+		defer pprof.StopCPUProfile()
+	}
 
 	names := strings.Split(name, ",")
 
@@ -238,6 +252,19 @@ func main() {
 
 	}
 	wg.Wait()
+	if *memprofile != "" {
+		f, err := os.Create(*memprofile)
+		if err != nil {
+			log.Fatal("could not create memory profile: ", err)
+		}
+		runtime.GC() // get up-to-date statistics
+		if err := pprof.WriteHeapProfile(f); err != nil {
+			log.Fatal("could not write memory profile: ", err)
+		}
+		defer f.Close()
+		fmt.Println("Start testsuite test")
+	}
+
 }
 
 // TimeTrack logger

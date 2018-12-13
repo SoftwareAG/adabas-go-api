@@ -336,6 +336,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr uint32) (definition *adatypes.De
 	adabas.Acbx.Acbxfnr = fileNr
 	err = adabas.CallAdabas()
 	adatypes.Central.Log.Debugf("Read file definition %v rsp=%d", err, adabas.Acbx.Acbxrsp)
+	fdtDefinition := createFdtDefintion()
 	if err == nil {
 		/* Create new helper to parse returned buffer */
 		helper := adatypes.NewHelper(adabas.AdabasBuffers[1].buffer, int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())
@@ -971,8 +972,10 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 		}
 		adatypes.Central.Log.Debugf("Parse %d ABD buffers headers Number of current ABDS=%d len=%d", nCalBuf, len(adabas.AdabasBuffers), buffer.Len())
 		for index, abd := range adabas.AdabasBuffers {
-			adatypes.Central.Log.Debugf("Parse %d.ABD got %c len=%d\n", index, abd.abd.Abdid, buffer.Len())
-			adatypes.LogMultiLineString(adatypes.FormatBytes("Rest ABD:", buffer.Bytes(), buffer.Len(), 8))
+			if adatypes.Central.IsDebugLevel() {
+				adatypes.Central.Log.Debugf("Parse %d.ABD got %c len=%d\n", index, abd.abd.Abdid, buffer.Len())
+				adatypes.LogMultiLineString(adatypes.FormatBytes("Rest ABD:", buffer.Bytes(), buffer.Len(), 8))
+			}
 			err = binary.Read(buffer, Endian(), &abd.abd)
 			if err != nil {
 				adatypes.Central.Log.Debugf("ABD read header error: %v", err)
@@ -1008,7 +1011,9 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 						return
 					}
 				}
-				adatypes.LogMultiLineString(adatypes.FormatBytes(fmt.Sprintf("Got data of ABD %d :", index), abd.buffer, 8, 16))
+				if adatypes.Central.IsDebugLevel() {
+					adatypes.LogMultiLineString(adatypes.FormatBytes(fmt.Sprintf("Got data of ABD %d :", index), abd.buffer, 8, 16))
+				}
 			}
 		}
 	} else {

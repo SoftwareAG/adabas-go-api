@@ -30,7 +30,7 @@ import (
 //var fdt []adatypes.IAdaType
 //var fdtGeneralLayout []adatypes.IAdaType
 
-var fdtDefinition *adatypes.Definition
+//var fdtDefinition *adatypes.Definition
 
 //var fdtCondition map[byte][]byte
 
@@ -160,8 +160,8 @@ var fdtGeneralLayout = []adatypes.IAdaType{
 	adatypes.NewStructureCondition(adatypes.FieldTypeStructure, "fdt", fdt, adatypes.NewFieldCondition(1, 0, fdtCondition)),
 }
 
-func init() {
-	fdtDefinition = adatypes.NewDefinitionWithTypes(fdtGeneralLayout)
+func createFdtDefintion() *adatypes.Definition {
+	return adatypes.NewDefinitionWithTypes(fdtGeneralLayout)
 }
 
 func traverserFieldDefinitionCreator(adaValue adatypes.IAdaValue, level int, x interface{}) bool {
@@ -236,7 +236,9 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 			for {
 				if lastStruct != nil {
 					if lastStruct.Level() == fieldType.Level()-1 {
-						adatypes.Central.Log.Debugf("Append to Structure %s add %s %d", lastStruct.Name(), fieldType.String(), fieldType.Level())
+						if adatypes.Central.IsDebugLevel() {
+							adatypes.Central.Log.Debugf("Append to Structure %s add %s %d", lastStruct.Name(), fieldType.String(), fieldType.Level())
+						}
 						lastStruct.(*adatypes.StructureType).AddField(fieldType)
 						break
 					} else {
@@ -244,13 +246,19 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 						if popElement == nil {
 							lastStruct = nil
 							definition.AppendType(fieldType)
-							adatypes.Central.Log.Debugf("%s append to main %v", fieldType.Name(), fieldType.Type())
+							if adatypes.Central.IsDebugLevel() {
+								adatypes.Central.Log.Debugf("%s append to main %v", fieldType.Name(), fieldType.Type())
+							}
 							break
 						} else {
-							adatypes.Central.Log.Debugf("Pop from Stack %v", popElement)
+							if adatypes.Central.IsDebugLevel() {
+								adatypes.Central.Log.Debugf("Pop from Stack %v", popElement)
+							}
 							lastStruct = popElement.(adatypes.IAdaType)
-							adatypes.Central.Log.Debugf("Level equal last=%s %d current=%s %d",
-								lastStruct.String(), lastStruct.Level(), fieldType.String(), fieldType.Level())
+							if adatypes.Central.IsDebugLevel() {
+								adatypes.Central.Log.Debugf("Level equal last=%s %d current=%s %d",
+									lastStruct.String(), lastStruct.Level(), fieldType.String(), fieldType.Level())
+							}
 						}
 					}
 				} else {
@@ -261,10 +269,14 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 			}
 			if fieldType.IsStructure() && fieldType.Type() != adatypes.FieldTypeMultiplefield {
 				lastStruct = fieldType
-				adatypes.Central.Log.Debugf("Pop to MU Stack %v", lastStruct)
+				if adatypes.Central.IsDebugLevel() {
+					adatypes.Central.Log.Debugf("Pop to MU Stack %v", lastStruct)
+				}
 				stack.Push(lastStruct)
 			}
-			adatypes.Central.Log.Debugf("Current structure %v", lastStruct)
+			if adatypes.Central.IsDebugLevel() {
+				adatypes.Central.Log.Debugf("Current structure %v", lastStruct)
+			}
 		}
 		adatypes.Central.Log.Debugf("Field type DONE")
 	}

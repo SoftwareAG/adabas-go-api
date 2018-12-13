@@ -66,6 +66,7 @@ func initLogWithFile(fileName string) (file *os.File, err error) {
 	switch ed {
 	case "1":
 		level = log.DebugLevel
+		adatypes.Central.SetDebugLevel(true)
 	case "2":
 		level = log.InfoLevel
 	default:

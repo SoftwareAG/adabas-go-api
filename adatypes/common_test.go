@@ -24,6 +24,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -41,6 +42,7 @@ func initLogWithFile(fileName string) (file *os.File, err error) {
 	ed := os.Getenv("ENABLE_DEBUG")
 	if ed == "1" {
 		level = log.DebugLevel
+		adatypes.Central.SetDebugLevel(true)
 	}
 	return initLogLevelWithFile(fileName, level)
 }
