@@ -31,10 +31,10 @@ CGO_CFLAGS = -I${ACLDIR}/inc
 CGO_LDFLAGS = -L${ACLDIR}/lib -ladalnkx -lsagsmp2 -lsagxts3 -ladazbuf
 ```
 
-The application is build with Adabas Go API like follow (please not that the tag `adalnk` is needed to enable local IPC access):
+The application is build with Adabas Go API like follow (please note that the tag `adalnk` is needed to enable local IPC access):
 
 ```
-go build --tag adalnk application.go
+go build -tags adalnk application.go
 ```
 
 ## Adabas Go API example
