@@ -27,8 +27,8 @@ go get -u github.com/softwareag/adabas-go-api/adabas
 You can compile it with the Adabas TCP/IP interface only or using Adabas local access with Adabas Client native libraries. By default the Adabas TCP/IP interface is compiled only. To enable Adabas Client native link to Adabas you need to provide the Go build tag `adalnk` and the CGO compile flags defining build flags for the Adabas Client library. If the Adabas environment is sourced, you can define CGO compile flags as follow:
 
 ```sh
-CGO_CFLAGS = -I$(ACLDIR)/inc
-CGO_LDFLAGS = -L$(ACLDIR)/lib -ladalnkx -lsagsmp2 -lsagxts3 -ladazbuf
+CGO_CFLAGS = -I${ACLDIR}/inc
+CGO_LDFLAGS = -L${ACLDIR}/lib -ladalnkx -lsagsmp2 -lsagxts3 -ladazbuf
 ```
 
 The application is build with Adabas Go API like follow (please not that the tag `adalnk` is needed to enable local IPC access):
