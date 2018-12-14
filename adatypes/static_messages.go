@@ -775,7 +775,7 @@ var statisMessages = []struct {
 	{"ADG0000047", "en", "Value does not contain field {0}"},
 	{"ADG0000048", "en", "Adabas instance empty"},
 	{"ADG0000049", "en", "Adabas client support not enabled"},
-	{"ADG0000050", "en", "Map {0} not part of the map"},
+	{"ADG0000050", "en", "Field {0} not part of the map/database"},
 	{"ADG0000051", "en", "Invalid connection string prefix"},
 	{"ADG0000052", "en", "Set value error: {0}"},
 	{"ADG0000053", "en", "Store record error: {0}"},

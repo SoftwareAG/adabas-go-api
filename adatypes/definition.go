@@ -46,9 +46,13 @@ type parserBufferTr struct {
 func init() {
 	ed := os.Getenv("ENABLE_ADAFDT_CACHE")
 	if ed == "1" {
-		definitionCache = make(map[string]*cacheEntry)
-		go cacheClearer()
+		initDefinitionCache()
 	}
+}
+
+func initDefinitionCache() {
+	definitionCache = make(map[string]*cacheEntry)
+	go cacheClearer()
 }
 
 func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
@@ -1134,6 +1138,7 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	if len(fieldMap.set) > 0 {
 		for f := range fieldMap.set {
 			err = NewGenericError(50, f)
+			Central.Log.Debugf("Error restict fieldMap ... %v", err)
 			def.DumpTypes(false, false)
 			def.DumpTypes(false, true)
 			return
@@ -1280,12 +1285,13 @@ func CreateDefinitionByCache(reference string) *Definition {
 	}
 	e, ok := definitionCache[reference]
 	if !ok {
-		fmt.Println("Mis cache entry", reference)
+		Central.Log.Debugf("Mis cache entry: %s", reference)
 		return nil
 	}
-	fmt.Println("Get cache entry", reference)
+	Central.Log.Debugf("Get cache entry: %s", reference)
 	definition := NewDefinition()
-	definition.fileFieldTree = e.fileFieldTree
+	definition.activeFieldTree = e.fileFieldTree
+	definition.fileFieldTree = definition.activeFieldTree
 	definition.InitReferences()
 	return definition
 }
@@ -1296,7 +1302,7 @@ func (def *Definition) PutCache(reference string) {
 		return
 	}
 	definitionCache[reference] = &cacheEntry{timestamp: time.Now(), fileFieldTree: def.fileFieldTree}
-	fmt.Println("Put cache entry", reference)
+	Central.Log.Debugf("Put cache entry: %s", reference)
 }
 
 func cacheClearer() {
@@ -1310,7 +1316,7 @@ func cacheClearer() {
 		for r, e := range definitionCache {
 			if e.timestamp.Before(last) {
 				delete(definitionCache, r)
-				fmt.Println("Remove cache entry", r)
+				Central.Log.Debugf("Remove cache entry: %s", r)
 			}
 		}
 		last = t
