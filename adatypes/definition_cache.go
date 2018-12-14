@@ -1,6 +1,7 @@
 package adatypes
 
 import (
+	"os"
 	"time"
 )
 
@@ -10,6 +11,24 @@ type cacheEntry struct {
 }
 
 var definitionCache map[string]*cacheEntry
+
+func init() {
+	ed := os.Getenv("ENABLE_ADAFDT_CACHE")
+	if ed == "1" {
+		InitDefinitionCache()
+	}
+}
+
+// InitDefinitionCache init definition cache
+func InitDefinitionCache() {
+	definitionCache = make(map[string]*cacheEntry)
+	go cacheClearer()
+}
+
+// FinitDefinitionCache finit definition cache
+func FinitDefinitionCache() {
+	definitionCache = nil
+}
 
 // CreateDefinitionByCache create definition out of cache if available
 func CreateDefinitionByCache(reference string) *Definition {

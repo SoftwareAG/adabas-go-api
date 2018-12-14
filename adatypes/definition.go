@@ -23,7 +23,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 )
 
@@ -40,18 +39,6 @@ type Definition struct {
 type parserBufferTr struct {
 	helper *BufferHelper
 	option *BufferOption
-}
-
-func init() {
-	ed := os.Getenv("ENABLE_ADAFDT_CACHE")
-	if ed == "1" {
-		initDefinitionCache()
-	}
-}
-
-func initDefinitionCache() {
-	definitionCache = make(map[string]*cacheEntry)
-	go cacheClearer()
 }
 
 func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {

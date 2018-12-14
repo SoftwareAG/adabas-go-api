@@ -533,7 +533,6 @@ func ExampleDefinition_DumpValues() {
 
 }
 
-
 func ExampleDefinition_Search() {
 	f, err := initLogWithFile("definition.log")
 	if err != nil {

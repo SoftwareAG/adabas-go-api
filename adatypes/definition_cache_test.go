@@ -3,13 +3,14 @@ package adatypes
 import (
 	"fmt"
 )
+
 func ExampleDefinition_ShouldRestrictToFields() {
 	f, err := initLogWithFile("definition.log")
 	if err != nil {
 		return
 	}
 	defer f.Close()
-	initDefinitionCache()
+	InitDefinitionCache()
 	testDefinition := createPeriodGroupMultiplerField()
 	testDefinition.PutCache("AA")
 	testDefinition.DumpTypes(false, false)
