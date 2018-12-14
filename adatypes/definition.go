@@ -23,6 +23,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 )
@@ -43,8 +44,11 @@ type parserBufferTr struct {
 }
 
 func init() {
-	definitionCache = make(map[string]*cacheEntry)
-	go cacheClearer()
+	ed := os.Getenv("ENABLE_ADAFDT_CACHE")
+	if ed == "1" {
+		definitionCache = make(map[string]*cacheEntry)
+		go cacheClearer()
+	}
 }
 
 func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
@@ -1271,6 +1275,9 @@ var definitionCache map[string]*cacheEntry
 
 // CreateDefinitionByCache create definition out of cache if available
 func CreateDefinitionByCache(reference string) *Definition {
+	if definitionCache == nil {
+		return nil
+	}
 	e, ok := definitionCache[reference]
 	if !ok {
 		fmt.Println("Mis cache entry", reference)
@@ -1285,6 +1292,9 @@ func CreateDefinitionByCache(reference string) *Definition {
 
 // PutCache put cache entry of current definition
 func (def *Definition) PutCache(reference string) {
+	if definitionCache == nil {
+		return
+	}
 	definitionCache[reference] = &cacheEntry{timestamp: time.Now(), fileFieldTree: def.fileFieldTree}
 	fmt.Println("Put cache entry", reference)
 }
@@ -1294,6 +1304,9 @@ func cacheClearer() {
 	for {
 		time.Sleep(60 * time.Second)
 		t := time.Now()
+		if definitionCache == nil {
+			return
+		}
 		for r, e := range definitionCache {
 			if e.timestamp.Before(last) {
 				delete(definitionCache, r)
