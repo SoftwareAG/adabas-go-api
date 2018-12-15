@@ -120,7 +120,7 @@ $(TESTOUTPUT):
 	mkdir $(TESTOUTPUT)
 
 TEST_TARGETS := test-default test-bench test-short test-verbose test-race
-.PHONY: $(TEST_TARGETS) test-xml check test tests
+.PHONY: $(TEST_TARGETS) check test tests
 test-bench:   ARGS=-run=__absolutelynothing__ -bench=. ## Run benchmarks
 test-short:   ARGS=-short        ## Run only short tests
 test-verbose: ARGS=-v            ## Run tests in verbose mode with coverage reporting
@@ -134,10 +134,9 @@ check test tests: fmt lint vendor | $(BASE) ; $(info $(M) running $(NAME:%=% )te
 	    TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) REFERENCES=$(REFERENCES) \
 	    $(GO) test -timeout $(TIMEOUT)s -v -tags $(GO_TAGS) $(ARGS) $(TESTPKGS)
 
-TEST_XML_TARGETS := test-xml-bench test-xml-verbose
+TEST_XML_TARGETS := test-xml-bench
 .PHONY: $(TEST_XML_TARGETS) test-xml
 test-xml-bench:     ARGS=-run=__absolutelynothing__ -bench=. ## Run benchmarks
-test-xml-verbose:   ARGS=-v        ## Run only short tests
 $(TEST_XML_TARGETS): NAME=$(MAKECMDGOALS:test-xml-%=%)
 $(TEST_XML_TARGETS): test-xml
 test-xml: prepare fmt lint vendor $(TESTOUTPUT) | $(BASE) $(GO2XUNIT) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
@@ -146,7 +145,7 @@ test-xml: prepare fmt lint vendor $(TESTOUTPUT) | $(BASE) $(GO2XUNIT) ; $(info $
 	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
 	    ENABLE_DEBUG=0 WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) \
-	    $(GO) test -timeout $(TIMEOUT)s $(GO_FLAGS) $(ARGS) $(TESTPKGS) | tee $(TESTOUTPUT)/tests.output
+	    $(GO) test -timeout $(TIMEOUT)s $(GO_FLAGS) -v $(ARGS) $(TESTPKGS) | tee $(TESTOUTPUT)/tests.output
 	sh $(CURDIR)/sh/evaluteQueues.sh
 	$(GO2XUNIT) -input $(TESTOUTPUT)/tests.output -output $(TESTOUTPUT)/tests.xml
 
