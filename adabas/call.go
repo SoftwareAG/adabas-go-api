@@ -30,123 +30,119 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// #if !defined(__unix__) && !defined(__hpux) && !defined(__APPLE__) &&	\
-//   !defined(__IBMC__) && !defined(__sun)
-// #define __unix__ 0
-// #else
-// #ifndef __unix__
-// #define __unix__ 1
-// #endif
-// #endif
-// #include <stdlib.h>
-// #include <stdio.h>
-// #include <stdint.h>
-// #include <string.h>
-// #if !__unix__
-// #include <errno.h>
-// #else
-// #include <sys/errno.h>
-// #endif
-// #include "adabasx.h"
-// long flags = 0;
-// /*
-//  * Initialize ABD array with number of ABD
-//  */
-// PABD *create_abd(int num_abd)
-// {
-// 	int i;
-// 	PABD *pabd = (PABD *)malloc(num_abd * sizeof(PABD *));
-// 	for (i = 0; i < num_abd; i++)
-// 	{
-// 		pabd[i] = NULL;
-// 	}
-// 	return pabd;
-// }
-// /*
-//  * Destroy ABD array
-//  */
-// void destroy_abd(PABD *pabd, int num_abd)
-// {
-// 	int i;
-// 	for (i = 0; i < num_abd; i++)
-// 	{
-// 		if (pabd[i] != NULL)
-// 		{
-// 			if (pabd[i]->abdaddr != NULL)
-// 			{
-// 				free(pabd[i]->abdaddr);
-// 			}
-// 			free(pabd[i]);
-// 		}
-// 	}
-// 	free(pabd);
-// }
-// /*
-//  * Adabas interface for Go to call ACBX Adabas calls
-//  */
-// int go_eadabasx(ADAID_T *adabas_id, PACBX acbx, int num_abd, PABD *abd)
-// {
-// 	register int i;
-// 	int rsp;
-// 	/*  int          capacity;*/
-// 	char *buffer;
-// 	uint32_t flag;
-// 	uint32_t timeOut;
-// 	char user[9];
-// 	char node[9];
-// 	/* Here I call the ACBX enabled Adabas function of adabasx */
-// 	{
-// 		lnk_set_adabas_id((unsigned char *)(adabas_id));
-// 		rsp = adabasx(acbx, num_abd, abd);
-// 	}
-// 	return (rsp);
-// }
-// /*
-//  * Malloc C based memory and copy Go based ABD to C based because of pointer references
-//  */
-// void copy_to_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
-// {
-// 	PABD dest_pabd = pabd[index] = malloc(L_ABD);
-// 	if (dest_pabd == NULL)
-// 	{
-// 		exit(10);
-// 	}
-// 	if (x == NULL)
-// 	{
-// 		exit(10);
-// 	}
-// 	memcpy(dest_pabd, x, L_ABD);
-// 	if (data != NULL)
-// 	{
-// 		dest_pabd->abdaddr = malloc(size);
-// 		memcpy(dest_pabd->abdaddr, data, size);
-// 		dest_pabd->abdsize = size;
-// 	}
-// 	else
-// 	{
-// 		dest_pabd->abdsize = 0;
-// 		dest_pabd->abdaddr = NULL;
-// 	}
-// }
-// /*
-//  * Copy C based ABD to Go based because of pointer references and free memory
-//  */
-// void copy_from_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
-// {
-// 	PABD dest_pabd = pabd[index];
-// 	memcpy(x, dest_pabd, L_ABD);
-// 	if ((data != NULL) && (dest_pabd->abdrecv > 0))
-// 	{
-// 		memcpy(data, dest_pabd->abdaddr, size);
-// 	}
-// 	if (dest_pabd->abdaddr != NULL)
-// 	{
-// 		free(dest_pabd->abdaddr);
-// 		dest_pabd->abdaddr = NULL;
-// 	}
-// 	free(pabd[index]);
-// 	pabd[index] = NULL;
-// }
+/*
+#if !defined(__unix__) && !defined(__hpux) && !defined(__APPLE__) &&	\
+  !defined(__IBMC__) && !defined(__sun)
+#define __unix__ 0
+#else
+#ifndef __unix__
+#define __unix__ 1
+#endif
+#endif
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#if !__unix__
+#include <errno.h>
+#else
+#include <sys/errno.h>
+#endif
+#include "adabasx.h"
+long flags = 0;
+
+// Initialize ABD array with number of ABD
+PABD *create_abd(int num_abd)
+{
+	int i;
+	PABD *pabd = (PABD *)malloc(num_abd * sizeof(PABD *));
+	for (i = 0; i < num_abd; i++)
+	{
+		pabd[i] = NULL;
+	}
+	return pabd;
+}
+
+// Destroy ABD array
+void destroy_abd(PABD *pabd, int num_abd)
+{
+	int i;
+	for (i = 0; i < num_abd; i++)
+	{
+		if (pabd[i] != NULL)
+		{
+			if (pabd[i]->abdaddr != NULL)
+			{
+				free(pabd[i]->abdaddr);
+			}
+			free(pabd[i]);
+		}
+	}
+	free(pabd);
+}
+
+// Adabas interface for Go to call ACBX Adabas calls
+int go_eadabasx(ADAID_T *adabas_id, PACBX acbx, int num_abd, PABD *abd)
+{
+	register int i;
+	int rsp;
+	char *buffer;
+	uint32_t flag;
+	uint32_t timeOut;
+	char user[9];
+	char node[9];
+	// Here I call the ACBX enabled Adabas function of adabasx
+	{
+		lnk_set_adabas_id((unsigned char *)(adabas_id));
+		rsp = adabasx(acbx, num_abd, abd);
+	}
+	return (rsp);
+}
+
+// Malloc C based memory and copy Go based ABD to C based because of pointer references
+void copy_to_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
+{
+	PABD dest_pabd = pabd[index] = malloc(L_ABD);
+	if (dest_pabd == NULL)
+	{
+		exit(10);
+	}
+	if (x == NULL)
+	{
+		exit(10);
+	}
+	memcpy(dest_pabd, x, L_ABD);
+	if (data != NULL)
+	{
+		dest_pabd->abdaddr = malloc(size);
+		memcpy(dest_pabd->abdaddr, data, size);
+		dest_pabd->abdsize = size;
+	}
+	else
+	{
+		dest_pabd->abdsize = 0;
+		dest_pabd->abdaddr = NULL;
+	}
+}
+
+// Copy C based ABD to Go based because of pointer references and free memory
+void copy_from_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
+{
+	PABD dest_pabd = pabd[index];
+	memcpy(x, dest_pabd, L_ABD);
+	if ((data != NULL) && (dest_pabd->abdrecv > 0))
+	{
+		memcpy(data, dest_pabd->abdaddr, size);
+	}
+	if (dest_pabd->abdaddr != NULL)
+	{
+		free(dest_pabd->abdaddr);
+		dest_pabd->abdaddr = NULL;
+	}
+	free(pabd[index]);
+	pabd[index] = NULL;
+}
+*/
 import "C"
 
 // NewAdabasID create a new Adabas ID instance
