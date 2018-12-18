@@ -451,7 +451,7 @@ func TestStoreWithMapLobFile(t *testing.T) {
 	if p == "" {
 		p = "."
 	}
-	p = p + "/../img/106-0687_IMG.JPG"
+	p = p + "/../files/img/106-0687_IMG.JPG"
 	f, err := os.Open(p)
 	if err != nil {
 		fmt.Println(err)
