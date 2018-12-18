@@ -1417,6 +1417,25 @@ func BenchmarkConnection_simple(b *testing.B) {
 	}
 }
 
+func BenchmarkConnection_cached(b *testing.B) {
+	f, err := initLogWithFile("connection.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+
+	adatypes.InitDefinitionCache()
+	defer adatypes.FinitDefinitionCache()
+
+	for i := 0; i < 1000; i++ {
+		err = readAll(b)
+		if err != nil {
+			return
+		}
+	}
+}
+
 func readAll(b *testing.B) error {
 	connection, cerr := NewConnection("acj;map;config=[24,4]")
 	if cerr != nil {

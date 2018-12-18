@@ -23,9 +23,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
-	"time"
 )
 
 // Isn Adabas Internal ISN
@@ -41,14 +39,6 @@ type Definition struct {
 type parserBufferTr struct {
 	helper *BufferHelper
 	option *BufferOption
-}
-
-func init() {
-	ed := os.Getenv("ENABLE_ADAFDT_CACHE")
-	if ed == "1" {
-		definitionCache = make(map[string]*cacheEntry)
-		go cacheClearer()
-	}
 }
 
 func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
@@ -1134,6 +1124,7 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	if len(fieldMap.set) > 0 {
 		for f := range fieldMap.set {
 			err = NewGenericError(50, f)
+			Central.Log.Debugf("Error restict fieldMap ... %v", err)
 			def.DumpTypes(false, false)
 			def.DumpTypes(false, true)
 			return
@@ -1264,55 +1255,4 @@ func (def *Definition) Descriptors(descriptors string) (desc []string, err error
 	}
 	Central.Log.Debugf("Descriptors: %v", desc)
 	return
-}
-
-type cacheEntry struct {
-	timestamp     time.Time
-	fileFieldTree *StructureType
-}
-
-var definitionCache map[string]*cacheEntry
-
-// CreateDefinitionByCache create definition out of cache if available
-func CreateDefinitionByCache(reference string) *Definition {
-	if definitionCache == nil {
-		return nil
-	}
-	e, ok := definitionCache[reference]
-	if !ok {
-		fmt.Println("Mis cache entry", reference)
-		return nil
-	}
-	fmt.Println("Get cache entry", reference)
-	definition := NewDefinition()
-	definition.fileFieldTree = e.fileFieldTree
-	definition.InitReferences()
-	return definition
-}
-
-// PutCache put cache entry of current definition
-func (def *Definition) PutCache(reference string) {
-	if definitionCache == nil {
-		return
-	}
-	definitionCache[reference] = &cacheEntry{timestamp: time.Now(), fileFieldTree: def.fileFieldTree}
-	fmt.Println("Put cache entry", reference)
-}
-
-func cacheClearer() {
-	last := time.Now()
-	for {
-		time.Sleep(60 * time.Second)
-		t := time.Now()
-		if definitionCache == nil {
-			return
-		}
-		for r, e := range definitionCache {
-			if e.timestamp.Before(last) {
-				delete(definitionCache, r)
-				fmt.Println("Remove cache entry", r)
-			}
-		}
-		last = t
-	}
 }

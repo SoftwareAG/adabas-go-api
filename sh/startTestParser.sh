@@ -14,5 +14,5 @@ rm -f ./logs/*.log
 ENABLE_DEBUG=1
 LOGPATH=`pwd`/logs
 export ENABLE_DEBUG LOGPATH
-CGO_CFLAGS="-DCE_T${SAGTARGET} -I${ADABAS_ACCESS_HOME}/c/SAGENV -I${ADABAS_ACCESS_HOME}/c" CGO_LDFLAGS="-L${ACLDIR}/lib -ladalnkx" GOPATH=`pwd`:$GOPATH go test ${TESTS_RUN} -v adabas/adatypes
+CGO_CFLAGS="-DCE_T${SAGTARGET} -I${ADABAS_ACCESS_HOME}/c/SAGENV -I${ADABAS_ACCESS_HOME}/c" CGO_LDFLAGS="-L${ACLDIR}/lib -ladalnkx" GOPATH=/tmp/tmp_gopath.$(id -u):$GOPATH go test ${TESTS_RUN} -v github.com/SoftwareAG/adabas-go-api/adatypes
 
