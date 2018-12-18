@@ -173,7 +173,6 @@ func (adabas *Adabas) Open() (err error) {
 	adabas.Acbx.Acbxcmd = op.code()
 
 	adabas.AdabasBuffers[0].WriteString(" ")
-	// adabas.AdabasBuffers[1].WriteString("ACC.")
 	adabas.AdabasBuffers[1].WriteString("UPD.")
 	adabas.AdabasBuffers[1].abd.Abdsend = adabas.AdabasBuffers[1].abd.Abdsize
 
@@ -215,11 +214,7 @@ func (adabas *Adabas) Close() {
 }
 
 func (adabas *Adabas) String() string {
-	var buffer bytes.Buffer
-	buffer.WriteString("Adabas url=" + adabas.URL.String())
-	buffer.WriteString(" dbid=" + strconv.Itoa(int(adabas.Acbx.Acbxdbid)))
-	buffer.WriteString(" fnr=" + strconv.Itoa(int(adabas.Acbx.Acbxfnr)))
-	return buffer.String()
+	return fmt.Sprintf("Adabas url=%s fnr=%d", adabas.URL.String(), adabas.Acbx.Acbxfnr)
 }
 
 // ACBX Current used ACBX

@@ -92,6 +92,8 @@ func initLogLevelWithFile(fileName string, level log.Level) (file *os.File, err 
 	myLog.SetLevel(level)
 	myLog.Out = file
 
+	myLog.Infof("Set debug level to %s", level)
+
 	// log.SetOutput(file)
 	adatypes.Central.Log = myLog
 
@@ -1857,7 +1859,6 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	}
 	for i := 1; i < 10; i++ {
 		x := strconv.Itoa(i)
-		fmt.Println("Add", i, x)
 		err = addEmployeeRecord(t, storeRequest16, multipleTransactionRefName+"_"+x)
 		if !assert.NoError(t, err) {
 			return

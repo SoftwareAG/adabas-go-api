@@ -20,6 +20,7 @@
 package adatypes
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -41,12 +42,13 @@ type centralOptions struct {
 // Central central configuration
 var Central = centralOptions{Log: logrus.New(), debug: false}
 
-func (log centralOptions) IsDebugLevel() bool {
+func (log *centralOptions) IsDebugLevel() bool {
 	return log.debug
 }
 
-func (log centralOptions) SetDebugLevel(debug bool) {
+func (log *centralOptions) SetDebugLevel(debug bool) {
 	log.debug = debug
+	fmt.Println("Set debug to", debug)
 }
 
 // LogMultiLineString log multi line string to log. This prevent the \n display in log.

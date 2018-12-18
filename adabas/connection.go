@@ -21,10 +21,11 @@ package adabas
 
 import (
 	"bytes"
-	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
 // Connection Adabas connection context
@@ -150,14 +151,16 @@ func parseAuth(id *ID, value string) error {
 func (connection *Connection) String() string {
 	var buffer bytes.Buffer
 	if connection.adabasMap != nil {
-		buffer.WriteString("Map=" + connection.adabasMap.Name + "\n ")
+		buffer.WriteString("Map=" + connection.adabasMap.Name + " ")
 	}
 	if connection.adabasToData == nil {
 		buffer.WriteString("Adabas not defined")
 	} else {
 		buffer.WriteString(connection.adabasToData.String())
 	}
-	buffer.WriteString(" fnr=" + strconv.Itoa(int(connection.fnr)))
+	if connection.fnr != 0 {
+		buffer.WriteString(" connection file=" + strconv.Itoa(int(connection.fnr)))
+	}
 	return buffer.String()
 }
 

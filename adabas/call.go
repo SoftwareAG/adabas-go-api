@@ -206,7 +206,9 @@ func (adabas *Adabas) CallAdabas() (err error) {
 	defer adatypes.TimeTrack(time.Now(), "CallAdabas "+string(adabas.Acbx.Acbxcmd[:]))
 
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.Central.Log.Debugf("Call Adabas %p %s\n%v", adabas, adabas.URL.String(), adabas.ID.String())
+		adatypes.Central.Log.Debugf("Send calling CC %c%c adabasp=%p URL=%s Adabas ID=%v",
+			adabas.Acbx.Acbxcmd[0], adabas.Acbx.Acbxcmd[1],
+			adabas, adabas.URL.String(), adabas.ID.String())
 		adatypes.LogMultiLineString(adabas.Acbx.String())
 	}
 
@@ -219,7 +221,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 			return
 		}
 	} else {
-		adatypes.Central.Log.Debugf("Call Adabas using native link")
+		adatypes.Central.Log.Debugf("Call Adabas using native link: %v", adatypes.Central.IsDebugLevel())
 		pabdArray := C.create_abd(C.int(len(adabas.AdabasBuffers)))
 		adatypes.Central.Log.Debugf("Create ABD : %v", log.GetLevel())
 		for index := range adabas.AdabasBuffers {
@@ -229,6 +231,9 @@ func (adabas *Adabas) CallAdabas() (err error) {
 		ret := int(C.go_eadabasx((*C.ADAID_T)(unsafe.Pointer(adabas.ID)),
 			(*C.ACBX)(unsafe.Pointer(adabas.Acbx)), C.int(len(adabas.AdabasBuffers)), pabdArray))
 		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Send calling CC %c%c adabasp=%p URL=%s Adabas ID=%v",
+				adabas.Acbx.Acbxcmd[0], adabas.Acbx.Acbxcmd[1],
+				adabas, adabas.URL.String(), adabas.ID.String())
 			adatypes.Central.Log.Debugf("Local Adabas call returns: %d", ret)
 			adatypes.LogMultiLineString(adabas.Acbx.String())
 		}
