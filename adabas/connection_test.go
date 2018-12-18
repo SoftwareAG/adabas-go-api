@@ -508,7 +508,7 @@ func ExampleReadRequest_file() {
 	}
 	fmt.Println("Result data:")
 	result.DumpValues()
-	// Output: Connection :  Adabas url=23 dbid=23 fnr=0 fnr=0
+	// Output: Connection :  Adabas url=23 fnr=0
 	// Limit query data:
 	// Read logical data:
 	// Result data:
@@ -566,7 +566,7 @@ func ExampleReadRequest_wide_character() {
 	}
 	fmt.Println("Result data:")
 	result.DumpValues()
-	// Output: Connection :  Adabas url=23 dbid=23 fnr=0 fnr=0
+	// Output: Connection :  Adabas url=23 fnr=0
 	// Limit query data:
 	// Read logical data:
 	// Result data:
@@ -742,8 +742,7 @@ func ExampleReadRequest_blendMap() {
 	fmt.Println("Result data:")
 	result.DumpValues()
 	// Output: Connection :  Adabas not defined fnr=0
-	// Connection :  Map=EMPLOYEES-NAT-DDM
-	//  Adabas url=24 dbid=24 fnr=0 fnr=11
+	// Connection :  Map=EMPLOYEES-NAT-DDM Adabas url=24 fnr=0 connection file=11
 	// Limit query data:
 	// Read logical data:
 	// Result data:
@@ -780,7 +779,7 @@ func ExampleReadRequest_isn() {
 	}
 	fmt.Println("Result data:")
 	result.DumpValues()
-	// Output: Connection :  Adabas url=23 dbid=23 fnr=0 fnr=0
+	// Output: Connection :  Adabas url=23 fnr=0
 	// Read ISN 250:
 	// Result data:
 	// Dump all result values
