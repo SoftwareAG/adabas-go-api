@@ -728,7 +728,7 @@ func ExampleReadRequest_blendMap() {
 		fmt.Println("Error read map : ", err)
 		return
 	}
-	fmt.Println("Connection : ", connection)
+	fmt.Println("Connection :", connection)
 
 	fmt.Println("Limit query data:")
 	request.QueryFields("NAME,PERSONNEL-ID")
@@ -741,8 +741,8 @@ func ExampleReadRequest_blendMap() {
 	}
 	fmt.Println("Result data:")
 	result.DumpValues()
-	// Output: Connection :  Adabas not defined fnr=0
-	// Connection :  Map=EMPLOYEES-NAT-DDM Adabas url=24 fnr=0 connection file=11
+	// Output: Connection : Target not defined
+	// Connection : Map=EMPLOYEES-NAT-DDM Adabas url=24 fnr=0 connection file=11
 	// Limit query data:
 	// Read logical data:
 	// Result data:
