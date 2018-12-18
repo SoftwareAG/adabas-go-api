@@ -722,7 +722,7 @@ func ExampleReadRequest_blendMap() {
 		return
 	}
 	defer connection.Close()
-	fmt.Println("Connection : ", connection)
+	fmt.Println("Connection :", connection)
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
 	if err != nil {
 		fmt.Println("Error read map : ", err)
