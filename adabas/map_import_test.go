@@ -35,8 +35,18 @@ func TestMapImportPrepare(t *testing.T) {
 	request := NewRequest("23", 250)
 	request.Limit = 0
 	defer request.Close()
-	request.QueryFields("")
-	request.ReadPhysicalSequenceWithParser(testCallback, deleteRequest)
+	err := request.QueryFields("")
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = request.ReadPhysicalSequenceWithParser(testCallback, deleteRequest)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = deleteRequest.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
 
 }
 

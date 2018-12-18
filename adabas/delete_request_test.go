@@ -32,8 +32,8 @@ func testCallback(adabasRequest *adatypes.AdabasRequest, x interface{}) (err err
 	deleteRequest := x.(*DeleteRequest)
 	isn := adabasRequest.Isn
 	fmt.Printf("Delete ISN: %d on %s/%d\n", adabasRequest.Isn, deleteRequest.repository.URL.String(), deleteRequest.repository.Fnr)
-	deleteRequest.Delete(isn)
-	return nil
+	err = deleteRequest.Delete(isn)
+	return
 }
 
 func clearFile(file uint32) error {

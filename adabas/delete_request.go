@@ -90,8 +90,18 @@ func NewMapNameDeleteRequest(adabas *Adabas, mapName string) (request *DeleteReq
 	return
 }
 
+// Open Open the Adabas session
+func (deleteRequest *DeleteRequest) Open() (err error) {
+	err = deleteRequest.commonOpen()
+	return
+}
+
 // Delete delete a specific isn
 func (deleteRequest *DeleteRequest) Delete(isn adatypes.Isn) (err error) {
+	err = deleteRequest.Open()
+	if err != nil {
+		return
+	}
 	adatypes.Central.Log.Debugf("Deleting...%s -> URL: %s fnr=%d", deleteRequest.adabas.String(),
 		deleteRequest.repository.URL.String(), deleteRequest.repository.Fnr)
 	return deleteRequest.adabas.DeleteIsn(deleteRequest.repository.Fnr, isn)
