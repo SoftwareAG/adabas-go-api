@@ -154,7 +154,7 @@ func (connection *Connection) String() string {
 		buffer.WriteString("Map=" + connection.adabasMap.Name + " ")
 	}
 	if connection.adabasToData == nil {
-		buffer.WriteString("Adabas not defined")
+		buffer.WriteString("Target not defined")
 	} else {
 		buffer.WriteString(connection.adabasToData.String())
 	}

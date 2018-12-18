@@ -22,6 +22,7 @@
 package adabas
 
 import (
+	"sync/atomic"
 	"time"
 	"unsafe"
 
@@ -145,10 +146,14 @@ void copy_from_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
 */
 import "C"
 
+var idCounter uint32
+
 // NewAdabasID create a new Adabas ID instance
 func NewAdabasID() *ID {
 	adaid := ID{level: 3, size: adabasIDSize}
 	C.lnk_get_adabas_id(adabasIDSize, (*C.uchar)(unsafe.Pointer(&adaid)))
+	id := atomic.AddUint32(&idCounter, 1)
+	adaid.Pid = (adaid.Pid - (adaid.Pid % 100)) + id
 	return &adaid
 }
 
