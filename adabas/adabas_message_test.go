@@ -46,6 +46,26 @@ func TestAdabasMessage(t *testing.T) {
 	assert.Equal(t, "Normal successful completion", adatypes.Translate("en", "ADAGE00000"))
 	assert.Equal(t, "Invalid command ID value was detected", adatypes.Translate("en", "ADAGE15000"))
 	assert.Equal(t, "Insufficient space in attached buffer", adatypes.Translate("en", "ADAGEFF000"))
-	assert.Equal(t, "Unknown message for code: ABC", adatypes.Translate("en", "ABC"))
+	assert.Equal(t, "", adatypes.Translate("en", "ABC"))
+
+}
+
+func TestAdabasMessageError(t *testing.T) {
+	f := initTestLogWithFile(t, "messages.log")
+	defer f.Close()
+
+	ada := NewAdabas(21)
+
+	// Return: Hello, i18n
+	assert.Equal(t, "ADAGE94000: Adabas is not active or accessible (rsp=148,subrsp=0,dbid=21,file=0)", NewError(ada).Error())
+	ada.Acbx.Acbxrsp = 0
+	assert.Equal(t, "ADAGE00000: Normal successful completion (rsp=0,subrsp=0,dbid=21,file=0)", NewError(ada).Error())
+	ada.Acbx.Acbxrsp = 17
+	assert.Equal(t, "ADAGE11000: Invalid or unauthorized file number (rsp=17,subrsp=0,dbid=21,file=0)", NewError(ada).Error())
+	ada.Acbx.Acbxerrc = 1
+	assert.Equal(t, "ADAGE11001: The program tried to access system file 1 or 2, and no OP command was issued. (rsp=17,subrsp=1,dbid=21,file=0)", NewError(ada).Error())
+	ada.Acbx.Acbxrsp = 120
+	ada.Acbx.Acbxerrc = 0
+	assert.Equal(t, "ADAGE78000: Unknown error response 120 subcode 0 (ADAGE78000) (rsp=120,subrsp=0,dbid=21,file=0)", NewError(ada).Error())
 
 }
