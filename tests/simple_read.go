@@ -33,13 +33,21 @@ func main() {
 		return
 	}
 	defer connection.Close()
-	connection.Open()
-	readRequest, err := connection.CreateReadRequest(11)
+	err = connection.Open()
 	if err != nil {
+		fmt.Printf("Open() error=%v\n", err)
+		return
+	}
+	readRequest, cerr := connection.CreateReadRequest(11)
+	if cerr != nil {
 		fmt.Printf("CreateReadRequest() error=%v\n", err)
 		return
 	}
-	readRequest.QueryFields("AA,AB")
+	err = readRequest.QueryFields("AA,AB")
+	if err != nil {
+		fmt.Printf("QueryFields() error=%v\n", err)
+		return
+	}
 	readRequest.Limit = 0
 	result, err := readRequest.ReadLogicalWith("AA=60010001")
 	if err != nil {

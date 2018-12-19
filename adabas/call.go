@@ -22,6 +22,7 @@
 package adabas
 
 import (
+	"fmt"
 	"sync/atomic"
 	"time"
 	"unsafe"
@@ -237,6 +238,12 @@ func (adabas *Adabas) CallAdabas() (err error) {
 				adabas, adabas.URL.String(), adabas.ID.String())
 			adatypes.Central.Log.Debugf("Local Adabas call returns: %d", ret)
 			adatypes.LogMultiLineString(adabas.Acbx.String())
+		}
+		if adabas.Acbx.Acbxrsp == 60 {
+			fmt.Println(adabas.Acbx.String())
+			for index := range adabas.AdabasBuffers {
+				fmt.Println(adabas.AdabasBuffers[index].String())
+			}
 		}
 		for index := range adabas.AdabasBuffers {
 			//	adatypes.Central.Log.Debugf(index, ".ABD out : ", adabas.AdabasBuffers[index].abd.Abdsize)
