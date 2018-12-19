@@ -199,6 +199,23 @@ func (connection *Connection) EndTransaction() error {
 	return nil
 }
 
+// Release release any database resources, like command id caches assigned to a user
+func (connection *Connection) Release() error {
+	if connection.adabasToData != nil {
+		err := connection.adabasToData.Release()
+		if err != nil {
+			return err
+		}
+	}
+	if connection.adabasToMap != nil {
+		err := connection.adabasToMap.Release()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // CreateReadRequest create a read request
 func (connection *Connection) CreateReadRequest(fnr uint32) (*ReadRequest, error) {
 	return NewRequestAdabas(connection.adabasToData, fnr), nil

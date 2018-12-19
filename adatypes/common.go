@@ -48,7 +48,9 @@ func (log *centralOptions) IsDebugLevel() bool {
 
 func (log *centralOptions) SetDebugLevel(debug bool) {
 	log.debug = debug
-	fmt.Println("Set debug to", debug)
+	if debug {
+		fmt.Println("Warning debug is enabled")
+	}
 }
 
 // LogMultiLineString log multi line string to log. This prevent the \n display in log.

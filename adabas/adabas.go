@@ -213,6 +213,15 @@ func (adabas *Adabas) Close() {
 	adabas.transactions.openTransactions = 0
 }
 
+// Release Any resource in the database of the session are released
+func (adabas *Adabas) Release() (err error) {
+	adabas.AdabasBuffers = nil
+	adabas.Acbx.Acbxcmd = rc.code()
+	adabas.Acbx.resetCop()
+	err = adabas.CallAdabas()
+	return
+}
+
 func (adabas *Adabas) String() string {
 	return fmt.Sprintf("Adabas url=%s fnr=%d", adabas.URL.String(), adabas.Acbx.Acbxfnr)
 }

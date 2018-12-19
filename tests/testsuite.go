@@ -161,6 +161,8 @@ func callAdabas(c caller) {
 		}
 		if close {
 			connection.Close()
+		} else {
+			connection.Release()
 		}
 	}
 	fmt.Printf("Finish thread %d with %d loops\n", c.threadNr, c.counter)
