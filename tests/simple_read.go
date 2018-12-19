@@ -45,8 +45,7 @@ func main() {
 	if err != nil {
 		fmt.Printf("ReadLogicalWith() error=%v\n", err)
 		return
-	} else {
-		fmt.Printf("ReadLogicalWith() result=%v\n", result)
 	}
+	fmt.Printf("ReadLogicalWith() result=%v\n", result)
 
 }
