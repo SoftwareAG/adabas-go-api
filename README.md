@@ -26,14 +26,23 @@ go get -u github.com/softwareag/adabas-go-api/adabas
 
 You can compile it with the Adabas TCP/IP interface only or using Adabas local access with Adabas Client native libraries. By default the Adabas TCP/IP interface is compiled only. To enable Adabas Client native link to Adabas you need to provide the Go build tag `adalnk` and the CGO compile flags defining build flags for the Adabas Client library. If the Adabas environment is sourced, you can define CGO compile flags as follow:
 
+On Unix
+
 ```sh
-CGO_CFLAGS = -I${ACLDIR}/inc
-CGO_LDFLAGS = -L${ACLDIR}/lib -ladalnkx -lsagsmp2 -lsagxts3 -ladazbuf
+CGO_CFLAGS=-I${ACLDIR}/inc
+CGO_LDFLAGS=-L${ACLDIR}/lib -ladalnkx -lsagsmp2 -lsagxts3 -ladazbuf
+```
+
+On Windows
+
+```bat
+CGO_CFLAGS=-I%ACLDIR%\..\inc
+CGO_LDFLAGS=-L%ACLDIR%\..\bin -L%ACLDIR%\..\lib -ladalnkx
 ```
 
 The application is build with Adabas Go API like follow (please note that the tag `adalnk` is needed to enable local IPC access):
 
-```
+```go
 go build -tags adalnk application.go
 ```
 
@@ -42,7 +51,7 @@ go build -tags adalnk application.go
 A quick example to read data from a database file 11 of Adabas database with database id 23 is here
 
 ```go
-connection, err := NewConnection("acj;target=23")
+connection, err := adabas.NewConnection("acj;target=23")
 if err!=nil {
   return
 }
@@ -54,7 +63,7 @@ request.Limit = 0
 result,err := request.ReadLogicalWith("AA=60010001")
 ```
 
-See detailed documentation [here](.//doc//README.md)
+The example code is referenced [here](.//tests//simple_read.go). See detailed documentation [here](.//doc//README.md)
 
 ## New Map repository
 
