@@ -22,9 +22,10 @@ package adabas
 import (
 	"bytes"
 	"fmt"
-	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"strings"
 	"unsafe"
+
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
 const acbxEyecatcher = 'F'   /*      F - EYECATCHER              */
@@ -151,6 +152,12 @@ func resetArray(bArray []byte) {
 	}
 }
 
+func (acbx *Acbx) resetCop() {
+	for i := 0; i < len(acbx.Acbxcop); i++ {
+		acbx.Acbxcop[i] = ' '
+	}
+}
+
 func (acbx *Acbx) resetAcbx() {
 	/*        memset((char*)((PACBX)pACBX),0,L_ACBX);        */
 	acbx.Acbxver[0] = acbxEyecatcher
@@ -163,9 +170,7 @@ func (acbx *Acbx) resetAcbx() {
 	acbx.Acbxisq = 0
 	acbx.Acbxrsp = 148
 
-	for i := 0; i < len(acbx.Acbxcop); i++ {
-		acbx.Acbxcop[i] = ' '
-	}
+	acbx.resetCop()
 	for i := 0; i < len(acbx.Acbxadd1); i++ {
 		acbx.Acbxadd1[i] = ' '
 	}

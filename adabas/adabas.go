@@ -321,6 +321,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr uint32) (definition *adatypes.De
 	}
 	adatypes.Central.Log.Debugf("Read file definition with %v", lf.code())
 	adabas.Acbx.Acbxcmd = lf.code()
+	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxcop[0] = adaEmptOpt
 	adabas.Acbx.Acbxcop[1] = adaFdtXOpt
 	adabas.Acbx.Acbxisn = 1
@@ -422,13 +423,11 @@ func (adabas *Adabas) ReadPhysical(fileNr uint32, adabasRequest *adatypes.Adabas
 		adabas.Acbx.Acbxcmd = l2.code()
 	}
 	nrMultifetch := 2
+	adabas.Acbx.resetCop()
 	if adabasRequest.Multifetch > 1 {
 		adabas.Acbx.Acbxcop[0] = 'M'
 		nrMultifetch = 3
-	} else {
-		adabas.Acbx.Acbxcop[0] = ' '
 	}
-	adabas.Acbx.Acbxcop[1] = ' '
 	adabas.Acbx.Acbxisn = 0
 	adabas.Acbx.Acbxisq = 0
 	adabas.Acbx.Acbxcid = [4]uint8{0xff, 0xff, 0xff, 0xff}
@@ -465,8 +464,7 @@ func (adabas *Adabas) readISN(fileNr uint32, adabasRequest *adatypes.AdabasReque
 	} else {
 		adabas.Acbx.Acbxcmd = l1.code()
 	}
-	adabas.Acbx.Acbxcop[0] = ' '
-	adabas.Acbx.Acbxcop[1] = ' '
+	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxisn = adabasRequest.Isn
 	adabas.Acbx.Acbxisq = 0
 	adabas.Acbx.Acbxcid = [4]uint8{0xff, 0xff, 0xff, 0xff}
@@ -492,8 +490,9 @@ func (adabas *Adabas) ReadLogicalWith(fileNr uint32, adabasRequest *adatypes.Ada
 	} else {
 		adabas.Acbx.Acbxcmd = l3.code()
 	}
-	adabas.Acbx.Acbxcop[0] = ' '
+	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxcop[1] = 'A'
+
 	adabas.Acbx.Acbxisn = 0
 	adabas.Acbx.Acbxisq = 0
 	adabas.Acbx.Acbxcid = [4]uint8{0xff, 0xff, 0xff, 0xff}
@@ -662,7 +661,7 @@ func (adabas *Adabas) Histogram(fileNr uint32, adabasRequest *adatypes.AdabasReq
 	}
 	adatypes.Central.Log.Debugf("Descriptor read file %s", l9.command())
 	adabas.Acbx.Acbxcmd = l9.code()
-	adabas.Acbx.Acbxcop[0] = ' '
+	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxcop[1] = 'A'
 	adabas.Acbx.Acbxisn = 0
 	adabas.Acbx.Acbxisl = 0
@@ -704,8 +703,7 @@ func (adabas *Adabas) Store(fileNr uint32, adabasRequest *adatypes.AdabasRequest
 		adabas.Acbx.Acbxcmd = n1.code()
 		adabas.Acbx.Acbxisn = 0
 	}
-	adabas.Acbx.Acbxcop[0] = ' '
-	adabas.Acbx.Acbxcop[1] = ' '
+	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxisl = 0
 	adabas.Acbx.Acbxisq = 0
 	adabas.Acbx.Acbxcid = [4]uint8{0, 0, 0, 0}
@@ -753,12 +751,12 @@ func (adabas *Adabas) Update(fileNr uint32, adabasRequest *adatypes.AdabasReques
 	adatypes.Central.Log.Debugf("Update data ... %s", a1.command())
 	adabas.Acbx.Acbxcmd = a1.code()
 	adabas.Acbx.Acbxisn = adabasRequest.Isn
+	adabas.Acbx.resetCop()
 	if adabasRequest.Option.ExchangeRecord {
 		adabas.Acbx.Acbxcop[0] = 'X'
 		adabas.Acbx.Acbxcop[1] = 'H'
 	} else {
 		adabas.Acbx.Acbxcop[0] = 'H'
-		adabas.Acbx.Acbxcop[1] = ' '
 	}
 	adabas.Acbx.Acbxisl = 0
 	adabas.Acbx.Acbxisq = 0

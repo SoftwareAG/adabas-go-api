@@ -38,6 +38,7 @@ import (
 
 type caller struct {
 	url      string
+	file     uint32
 	counter  int
 	name     string
 	threadNr uint32
@@ -134,7 +135,7 @@ func callAdabas(c caller) {
 				return
 			}
 		}
-		readRequest, rerr := connection.CreateReadRequest(11)
+		readRequest, rerr := connection.CreateReadRequest(c.file)
 		if rerr != nil {
 			fmt.Println("Error creating read reference of database:", rerr)
 			return
@@ -212,6 +213,7 @@ func main() {
 
 	var countValue int
 	var threadValue int
+	var file int
 	var name string
 	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 	var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
@@ -220,6 +222,7 @@ func main() {
 	flag.IntVar(&countValue, "c", 1, "Number of loops")
 	flag.IntVar(&threadValue, "t", 1, "Number of threads")
 	flag.StringVar(&name, "n", "SMITH", "Test search for employee names separated by ','")
+	flag.IntVar(&file, "f", 11, "Adabas file used to read, should be Employees file")
 	flag.BoolVar(&output, "o", false, "display output")
 	flag.BoolVar(&close, "C", false, "Close Adabas connection in each loop")
 	flag.Parse()
@@ -247,7 +250,7 @@ func main() {
 	for i := uint32(0); i < uint32(threadValue); i++ {
 		fmt.Printf("Start thread %d/%d\n", i+1, threadValue)
 		c := caller{url: args[0], counter: countValue, threadNr: i + 1,
-			name: names[int(i)%len(names)]}
+			name: names[int(i)%len(names)], file: uint32(file)}
 		go callAdabas(c)
 
 	}

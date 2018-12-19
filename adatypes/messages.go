@@ -77,7 +77,6 @@ func initMessages() *Error {
 // LoadMessages loads messages from all message files on the given path.
 func loadMessagesOnce() *Error {
 	Central.Log.Debugf("Load messages")
-	fmt.Println("Load messages")
 	locales = make(map[string]map[string]string)
 	for _, m := range statisMessages {
 		var messages map[string]string

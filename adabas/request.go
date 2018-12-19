@@ -39,8 +39,10 @@ func (request *commonRequest) loadDefinition() (err error) {
 		if err != nil {
 			return
 		}
-		adatypes.Central.Log.Debugf("Finish loading file definition ....")
-		request.definition.DumpTypes(true, false)
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Finish loading file definition ....")
+			request.definition.DumpTypes(true, false)
+		}
 	}
 	return
 }

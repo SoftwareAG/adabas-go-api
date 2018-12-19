@@ -1124,9 +1124,10 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	if len(fieldMap.set) > 0 {
 		for f := range fieldMap.set {
 			err = NewGenericError(50, f)
-			Central.Log.Debugf("Error restict fieldMap ... %v", err)
-			def.DumpTypes(false, false)
-			def.DumpTypes(false, true)
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Error restict fieldMap ... %v", err)
+				def.DumpTypes(true, false)
+			}
 			return
 		}
 	}
