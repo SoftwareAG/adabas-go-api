@@ -59,6 +59,9 @@ func NewGenericError(code errorCode, args ...interface{}) *Error {
 	msgCode := fmt.Sprintf("ADG%07d", code)
 	// fmt.Printf("Generated out of %d -> %s\n", code, msgCode)
 	msg := Translate("en", msgCode)
+	if msg == "" {
+		msg = "Unknown message for code: " + msgCode
+	}
 	for i, x := range args {
 		m := fmt.Sprintf("%v", x)
 		c := fmt.Sprintf("\\{%d\\}", i)
@@ -104,5 +107,5 @@ func Translate(locale, message string, args ...interface{}) string {
 		}
 	}
 
-	return "Unknown message for code: " + message
+	return ""
 }
