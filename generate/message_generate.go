@@ -19,6 +19,7 @@
 
 //go:generate go run message_generate.go
 
+// Package main Generate go files out of message content
 package main
 
 import (

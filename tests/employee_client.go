@@ -17,7 +17,7 @@
 *
  */
 
-// package main Test application to read demo data in Adabas
+// Package main Test application to read demo data in Adabas
 package main
 
 import (

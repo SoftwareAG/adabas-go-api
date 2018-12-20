@@ -35,17 +35,17 @@ type AdaRange struct {
 	to   int
 }
 
-// NewEmptyRange create new empty range
+// NewEmptyRange create an empty range
 func NewEmptyRange() *AdaRange {
 	return &AdaRange{from: noEntry, to: noEntry}
 }
 
-// NewSingleRange new single range
+// NewSingleRange new single dimensioned range
 func NewSingleRange(index int) *AdaRange {
 	return &AdaRange{from: index, to: index}
 }
 
-// NewRange new range from to
+// NewRange new range from a dimension to a dimension
 func NewRange(from, to int) *AdaRange {
 	return &AdaRange{from: from, to: to}
 }
