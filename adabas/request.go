@@ -120,6 +120,7 @@ func (request *commonRequest) commonOpen() (err error) {
 	return
 }
 
+// IsOpen provide True if the database connection is opened
 func (request *commonRequest) IsOpen() bool {
 	if request.isOpen {
 		return true

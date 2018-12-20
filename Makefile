@@ -30,6 +30,7 @@ MESSAGES    = $(CURDIR)/messages
 CURLOGPATH  = $(CURDIR)/logs
 WCPHOST    ?= wcphost:30011
 ADATCPHOST ?= tcphost:60177
+ADAMFDBID  ?= 54712
 TESTOUTPUT  = $(CURDIR)/test
 EXECS       = tests/employee_client tests/testsuite tests/simple_read
 LIBS        = slib/adaapi

@@ -39,12 +39,32 @@ type Connection struct {
 }
 
 // NewConnection create new Adabas connection instance
+// The target url will look like <dbid>(<driver prefix>://<host>:<port>).
+// Examples are:
+//   - Database id: 23
+//   - Adabas TCP on port 60023:  23(adatcp://pchost:60023)
+//   - Adabas Entire Network (Java only): 23(tcpip://pchost:50001)
+// The connection string must contain:
+//   - To access database classic targets 
+//     acj;target=<database url>
+//   - Map usage
+//     acj;map;config=[<dbid>,<file>]
 func NewConnection(connectionString string) (*Connection, error) {
 	adabasID := NewAdabasID()
 	return NewConnectionID(connectionString, adabasID)
 }
 
 // NewConnectionID create new Adabas connection instance providing a Adabas ID
+// The target url will look like <dbid>(<driver prefix>://<host>:<port>).
+// Examples are:
+//   - Database id: 23
+//   - Adabas TCP on port 60023:  23(adatcp://pchost:60023)
+//   - Adabas Entire Network (Java only): 23(tcpip://pchost:50001)
+// The connection string must contain:
+//   - To access database classic targets 
+//     acj;target=<database url>
+//   - Map usage
+//     acj;map;config=[<dbid>,<file>]
 func NewConnectionID(connectionString string, adabasID *ID) (connection *Connection, err error) {
 	parts := strings.Split(connectionString, ";")
 	if parts[0] != "acj" {
@@ -148,6 +168,7 @@ func parseAuth(id *ID, value string) error {
 	return nil
 }
 
+// String provide the string representation of the connection
 func (connection *Connection) String() string {
 	var buffer bytes.Buffer
 	if connection.adabasMap != nil {
@@ -164,13 +185,13 @@ func (connection *Connection) String() string {
 	return buffer.String()
 }
 
-// Open open adabas session
+// Open open Adabas session
 func (connection *Connection) Open() error {
 	err := connection.adabasToData.Open()
 	return err
 }
 
-// Close close adabas session
+// Close close Adabas session
 func (connection *Connection) Close() {
 	if connection.adabasToData != nil {
 		connection.adabasToData.BackoutTransaction()
@@ -199,7 +220,7 @@ func (connection *Connection) EndTransaction() error {
 	return nil
 }
 
-// Release release any database resources, like command id caches assigned to a user
+// Release any database resources, like command id caches assigned to a user
 func (connection *Connection) Release() error {
 	if connection.adabasToData != nil {
 		err := connection.adabasToData.Release()
