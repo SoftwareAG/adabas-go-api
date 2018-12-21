@@ -190,9 +190,9 @@ func (adabas *Adabas) Open() (err error) {
 		adabas.transactions.flags |= adabasOptionOP.Bit()
 		arch := byte((adabas.Acbx.Acbxisl >> (3 * 8)) & 0xff)
 		adatypes.Central.Log.Debugf("Open flag %p %v normal", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
-		status:= adabas.ID.status()
+		status := adabas.ID.status(adabas.URL.String())
 		status.open = true
-		status.platform =  adatypes.NewPlatform(byte(arch))
+		status.platform = adatypes.NewPlatform(byte(arch))
 		adatypes.Central.Log.Debugf("Remote platform mainframe=%b", status.platform.IsMainframe())
 	} else {
 		err = NewError(adabas)
@@ -217,7 +217,7 @@ func (adabas *Adabas) Close() {
 	//if adabas.transactions.flags&adabasOptionOP.Bit() != 0 {
 	adabas.transactions.flags &^= adabasOptionOP.Bit()
 	//}
-	adabas.ID.changeOpenState(url, false)
+	adabas.ID.changeOpenState(adabas.URL.String(), false)
 
 	adatypes.Central.Log.Debugf("Open flag %p %v afterclose", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	adabas.transactions.openTransactions = 0
