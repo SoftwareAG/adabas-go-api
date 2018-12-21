@@ -429,7 +429,7 @@ func (adaid *ID) String() string {
 		adaid.adaID.Pid, adaid.adaID.Timestamp)
 }
 
-func (adaid *ID) connection(url string) *Status {
+func (adaid *ID) status(url string) *Status {
 	if s, ok := adaid.connectionMap[url]; ok {
 		return s
 	}
@@ -439,17 +439,20 @@ func (adaid *ID) connection(url string) *Status {
 }
 
 func (adaid *ID) changePlatform(url string, platform *adatypes.Platform) {
-	adaid.connection(url).platform = platform
+	adaid.status(url).platform = platform
 }
 
 func (adaid *ID) platform(url string) *adatypes.Platform {
-	return adaid.connection(url).platform
+	return adaid.status(url).platform
 }
 
 func (adaid *ID) changeOpenState(url string, open bool) {
-	adaid.connection(url).open = open
+	adatypes.Central.Log.Debugf("Register open=%b to url=%s",open,url)
+	adaid.status(url).open = open
 }
 
 func (adaid *ID) isOpen(url string) bool {
-	return adaid.connection(url).open
+	open := adaid.status(url).open
+	adatypes.Central.Log.Debugf("Register open=%b to url=%s",open,url)
+	return open
 }

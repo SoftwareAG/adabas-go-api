@@ -160,9 +160,10 @@ func NewAdabasWithURL(URL *URL, ID *ID) *Adabas {
 
 // Open opens a session to the database
 func (adabas *Adabas) Open() (err error) {
-	adatypes.Central.Log.Debugf("B Open flag %p %v PreOpen", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
+	adatypes.Central.Log.Debugf("Open flag %p %v preopen", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	url := adabas.URL.String()
 	if adabas.ID.isOpen(url) {
+		adatypes.Central.Log.Debugf("Database %s already opened by ID %#v", url, adabas.ID)
 		return
 	}
 	if adabas.transactions.flags&adabasOptionOP.Bit() != 0 {
@@ -188,9 +189,11 @@ func (adabas *Adabas) Open() (err error) {
 		adatypes.Central.Log.Debugf("Open call response success")
 		adabas.transactions.flags |= adabasOptionOP.Bit()
 		arch := byte((adabas.Acbx.Acbxisl >> (3 * 8)) & 0xff)
-		adatypes.Central.Log.Debugf("B Open flag %p %v open", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
-		adabas.ID.changeOpenState(url, true)
-		adabas.ID.changePlatform(url, adatypes.NewPlatform(byte(arch)))
+		adatypes.Central.Log.Debugf("Open flag %p %v normal", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
+		status:= adabas.ID.status()
+		status.open = true
+		status.platform =  adatypes.NewPlatform(byte(arch))
+		adatypes.Central.Log.Debugf("Remote platform mainframe=%b", status.platform.IsMainframe())
 	} else {
 		err = NewError(adabas)
 		adatypes.Central.Log.Debugf("Error calling open", err)
@@ -201,7 +204,7 @@ func (adabas *Adabas) Open() (err error) {
 
 // Close A session to the database will be closed
 func (adabas *Adabas) Close() {
-	adatypes.Central.Log.Debugf("B Open flag %p %v preclose", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
+	adatypes.Central.Log.Debugf("Open flag %p %v preclose", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	if adabas.transactions.openTransactions > 0 {
 		adabas.BackoutTransaction()
 	}
@@ -210,12 +213,13 @@ func (adabas *Adabas) Close() {
 	adabas.Acbx.Acbxcmd = cl.code()
 	ret := adabas.CallAdabas()
 	adatypes.Central.Log.Debugf("Close call response ret=%v %s", ret, adabas.ID.String())
-	adatypes.Central.Log.Debugf("B Open flag %p %v close", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
+	adatypes.Central.Log.Debugf("Open flag %p %v close", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	//if adabas.transactions.flags&adabasOptionOP.Bit() != 0 {
 	adabas.transactions.flags &^= adabasOptionOP.Bit()
 	//}
+	adabas.ID.changeOpenState(url, false)
 
-	adatypes.Central.Log.Debugf("A Open flag %p %v", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
+	adatypes.Central.Log.Debugf("Open flag %p %v afterclose", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	adabas.transactions.openTransactions = 0
 }
 
@@ -425,12 +429,12 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.AdabasRequest) {
 
 // ReadPhysical read data in physical order
 func (adabas *Adabas) ReadPhysical(fileNr uint32, adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
-	adatypes.Central.Log.Debugf("B Open flag %p %v readpp", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
+	adatypes.Central.Log.Debugf("Open flag %p %v readpp", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	err = adabas.Open()
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("B Open flag %p %v readp", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
+	adatypes.Central.Log.Debugf("Open flag %p %v readp", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	adatypes.Central.Log.Debugf("Physical read file ... ", l2.command())
 	if adabasRequest.Option.HoldRecords {
 		adabas.Acbx.Acbxcmd = l5.code()
@@ -462,13 +466,13 @@ func (adabas *Adabas) ReadPhysical(fileNr uint32, adabasRequest *adatypes.Adabas
 	adabas.Acbx.Acbxfnr = fileNr
 
 	err = adabas.loopCall(adabasRequest, x)
-	adatypes.Central.Log.Debugf("B Open flag %p %v readpf", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
+	adatypes.Central.Log.Debugf("Open flag %p %v readpf", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	return
 }
 
 // read a specific ISN out of Adabas file
 func (adabas *Adabas) readISN(fileNr uint32, adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
-	adatypes.Central.Log.Debugf("B Open flag %p %v readisnp", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
+	adatypes.Central.Log.Debugf("Open flag %p %v readisnp", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	err = adabas.Open()
 	if err != nil {
 		return
@@ -493,12 +497,10 @@ func (adabas *Adabas) readISN(fileNr uint32, adabasRequest *adatypes.AdabasReque
 
 // ReadLogicalWith Read logical using a descriptor
 func (adabas *Adabas) ReadLogicalWith(fileNr uint32, adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
-	adatypes.Central.Log.Debugf("B Open flag %p %v readlp", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	err = adabas.Open()
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("B Open flag %p %v readl", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	adatypes.Central.Log.Debugf("Read logical ... %s dbid=%d", l3.command(), adabas.Acbx.Acbxdbid)
 	if adabasRequest.Option.HoldRecords {
 		adabas.Acbx.Acbxcmd = l6.code()
@@ -700,7 +702,6 @@ func (adabas *Adabas) Histogram(fileNr uint32, adabasRequest *adatypes.AdabasReq
 
 // Store store a record into database
 func (adabas *Adabas) Store(fileNr uint32, adabasRequest *adatypes.AdabasRequest) (err error) {
-	adatypes.Central.Log.Debugf("B Open flag %p %v store", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	adatypes.Central.Log.Debugf("Prepare Store transactions=%d adabas=%p open=%v", adabas.transactions.openTransactions,
 		adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	err = adabas.Open()
@@ -754,7 +755,6 @@ func (adabas *Adabas) Store(fileNr uint32, adabasRequest *adatypes.AdabasRequest
 
 // Update update a record in database
 func (adabas *Adabas) Update(fileNr uint32, adabasRequest *adatypes.AdabasRequest) (err error) {
-	adatypes.Central.Log.Debugf("B Open flag %p %v store", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	adatypes.Central.Log.Debugf("Prepare Update transactions=%d adabas=%p open=%v", adabas.transactions.openTransactions,
 		adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	err = adabas.Open()
@@ -817,7 +817,7 @@ func (adabas *Adabas) SetDbid(dbid Dbid) {
 
 // DeleteIsn delete a single isn
 func (adabas *Adabas) DeleteIsn(fileNr uint32, isn adatypes.Isn) (err error) {
-	adatypes.Central.Log.Debugf("B Open flag %p %v delete", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
+	adatypes.Central.Log.Debugf("Open flag %p %v delete", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	adatypes.Central.Log.Debugf("Delete ISN transactions=%d adabas=%p open=%v", adabas.transactions.openTransactions,
 		adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	adatypes.Central.Log.Debugf("Delete Isn ...%s on dbid %d and file %d", e1.command(), adabas.Acbx.Acbxdbid, fileNr)
@@ -845,7 +845,7 @@ func (adabas *Adabas) DeleteIsn(fileNr uint32, isn adatypes.Isn) (err error) {
 
 // BackoutTransaction backout transaction initiated
 func (adabas *Adabas) BackoutTransaction() (err error) {
-	adatypes.Central.Log.Debugf("B Open flag %p %v bt", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
+	adatypes.Central.Log.Debugf("Open flag %p %v bt", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	if adabas.transactions.flags&adabasOptionOP.Bit() == 0 || adabas.transactions.openTransactions == 0 {
 		return
 	}
@@ -869,7 +869,6 @@ func (adabas *Adabas) BackoutTransaction() (err error) {
 
 // EndTransaction end of transaction initiated
 func (adabas *Adabas) EndTransaction() (err error) {
-	adatypes.Central.Log.Debugf("B Open flag %p %v et", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	adatypes.Central.Log.Debugf("End of transaction=%d adabas=%p open=%v", adabas.transactions.openTransactions,
 		adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	if adabas.transactions.flags&adabasOptionOP.Bit() == 0 ||
