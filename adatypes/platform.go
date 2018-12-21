@@ -43,6 +43,12 @@ const PlatformLUWHighOrder = 0x20
 // PlatformLUWLowOrder LUW low order architecture byte
 const PlatformLUWLowOrder = 0x21
 
+// NewPlatformIsl create a new platform instance
+func NewPlatformIsl(isl uint64) *Platform {
+	arch := byte((isl >> (3 * 8)) & 0xff)
+	return NewPlatform(arch)
+}
+
 // NewPlatform create a new platform instance
 func NewPlatform(arch byte) *Platform {
 	pl := &Platform{architecture: arch}
@@ -52,5 +58,6 @@ func NewPlatform(arch byte) *Platform {
 
 // IsMainframe returns True if the platform is a Mainframe platform
 func (platform *Platform) IsMainframe() bool {
-	return platform.architecture == PlatformMainframe
+	platformIdentifier := platform.architecture & 0xF0
+	return platformIdentifier == PlatformMainframe
 }

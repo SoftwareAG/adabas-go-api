@@ -195,10 +195,9 @@ func (adabas *Adabas) Open() (err error) {
 	if adabas.Acbx.Acbxrsp == AdaNormal {
 		adatypes.Central.Log.Debugf("Open call response success")
 		adabas.transactions.flags |= adabasOptionOP.Bit()
-		arch := byte((adabas.Acbx.Acbxisl >> (3 * 8)) & 0xff)
 		adatypes.Central.Log.Debugf("Open flag %p %v normal", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 		adabas.status.open = true
-		adabas.status.platform = adatypes.NewPlatform(byte(arch))
+		adabas.status.platform = adatypes.NewPlatformIsl(adabas.Acbx.Acbxisl)
 	} else {
 		err = NewError(adabas)
 		adatypes.Central.Log.Debugf("Error calling open", err)
