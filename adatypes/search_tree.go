@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"math" //"encoding/binary"
 	"regexp"
+	"runtime/debug"
 	"strconv"
 	"strings"
 )
@@ -67,7 +68,7 @@ func (comp comparator) String() string {
 	case NE:
 		return "NE"
 	case NONE:
-		return "NONE"
+		return ""
 	}
 	return "UNKNOWN"
 }
@@ -111,6 +112,7 @@ type ISearchNode interface {
 type SearchInfo struct {
 	search     string
 	constants  []string
+	platform   *Platform
 	Definition *Definition
 }
 
@@ -237,14 +239,8 @@ func (node *SearchNode) String() string {
 	if node == nil {
 		return "ERROR nil node"
 	}
+	debug.PrintStack()
 	buffer.WriteString(node.logic.String() + "\n")
-	for i, n := range node.nodes {
-		Central.Log.Debugf("%d:%s", i, node.logic.String())
-		if i > 0 {
-			buffer.WriteString(node.logic.String())
-		}
-		buffer.WriteString(fmt.Sprintf(" -> %d. node = %s\n", i, n.String()))
-	}
 	for i, v := range node.values {
 		Central.Log.Debugf("%d:%s", i, node.logic.String())
 		if i > 0 {
@@ -252,32 +248,35 @@ func (node *SearchNode) String() string {
 		}
 		buffer.WriteString(fmt.Sprintf(" -> %d. value = %s\n", i, v.String()))
 	}
+	for i, n := range node.nodes {
+		Central.Log.Debugf("%d:%s", i, node.logic.String())
+		if i > 0 {
+			buffer.WriteString(node.logic.String())
+		}
+		buffer.WriteString(fmt.Sprintf(" -> %d. node = %s\n", i, n.String()))
+	}
 	buffer.WriteString(node.logic.String() + " end\n")
 	return buffer.String()
 }
 
 func (node *SearchNode) searchBuffer() string {
 	var buffer bytes.Buffer
-	for i, n := range node.nodes {
-		if i > 0 {
-			buffer.WriteString(node.logic.sb())
-		}
-		buffer.WriteString(n.String())
-	}
 	for i, v := range node.values {
 		if i > 0 {
 			buffer.WriteString(node.logic.sb())
 		}
 		buffer.WriteString(v.searchBuffer())
 	}
+	for _, n := range node.nodes {
+		if buffer.Len() > 0 {
+			buffer.WriteString(n.logic.sb())
+		}
+		buffer.WriteString(n.searchBuffer())
+	}
 	return buffer.String()
 }
 
 func (node *SearchNode) valueBuffer(buffer *bytes.Buffer) {
-	Central.Log.Debugf("Tree Node value buffer")
-	for _, n := range node.nodes {
-		n.valueBuffer(buffer)
-	}
 	Central.Log.Debugf("Values %d", len(node.values))
 	for i, v := range node.values {
 		var intBuffer []byte
@@ -286,6 +285,10 @@ func (node *SearchNode) valueBuffer(buffer *bytes.Buffer) {
 		v.value.StoreBuffer(helper)
 		buffer.Write(helper.buffer)
 		Central.Log.Debugf("%d Len buffer %d", i, buffer.Len())
+	}
+	Central.Log.Debugf("Tree Node value buffer")
+	for _, n := range node.nodes {
+		n.valueBuffer(buffer)
 	}
 }
 
@@ -349,8 +352,10 @@ func (value *SearchValue) searchFields() string {
 func (value *SearchValue) searchBuffer() string {
 	var buffer bytes.Buffer
 	value.value.FormatBuffer(&buffer, &BufferOption{})
-	buffer.WriteByte(',')
-	buffer.WriteString(value.comp.String())
+	if value.comp != NONE {
+		buffer.WriteByte(',')
+		buffer.WriteString(value.comp.String())
+	}
 	return buffer.String()
 }
 
@@ -375,8 +380,8 @@ func checkComparator(comp string) comparator {
 }
 
 // NewSearchInfo new search info base to create search tree
-func NewSearchInfo(search string) *SearchInfo {
-	searchInfo := SearchInfo{}
+func NewSearchInfo(platform *Platform, search string) *SearchInfo {
+	searchInfo := SearchInfo{platform: platform}
 	searchString := search
 	searchWithConstants := searchString
 	Central.Log.Debugf("start: %s", searchWithConstants)
@@ -503,21 +508,21 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 		//            if (request != null && request.getTarget().isMainframe()) {
 		//                isMainframe = true;
 		//            }
-		//            if (isMainframe) {
-		//                minimumRange = C.NONE;
-		//                maximumRange = C.NONE;
-		//            } else {
-		if value[0] == '[' {
-			minimumRange = GE
+		if searchInfo.platform.IsMainframe() {
+			minimumRange = NONE
+			maximumRange = NONE
 		} else {
-			minimumRange = GT
+			if value[0] == '[' {
+				minimumRange = GE
+			} else {
+				minimumRange = GT
+			}
+			if value[len(value)-1] == ']' {
+				maximumRange = LE
+			} else {
+				maximumRange = LT
+			}
 		}
-		if value[len(value)-1] == ']' {
-			maximumRange = LE
-		} else {
-			maximumRange = LT
-		}
-		//   }
 		lowerLevel.comp = minimumRange
 
 		/* Generate lower level value */
@@ -548,31 +553,49 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 		// lowerLevel.bound(upperLevel, Logic.RANGE)
 
 		/* On mainframe add NOT operator to exclude ranges */
-		//            if (isMainframe) {
-		//                SearchTree notLowerLevel = null;
-		//                if (value.charAt(0) == '(') {
-		//                    LOGGER.debug("Mainframe NOT operator minimum Range");
-		//                    notLowerLevel =
-		//                        request.createSearchNode(field.trim(), C.NONE);
-		//                    extractSearchNodeValue(searchInfo, startValue,
-		//                        notLowerLevel);
-		//                    lowerLevel.bound(notLowerLevel, Logic.NOT);
-		//                }
-		//                if (value.charAt(value.length() - 1) == ')') {
-		//                    LOGGER.debug("Mainframe NOT operator maximum Range");
-		//                    if (notLowerLevel == null) {
-		//                        SearchTree notLevel =
-		//                            request.createSearchNode(field.trim(), C.NONE);
-		//                        extractSearchNodeValue(searchInfo, endValue, notLevel);
-		//                        lowerLevel.bound(notLevel, Logic.NOT);
-		//                    } else {
-		//                        SearchTree notLevel =
-		//                            request.createSearchNode(field.trim(), C.NE);
-		//                        extractSearchNodeValue(searchInfo, endValue, notLevel);
-		//                        notLowerLevel.bound(notLevel, Logic.AND);
-		//                    }
-		//                }
-		//            }
+		if searchInfo.platform.IsMainframe() {
+			//                SearchTree notLowerLevel = null;
+			if value[0] == '(' {
+				//                if (value.charAt(0) == '(') {
+				//                    LOGGER.debug("Mainframe NOT operator minimum Range");
+				notLowerLevel := &SearchValue{field: strings.TrimSpace(field), comp: NONE}
+				//                    notLowerLevel =
+				//                        request.createSearchNode(field.trim(), C.NONE);
+				//                    extractSearchNodeValue(searchInfo, startValue,
+				//                        notLowerLevel);
+				err = searchInfo.searchFieldValue(notLowerLevel, startValue)
+				if err != nil {
+					return
+				}
+
+				//                    lowerLevel.bound(notLowerLevel, Logic.NOT);
+				notRangeNode := &SearchNode{logic: NOT}
+				notRangeNode.addValue(notLowerLevel)
+				rangeNode.addNode(notRangeNode)
+			}
+			if value[len(value)-1] == ')' {
+				notUpperLevel := &SearchValue{field: strings.TrimSpace(field), comp: NONE}
+				err = searchInfo.searchFieldValue(notUpperLevel, endValue)
+				if err != nil {
+					return
+				}
+				notRangeNode := &SearchNode{logic: NOT}
+				notRangeNode.addValue(notUpperLevel)
+				rangeNode.addNode(notRangeNode)
+				//                    LOGGER.debug("Mainframe NOT operator maximum Range");
+				//                    if (notLowerLevel == null) {
+				//                        SearchTree notLevel =
+				//                            request.createSearchNode(field.trim(), C.NONE);
+				//                        extractSearchNodeValue(searchInfo, endValue, notLevel);
+				//                        lowerLevel.bound(notLevel, Logic.NOT);
+				//                    } else {
+				//                        SearchTree notLevel =
+				//                            request.createSearchNode(field.trim(), C.NE);
+				//                        extractSearchNodeValue(searchInfo, endValue, notLevel);
+				//                        notLowerLevel.bound(notLevel, Logic.AND);
+				//                    }
+			}
+		}
 		rangeNode.addValue(upperLevel)
 		node.addNode(rangeNode)
 	} else {

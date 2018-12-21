@@ -17,7 +17,7 @@
 *
  */
 
-package adabas
+package adatypes
 
 import (
 	"encoding/binary"
@@ -44,6 +44,11 @@ const PlatformLUWHighOrder = 0x20
 const PlatformLUWLowOrder = 0x21
 
 // NewPlatform create a new platform instance
-func NewPlatform(arch byte) Platform {
-	return Platform{architecture: arch}
+func NewPlatform(arch byte) *Platform {
+	return &Platform{architecture: arch}
+}
+
+// IsMainframe returns True if the platform is a Mainframe platform
+func (platform *Platform) IsMainframe() bool {
+	return platform.architecture == PlatformMainframe
 }

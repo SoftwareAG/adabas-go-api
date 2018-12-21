@@ -276,7 +276,7 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 		return
 	}
 	adatypes.Central.Log.Debugf("Read logical, open done ...")
-	searchInfo := adatypes.NewSearchInfo(search)
+	searchInfo := adatypes.NewSearchInfo(request.adabas.platform, search)
 	adatypes.Central.Log.Debugf("New search info ... %#v", searchInfo)
 	var tree *adatypes.SearchTree
 	if request.definition == nil {
@@ -406,7 +406,7 @@ func (request *ReadRequest) HistogramWith(search string) (result *RequestResult,
 	if request.definition == nil {
 		request.loadDefinition()
 	}
-	searchInfo := adatypes.NewSearchInfo(search)
+	searchInfo := adatypes.NewSearchInfo(request.adabas.platform, search)
 	searchInfo.Definition = request.definition
 	tree, err := searchInfo.ParseSearch()
 	if err != nil {

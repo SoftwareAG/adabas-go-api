@@ -75,7 +75,7 @@ type transactions struct {
 
 // Adabas is an main Adabas structure containing all call specific parameters
 type Adabas struct {
-	platform      Platform
+	platform      *adatypes.Platform
 	URL           *URL
 	ID            *ID
 	Acbx          *Acbx
@@ -186,7 +186,7 @@ func (adabas *Adabas) Open() (err error) {
 		adabas.transactions.flags |= adabasOptionOP.Bit()
 		arch := byte((adabas.Acbx.Acbxisl >> (3 * 8)) & 0xff)
 		adatypes.Central.Log.Debugf("B Open flag %p %v open", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
-		adabas.platform = NewPlatform(byte(arch))
+		adabas.platform = adatypes.NewPlatform(byte(arch))
 	} else {
 		err = NewError(adabas)
 	}
