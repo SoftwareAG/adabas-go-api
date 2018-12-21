@@ -55,7 +55,7 @@ func ExampleReadRequest_fileMf() {
 	}
 	fmt.Println("Result data:")
 	result.DumpValues()
-	// Output: Connection :  Adabas url=23 fnr=0
+	// Output: Connection :  Adabas url=54712 fnr=0
 	// Limit query data:
 	// Read logical data:
 	// Result data:
