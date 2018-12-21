@@ -151,11 +151,12 @@ var idCounter uint32
 
 // NewAdabasID create a new Adabas ID instance
 func NewAdabasID() *ID {
-	adaid := ID{level: 3, size: adabasIDSize}
-	C.lnk_get_adabas_id(adabasIDSize, (*C.uchar)(unsafe.Pointer(&adaid)))
+	adaID := AID{level: 3, size: adabasIDSize}
+	aid := ID{adaID: &adaID,connectionMap:		 make(map[string]*Status)}
+	C.lnk_get_adabas_id(adabasIDSize, (*C.uchar)(unsafe.Pointer(&adaID)))
 	id := atomic.AddUint32(&idCounter, 1)
-	adaid.Pid = (adaid.Pid - (adaid.Pid % 100)) + id
-	return &adaid
+	adaID.Pid = (adaID.Pid - (adaID.Pid % 100)) + id
+	return &aid
 }
 
 func (adabasBuffer *Buffer) createCAbd(pabdArray *C.PABD, index int) {
@@ -238,7 +239,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 			adabas.AdabasBuffers[index].abd.Abdrecv = adabas.AdabasBuffers[index].abd.Abdsize
 			adabas.AdabasBuffers[index].createCAbd(pabdArray, index)
 		}
-		ret := int(C.go_eadabasx((*C.ADAID_T)(unsafe.Pointer(adabas.ID)),
+		ret := int(C.go_eadabasx((*C.ADAID_T)(unsafe.Pointer(adabas.ID.adaID)),
 			(*C.ACBX)(unsafe.Pointer(adabas.Acbx)), C.int(len(adabas.AdabasBuffers)), pabdArray))
 		if adatypes.Central.IsDebugLevel() {
 			adatypes.Central.Log.Debugf("Send calling CC %c%c adabasp=%p URL=%s Adabas ID=%v",

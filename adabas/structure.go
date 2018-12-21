@@ -380,8 +380,8 @@ func (adabasBuffer *Buffer) String() string {
 
 const adabasIDSize = 32
 
-// ID Adabas Id
-type ID struct {
+// AID Adabas id
+type AID struct {
 	level     uint16
 	size      uint16
 	Node      [8]byte
@@ -390,28 +390,66 @@ type ID struct {
 	Timestamp uint64
 }
 
+// Status of the referenced connection
+type Status struct {
+	ref      string
+	open     bool
+	platform *adatypes.Platform
+}
+
+// ID Adabas Id
+type ID struct {
+	connectionMap map[string]*Status
+	adaID         *AID
+}
+
 func (adaid *ID) setUser(User string) {
 	for i := 0; i < 8; i++ {
-		adaid.User[i] = ' '
+		adaid.adaID.User[i] = ' '
 	}
 
-	copy(adaid.User[:], User)
+	copy(adaid.adaID.User[:], User)
 }
 
 func (adaid *ID) setHost(Host string) {
 	for i := 0; i < 8; i++ {
-		adaid.Node[i] = ' '
+		adaid.adaID.Node[i] = ' '
 	}
 
-	copy(adaid.Node[:], Host)
+	copy(adaid.adaID.Node[:], Host)
 }
 
 func (adaid *ID) setID(pid uint32) {
-	adaid.Pid = pid
+	adaid.adaID.Pid = pid
 }
 
 // String return string representation of Adabas ID
 func (adaid *ID) String() string {
-	return fmt.Sprintf("%s:%s [%d] %x", string(adaid.Node[0:8]), string(adaid.User[0:8]),
-		adaid.Pid, adaid.Timestamp)
+	return fmt.Sprintf("%s:%s [%d] %x", string(adaid.adaID.Node[0:8]), string(adaid.adaID.User[0:8]),
+		adaid.adaID.Pid, adaid.adaID.Timestamp)
+}
+
+func (adaid *ID) connection(url string) *Status{
+	if s,ok:= adaid.connectionMap[url];ok {
+		return s
+	}
+	s := &Status{open: false}
+	adaid.connectionMap[url] = s
+	return s
+}
+
+func (adaid *ID) changePlatform(url string, platform *adatypes.Platform) {
+	adaid.connection(url).platform = platform
+}
+
+func (adaid *ID) platform(url string) *adatypes.Platform {
+	return adaid.connection(url).platform
+}
+
+func (adaid *ID) changeOpenState(url string, open bool) {
+	adaid.connection(url).open = open
+}
+
+func (adaid *ID) isOpen(url string) bool {
+	return adaid.connection(url).open
 }

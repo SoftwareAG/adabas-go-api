@@ -75,7 +75,6 @@ type transactions struct {
 
 // Adabas is an main Adabas structure containing all call specific parameters
 type Adabas struct {
-	platform      *adatypes.Platform
 	URL           *URL
 	ID            *ID
 	Acbx          *Acbx
@@ -95,7 +94,6 @@ func NewClonedAdabas(clone *Adabas) *Adabas {
 		ID:           clone.ID,
 		Acbx:         acbx,
 		URL:          clone.URL,
-		platform:     clone.platform,
 		transactions: clone.transactions,
 	}
 }
@@ -163,6 +161,10 @@ func NewAdabasWithURL(URL *URL, ID *ID) *Adabas {
 // Open opens a session to the database
 func (adabas *Adabas) Open() (err error) {
 	adatypes.Central.Log.Debugf("B Open flag %p %v PreOpen", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
+	url:=adabas.URL.String()
+	if adabas.ID.isOpen(url) {
+		return
+	}
 	if adabas.transactions.flags&adabasOptionOP.Bit() != 0 {
 		adatypes.Central.Log.Debugf("Database already opened %#v", adabas.ID)
 		return
@@ -187,10 +189,12 @@ func (adabas *Adabas) Open() (err error) {
 		adabas.transactions.flags |= adabasOptionOP.Bit()
 		arch := byte((adabas.Acbx.Acbxisl >> (3 * 8)) & 0xff)
 		adatypes.Central.Log.Debugf("B Open flag %p %v open", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
-		adabas.platform = adatypes.NewPlatform(byte(arch))
+			adabas.ID.changeOpenState(url,true)
+		adabas.ID.changePlatform(url,adatypes.NewPlatform(byte(arch)))
 	} else {
 		err = NewError(adabas)
 		adatypes.Central.Log.Debugf("Error calling open", err)
+		adabas.ID.changeOpenState(url,false)
 	}
 	return err
 }
@@ -265,8 +269,8 @@ func (adabas *Adabas) sendTCP() (err error) {
 	if adabas.transactions.connection == nil {
 		adatypes.Central.Log.Debugf("Establish new context for %p", adabas)
 
-		tcpConn, err = Connect(fmt.Sprintf("%s:%d", adabas.URL.Host, adabas.URL.Port), Endian(), adabas.ID.User,
-			adabas.ID.Node, adabas.ID.Pid, adabas.ID.Timestamp)
+		tcpConn, err = Connect(fmt.Sprintf("%s:%d", adabas.URL.Host, adabas.URL.Port), Endian(), adabas.ID.adaID.User,
+			adabas.ID.adaID.Node, adabas.ID.adaID.Pid, adabas.ID.adaID.Timestamp)
 		if err != nil {
 			adabas.Acbx.Acbxrsp = AdaSysCe
 			adatypes.Central.Log.Debugf("Establish TCP context error ", err)

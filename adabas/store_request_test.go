@@ -416,7 +416,7 @@ func TestStoreUpdateMapField(t *testing.T) {
 
 func checkUpdateCorrectRead(t *testing.T, value string, isn adatypes.Isn) {
 	id := NewAdabasID()
-	copy(id.User[:], []byte("CHECK   "))
+	copy(id.adaID.User[:], []byte("CHECK   "))
 	adabas, err := NewAdabasWithID("23", id)
 	if !assert.NoError(t, err) {
 		return

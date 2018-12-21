@@ -22,15 +22,18 @@
 package adabas
 
 import (
-	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"os"
 	"os/user"
 	"time"
+
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
 // NewAdabasID create a new Adabas ID instance
 func NewAdabasID() *ID {
-	adaid := ID{level: 3, Pid: uint32(os.Getpid()), size: adabasIDSize}
+	adaid := AID{level: 3, Pid: uint32(os.Getpid()), size: adabasIDSize}
+	aid := ID{adaID: &adaid,connectionMap:		 make(map[string]*Status)}
+	}
 	curUser, err := user.Current()
 	if err != nil {
 		copy(adaid.User[:], ([]byte("Unknown"))[:8])
@@ -43,7 +46,7 @@ func NewAdabasID() *ID {
 	} else {
 		copy(adaid.Node[:], ([]byte(host))[:8])
 	}
-	return &adaid
+	return &aid
 }
 
 // CallAdabas this method sends the call to the database

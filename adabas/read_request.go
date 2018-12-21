@@ -121,8 +121,8 @@ func NewAdabasMapNameRequest(adabas *Adabas, adabasMap *Map) (request *ReadReque
 		err = adatypes.NewGenericError(22, adabasMap.Name)
 		return
 	}
-	adatypes.Central.Log.Debugf("Read: Adabas new map reference for %s to %d", adabasMap.Name,
-		adabasMap.Data.Fnr)
+	adatypes.Central.Log.Debugf("Read: Adabas new map reference for %s to %d -> %#v", adabasMap.Name,
+		adabasMap.Data.Fnr,adabas.ID.platform)
 	cloneAdabas := NewClonedAdabas(adabas)
 
 	dataRepository := NewMapRepository(adabas, adabasMap.Data.Fnr)
@@ -275,8 +275,8 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("Read logical, open done ...%#v", request.adabas.platform)
-	searchInfo := adatypes.NewSearchInfo(request.adabas.platform, search)
+	adatypes.Central.Log.Debugf("Read logical, open done ...%#v", request.adabas.ID.platform)
+	searchInfo := adatypes.NewSearchInfo(request.adabas.ID.platform(request.adabas.URL.String()), search)
 	adatypes.Central.Log.Debugf("New search info ... %#v", searchInfo)
 	var tree *adatypes.SearchTree
 	if request.definition == nil {
@@ -406,7 +406,7 @@ func (request *ReadRequest) HistogramWith(search string) (result *RequestResult,
 	if request.definition == nil {
 		request.loadDefinition()
 	}
-	searchInfo := adatypes.NewSearchInfo(request.adabas.platform, search)
+	searchInfo := adatypes.NewSearchInfo(request.adabas.ID.platform(request.adabas.URL.String()), search)
 	searchInfo.Definition = request.definition
 	tree, err := searchInfo.ParseSearch()
 	if err != nil {

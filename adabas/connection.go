@@ -248,10 +248,6 @@ func (connection *Connection) CreateMapReadRequest(mapName string) (request *Rea
 	if err != nil {
 		return
 	}
-	// if err != nil {
-	// 	err = adatypes.NewGenericError(7)
-	// 	return
-	// }
 	connection.fnr = int(connection.adabasMap.Data.Fnr)
 	adatypes.Central.Log.Debugf("Map referenced : %#v", connection.adabasMap)
 	request, err = NewAdabasMapNameRequest(connection.adabasToData, connection.adabasMap)
@@ -268,7 +264,7 @@ func (connection *Connection) prepareMapUsage(mapName string) (err error) {
 		return adatypes.NewGenericError(5)
 	}
 	// TODO search global enable
-	adatypes.Central.Log.Debugf("Search Map : %s", mapName)
+	adatypes.Central.Log.Debugf("Search Map : %s platform: %v", mapName,connection.adabasToMap.ID.platform)
 	connection.adabasMap, err = connection.repository.SearchMap(connection.adabasToMap, mapName)
 	if err != nil {
 		return
@@ -290,6 +286,8 @@ func (connection *Connection) prepareMapUsage(mapName string) (err error) {
 		adatypes.Central.Log.Debugf("Create new Adabas")
 		connection.adabasToData = NewAdabasWithURL(connection.adabasMap.URL(), &connection.ID)
 	}
+	adatypes.Central.Log.Debugf("Platform Map : %#v", connection.adabasToMap.ID.platform)
+	adatypes.Central.Log.Debugf("Platform Adabas : %#v", connection.adabasToData.ID.platform)
 	return nil
 }
 
