@@ -95,6 +95,7 @@ func NewClonedAdabas(clone *Adabas) *Adabas {
 		ID:           clone.ID,
 		Acbx:         acbx,
 		URL:          clone.URL,
+		platform:     clone.platform,
 		transactions: clone.transactions,
 	}
 }
@@ -181,14 +182,15 @@ func (adabas *Adabas) Open() (err error) {
 		adatypes.Central.Log.Debugf("Open call response ret=%v", err)
 		return
 	}
-	adatypes.Central.Log.Debugf("Open call response success")
 	if adabas.Acbx.Acbxrsp == AdaNormal {
+		adatypes.Central.Log.Debugf("Open call response success")
 		adabas.transactions.flags |= adabasOptionOP.Bit()
 		arch := byte((adabas.Acbx.Acbxisl >> (3 * 8)) & 0xff)
 		adatypes.Central.Log.Debugf("B Open flag %p %v open", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 		adabas.platform = adatypes.NewPlatform(byte(arch))
 	} else {
 		err = NewError(adabas)
+		adatypes.Central.Log.Debugf("Error calling open", err)
 	}
 	return err
 }

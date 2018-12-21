@@ -115,7 +115,7 @@ func (request *commonRequest) commonOpen() (err error) {
 	}
 	request.definition.DumpTypes(true, true)
 	adatypes.Central.Log.Debugf("Database open complete")
-	request.isOpen = false
+	request.isOpen = true
 
 	return
 }

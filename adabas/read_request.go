@@ -275,7 +275,7 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("Read logical, open done ...")
+	adatypes.Central.Log.Debugf("Read logical, open done ...%#v", request.adabas.platform)
 	searchInfo := adatypes.NewSearchInfo(request.adabas.platform, search)
 	adatypes.Central.Log.Debugf("New search info ... %#v", searchInfo)
 	var tree *adatypes.SearchTree
