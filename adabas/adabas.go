@@ -77,6 +77,7 @@ type transactions struct {
 type Adabas struct {
 	URL           *URL
 	ID            *ID
+	status        *Status
 	Acbx          *Acbx
 	AdabasBuffers []*Buffer
 	transactions  *transactions
@@ -92,6 +93,7 @@ func NewClonedAdabas(clone *Adabas) *Adabas {
 
 	return &Adabas{
 		ID:           clone.ID,
+		status:       clone.ID.status(clone.URL.String()),
 		Acbx:         acbx,
 		URL:          clone.URL,
 		transactions: clone.transactions,
@@ -103,9 +105,11 @@ func NewAdabas(dbid Dbid) *Adabas {
 	ID := NewAdabasID()
 	adatypes.Central.Log.Debugf("Implicit created Adabas instance dbid with ID: %s", ID.String())
 	acbx := newAcbx(dbid)
+	URL := newURLWithDbid(dbid)
 	return &Adabas{
 		ID:           ID,
-		URL:          newURLWithDbid(dbid),
+		status:       ID.status(URL.String()),
+		URL:          URL,
 		Acbx:         acbx,
 		transactions: &transactions{},
 	}
@@ -123,6 +127,7 @@ func NewAdabass(target string) (*Adabas, error) {
 	adatypes.Central.Log.Debugf("Created ACBX")
 	return &Adabas{
 		ID:           ID,
+		status:       ID.status(URL.String()),
 		URL:          URL,
 		Acbx:         acbx,
 		transactions: &transactions{},
@@ -140,6 +145,7 @@ func NewAdabasWithID(target string, ID *ID) (*Adabas, error) {
 	acbx := newAcbx(URL.Dbid)
 	return &Adabas{
 		ID:           ID,
+		status:       ID.status(URL.String()),
 		URL:          URL,
 		Acbx:         acbx,
 		transactions: &transactions{},
@@ -153,6 +159,7 @@ func NewAdabasWithURL(URL *URL, ID *ID) *Adabas {
 	return &Adabas{
 		URL:          URL,
 		ID:           ID,
+		status:       ID.status(URL.String()),
 		Acbx:         acbx,
 		transactions: &transactions{},
 	}
@@ -190,14 +197,12 @@ func (adabas *Adabas) Open() (err error) {
 		adabas.transactions.flags |= adabasOptionOP.Bit()
 		arch := byte((adabas.Acbx.Acbxisl >> (3 * 8)) & 0xff)
 		adatypes.Central.Log.Debugf("Open flag %p %v normal", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
-		status := adabas.ID.status(adabas.URL.String())
-		status.open = true
-		status.platform = adatypes.NewPlatform(byte(arch))
-		adatypes.Central.Log.Debugf("Remote platform mainframe=%b", status.platform.IsMainframe())
+		adabas.status.open = true
+		adabas.status.platform = adatypes.NewPlatform(byte(arch))
 	} else {
 		err = NewError(adabas)
 		adatypes.Central.Log.Debugf("Error calling open", err)
-		adabas.ID.changeOpenState(url, false)
+		adabas.status.open = false
 	}
 	return err
 }
@@ -217,7 +222,7 @@ func (adabas *Adabas) Close() {
 	//if adabas.transactions.flags&adabasOptionOP.Bit() != 0 {
 	adabas.transactions.flags &^= adabasOptionOP.Bit()
 	//}
-	adabas.ID.changeOpenState(adabas.URL.String(), false)
+	adabas.status.open = false
 
 	adatypes.Central.Log.Debugf("Open flag %p %v afterclose", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	adabas.transactions.openTransactions = 0

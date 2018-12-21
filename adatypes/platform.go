@@ -45,7 +45,9 @@ const PlatformLUWLowOrder = 0x21
 
 // NewPlatform create a new platform instance
 func NewPlatform(arch byte) *Platform {
-	return &Platform{architecture: arch}
+	pl := &Platform{architecture: arch}
+	Central.Log.Debugf("New platform mainframe=%v(%d)", pl.IsMainframe(), arch)
+	return pl
 }
 
 // IsMainframe returns True if the platform is a Mainframe platform
