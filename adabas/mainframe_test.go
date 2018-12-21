@@ -112,12 +112,6 @@ func ExampleReadRequest_fileMfBorder() {
 	// Read logical data:
 	// Result data:
 	// Dump all result values
-	// Record Isn: 0251
-	//   AA = > 11100301 <
-	//   AB = [ 1 ]
-	//    AC = > HANS                 <
-	//    AE = > BERGMANN             <
-	//    AD = > WILHELM              <
 	// Record Isn: 0383
 	//   AA = > 11100302 <
 	//   AB = [ 1 ]
