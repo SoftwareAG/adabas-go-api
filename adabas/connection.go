@@ -45,7 +45,7 @@ type Connection struct {
 //   - Adabas TCP on port 60023:  23(adatcp://pchost:60023)
 //   - Adabas Entire Network (Java only): 23(tcpip://pchost:50001)
 // The connection string must contain:
-//   - To access database classic targets 
+//   - To access database classic targets
 //     acj;target=<database url>
 //   - Map usage
 //     acj;map;config=[<dbid>,<file>]
@@ -61,7 +61,7 @@ func NewConnection(connectionString string) (*Connection, error) {
 //   - Adabas TCP on port 60023:  23(adatcp://pchost:60023)
 //   - Adabas Entire Network (Java only): 23(tcpip://pchost:50001)
 // The connection string must contain:
-//   - To access database classic targets 
+//   - To access database classic targets
 //     acj;target=<database url>
 //   - Map usage
 //     acj;map;config=[<dbid>,<file>]

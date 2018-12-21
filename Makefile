@@ -57,7 +57,7 @@ Q = $(if $(filter 1,$V),,@)
 M = $(shell printf "\033[34;1m▶\033[0m")
 
 .PHONY: all
-all: prepare generate fmt lint vendor $(EXECS)
+all: prepare generate fmt lint vendor $(EXECS) test-build
 
 lib: all $(LIBS)
 
@@ -119,6 +119,13 @@ $(BIN)/go2xunit: REPOSITORY=github.com/tebeka/go2xunit
 # Tests
 $(TESTOUTPUT):
 	mkdir $(TESTOUTPUT)
+
+test-build: fmt lint vendor | $(BASE) ; $(info $(M) building $(NAME:%=% )tests…) @ ## Build tests
+	$Q cd $(BASE) && for pkg in $(TESTPKGS); do LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$(ACLDIR)/lib" \
+		DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$(ACLDIR)/lib" \
+	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
+	    TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) REFERENCES=$(REFERENCES) \
+	    $(GO) test -v -c -tags $(GO_TAGS) $$pkg; done
 
 TEST_TARGETS := test-default test-bench test-short test-verbose test-race
 .PHONY: $(TEST_TARGETS) check test tests
