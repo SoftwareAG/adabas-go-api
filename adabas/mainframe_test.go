@@ -27,16 +27,18 @@ func ExampleReadRequest_fileMf() {
 	initLogWithFile("mainframe.log")
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
+		fmt.Println("Mainframe database not defined")
 		return
 	}
 	connection, cerr := NewConnection("acj;target=" + network)
 	if cerr != nil {
+		fmt.Println("Connection to database error:",cerr)
 		return
 	}
 	defer connection.Close()
 	request, err := connection.CreateReadRequest(1)
 	if err != nil {
-		fmt.Println("Error read map : ", err)
+		fmt.Println("Error creating read request : ", err)
 		return
 	}
 	fmt.Println("Connection : ", connection)
