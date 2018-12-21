@@ -32,8 +32,7 @@ import (
 // NewAdabasID create a new Adabas ID instance
 func NewAdabasID() *ID {
 	adaid := AID{level: 3, Pid: uint32(os.Getpid()), size: adabasIDSize}
-	aid := ID{adaID: &adaid,connectionMap:		 make(map[string]*Status)}
-	}
+	aid := ID{adaID: &adaid, connectionMap: make(map[string]*Status)}
 	curUser, err := user.Current()
 	if err != nil {
 		copy(adaid.User[:], ([]byte("Unknown"))[:8])

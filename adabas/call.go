@@ -152,7 +152,7 @@ var idCounter uint32
 // NewAdabasID create a new Adabas ID instance
 func NewAdabasID() *ID {
 	adaID := AID{level: 3, size: adabasIDSize}
-	aid := ID{adaID: &adaID,connectionMap:		 make(map[string]*Status)}
+	aid := ID{adaID: &adaID, connectionMap: make(map[string]*Status)}
 	C.lnk_get_adabas_id(adabasIDSize, (*C.uchar)(unsafe.Pointer(&adaID)))
 	id := atomic.AddUint32(&idCounter, 1)
 	adaID.Pid = (adaID.Pid - (adaID.Pid % 100)) + id

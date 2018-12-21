@@ -429,8 +429,8 @@ func (adaid *ID) String() string {
 		adaid.adaID.Pid, adaid.adaID.Timestamp)
 }
 
-func (adaid *ID) connection(url string) *Status{
-	if s,ok:= adaid.connectionMap[url];ok {
+func (adaid *ID) connection(url string) *Status {
+	if s, ok := adaid.connectionMap[url]; ok {
 		return s
 	}
 	s := &Status{open: false}

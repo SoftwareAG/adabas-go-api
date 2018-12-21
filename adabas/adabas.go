@@ -161,7 +161,7 @@ func NewAdabasWithURL(URL *URL, ID *ID) *Adabas {
 // Open opens a session to the database
 func (adabas *Adabas) Open() (err error) {
 	adatypes.Central.Log.Debugf("B Open flag %p %v PreOpen", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
-	url:=adabas.URL.String()
+	url := adabas.URL.String()
 	if adabas.ID.isOpen(url) {
 		return
 	}
@@ -189,12 +189,12 @@ func (adabas *Adabas) Open() (err error) {
 		adabas.transactions.flags |= adabasOptionOP.Bit()
 		arch := byte((adabas.Acbx.Acbxisl >> (3 * 8)) & 0xff)
 		adatypes.Central.Log.Debugf("B Open flag %p %v open", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
-			adabas.ID.changeOpenState(url,true)
-		adabas.ID.changePlatform(url,adatypes.NewPlatform(byte(arch)))
+		adabas.ID.changeOpenState(url, true)
+		adabas.ID.changePlatform(url, adatypes.NewPlatform(byte(arch)))
 	} else {
 		err = NewError(adabas)
 		adatypes.Central.Log.Debugf("Error calling open", err)
-		adabas.ID.changeOpenState(url,false)
+		adabas.ID.changeOpenState(url, false)
 	}
 	return err
 }

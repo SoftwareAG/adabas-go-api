@@ -221,7 +221,6 @@ func main() {
 		}
 		c := caller{ada: adabas, counter: countValue, threadNr: i + 1,
 			name: names[int(i)%len(names)]}
-		c.ada.ID.Pid = i + 10
 		go callAdabas(c)
 
 	}

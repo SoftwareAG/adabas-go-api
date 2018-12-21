@@ -122,7 +122,7 @@ func NewAdabasMapNameRequest(adabas *Adabas, adabasMap *Map) (request *ReadReque
 		return
 	}
 	adatypes.Central.Log.Debugf("Read: Adabas new map reference for %s to %d -> %#v", adabasMap.Name,
-		adabasMap.Data.Fnr,adabas.ID.platform)
+		adabasMap.Data.Fnr, adabas.ID.platform)
 	cloneAdabas := NewClonedAdabas(adabas)
 
 	dataRepository := NewMapRepository(adabas, adabasMap.Data.Fnr)

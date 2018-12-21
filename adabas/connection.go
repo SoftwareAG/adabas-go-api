@@ -264,7 +264,7 @@ func (connection *Connection) prepareMapUsage(mapName string) (err error) {
 		return adatypes.NewGenericError(5)
 	}
 	// TODO search global enable
-	adatypes.Central.Log.Debugf("Search Map : %s platform: %v", mapName,connection.adabasToMap.ID.platform)
+	adatypes.Central.Log.Debugf("Search Map : %s platform: %v", mapName, connection.adabasToMap.ID.platform)
 	connection.adabasMap, err = connection.repository.SearchMap(connection.adabasToMap, mapName)
 	if err != nil {
 		return
