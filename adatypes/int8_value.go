@@ -23,6 +23,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"math"
 	"strconv"
 )
 
@@ -166,7 +167,10 @@ func (value *int64Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 }
 
 func (value *int64Value) Int32() (int32, error) {
-	return 0, errors.New("Cannot convert value to signed 32-bit integer")
+	if int64(math.MaxInt32) < value.value {
+		return 0, errors.New("Cannot convert value to signed 32-bit integer")
+	}
+	return int32(value.value), nil
 }
 
 func (value *int64Value) UInt32() (uint32, error) {
