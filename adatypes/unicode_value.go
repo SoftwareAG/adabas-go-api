@@ -34,9 +34,17 @@ type unicodeValue struct {
 }
 
 func newUnicodeValue(initType IAdaType) *unicodeValue {
+	if initType == nil {
+		return nil
+	}
 	value := adaValue{adatype: initType}
 	var unicodeValue unicodeValue
 	unicodeValue.adaValue = value
+	if initType.Length() > 0 {
+		unicodeValue.value = []byte(strings.Repeat(" ", int(initType.Length())))
+	} else {
+		unicodeValue.value = make([]byte, 0)
+	}
 	return &unicodeValue
 }
 
@@ -53,11 +61,16 @@ func (value *unicodeValue) Value() interface{} {
 }
 
 func (value *unicodeValue) setStringWithSize(sv string) {
+	Central.Log.Debugf("Set spaces for len %d and sv len %d", int(value.adatype.Length()), len(sv))
 	addSpaces := int(value.adatype.Length()) - len(sv)
 	y := ""
 	Central.Log.Debugf("Set value and add %d spaces", addSpaces)
 	if addSpaces < 0 {
-		value.value = []byte(sv[:-addSpaces])
+		if value.adatype.Length() > 0 {
+			value.value = []byte(sv[:value.adatype.Length()])
+		} else {
+			value.value = []byte(sv)
+		}
 	} else {
 		y = strings.Repeat(" ", addSpaces)
 		value.value = []byte(sv + y)
@@ -85,7 +98,8 @@ func (value *unicodeValue) SetValue(v interface{}) error {
 			value.value = v.([]byte)
 		} else {
 			val := v.([]byte)
-			value.value = make([]byte, value.Type().Length())
+			value.value = []byte(strings.Repeat(" ", int(value.Type().Length())))
+			//make([]byte, value.Type().Length())
 			length := len(val)
 			if length > int(value.Type().Length()) {
 				length = int(value.Type().Length())
@@ -174,32 +188,37 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 
 	fieldLength := value.adatype.Length()
 	if fieldLength == 0 {
+		Central.Log.Debugf("Field length dynamic")
+
 		switch value.adatype.Type() {
-		case FieldTypeLAString:
+		case FieldTypeLAUnicode:
 			length, errh := helper.ReceiveUInt16()
 			if errh != nil {
 				return EndTraverser, errh
 			}
 			fieldLength = uint32(length - 2)
-		case FieldTypeLBString:
+			Central.Log.Debugf("Take field length 16 =%d", fieldLength)
+		case FieldTypeLBUnicode:
 			value.lobSize, err = helper.ReceiveUInt32()
 			if err != nil {
 				return EndTraverser, err
 			}
-			fieldLength = PartialLobSize // uint32(length - 4)
-			Central.Log.Debugf("Take partial buffer .... of size=%d", PartialLobSize)
+			Central.Log.Debugf("Got lobSize=%d", value.lobSize)
+			fieldLength = uint32(value.lobSize - 4)
+			Central.Log.Debugf("Take partial buffer .... of size=%d offset=%d", PartialLobSize, helper.offset)
 		default:
 			length, errh := helper.ReceiveUInt8()
 			if errh != nil {
 				return EndTraverser, errh
 			}
 			fieldLength = uint32(length - 1)
+			Central.Log.Debugf("Take field length 8 =%d", fieldLength)
 		}
 	}
 	Central.Log.Debugf("%s length set to %d", value.Type().Name(), fieldLength)
 
 	value.value, err = helper.ReceiveBytes(fieldLength)
-	if value.adatype.Type() == FieldTypeLBString {
+	if value.adatype.Type() == FieldTypeLBUnicode && option.PartialLobSize {
 		switch {
 		case value.lobSize < PartialLobSize:
 			value.value = value.value[:value.lobSize]

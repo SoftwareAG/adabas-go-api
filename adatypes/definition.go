@@ -341,7 +341,6 @@ type searchByName struct {
 
 func searchValueByName(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
 	search := x.(*searchByName)
-	//debug.PrintStack()
 	Central.Log.Debugf("Search value by name %s and index %d:%d, found %s %d/%d", search.name, search.peIndex,
 		search.muIndex, adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex())
 	if adaValue.Type().Name() == search.name {

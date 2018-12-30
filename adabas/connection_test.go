@@ -156,6 +156,9 @@ func deleteRecords(adabasRequest *adatypes.AdabasRequest, x interface{}) (err er
 }
 
 func TestConnectionSimpleTypes(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -207,6 +210,9 @@ func TestConnectionSimpleTypes(t *testing.T) {
 }
 
 func TestConnectionMultipleFields(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -245,6 +251,9 @@ func TestConnectionMultipleFields(t *testing.T) {
 }
 
 func TestConnectionStorePeriodFields(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -286,6 +295,9 @@ func TestConnectionStorePeriodFields(t *testing.T) {
 }
 
 func TestConnectionMultifetch(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -316,6 +328,9 @@ func TestConnectionMultifetch(t *testing.T) {
 }
 
 func TestConnectionPeriodAndMultipleField(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -340,6 +355,9 @@ func TestConnectionPeriodAndMultipleField(t *testing.T) {
 }
 
 func TestConnectionRemote(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -414,6 +432,9 @@ func TestConnectionRemote(t *testing.T) {
 }
 
 func TestConnectionWithMap(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -448,6 +469,9 @@ func TestConnectionWithMap(t *testing.T) {
 }
 
 func TestConnectionAllMap(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -667,6 +691,9 @@ func registerTestedValuesAvailable(adaValue adatypes.IAdaValue, x interface{}) (
 }
 
 func TestConnectionReadMap(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -839,6 +866,9 @@ func ExampleReadRequest_isn() {
 }
 
 func TestConnectionADATCPSimpleRemote(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -856,6 +886,9 @@ func TestConnectionADATCPSimpleRemote(t *testing.T) {
 }
 
 func TestConnectionReadOneLocal(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -888,6 +921,9 @@ func TestConnectionReadOneLocal(t *testing.T) {
 }
 
 func TestConnectionReadAllLocal(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -921,6 +957,9 @@ func TestConnectionReadAllLocal(t *testing.T) {
 }
 
 func TestConnectionReadSpecialLocal(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -954,6 +993,9 @@ func TestConnectionReadSpecialLocal(t *testing.T) {
 }
 
 func TestConnectionADATCPReadRemote(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -986,6 +1028,9 @@ func TestConnectionADATCPReadRemote(t *testing.T) {
 }
 
 func TestConnectionReadUnicode(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -1031,6 +1076,9 @@ func TestConnectionReadUnicode(t *testing.T) {
 }
 
 func TestConnectionReadDeepPEFields(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -1073,6 +1121,9 @@ func TestConnectionReadDeepPEFields(t *testing.T) {
 }
 
 func TestConnectionReadAllFields9(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -1104,6 +1155,9 @@ func TestConnectionReadAllFields9(t *testing.T) {
 }
 
 func TestConnectionADIS(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -1138,6 +1192,9 @@ func TestConnectionNotConnected(t *testing.T) {
 }
 
 func TestConnectionWithMultipleMap(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -1190,6 +1247,9 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 }
 
 func TestConnectionMapPointingToRemote(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -1257,6 +1317,9 @@ func copyData(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) 
 }
 
 func TestConnectionCopyMapTransaction(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -1524,6 +1587,9 @@ func TestAuth(t *testing.T) {
 }
 
 func TestConnectionRemoteMap(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f, err := initLogWithFile("connection.log")
 	if err != nil {
 		fmt.Println(err)
@@ -1597,6 +1663,9 @@ func BenchmarkConnection_noreconnectremote(b *testing.B) {
 }
 
 func TestConnectionSimpleStore(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -1701,6 +1770,9 @@ func validateResult(t *testing.T, search string, result *RequestResult) error {
 }
 
 func TestConnectionSimpleMultipleStore(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
@@ -1820,6 +1892,9 @@ const multipleTransactionRefName = "M16555"
 const multipleTransactionRefName2 = "M19555"
 
 func TestConnectionSimpleMultipleMapStore(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 

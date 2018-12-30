@@ -39,6 +39,7 @@ type BufferOption struct {
 	NeedSecondCall bool
 	HoldRecords    bool
 	ExchangeRecord bool
+	PartialLobSize bool
 	multipleSize   uint32
 }
 

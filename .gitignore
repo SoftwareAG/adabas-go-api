@@ -34,3 +34,4 @@ tmp_gopath/
 # Ignore Go checkstyle output
 gostyle.xml
 
+test/

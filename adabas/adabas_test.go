@@ -77,6 +77,9 @@ func TestAdabasFailure(t *testing.T) {
 }
 
 func TestAdabasOk23(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
@@ -193,6 +196,9 @@ const CDVTReq = uint64(0x98BADCFE)
 // }
 
 func TestAdabasOpen(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
@@ -229,6 +235,9 @@ func TestAdabasOpen(t *testing.T) {
 }
 
 func TestAdabasFdt(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
@@ -534,6 +543,9 @@ func ExampleAdabas_readFileDefinition9Restricted() {
 }
 
 func TestAdabasFdtNewEmployee(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
@@ -564,6 +576,9 @@ func TestAdabasFdtNewEmployee(t *testing.T) {
 }
 
 func TestAdabasFdtHyperexit(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
@@ -593,6 +608,9 @@ func TestAdabasFdtHyperexit(t *testing.T) {
 }
 
 func TestAdabasFdtNewEmployeeRemote(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 

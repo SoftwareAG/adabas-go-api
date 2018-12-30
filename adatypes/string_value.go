@@ -38,9 +38,17 @@ type stringValue struct {
 }
 
 func newStringValue(initType IAdaType) *stringValue {
+	if initType == nil {
+		return nil
+	}
 	value := adaValue{adatype: initType}
 	var stringValue stringValue
 	stringValue.adaValue = value
+	if initType.Length() > 0 {
+		stringValue.value = []byte(strings.Repeat(" ", int(initType.Length())))
+	} else {
+		stringValue.value = make([]byte, 0)
+	}
 	return &stringValue
 }
 
@@ -61,7 +69,11 @@ func (value *stringValue) setStringWithSize(sv string) {
 	y := ""
 	Central.Log.Debugf("Set value and add %d spaces", addSpaces)
 	if addSpaces < 0 {
-		value.value = []byte(sv[:-addSpaces])
+		if value.adatype.Length() > 0 {
+			value.value = []byte(sv[:value.adatype.Length()])
+		} else {
+			value.value = []byte(sv)
+		}
 	} else {
 		y = strings.Repeat(" ", addSpaces)
 		value.value = []byte(sv + y)
@@ -101,7 +113,7 @@ func (value *stringValue) SetValue(v interface{}) error {
 			Central.Log.Debugf("Set static value=%p, at value of %d\n", value, value.Type().Length())
 
 			val := v.([]byte)
-			value.value = make([]byte, value.Type().Length())
+			value.value = []byte(strings.Repeat(" ", int(value.Type().Length())))
 			length := len(val)
 			if length > int(value.Type().Length()) {
 				length = int(value.Type().Length())
@@ -133,7 +145,8 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			len = 4 + PartialLobSize
 		}
 	} else {
-		len := value.commonFormatBuffer(buffer, option)
+		len = value.commonFormatBuffer(buffer, option)
+		Central.Log.Debugf("Common format buffer length -> %d", len)
 		if len == 0 {
 			switch value.adatype.Type() {
 			case FieldTypeLAString:
@@ -216,7 +229,7 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 			if err != nil {
 				return EndTraverser, err
 			}
-			fieldLength = PartialLobSize // uint32(length - 4)
+			fieldLength = uint32(value.lobSize - 4)
 			Central.Log.Debugf("Take partial buffer .... of size=%d current lob size is %d", PartialLobSize, value.lobSize)
 		default:
 			length, errh := helper.ReceiveUInt8()
@@ -229,7 +242,7 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 	Central.Log.Debugf("%s length set to %d", value.Type().Name(), fieldLength)
 
 	value.value, err = helper.ReceiveBytes(fieldLength)
-	if value.adatype.Type() == FieldTypeLBString {
+	if value.adatype.Type() == FieldTypeLBString && option.PartialLobSize {
 		switch {
 		case value.lobSize < PartialLobSize:
 			value.value = value.value[:value.lobSize]

@@ -26,7 +26,6 @@ import (
 	"fmt"
 	"math" //"encoding/binary"
 	"regexp"
-	"runtime/debug"
 	"strconv"
 	"strings"
 )
@@ -239,7 +238,7 @@ func (node *SearchNode) String() string {
 	if node == nil {
 		return "ERROR nil node"
 	}
-	debug.PrintStack()
+
 	buffer.WriteString(node.logic.String() + "\n")
 	for i, v := range node.values {
 		Central.Log.Debugf("%d:%s", i, node.logic.String())

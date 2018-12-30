@@ -212,7 +212,6 @@ func (adabas *Adabas) Close() {
 	if adabas.transactions.openTransactions > 0 {
 		adabas.BackoutTransaction()
 	}
-	//debug.PrintStack()
 	adabas.AdabasBuffers = nil
 	adabas.Acbx.Acbxcmd = cl.code()
 	ret := adabas.CallAdabas()

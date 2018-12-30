@@ -127,12 +127,13 @@ test-build: fmt lint vendor | $(BASE) ; $(info $(M) building $(NAME:%=% )testsâ€
 	    TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) REFERENCES=$(REFERENCES) \
 	    $(GO) test -v -c -tags $(GO_TAGS) $$pkg; done
 
-TEST_TARGETS := test-default test-bench test-short test-verbose test-race
+TEST_TARGETS := test-default test-bench test-short test-verbose test-race test-sanitizer
 .PHONY: $(TEST_TARGETS) check test tests
 test-bench:   ARGS=-run=__absolutelynothing__ -bench=. ## Run benchmarks
 test-short:   ARGS=-short        ## Run only short tests
 test-verbose: ARGS=-v            ## Run tests in verbose mode with coverage reporting
 test-race:    ARGS=-race         ## Run tests with race detector
+test-sanitizer:  ARGS=-msan      ## Run tests with race detector
 $(TEST_TARGETS): NAME=$(MAKECMDGOALS:test-%=%)
 $(TEST_TARGETS): test
 check test tests: fmt lint vendor | $(BASE) ; $(info $(M) running $(NAME:%=% )testsâ€¦) @ ## Run tests

@@ -66,6 +66,9 @@ func clearFile(file uint32) error {
 }
 
 func TestDeleteRequestRefreshFile16(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
 	f := initTestLogWithFile(t, "delete.log")
 	defer f.Close()
 
