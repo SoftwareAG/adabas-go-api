@@ -30,6 +30,9 @@ type unpackedValue struct {
 }
 
 func newUnpackedValue(initType IAdaType) *unpackedValue {
+	if initType == nil {
+		return nil
+	}
 	value := unpackedValue{adaValue: adaValue{adatype: initType}}
 	value.value = make([]byte, initType.Length())
 	return &value

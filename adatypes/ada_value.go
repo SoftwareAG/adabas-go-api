@@ -239,6 +239,45 @@ func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 		val = x.(int64)
 	case int:
 		val = int64(x.(int))
+	case []byte:
+		v := x.([]byte)
+		switch len(v) {
+		case 1:
+			buf := bytes.NewBuffer(v)
+			var res int8
+			err := binary.Read(buf, endian(), &res)
+			if err != nil {
+				return 0, err
+			}
+			return int64(res), nil
+		case 2:
+			buf := bytes.NewBuffer(v)
+			var res int16
+			err := binary.Read(buf, endian(), &res)
+			if err != nil {
+				return 0, err
+			}
+			return int64(res), nil
+		case 4:
+			buf := bytes.NewBuffer(v)
+			var res int32
+			err := binary.Read(buf, endian(), &res)
+			if err != nil {
+				return 0, err
+			}
+			return int64(res), nil
+		case 8:
+			buf := bytes.NewBuffer(v)
+			var res int64
+			err := binary.Read(buf, endian(), &res)
+			if err != nil {
+				return 0, err
+			}
+			return res, nil
+		default:
+		}
+		Central.Log.Debugf("Error converting to byte slice: %v", x)
+		return 0, errors.New("Cannot convert value to byte slice")
 	default:
 		Central.Log.Debugf("Error converting %v", x)
 		return 0, errors.New("Cannot convert value")

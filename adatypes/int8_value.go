@@ -32,6 +32,9 @@ type uint64Value struct {
 }
 
 func newUInt8Value(initType IAdaType) *uint64Value {
+	if initType == nil {
+		return nil
+	}
 	value := uint64Value{adaValue: adaValue{adatype: initType}}
 	return &value
 }
@@ -107,6 +110,9 @@ type int64Value struct {
 }
 
 func newInt8Value(initType IAdaType) *int64Value {
+	if initType == nil {
+		return nil
+	}
 	value := int64Value{adaValue: adaValue{adatype: initType}}
 	return &value
 }

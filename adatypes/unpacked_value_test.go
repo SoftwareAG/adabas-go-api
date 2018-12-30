@@ -20,12 +20,25 @@
 package adatypes
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestUnpackedNil(t *testing.T) {
+	f, err := initLogWithFile("unpacked.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+	up := newUnpackedValue(nil)
+	assert.Nil(t, up)
+}
 
 func TestUnpacked(t *testing.T) {
 	f, err := initLogWithFile("unpacked.log")
@@ -41,4 +54,23 @@ func TestUnpacked(t *testing.T) {
 	fmt.Println("Unpacked value ", up.value)
 	up.LongToUnpacked(0, 4, false)
 	fmt.Println("Unpacked value 0 ", up.value)
+}
+
+func TestUnpackedFormatBuffer(t *testing.T) {
+	f, err := initLogWithFile("unpacked.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+	adaType := NewType(FieldTypeUnpacked, "UP")
+	adaType.length = 4
+	up := newUnpackedValue(adaType)
+	fmt.Println("Unpacked value ", up.value)
+	option := &BufferOption{}
+	var buffer bytes.Buffer
+	len := up.FormatBuffer(&buffer, option)
+	assert.Equal(t, "UP,4,U", buffer.String())
+	assert.Equal(t, uint32(4), len)
 }

@@ -112,6 +112,7 @@ func (value *unicodeValue) SetValue(v interface{}) error {
 	return nil
 }
 
+// FormatBuffer generates format buffer part of this value
 func (value *unicodeValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
 	len := uint32(0)
 	Central.Log.Debugf("Generate FormatBuffer %s of length=%d and storeCall=%v", value.adatype.Type().name(), value.adatype.Length(), option.StoreCall)
