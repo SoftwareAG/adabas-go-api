@@ -242,7 +242,7 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 	Central.Log.Debugf("%s length set to %d", value.Type().Name(), fieldLength)
 
 	value.value, err = helper.ReceiveBytes(fieldLength)
-	if value.adatype.Type() == FieldTypeLBString && option.PartialLobSize {
+	if value.adatype.Type() == FieldTypeLBString {
 		switch {
 		case value.lobSize < PartialLobSize:
 			value.value = value.value[:value.lobSize]
