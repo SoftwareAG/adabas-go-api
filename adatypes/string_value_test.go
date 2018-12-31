@@ -161,6 +161,23 @@ func TestStringFormatBufferVariable(t *testing.T) {
 	assert.Equal(t, uint32(253), len)
 }
 
+func TestStringLBFormatBufferVariable(t *testing.T) {
+	f, err := initLogWithFile("string_value.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+	typ := NewType(FieldTypeLBString, "XX")
+	typ.length = 0
+	adaValue := newStringValue(typ)
+	assert.NotNil(t, adaValue)
+	option := &BufferOption{}
+	var buffer bytes.Buffer
+	len := adaValue.FormatBuffer(&buffer, option)
+	assert.Equal(t, "XXL,4,XX(0,4096)", buffer.String())
+	assert.Equal(t, uint32(4100), len)
+}
+
 func TestStringStoreBuffer(t *testing.T) {
 	f, err := initLogWithFile("string_value.log")
 	if !assert.NoError(t, err) {
@@ -258,21 +275,34 @@ func TestStringLBParseBufferVariable(t *testing.T) {
 	adaValue := newStringValue(typ)
 	assert.NotNil(t, adaValue)
 	option := &BufferOption{}
-	helper := &BufferHelper{order: binary.LittleEndian, buffer: []byte{0xc, 0x0, 0x0, 0x0, 0xc3, 0xa4, 0xc3, 0xb6, 0xc3, 0xbc, 0xc3, 0x9f}}
+	var buffer bytes.Buffer
+	checkInfo := []byte{0xc3, 0xa4, 0xc3, 0xb6, 0xc3, 0xbc, 0xc3, 0x9f}
+	buffer.Write([]byte{0xc, 0x0, 0x0, 0x0})
+	buffer.Write(checkInfo)
+	gs := 4100 - buffer.Len()
+	buffer.Write(make([]byte, gs))
+	assert.Equal(t, 4100, len(buffer.Bytes()))
+	//	helper := &BufferHelper{order: binary.LittleEndian, buffer: []byte{0xc, 0x0, 0x0, 0x0, 0xc3, 0xa4, 0xc3, 0xb6, 0xc3, 0xbc, 0xc3, 0x9f}}
+	helper := &BufferHelper{order: binary.LittleEndian, buffer: buffer.Bytes()}
 	var res TraverseResult
 	res, err = adaValue.parseBuffer(helper, option)
 	if !assert.NoError(t, err) {
 		return
 	}
 	assert.Equal(t, TraverseResult(0), res)
-	v := []byte{0xc3, 0xa4, 0xc3, 0xb6, 0xc3, 0xbc, 0xc3, 0x9f}
-	assert.Equal(t, v, adaValue.Value())
-	helper = &BufferHelper{order: binary.LittleEndian, buffer: []byte{0x7, 0x0, 0x0, 0x0, 0x41, 0x42, 0x43}}
+	assert.Equal(t, checkInfo, adaValue.Value())
+	buffer.Reset()
+	v := []byte{0x41, 0x42, 0x43}
+	buffer.Write([]byte{0x7, 0x0, 0x0, 0x0})
+	buffer.Write(v)
+	gs = 4100 - buffer.Len()
+	buffer.Write(make([]byte, gs))
+	assert.Equal(t, 4100, len(buffer.Bytes()))
+	helper = &BufferHelper{order: binary.LittleEndian, buffer: buffer.Bytes()}
 	res, err = adaValue.parseBuffer(helper, option)
 	if !assert.NoError(t, err) {
 		return
 	}
 	assert.Equal(t, TraverseResult(0), res)
-	v = []byte{0x41, 0x42, 0x43}
 	assert.Equal(t, v, adaValue.Value())
 }

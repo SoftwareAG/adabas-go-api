@@ -343,7 +343,9 @@ func TestConnectionPeriodAndMultipleField(t *testing.T) {
 	fmt.Println(connection)
 	connection.Open()
 	readRequest, rErr := connection.CreateReadRequest(11)
-	assert.NoError(t, rErr)
+	if !assert.NoError(t, rErr) {
+		return
+	}
 	readRequest.Limit = 0
 
 	qErr := readRequest.QueryFields("AA,AQ,AZ")

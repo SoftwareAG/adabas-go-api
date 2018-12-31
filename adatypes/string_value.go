@@ -229,7 +229,12 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 			if err != nil {
 				return EndTraverser, err
 			}
-			fieldLength = uint32(value.lobSize - 4)
+			value.lobSize = uint32(value.lobSize - 4)
+			// if value.lobSize > PartialLobSize {
+			fieldLength = PartialLobSize
+			//} else {
+			// fieldLength = value.lobSize
+			//}
 			Central.Log.Debugf("Take partial buffer .... of size=%d current lob size is %d", PartialLobSize, value.lobSize)
 		default:
 			length, errh := helper.ReceiveUInt8()
@@ -242,9 +247,16 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 	Central.Log.Debugf("%s length set to %d", value.Type().Name(), fieldLength)
 
 	value.value, err = helper.ReceiveBytes(fieldLength)
+	if err != nil {
+		return EndTraverser, err
+	}
 	if value.adatype.Type() == FieldTypeLBString {
 		switch {
-		case value.lobSize < PartialLobSize:
+		case value.lobSize <= PartialLobSize:
+			if len(value.value) < int(value.lobSize) {
+				err = NewGenericError(56, len(value.value), value.lobSize)
+				return
+			}
 			value.value = value.value[:value.lobSize]
 		case value.lobSize > PartialLobSize:
 			Central.Log.Debugf("Due to lobSize is bigger then partial size, need secand call (lob) for %s", value.Type().Name())

@@ -232,3 +232,70 @@ func TestHelperWriteDataUInt(t *testing.T) {
 	helper.PutUInt64(4)
 	assert.Equal(t, 15, len(helper.buffer))
 }
+
+func TestHelperBufferBufferOverflow(t *testing.T) {
+	f, err := initLogWithFile("buffer_helper.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+	byteBuffer := []byte{1, 1, 2, 3, 4, 5, 6, 'a', 'b', 'A', 'Z'}
+	helper := NewHelper(byteBuffer, len(byteBuffer), binary.LittleEndian)
+	res, err := helper.ReceiveBytes(100)
+	if !assert.Error(t, err) {
+		return
+	}
+	assert.Nil(t, res)
+	res, err = helper.ReceiveBytes(12)
+	if !assert.Error(t, err) {
+		return
+	}
+	assert.Nil(t, res)
+	res, err = helper.ReceiveBytes(11)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, byteBuffer, res)
+
+}
+
+func TestHelperStringBufferOverflow(t *testing.T) {
+	f, err := initLogWithFile("buffer_helper.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+	byteBuffer := []byte("ABCDEFG")
+	helper := NewHelper(byteBuffer, len(byteBuffer), binary.LittleEndian)
+	res, err := helper.ReceiveString(100)
+	if !assert.Error(t, err) {
+		return
+	}
+	assert.Empty(t, res)
+	res, err = helper.ReceiveString(8)
+	if !assert.Error(t, err) {
+		return
+	}
+	assert.Empty(t, res)
+	res, err = helper.ReceiveString(7)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "ABCDEFG", res)
+	helper.offset = 0
+	res, err = helper.ReceiveString(3)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "ABC", res)
+	res, err = helper.ReceiveString(4)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "DEFG", res)
+
+}

@@ -88,7 +88,7 @@ func (helper *BufferHelper) Offset() uint32 {
 
 // ReceiveString receive string of length
 func (helper *BufferHelper) ReceiveString(length uint32) (res string, err error) {
-	if (helper.offset + 1) <= uint32(len(helper.buffer)) {
+	if (helper.offset + length) <= uint32(len(helper.buffer)) {
 		b := string(helper.buffer[helper.offset : helper.offset+length])
 		helper.offset += length
 		res = b
@@ -100,7 +100,7 @@ func (helper *BufferHelper) ReceiveString(length uint32) (res string, err error)
 
 // ReceiveBytes receive bytes length
 func (helper *BufferHelper) ReceiveBytes(length uint32) (res []byte, err error) {
-	if (helper.offset + 1) <= uint32(len(helper.buffer)) {
+	if (helper.offset + length) <= uint32(len(helper.buffer)) {
 		Central.Log.Debugf("Length=%d on offset %d", length, helper.offset)
 		res = make([]byte, length)
 		copy(res, helper.buffer[helper.offset:helper.offset+length])

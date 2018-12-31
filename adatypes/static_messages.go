@@ -779,5 +779,7 @@ var statisMessages = []struct {
 	{"ADG0000051", "en", "Invalid connection string prefix"},
 	{"ADG0000052", "en", "Set value error: {0}"},
 	{"ADG0000053", "en", "Store record error: {0}"},
-	{"ADG0000054", "en", "Unknown import foramt suffix for file {0} "},
+	{"ADG0000054", "en", "Store entry set is empty"},
+	{"ADG0000055", "en", "Unknown import foramt suffix for file {0} "},
+	{"ADG0000056", "en", "Received buffer error, buffer less than request {0}<{1}"},
 }
