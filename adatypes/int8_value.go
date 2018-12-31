@@ -89,20 +89,29 @@ func (value *uint64Value) parseBuffer(helper *BufferHelper, option *BufferOption
 }
 
 func (value *uint64Value) Int32() (int32, error) {
-	return 0, errors.New("Cannot convert value to signed 32-bit integer")
+	if value.value > uint64(math.MaxInt32) {
+		return 0, errors.New("Cannot convert value to signed 32-bit integer")
+	}
+	return int32(value.value), nil
 }
 
 func (value *uint64Value) UInt32() (uint32, error) {
-	return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+	if value.value > uint64(math.MaxUint32) {
+		return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+	}
+	return uint32(value.value), nil
 }
 func (value *uint64Value) Int64() (int64, error) {
-	return 0, errors.New("Cannot convert value to signed 64-bit integer")
+	if value.value > uint64(math.MaxInt64) {
+		return 0, errors.New("Cannot convert value to signed 64-bit integer")
+	}
+	return int64(value.value), nil
 }
 func (value *uint64Value) UInt64() (uint64, error) {
-	return 0, errors.New("Cannot convert value to unsigned 64-bit integer")
+	return value.value, nil
 }
 func (value *uint64Value) Float() (float64, error) {
-	return 0, errors.New("Cannot convert value to 64-bit float")
+	return float64(value.value), nil
 }
 
 type int64Value struct {
@@ -174,14 +183,21 @@ func (value *int64Value) Int32() (int32, error) {
 }
 
 func (value *int64Value) UInt32() (uint32, error) {
-	return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+	if value.value < 0 || value.value > int64(math.MaxUint32) {
+		return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+	}
+	return uint32(value.value), nil
 }
 func (value *int64Value) Int64() (int64, error) {
-	return 0, errors.New("Cannot convert value to signed 64-bit integer")
+	return value.value, nil
 }
 func (value *int64Value) UInt64() (uint64, error) {
-	return 0, errors.New("Cannot convert value to unsigned 64-bit integer")
+	if value.value < 0 {
+		return 0, errors.New("Cannot convert value to unsigned 64-bit integer")
+	}
+	return uint64(value.value), nil
 }
 func (value *int64Value) Float() (float64, error) {
-	return 0, errors.New("Cannot convert value to 64-bit float")
+	// return 0, errors.New("Cannot convert value to 64-bit float")
+	return float64(value.value), nil
 }

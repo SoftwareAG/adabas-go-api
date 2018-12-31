@@ -57,6 +57,15 @@ func TestInt8(t *testing.T) {
 	i32, i32err = up.Int32()
 	assert.NoError(t, i32err)
 	assert.Equal(t, int32(1024), i32)
+	i64, i64err := up.Int64()
+	assert.NoError(t, i64err)
+	assert.Equal(t, int64(1024), i64)
+	ui64, ui64err := up.UInt64()
+	assert.NoError(t, ui64err)
+	assert.Equal(t, uint64(1024), ui64)
+	fl, flerr := up.Float()
+	assert.NoError(t, flerr)
+	assert.Equal(t, 1024.0, fl)
 }
 
 func ExampleInt8_SetValue() {
@@ -165,6 +174,20 @@ func TestUInt8(t *testing.T) {
 	assert.Equal(t, uint64(math.MaxUint64), up.Value())
 	up.SetValue(0)
 	assert.Equal(t, uint64(0), up.Value())
+	up.SetValue(1024)
+	assert.Equal(t, uint64(1024), up.Value())
+	i32, i32err := up.Int32()
+	assert.NoError(t, i32err)
+	assert.Equal(t, int32(1024), i32)
+	i64, i64err := up.Int64()
+	assert.NoError(t, i64err)
+	assert.Equal(t, int64(1024), i64)
+	ui64, ui64err := up.UInt64()
+	assert.NoError(t, ui64err)
+	assert.Equal(t, uint64(1024), ui64)
+	fl, flerr := up.Float()
+	assert.NoError(t, flerr)
+	assert.Equal(t, 1024.0, fl)
 }
 
 func TestUInt8FormatBuffer(t *testing.T) {
