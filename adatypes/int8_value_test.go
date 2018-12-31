@@ -59,6 +59,39 @@ func TestInt8(t *testing.T) {
 	assert.Equal(t, int32(1024), i32)
 }
 
+func ExampleInt8_SetValue() {
+	f, err := initLogWithFile("unpacked.log")
+	if err != nil {
+		fmt.Println("Error enable log")
+		return
+	}
+	defer f.Close()
+
+	adaType := NewType(FieldTypeInt8, "I8")
+	up := newInt8Value(adaType)
+	fmt.Println("Integer default value :", up.value)
+	up.SetValue(1000)
+	fmt.Printf("Integer 1000 value : %d %T\n", up.value, up.value)
+	up.SetValue(int64(math.MinInt64))
+	fmt.Printf("Integer minimal value : %d %T\n", up.value, up.value)
+	up.SetValue(int64(math.MaxInt64))
+	fmt.Printf("Integer maximal value : %d %T\n", up.value, up.value)
+	up.SetValue(int8(10))
+	fmt.Printf("Integer 10 (8bit) value : %d %T\n", up.value, up.value)
+	up.SetValue(int16(100))
+	fmt.Printf("Integer 100 (16bit) value : %d %T\n", up.value, up.value)
+	up.SetValue(int32(1000))
+	fmt.Printf("Integer 1000 (32bit) value : %d %T\n", up.value, up.value)
+
+	// Output: 	Integer default value : 0
+	// Integer 1000 value : 1000 int64
+	// Integer minimal value : -9223372036854775808 int64
+	// Integer maximal value : 9223372036854775807 int64
+	// Integer 10 (8bit) value : 9223372036854775807 int64
+	// Integer 100 (16bit) value : 9223372036854775807 int64
+	// Integer 1000 (32bit) value : 9223372036854775807 int64
+}
+
 func TestInt8FormatBuffer(t *testing.T) {
 	f, err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
