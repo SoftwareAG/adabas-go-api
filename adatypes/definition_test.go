@@ -611,7 +611,7 @@ func ExampleDefinition_Search() {
 	//   GC[1] = >65<
 	//   GM[1] = [1]
 	//    GM[1,1] = >123<
-	//   GS[1] = ><
+	//   GS[1] = > <
 	//   GP[1] = >0<
 	//   GC[2] = >0<
 	//   GM[2] = [1]
@@ -620,7 +620,7 @@ func ExampleDefinition_Search() {
 	//    GM[2,3] = >777<
 	//    GM[2,5] = >8888<
 	//    GM[2,15] = >10000<
-	//   GS[2] = ><
+	//   GS[2] = > <
 	//   GP[2] = >0<
 	//  I8 = >0<
 }
@@ -667,7 +667,7 @@ func ExampleDefinition_addValue() {
 	//  GR = [1]
 	//   GC[1] = >65<
 	//   GM[1] = [0]
-	//   GS[1] = ><
+	//   GS[1] = > <
 	//   GP[1] = >0<
 	//  I8 = >0<
 }
@@ -873,7 +873,7 @@ func ExampleDefinition_dumpValuesAll() {
 	//  U8 = >0<
 	//  PG = [1]
 	//   GC = >0<
-	//   GS = ><
+	//   GS = > <
 	//   GP = >0<
 	//  GM = [1]
 	//   MA = >0<
@@ -908,7 +908,7 @@ func ExampleDefinition_dumpValuesRestrict() {
 	// Dump values :   U4 = >0<
 	//  PG = [1]
 	//   GC = >0<
-	//   GS = ><
+	//   GS = > <
 	//   GP = >0<
 
 }
