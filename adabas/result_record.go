@@ -46,7 +46,11 @@ func hashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseRe
 
 // NewResultRecord new result record
 func NewResultRecord(definition *adatypes.Definition) (*ResultRecord, error) {
-	if definition == nil || definition.Values == nil {
+	if definition == nil {
+		adatypes.Central.Log.Debugf("Definition values empty")
+		return nil, fmt.Errorf("Field list empty")
+	}
+	if definition.Values == nil {
 		err := definition.CreateValues(false)
 		if err != nil {
 			return nil, err
