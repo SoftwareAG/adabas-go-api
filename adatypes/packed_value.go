@@ -73,7 +73,7 @@ func (value *packedValue) SetValue(v interface{}) error {
 			return err
 		}
 		Central.Log.Debugf("Got ... %v", v)
-		err = checkValidValue(v, value.Type().Length())
+		err = value.checkValidValue(v, value.Type().Length())
 		if err != nil {
 			return err
 		}
@@ -161,7 +161,7 @@ func (value *packedValue) packedToLong() int64 {
 
 	return longValue
 }
-func checkValidValue(intValue int64, len uint32) error {
+func (value *packedValue) checkValidValue(intValue int64, len uint32) error {
 	maxValue := int64(1)
 	for i := uint32(0); i < (len*2)-1; i++ {
 		maxValue *= 10
@@ -171,7 +171,7 @@ func checkValidValue(intValue int64, len uint32) error {
 	if absValue < maxValue {
 		return nil
 	}
-	return NewGenericError(57, intValue, len)
+	return NewGenericError(57, value.Type().Name(),intValue, len)
 }
 
 // LongToPacked convert long values (int64) to packed values

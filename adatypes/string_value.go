@@ -229,7 +229,7 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 			if err != nil {
 				return EndTraverser, err
 			}
-			value.lobSize = uint32(value.lobSize - 4)
+			//value.lobSize = uint32(value.lobSize - 4)
 			// if value.lobSize > PartialLobSize {
 			fieldLength = PartialLobSize
 			//} else {
@@ -257,7 +257,7 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 				err = NewGenericError(56, len(value.value), value.lobSize)
 				return
 			}
-			value.value = value.value[:value.lobSize]
+			value.value = value.value[:value.lobSize-4]
 		case value.lobSize > PartialLobSize:
 			Central.Log.Debugf("Due to lobSize is bigger then partial size, need secand call (lob) for %s", value.Type().Name())
 			option.NeedSecondCall = true
