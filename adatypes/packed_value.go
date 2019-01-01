@@ -171,7 +171,7 @@ func (value *packedValue) checkValidValue(intValue int64, len uint32) error {
 	if absValue < maxValue {
 		return nil
 	}
-	return NewGenericError(57, value.Type().Name(),intValue, len)
+	return NewGenericError(57, value.Type().Name(), intValue, len)
 }
 
 // LongToPacked convert long values (int64) to packed values
