@@ -35,19 +35,8 @@ type ResultRecord struct {
 	definition *adatypes.Definition
 }
 
-var aaValue adatypes.IAdaValue
-var paValue adatypes.IAdaValue
-
 func hashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	record := x.(*ResultRecord)
-	fmt.Printf("HASH: %s %p %T\n", adaValue.Type().Name(), adaValue, adaValue)
-	switch adaValue.Type().Name() {
-	case "AA":
-		aaValue = adaValue
-	case "PA":
-		paValue = adaValue
-	default:
-	}
 	if _, ok := record.HashFields[adaValue.Type().Name()]; !ok {
 		record.HashFields[adaValue.Type().Name()] = adaValue
 	}
@@ -150,11 +139,7 @@ func (record *ResultRecord) searchValue(field string) (adatypes.IAdaValue, bool)
 // SetValue set the value for a specific field
 func (record *ResultRecord) SetValue(field string, value interface{}) (err error) {
 	if adaValue, ok := record.searchValue(field); ok {
-		fmt.Printf("Pre Value: %s %p %T %v set %T %v\n", adaValue.Type().Name(), adaValue, adaValue, adaValue.String(), value, value)
 		err = adaValue.SetValue(value)
-		fmt.Printf("Set Value: %s %p %T %v\n", adaValue.Type().Name(), adaValue, adaValue, adaValue.String())
-		fmt.Printf("AA Value: %s %p %T %v\n", aaValue.Type().Name(), aaValue, aaValue, aaValue.String())
-		fmt.Printf("PA Value: %s %p %T %v\n", paValue.Type().Name(), paValue, paValue, paValue.String())
 		adatypes.Central.Log.Debugf("Set %s [%T] value err=%v", field, adaValue, err)
 	} else {
 		err = adatypes.NewGenericError(28, field)

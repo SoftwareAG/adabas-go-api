@@ -12,7 +12,7 @@ ADABAS_ACCESS_HOME=`pwd`
 
 DYLD_LIBRARY_PATH=:/Volumes/SAG-Q/testenv/adav67/AdabasClient/lib:/lib:/usr/lib
 export DYLD_LIBRARY_PATH
-ENABLE_DEBUG=${ENABLE_DEBUG:-1}
+ENABLE_DEBUG=${ENABLE_DEBUG:-0}
 LOGPATH=`pwd`/logs
 TESTFILES=`pwd`/files
 REFERENCES=${TESTFILES}/references
