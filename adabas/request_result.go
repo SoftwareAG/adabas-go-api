@@ -353,3 +353,40 @@ func (record *ResultRecord) MarshalJSON() ([]byte, error) {
 
 	return rec.buffer.Bytes(), nil
 }
+
+// UnmarshalJSON parse JSON
+// func (record *ResultRecord) UnmarshalJSON(b []byte) error {
+// 	var stuff map[string]interface{}
+// 	err := json.Unmarshal(b, &stuff)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	if record.Value == nil {
+// 		if record.definition.Values == nil {
+// 			record.definition.CreateValues(false)
+// 		}
+// 		record.Value = record.definition.Values
+// 	}
+// 	for key, value := range stuff {
+// 		fmt.Println("JSON:", key, "=", value)
+// 		if key == "ISN" {
+// 			isn, ierr := strconv.Atoi(value.(string))
+// 			if ierr != nil {
+// 				return ierr
+// 			}
+// 			record.Isn = adatypes.Isn(isn)
+// 		} else {
+// 			switch value.(type) {
+// 			case map[string]interface{}:
+// 				fmt.Println("JSON:", key, "=", value)
+// 			default:
+// 				err = record.SetValue(key, value)
+// 				if err != nil {
+// 					fmt.Println("Error setting key:", key)
+// 					return err
+// 				}
+// 			}
+// 		}
+// 	}
+// 	return nil
+// }

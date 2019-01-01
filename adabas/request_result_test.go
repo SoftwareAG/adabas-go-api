@@ -145,20 +145,20 @@ func generateResult() *RequestResult {
 	return result
 }
 
-func TestJson(t *testing.T) {
-	r := []byte("{\"Record\":[{\"AA\":\"11100301\",\"AB\":{\"AC\":\"HANS                \",\"AD\":\"WILHELM             \",\"AE\":\"BERGMANN            \"},\"ISN\":251},{\"AA\":\"11100302\",\"AB\":{\"AC\":\"ROSWITHA            \",\"AD\":\"ELLEN               \",\"AE\":\"HAIBACH             \"},\"ISN\":383}]}")
-	result := &RequestResult{}
-	err := json.Unmarshal(r, result)
-	if !assert.NoError(t, err) {
-		return
-	}
-	res, jerr := json.Marshal(result)
-	if !assert.NoError(t, jerr) {
-		return
-	}
-	fmt.Println(string(res))
-	assert.Equal(t, r, res)
-}
+// func TestJson(t *testing.T) {
+// 	r := []byte("{\"Record\":[{\"AA\":\"11100301\",\"AB\":{\"AC\":\"HANS                \",\"AD\":\"WILHELM             \",\"AE\":\"BERGMANN            \"},\"ISN\":251},{\"AA\":\"11100302\",\"AB\":{\"AC\":\"ROSWITHA            \",\"AD\":\"ELLEN               \",\"AE\":\"HAIBACH             \"},\"ISN\":383}]}")
+// 	result := &RequestResult{}
+// 	err := json.Unmarshal(r, result)
+// 	if !assert.NoError(t, err) {
+// 		return
+// 	}
+// 	res, jerr := json.Marshal(result)
+// 	if !assert.NoError(t, jerr) {
+// 		return
+// 	}
+// 	fmt.Println(string(res))
+// 	assert.Equal(t, r, res)
+// }
 
 func ExampleRequestResult_JsonMarshal() {
 	result := generateResult()
