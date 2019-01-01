@@ -46,6 +46,12 @@ func TestPackedData(t *testing.T) {
 	pa.LongToPacked(10, 4)
 	fmt.Printf("Unpacked value 10 = %X\n", pa.value)
 	assert.EqualValues(t, []byte{0x0, 0x0, 0x1, 0xc}, pa.value)
+	assert.Equal(t, "10", pa.String())
+
+	pa.LongToPacked(9, 4)
+	fmt.Printf("Unpacked value 9 = %X\n", pa.value)
+	assert.EqualValues(t, []byte{0x0, 0x0, 0x0, 0x9c}, pa.value)
+	assert.Equal(t, "9", pa.String())
 
 	pa.LongToPacked(-10, 4)
 	fmt.Printf("Unpacked value 10 = %X\n", pa.value)
@@ -62,8 +68,33 @@ func TestPackedData(t *testing.T) {
 		fmt.Println(FormatByteBuffer("Packed format", pa.value))
 	}
 
-	pa.SetValue(123)
+	err = pa.SetValue(123)
+	assert.NoError(t, err)
 	assert.Equal(t, int64(123), pa.packedToLong())
 	assert.Equal(t, "123", pa.String())
 
+}
+
+func TestPackedCheckValid(t *testing.T) {
+	f, err := initLogWithFile("packed.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+	adaType := NewType(FieldTypePacked, "PA")
+	adaType.length = 1
+	pa := newPackedValue(adaType)
+	err = pa.SetValue(123)
+	if !assert.NotNil(t, err) {
+		return
+	}
+	assert.Error(t, err)
+	assert.Equal(t, "ADG0000057: Packed value range error, value 123 does not fit into 1-packed", err.Error())
+	err = pa.SetValue(9)
+	if !assert.Nil(t, err) {
+		return
+	}
+	assert.Equal(t, "9", pa.String())
 }

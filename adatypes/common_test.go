@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -73,6 +74,14 @@ func TestLog(t *testing.T) {
 	}
 	defer f.Close()
 
+	defer TimeTrack(time.Now(), "Time Track Unit test ")
+
 	hallo := "HELLO"
 	Central.Log.Debugf("This is a test of data %s", hallo)
+
+	LogMultiLineString("ABC\nXXXX\n")
+	d := Central.IsDebugLevel()
+	Central.SetDebugLevel(true)
+	Central.SetDebugLevel(false)
+	Central.SetDebugLevel(d)
 }

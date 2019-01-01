@@ -782,4 +782,5 @@ var statisMessages = []struct {
 	{"ADG0000054", "en", "Store entry set is empty"},
 	{"ADG0000055", "en", "Unknown import foramt suffix for file {0} "},
 	{"ADG0000056", "en", "Received buffer error, buffer less than request {0}<{1}"},
+	{"ADG0000057", "en", "Packed value range error, value {0} does not fit into {1}-packed"},
 }

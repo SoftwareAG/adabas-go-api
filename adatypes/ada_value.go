@@ -206,17 +206,80 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 	case uint64:
 		val = x.(uint64)
 	case int64:
-		val = uint64(x.(int64))
+		v := x.(int64)
+		if v < 0 {
+			return 0, fmt.Errorf("Error converting negative value of %T", x)
+		}
+		val = uint64(v)
 	case int:
-		val = uint64(x.(int))
+		v := x.(int)
+		if v < 0 {
+			return 0, fmt.Errorf("Error converting negative value of %T", x)
+		}
+		val = uint64(v)
 	case uint32:
 		val = uint64(x.(uint32))
 	case int32:
-		val = uint64(x.(int32))
+		v := x.(int32)
+		if v < 0 {
+			return 0, fmt.Errorf("Error converting negative value of %T", x)
+		}
+		val = uint64(v)
+	case uint16:
+		val = uint64(x.(uint16))
+	case int16:
+		v := x.(int16)
+		if v < 0 {
+			return 0, fmt.Errorf("Error converting negative value of %T", x)
+		}
+		val = uint64(v)
 	case uint8:
 		val = uint64(x.(uint8))
 	case int8:
-		val = uint64(x.(int8))
+		v := x.(int8)
+		if v < 0 {
+			return 0, fmt.Errorf("Error converting negative value of %T", x)
+		}
+		val = uint64(v)
+	case []byte:
+		v := x.([]byte)
+		switch len(v) {
+		case 1:
+			buf := bytes.NewBuffer(v)
+			var res uint8
+			err := binary.Read(buf, endian(), &res)
+			if err != nil {
+				return 0, err
+			}
+			return uint64(res), nil
+		case 2:
+			buf := bytes.NewBuffer(v)
+			var res uint16
+			err := binary.Read(buf, endian(), &res)
+			if err != nil {
+				return 0, err
+			}
+			return uint64(res), nil
+		case 4:
+			buf := bytes.NewBuffer(v)
+			var res uint32
+			err := binary.Read(buf, endian(), &res)
+			if err != nil {
+				return 0, err
+			}
+			return uint64(res), nil
+		case 8:
+			buf := bytes.NewBuffer(v)
+			var res uint64
+			err := binary.Read(buf, endian(), &res)
+			if err != nil {
+				return 0, err
+			}
+			return res, nil
+		default:
+		}
+		Central.Log.Debugf("Error converting to byte slice: %v", x)
+		return 0, errors.New("Cannot convert value to byte slice")
 	default:
 		return 0, fmt.Errorf("Error converting %T", x)
 	}
@@ -235,8 +298,29 @@ func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 			return 0, err
 		}
 		val = int64(sval)
+	case int8:
+		v := x.(int8)
+		val = int64(v)
+	case int16:
+		v := x.(int16)
+		val = int64(v)
+	case int32:
+		v := x.(int32)
+		val = int64(v)
 	case int64:
 		val = x.(int64)
+	case uint8:
+		v := x.(uint8)
+		val = int64(v)
+	case uint16:
+		v := x.(uint16)
+		val = int64(v)
+	case uint32:
+		v := x.(uint32)
+		val = int64(v)
+	case uint64:
+		v := x.(uint64)
+		val = int64(v)
 	case int:
 		val = int64(x.(int))
 	case []byte:
@@ -280,7 +364,7 @@ func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 		return 0, errors.New("Cannot convert value to byte slice")
 	default:
 		Central.Log.Debugf("Error converting %v", x)
-		return 0, errors.New("Cannot convert value")
+		return 0, fmt.Errorf("Cannot convert value type %T to int64", x)
 	}
 	Central.Log.Debugf("Converted value %v", val)
 	return val, nil

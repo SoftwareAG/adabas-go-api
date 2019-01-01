@@ -11,7 +11,6 @@ func TestMapImportJson(t *testing.T) {
 	defer f.Close()
 
 	adabas := NewAdabas(23)
-	// mr := NewMapRepository(adabas, 250)
 	defer adabas.Close()
 	p := os.Getenv("TESTFILES")
 	if p == "" {

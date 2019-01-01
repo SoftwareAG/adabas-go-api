@@ -1,3 +1,21 @@
+/*
+* Copyright © 2018 Software AG, Darmstadt, Germany and/or its licensors
+*
+* SPDX-License-Identifier: Apache-2.0
+*
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+ */
 package adatypes
 
 import (
@@ -85,20 +103,88 @@ func ExampleInt8_SetValue() {
 	fmt.Printf("Integer minimal value : %d %T\n", up.value, up.value)
 	up.SetValue(int64(math.MaxInt64))
 	fmt.Printf("Integer maximal value : %d %T\n", up.value, up.value)
-	up.SetValue(int8(10))
+	err = up.SetValue(int8(10))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	fmt.Printf("Integer 10 (8bit) value : %d %T\n", up.value, up.value)
-	up.SetValue(int16(100))
+	err = up.SetValue(int16(100))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	fmt.Printf("Integer 100 (16bit) value : %d %T\n", up.value, up.value)
-	up.SetValue(int32(1000))
+	err = up.SetValue(int32(1000))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	fmt.Printf("Integer 1000 (32bit) value : %d %T\n", up.value, up.value)
+	err = up.SetValue("87654")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 87654 (string) value : %d %T\n", up.value, up.value)
+	err = up.SetValue(uint8(10))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 10 (8bit) value : %d %T\n", up.value, up.value)
+	err = up.SetValue(uint16(100))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 100 (16bit) value : %d %T\n", up.value, up.value)
+	err = up.SetValue(uint32(1000))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 1000 (32bit) value : %d %T\n", up.value, up.value)
+	err = up.SetValue([]byte{0x50})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 80 (1-byte array) value : %d %T\n", up.value, up.value)
+	err = up.SetValue([]byte{0xfe})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer -2 (1-byte array) value : %d %T\n", up.value, up.value)
+	err = up.SetValue([]byte{0x50, 0x2})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 592 (2-byte array) value : %d %T\n", up.value, up.value)
+	err = up.SetValue([]byte{0x50, 0x2, 0x3, 0x4})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 67306064 (4-byte array) value : %d %T\n", up.value, up.value)
 
 	// Output: 	Integer default value : 0
 	// Integer 1000 value : 1000 int64
 	// Integer minimal value : -9223372036854775808 int64
 	// Integer maximal value : 9223372036854775807 int64
-	// Integer 10 (8bit) value : 9223372036854775807 int64
-	// Integer 100 (16bit) value : 9223372036854775807 int64
-	// Integer 1000 (32bit) value : 9223372036854775807 int64
+	// Integer 10 (8bit) value : 10 int64
+	// Integer 100 (16bit) value : 100 int64
+	// Integer 1000 (32bit) value : 1000 int64
+	// Integer 87654 (string) value : 87654 int64
+	// Integer 10 (8bit) value : 10 int64
+	// Integer 100 (16bit) value : 100 int64
+	// Integer 1000 (32bit) value : 1000 int64
+	// Integer 80 (1-byte array) value : 80 int64
+	// Integer -2 (1-byte array) value : -2 int64
+	// Integer 592 (2-byte array) value : 592 int64
+	// Integer 67306064 (4-byte array) value : 67306064 int64
 }
 
 func TestInt8FormatBuffer(t *testing.T) {
@@ -188,6 +274,111 @@ func TestUInt8(t *testing.T) {
 	fl, flerr := up.Float()
 	assert.NoError(t, flerr)
 	assert.Equal(t, 1024.0, fl)
+}
+
+func ExampleUInt8_SetValue() {
+	f, err := initLogWithFile("unpacked.log")
+	if err != nil {
+		fmt.Println("Error enable log")
+		return
+	}
+	defer f.Close()
+
+	adaType := NewType(FieldTypeUInt8, "U8")
+	up := newUInt8Value(adaType)
+	fmt.Println("Unsigned Integer default value :", up.value)
+	up.SetValue(1000)
+	fmt.Printf("Integer 1000 value : %d %T\n", up.value, up.value)
+	err = up.SetValue(int64(math.MinInt64))
+	if err == nil {
+		fmt.Println("ERROR: negative value should be cause error")
+		return
+	}
+	fmt.Println(err)
+	up.SetValue(int64(math.MaxInt64))
+	fmt.Printf("Integer maximal value : %d %T\n", up.value, up.value)
+	err = up.SetValue(int8(10))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 10 (8bit) value : %d %T\n", up.value, up.value)
+	err = up.SetValue(int16(100))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 100 (16bit) value : %d %T\n", up.value, up.value)
+	err = up.SetValue(int32(1000))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 1000 (32bit) value : %d %T\n", up.value, up.value)
+	err = up.SetValue("87654")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 87654 (string) value : %d %T\n", up.value, up.value)
+	err = up.SetValue(uint8(10))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 10 (8bit) value : %d %T\n", up.value, up.value)
+	err = up.SetValue(uint16(100))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 100 (16bit) value : %d %T\n", up.value, up.value)
+	err = up.SetValue(uint32(1000))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 1000 (32bit) value : %d %T\n", up.value, up.value)
+	err = up.SetValue(uint8(80))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 80 (1-byte array) value : %d %T\n", up.value, up.value)
+	err = up.SetValue([]byte{0xfe})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 254 (1-byte array) value : %d %T\n", up.value, up.value)
+	err = up.SetValue([]byte{0x50, 0x2})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 592 (2-byte array) value : %d %T\n", up.value, up.value)
+	err = up.SetValue([]byte{0x50, 0x2, 0x3, 0x4})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Integer 67306064 (4-byte array) value : %d %T\n", up.value, up.value)
+
+	// Output: 	Unsigned Integer default value : 0
+	// Integer 1000 value : 1000 uint64
+	// Error converting negative value of int64
+	// Integer maximal value : 9223372036854775807 uint64
+	// Integer 10 (8bit) value : 10 uint64
+	// Integer 100 (16bit) value : 100 uint64
+	// Integer 1000 (32bit) value : 1000 uint64
+	// Integer 87654 (string) value : 87654 uint64
+	// Integer 10 (8bit) value : 10 uint64
+	// Integer 100 (16bit) value : 100 uint64
+	// Integer 1000 (32bit) value : 1000 uint64
+	// Integer 80 (1-byte array) value : 80 uint64
+	// Integer 254 (1-byte array) value : 254 uint64
+	// Integer 592 (2-byte array) value : 592 uint64
+	// Integer 67306064 (4-byte array) value : 67306064 uint64
 }
 
 func TestUInt8FormatBuffer(t *testing.T) {

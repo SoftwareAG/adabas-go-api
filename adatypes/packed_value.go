@@ -21,6 +21,7 @@ package adatypes
 
 import (
 	"bytes"
+	"math"
 	"strconv"
 )
 
@@ -72,6 +73,11 @@ func (value *packedValue) SetValue(v interface{}) error {
 			return err
 		}
 		Central.Log.Debugf("Got ... %v", v)
+		err = checkValidValue(v, value.Type().Length())
+		if err != nil {
+			return err
+		}
+
 		value.LongToPacked(v, value.Type().Length())
 		Central.Log.Debugf("Packed value %s", value.String())
 	}
@@ -155,7 +161,20 @@ func (value *packedValue) packedToLong() int64 {
 
 	return longValue
 }
+func checkValidValue(intValue int64, len uint32) error {
+	maxValue := int64(1)
+	for i := uint32(0); i < (len*2)-1; i++ {
+		maxValue *= 10
+	}
+	absValue := int64(math.Abs(float64(intValue)))
+	Central.Log.Debugf("Check valid value absolute value %d < max %d", absValue, maxValue)
+	if absValue < maxValue {
+		return nil
+	}
+	return NewGenericError(57, intValue, len)
+}
 
+// LongToPacked convert long values (int64) to packed values
 func (value *packedValue) LongToPacked(intValue int64, len uint32) {
 	Central.Log.Debugf("Convert int64=%d of len=%d to packed", intValue, len)
 	b := make([]byte, len)
@@ -167,7 +186,8 @@ func (value *packedValue) LongToPacked(intValue int64, len uint32) {
 	}
 	var x int64
 	start := int64(len) - 2
-	if start < 0 {
+	if start < -1 {
+		Central.Log.Debugf("Start negative %d", start)
 		return
 	}
 	if intValue > 0 {
@@ -188,7 +208,7 @@ func (value *packedValue) LongToPacked(intValue int64, len uint32) {
 		v = (v - x) / 10
 		b[i] |= uint8(x << 4)
 	}
-	Central.Log.Debugf("Final value converted %v", b)
+	Central.Log.Debugf("Final value converted %v 0x%X", b, b)
 
 	value.value = b
 }

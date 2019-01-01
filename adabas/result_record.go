@@ -35,8 +35,19 @@ type ResultRecord struct {
 	definition *adatypes.Definition
 }
 
+var aaValue adatypes.IAdaValue
+var paValue adatypes.IAdaValue
+
 func hashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	record := x.(*ResultRecord)
+	fmt.Printf("HASH: %s %p %T\n", adaValue.Type().Name(), adaValue, adaValue)
+	switch adaValue.Type().Name() {
+	case "AA":
+		aaValue = adaValue
+	case "PA":
+		paValue = adaValue
+	default:
+	}
 	if _, ok := record.HashFields[adaValue.Type().Name()]; !ok {
 		record.HashFields[adaValue.Type().Name()] = adaValue
 	}
@@ -47,10 +58,13 @@ func hashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseRe
 // NewResultRecord new result record
 func NewResultRecord(definition *adatypes.Definition) (*ResultRecord, error) {
 	if definition == nil || definition.Values == nil {
-		adatypes.Central.Log.Debugf("Definition values empty")
-		return nil, fmt.Errorf("Field list empty")
+		err := definition.CreateValues(false)
+		if err != nil {
+			return nil, err
+		}
 	}
 	record := &ResultRecord{Value: definition.Values, definition: definition}
+	definition.Values = nil
 	record.HashFields = make(map[string]adatypes.IAdaValue)
 	t := adatypes.TraverserValuesMethods{EnterFunction: hashValues}
 	record.traverse(t, record)
@@ -126,15 +140,26 @@ func (record *ResultRecord) DumpValues() {
 	record.traverse(t, nil)
 }
 
+func (record *ResultRecord) searchValue(field string) (adatypes.IAdaValue, bool) {
+	if adaValue, ok := record.HashFields[field]; ok {
+		return adaValue, true
+	}
+	return nil, false
+}
+
 // SetValue set the value for a specific field
 func (record *ResultRecord) SetValue(field string, value interface{}) (err error) {
-	adaValue, ok := record.HashFields[field]
-	if ok {
+	if adaValue, ok := record.searchValue(field); ok {
+		fmt.Printf("Pre Value: %s %p %T %v set %T %v\n", adaValue.Type().Name(), adaValue, adaValue, adaValue.String(), value, value)
 		err = adaValue.SetValue(value)
+		fmt.Printf("Set Value: %s %p %T %v\n", adaValue.Type().Name(), adaValue, adaValue, adaValue.String())
+		fmt.Printf("AA Value: %s %p %T %v\n", aaValue.Type().Name(), aaValue, aaValue, aaValue.String())
+		fmt.Printf("PA Value: %s %p %T %v\n", paValue.Type().Name(), paValue, paValue, paValue.String())
+		adatypes.Central.Log.Debugf("Set %s [%T] value err=%v", field, adaValue, err)
 	} else {
 		err = adatypes.NewGenericError(28, field)
+		adatypes.Central.Log.Debugf("Field %s not found err=%v", field, adaValue, err)
 	}
-	adatypes.Central.Log.Debugf("Set %s [%T] value err=%v", field, adaValue, err)
 	return
 }
 

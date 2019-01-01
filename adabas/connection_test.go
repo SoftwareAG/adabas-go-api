@@ -352,7 +352,9 @@ func TestConnectionPeriodAndMultipleField(t *testing.T) {
 	assert.NoError(t, qErr)
 	fmt.Println("Result data:")
 	result, rErr := readRequest.ReadISN(499)
-	assert.NoError(t, rErr)
+	if !assert.NoError(t, rErr) {
+		return
+	}
 	result.DumpValues()
 }
 
@@ -1682,8 +1684,16 @@ func TestConnectionSimpleStore(t *testing.T) {
 	if rErr != nil {
 		return
 	}
-	storeRequest.StoreFields("AA,AB")
+	sferr := storeRequest.StoreFields("AA,AB")
+	if sferr != nil {
+		fmt.Println("Error setting fields", sferr)
+		return
+	}
 	record, err := storeRequest.CreateRecord()
+	if err != nil {
+		fmt.Println("Error creating record", err)
+		return
+	}
 	err = record.SetValueWithIndex("AA", nil, "777777_0")
 	err = record.SetValueWithIndex("AC", nil, "WABER")
 	err = record.SetValueWithIndex("AD", nil, "EMIL")
