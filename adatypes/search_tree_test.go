@@ -45,6 +45,8 @@ func TestSearchSimpleTree(t *testing.T) {
 	assert.Equal(t, "XXXXX", searchInfo.constants[0])
 	assert.Equal(t, "2", searchInfo.constants[1])
 	assert.Equal(t, "AA=#{1} AND BC=#{2}", searchInfo.search)
+	assert.False(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchExtraTree(t *testing.T) {
@@ -60,6 +62,8 @@ func TestSearchExtraTree(t *testing.T) {
 	assert.Equal(t, "XX\\'XXX", searchInfo.constants[0])
 	assert.Equal(t, "2", searchInfo.constants[1])
 	assert.Equal(t, "AA=#{1} AND BC=#{2}", searchInfo.search)
+	assert.False(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchSecondTree(t *testing.T) {
@@ -74,6 +78,8 @@ func TestSearchSecondTree(t *testing.T) {
 	searchInfo := NewSearchInfo(opensystem, "AA=1 AND BC='12342'")
 	assert.Equal(t, "12342", searchInfo.constants[0])
 	assert.Equal(t, "AA=1 AND BC=#{1}", searchInfo.search)
+	assert.False(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchExtractAndBinding(t *testing.T) {
@@ -91,6 +97,8 @@ func TestSearchExtractAndBinding(t *testing.T) {
 	searchInfo.extractBinding(tree, searchInfo.search)
 	Central.Log.Debugf(tree.String())
 	assert.Equal(t, "AA,8,B,EQ,D,BC,1,B,EQ.", tree.SearchBuffer())
+	assert.True(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchExtractOrBinding(t *testing.T) {
@@ -108,6 +116,8 @@ func TestSearchExtractOrBinding(t *testing.T) {
 	searchInfo.extractBinding(tree, searchInfo.search)
 	Central.Log.Debugf(tree.String())
 	assert.Equal(t, "AA,8,B,EQ,R,BC,1,B,EQ.", tree.SearchBuffer())
+	assert.True(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchStringValue(t *testing.T) {
@@ -123,7 +133,6 @@ func TestSearchStringValue(t *testing.T) {
 	searchInfo.Definition = tDefinition()
 	tree := &SearchTree{}
 	searchInfo.extractBinding(tree, searchInfo.search)
-	fmt.Println(tree.String())
 	assert.Equal(t, "AD,6,A,EQ,D,BC,1,B,EQ.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
@@ -132,6 +141,8 @@ func TestSearchStringValue(t *testing.T) {
 	assert.Equal(t, uint8('A'), valueBuffer[0])
 	assert.Equal(t, uint8('F'), valueBuffer[5])
 	assert.Equal(t, uint8(2), valueBuffer[6])
+	assert.True(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchVarStringValue(t *testing.T) {
@@ -147,7 +158,6 @@ func TestSearchVarStringValue(t *testing.T) {
 	searchInfo.Definition = tDefinition()
 	tree := &SearchTree{}
 	searchInfo.extractBinding(tree, searchInfo.search)
-	fmt.Println(tree.String())
 	assert.Equal(t, "AD,6,A,EQ,D,BC,1,B,EQ.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
@@ -156,6 +166,8 @@ func TestSearchVarStringValue(t *testing.T) {
 	assert.Equal(t, uint8('A'), valueBuffer[0])
 	assert.Equal(t, uint8('F'), valueBuffer[5])
 	assert.Equal(t, uint8(2), valueBuffer[6])
+	assert.True(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchTwoStringValue(t *testing.T) {
@@ -180,6 +192,8 @@ func TestSearchTwoStringValue(t *testing.T) {
 	assert.Equal(t, uint8('A'), valueBuffer[1])
 	assert.Equal(t, uint8('F'), valueBuffer[6])
 	assert.Equal(t, uint8('X'), valueBuffer[7])
+	assert.True(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchRange(t *testing.T) {
@@ -204,6 +218,8 @@ func TestSearchRange(t *testing.T) {
 	assert.Equal(t, uint8(44), valueBuffer[8])
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)
+	assert.False(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchRangeMf(t *testing.T) {
@@ -231,6 +247,8 @@ func TestSearchRangeMf(t *testing.T) {
 	assert.Equal(t, uint8(44), valueBuffer[8])
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)
+	assert.True(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchRangeMfNoLower(t *testing.T) {
@@ -259,6 +277,8 @@ func TestSearchRangeMfNoLower(t *testing.T) {
 	assert.Equal(t, uint8(12), valueBuffer[16])
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)
+	assert.True(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchRangeMfNoHigher(t *testing.T) {
@@ -287,6 +307,8 @@ func TestSearchRangeMfNoHigher(t *testing.T) {
 	assert.Equal(t, uint8(44), valueBuffer[16])
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)
+	assert.True(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchRangeMfNoBorder(t *testing.T) {
@@ -302,7 +324,6 @@ func TestSearchRangeMfNoBorder(t *testing.T) {
 	searchInfo.Definition = tDefinition()
 	tree := &SearchTree{}
 	searchInfo.extractBinding(tree, searchInfo.search)
-	fmt.Println("Search Tree:", tree.String())
 	assert.Equal(t, "AA,8,B,S,AA,8,B,N,AA,8,B,N,AA,8,B.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
@@ -319,6 +340,8 @@ func TestSearchRangeMfNoBorder(t *testing.T) {
 	fmt.Println("Descriptors ", descriptors)
 	assert.Equal(t, 1, len(descriptors))
 	assert.Equal(t, "AA", descriptors[0])
+	assert.True(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchValue(t *testing.T) {
@@ -351,6 +374,8 @@ func TestSearchValue(t *testing.T) {
 	fields := tree.SearchFields()
 	assert.Equal(t, 1, len(fields))
 	assert.Equal(t, "AA", fields[0])
+	assert.False(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchFields(t *testing.T) {
@@ -382,6 +407,7 @@ func TestSearchFields(t *testing.T) {
 	assert.Equal(t, 2, len(fields))
 	assert.Equal(t, "AA", fields[0])
 	assert.Equal(t, "BC", fields[1])
+	assert.True(t, searchInfo.NeedSearch)
 
 }
 
@@ -449,6 +475,8 @@ func TestSearchComplex(t *testing.T) {
 	descriptors := tree.OrderBy()
 	assert.Equal(t, 1, len(descriptors))
 	assert.Equal(t, "AA", descriptors[0])
+	assert.True(t, searchInfo.NeedSearch)
+
 }
 
 func TestSearchExtractOr2Binding(t *testing.T) {
@@ -467,6 +495,7 @@ func TestSearchExtractOr2Binding(t *testing.T) {
 	assert.NoError(t, err)
 	Central.Log.Debugf(tree.String())
 	assert.Equal(t, "AA,8,B,EQ,R,BC,1,B,EQ,R,AC,1,P,EQ.", tree.SearchBuffer())
+	assert.True(t, searchInfo.NeedSearch)
 }
 
 func TestSearchExtractOr2BindingError(t *testing.T) {
