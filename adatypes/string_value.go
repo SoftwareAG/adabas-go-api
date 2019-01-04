@@ -255,9 +255,15 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 		case value.lobSize <= PartialLobSize:
 			if len(value.value) < int(value.lobSize) {
 				err = NewGenericError(56, len(value.value), value.lobSize)
+				Central.Log.Debugf("Error parsing lob: %s", err.Error())
 				return
 			}
-			value.value = value.value[:value.lobSize-4]
+			Central.Log.Debugf("Use subset of lob partial: %d of %d", value.lobSize, len(value.value))
+			if value.lobSize > 4 {
+				value.value = value.value[:value.lobSize-4]
+			} else {
+				value.value = make([]byte, 0)
+			}
 		case value.lobSize > PartialLobSize:
 			Central.Log.Debugf("Due to lobSize is bigger then partial size, need secand call (lob) for %s", value.Type().Name())
 			option.NeedSecondCall = true
@@ -271,6 +277,7 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 	} else {
 		Central.Log.Debugf("Buffer get string offset=%d %s:%s size=%d", helper.offset, value.Type().Name(), value.value, len(value.value))
 	}
+	Central.Log.Debugf("Rest of buffer %d", helper.Remaining())
 	return
 }
 
