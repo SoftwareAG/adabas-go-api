@@ -1981,3 +1981,31 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	checkStoreByFile(t, "23", 19, multipleTransactionRefName2)
 
 }
+
+func TestConnectionComplexSearch(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "connection.log")
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+	connection, err := NewConnection("acj;target=23")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	connection.Open()
+	readRequest, rErr := connection.CreateReadRequest(16)
+	assert.NoError(t, rErr)
+	readRequest.QueryFields("AA,AB")
+
+	adatypes.Central.Log.Debugf("Test Search complex with ...")
+	result, rerr := readRequest.ReadLogicalWith("AA=[11100301:11100305] AND AE='SMITH'")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	fmt.Println("Complex search done")
+	fmt.Println(result)
+}

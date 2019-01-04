@@ -531,6 +531,54 @@ func (adabas *Adabas) ReadLogicalWith(fileNr uint32, adabasRequest *adatypes.Ada
 	return
 }
 
+// SearchLogicalWith Search logical using a descriptor
+func (adabas *Adabas) SearchLogicalWith(fileNr uint32, adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+	err = adabas.Open()
+	if err != nil {
+		return
+	}
+	adatypes.Central.Log.Debugf("Read logical ... %s dbid=%d", l3.command(), adabas.Acbx.Acbxdbid)
+	adabas.Acbx.Acbxcmd = s2.code()
+	adabas.Acbx.resetCop()
+	adabas.Acbx.Acbxcop[1] = 'H'
+	adabas.Acbx.Acbxcop[1] = 'A'
+
+	adabas.Acbx.Acbxisn = 0
+	adabas.Acbx.Acbxisq = 0
+	adabas.Acbx.Acbxcid = [4]uint8{0xff, 0xff, 0xff, 0xff}
+
+	adabas.prepareBuffers(adabasRequest)
+	var add1 bytes.Buffer
+	for _, d := range adabasRequest.Descriptors {
+		add1.WriteString(d)
+	}
+	add1.WriteString("        ")
+	copy(adabas.Acbx.Acbxadd1[:], add1.Bytes()[0:7])
+
+	adabas.Acbx.Acbxfnr = fileNr
+	// Call Adabas
+	err = adabas.CallAdabas()
+	adatypes.Central.Log.Debugf("Received search response ret=%v", err)
+	if err != nil {
+		return
+	}
+	// End of file reached
+	if adabas.Acbx.Acbxrsp == AdaEOF || adabas.Acbx.Acbxisq == 0 {
+		return
+	}
+
+	if adabasRequest.Option.HoldRecords {
+		adabas.Acbx.Acbxcmd = l1.code()
+	} else {
+		adabas.Acbx.Acbxcmd = l4.code()
+	}
+	adabas.Acbx.resetCop()
+	adabas.Acbx.Acbxcop[1] = ' '
+	adabas.Acbx.Acbxcop[1] = 'N'
+	err = adabas.loopCall(adabasRequest, x)
+	return
+}
+
 // Loop call used to read a sequence of records
 func (adabas *Adabas) loopCall(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
 
@@ -542,8 +590,11 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.AdabasRequest, x interfac
 			adabasRequest.Definition.CreateValues(false)
 		}
 		// Call Adabas
-		ret := adabas.CallAdabas()
-		adatypes.Central.Log.Debugf("Received call response ret=%v", ret)
+		err = adabas.CallAdabas()
+		adatypes.Central.Log.Debugf("Received call response ret=%v", err)
+		if err != nil {
+			return
+		}
 
 		// End of file reached
 		if adabas.Acbx.Acbxrsp == AdaEOF {

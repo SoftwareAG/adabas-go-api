@@ -52,6 +52,6 @@ ADG0000051=Invalid connection string prefix
 ADG0000052=Set value error: {0}
 ADG0000053=Store record error: {0}
 ADG0000054=Store entry set is empty
-ADG0000055=Unknown import foramt suffix for file {0} 
+ADG0000055=Unknown import format suffix for file {0} 
 ADG0000056=Received buffer error, buffer less than request {0}<{1}
 ADG0000057=Packed value of {0} validation error, value {1} does not fit into {2}-packed

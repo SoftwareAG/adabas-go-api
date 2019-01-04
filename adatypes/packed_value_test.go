@@ -91,7 +91,7 @@ func TestPackedCheckValid(t *testing.T) {
 		return
 	}
 	assert.Error(t, err)
-	assert.Equal(t, "ADG0000057: Packed value range error, value 123 does not fit into 1-packed", err.Error())
+	assert.Equal(t, "ADG0000057: Packed value of PA validation error, value 123 does not fit into 1-packed", err.Error())
 	err = pa.SetValue(9)
 	if !assert.Nil(t, err) {
 		return

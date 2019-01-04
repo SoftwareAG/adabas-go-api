@@ -447,12 +447,12 @@ func (adaid *ID) platform(url string) *adatypes.Platform {
 }
 
 func (adaid *ID) changeOpenState(url string, open bool) {
-	adatypes.Central.Log.Debugf("Register open=%b to url=%s", open, url)
+	adatypes.Central.Log.Debugf("Register open=%v to url=%s", open, url)
 	adaid.status(url).open = open
 }
 
 func (adaid *ID) isOpen(url string) bool {
 	open := adaid.status(url).open
-	adatypes.Central.Log.Debugf("Register open=%b to url=%s", open, url)
+	adatypes.Central.Log.Debugf("Register open=%v to url=%s", open, url)
 	return open
 }

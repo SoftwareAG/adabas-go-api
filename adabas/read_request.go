@@ -320,9 +320,15 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 	searchInfo.Definition = adabasRequest.Definition
 	adabasRequest.SearchTree = tree
 	adabasRequest.Descriptors = tree.OrderBy()
-	adatypes.Central.Log.Debugf("read logical ...%#v", adabasRequest.Descriptors)
 
-	err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, x)
+	if searchInfo.NeedSearch {
+		adatypes.Central.Log.Debugf("search logical with ...%#v", adabasRequest.Descriptors)
+		err = request.adabas.SearchLogicalWith(request.repository.Fnr, adabasRequest, x)
+	} else {
+		adatypes.Central.Log.Debugf("read logical with ...%#v", adabasRequest.Descriptors)
+		err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, x)
+	}
+
 	return
 }
 
@@ -364,7 +370,7 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 		return
 	}
 
-	adatypes.Central.Log.Debugf("read logical ...%d", request.repository.Fnr)
+	adatypes.Central.Log.Debugf("read logical by ...%d", request.repository.Fnr)
 	err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, x)
 	return
 }

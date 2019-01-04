@@ -89,7 +89,7 @@ func TestSearchExtractAndBinding(t *testing.T) {
 	searchInfo.Definition = tDefinition()
 	tree := &SearchTree{}
 	searchInfo.extractBinding(tree, searchInfo.search)
-	fmt.Println(tree.String())
+	Central.Log.Debugf(tree.String())
 	assert.Equal(t, "AA,8,B,EQ,D,BC,1,B,EQ.", tree.SearchBuffer())
 }
 
@@ -106,7 +106,7 @@ func TestSearchExtractOrBinding(t *testing.T) {
 	searchInfo.Definition = tDefinition()
 	tree := &SearchTree{}
 	searchInfo.extractBinding(tree, searchInfo.search)
-	fmt.Println(tree.String())
+	Central.Log.Debugf(tree.String())
 	assert.Equal(t, "AA,8,B,EQ,R,BC,1,B,EQ.", tree.SearchBuffer())
 }
 
@@ -302,6 +302,7 @@ func TestSearchRangeMfNoBorder(t *testing.T) {
 	searchInfo.Definition = tDefinition()
 	tree := &SearchTree{}
 	searchInfo.extractBinding(tree, searchInfo.search)
+	fmt.Println("Search Tree:", tree.String())
 	assert.Equal(t, "AA,8,B,S,AA,8,B,N,AA,8,B,N,AA,8,B.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
@@ -418,4 +419,69 @@ AA=ABC AND BB=XDE AND CC='123' OR AA=[123:123]`
 		fmt.Println(match, "found at index", i)
 	}
 
+}
+
+func TestSearchComplex(t *testing.T) {
+	f, err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "AA=(12:44] AND AD='SMITH'")
+	searchInfo.Definition = tDefinition()
+	tree := &SearchTree{}
+	searchInfo.extractBinding(tree, searchInfo.search)
+	Central.Log.Debugf("Search Tree:", tree.String())
+
+	assert.Equal(t, "AA,8,B,GT,S,AA,8,B,LE,D,AD,6,A,EQ.", tree.SearchBuffer())
+	var buffer bytes.Buffer
+	tree.ValueBuffer(&buffer)
+	valueBuffer := buffer.Bytes()
+	if !assert.Len(t, valueBuffer, 22) {
+		return
+	}
+	assert.Equal(t, uint8(12), valueBuffer[0])
+	assert.Equal(t, uint8(44), valueBuffer[8])
+	assert.Equal(t, "SMITH ", string(valueBuffer[16:]))
+	descriptors := tree.OrderBy()
+	assert.Equal(t, 1, len(descriptors))
+	assert.Equal(t, "AA", descriptors[0])
+}
+
+func TestSearchExtractOr2Binding(t *testing.T) {
+	f, err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "AA=1 OR BC=2 OR AC=1")
+	searchInfo.Definition = tDefinition()
+	tree := &SearchTree{}
+	err = searchInfo.extractBinding(tree, searchInfo.search)
+	assert.NoError(t, err)
+	Central.Log.Debugf(tree.String())
+	assert.Equal(t, "AA,8,B,EQ,R,BC,1,B,EQ,R,AC,1,P,EQ.", tree.SearchBuffer())
+}
+
+func TestSearchExtractOr2BindingError(t *testing.T) {
+	f, err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "AA=1 OR BC=2 OR CC=1 OR  DD=2")
+	searchInfo.Definition = tDefinition()
+	tree := &SearchTree{}
+	err = searchInfo.extractBinding(tree, searchInfo.search)
+	assert.Error(t, err)
+	assert.Equal(t, "ADG0000041: No field CC found in file definition", err.Error())
 }
