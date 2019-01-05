@@ -20,6 +20,7 @@
 package adabas
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 
@@ -114,6 +115,7 @@ func TestAdabasOk23(t *testing.T) {
 		t.Fatal("Adabas call return value not correct", retb)
 	}
 	assert.Equal(t, "50005800", string(abds[1].Bytes()))
+	assert.False(t, adabas.IsRemote())
 
 	adabas.Acbx.Acbxcmd = cl.code()
 	retb = adabas.CallAdabas()
@@ -649,4 +651,175 @@ func TestAdabasFdtNewEmployeeRemote(t *testing.T) {
 	// }
 
 	fmt.Println("test done")
+}
+
+func TestAdabasUnknownDriver(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "adabas.log")
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+
+	log.Debug("Network location ", entireNetworkLocation())
+	url := "201(abc://" + entireNetworkLocation() + ")"
+	fmt.Println("Connect to ", url)
+	ID := NewAdabasID()
+	adabas, uerr := NewAdabasWithID(url, ID)
+	if !assert.NoError(t, uerr) {
+		return
+	}
+	defer adabas.Close()
+
+	err := adabas.Open()
+	assert.Error(t, err)
+	assert.Equal(t, "ADG0000001: Unknown network driver 'abc' given", err.Error())
+}
+
+func simpleDefinition() *adatypes.Definition {
+	layout := []adatypes.IAdaType{
+		adatypes.NewTypeWithLength(adatypes.FieldTypeString, "AA", 8),
+	}
+
+	testDefinition := adatypes.NewDefinitionWithTypes(layout)
+	return testDefinition
+}
+
+func testParser(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+	switch x.(type) {
+	case *uint32:
+		counter := x.(*uint32)
+		(*counter)++
+	case []uint32:
+		isns := x.([]adatypes.Isn)
+		for i := range isns {
+			if adatypes.Isn(i) == adabasRequest.Isn {
+				return
+			}
+		}
+		err = fmt.Errorf("ISN %d not found in list", adabasRequest.Isn)
+	default:
+		fmt.Println(adabasRequest.Isn)
+	}
+	return
+}
+
+func TestAdabasReadPhysical(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "adabas.log")
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+
+	adabas := NewAdabas(23)
+	err := adabas.Open()
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer adabas.Close()
+	var fb bytes.Buffer
+	fb.WriteString("AA.")
+	req := &adatypes.AdabasRequest{Option: &adatypes.BufferOption{}, Definition: simpleDefinition(),
+		FormatBuffer: fb, Multifetch: 1, RecordBufferLength: 200, Parser: testParser, Limit: 5}
+	counter := uint32(0)
+	//, RecordBuffer: adatypes.NewHelper(make([]byte, 199), 200, binary.LittleEndian)}
+	rerr := adabas.ReadPhysical(11, req, &counter)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	assert.Equal(t, uint32(5), counter)
+}
+
+func TestAdabasReadLogical(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "adabas.log")
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+
+	adabas := NewAdabas(23)
+	err := adabas.Open()
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer adabas.Close()
+	var fb bytes.Buffer
+	fb.WriteString("AA.")
+	req := &adatypes.AdabasRequest{Option: &adatypes.BufferOption{}, Definition: simpleDefinition(),
+		Descriptors: []string{"AA"}, FormatBuffer: fb, Multifetch: 1,
+		RecordBufferLength: 200, Parser: testParser, Limit: 5}
+	counter := uint32(0)
+	rerr := adabas.ReadLogicalWith(11, req, &counter)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	assert.Equal(t, uint32(5), counter)
+}
+
+func TestAdabasReadIsn(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "adabas.log")
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+
+	adabas := NewAdabas(23)
+	err := adabas.Open()
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer adabas.Close()
+	var fb bytes.Buffer
+	fb.WriteString("AA.")
+	req := &adatypes.AdabasRequest{Option: &adatypes.BufferOption{}, Definition: simpleDefinition(),
+		FormatBuffer: fb, Isn: 100, Multifetch: 1, RecordBufferLength: 200}
+	counter := []adatypes.Isn{11}
+	rerr := adabas.readISN(11, req, &counter)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+}
+
+func TestAdabasSearchogical(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "adabas.log")
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+
+	adabas := NewAdabas(23)
+	err := adabas.Open()
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer adabas.Close()
+	var fb bytes.Buffer
+	fb.WriteString("AA.")
+
+	//	searchInfo := adatypes.NewSearchInfo(adatypes.NewPlatform(0x20), "AA=[11100110:11100115] OR AA=11100304")
+	searchInfo := adatypes.NewSearchInfo(adatypes.NewPlatform(0x20), "AA=[11100110:11100115]")
+	searchInfo.Definition = simpleDefinition()
+	tree, terr := searchInfo.GenerateTree()
+	if !assert.NoError(t, terr) {
+		return
+	}
+
+	req := &adatypes.AdabasRequest{Option: &adatypes.BufferOption{}, Definition: simpleDefinition(),
+		Descriptors: []string{"AA"}, FormatBuffer: fb, Multifetch: 1, SearchTree: tree,
+		RecordBufferLength: 200, Parser: testParser, Limit: 5}
+	counter := uint32(0)
+	rerr := adabas.SearchLogicalWith(11, req, &counter)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	assert.Equal(t, uint32(5), counter)
 }

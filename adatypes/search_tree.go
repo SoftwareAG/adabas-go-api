@@ -466,6 +466,16 @@ func (searchInfo *SearchInfo) ParseSearch() (tree *SearchTree, err error) {
 	return
 }
 
+// GenerateTree generate tree search information
+func (searchInfo *SearchInfo) GenerateTree() (tree *SearchTree, err error) {
+	tree = &SearchTree{}
+	err = searchInfo.extractBinding(tree, searchInfo.search)
+	if err != nil {
+		return nil, err
+	}
+	return
+}
+
 func (searchInfo *SearchInfo) extractBinding(parentNode ISearchNode, bind string) (err error) {
 	var node *SearchNode
 

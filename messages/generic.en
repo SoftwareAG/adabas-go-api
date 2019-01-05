@@ -1,4 +1,4 @@
-ADG0000001=Unknown network driver %s given
+ADG0000001=Unknown network driver '{0}' given
 ADG0000002=Invalid Adabas command send: {0}
 ADG0000003=Invalid Adabas command received: {0}
 ADG0000004=Buffer input error
@@ -55,3 +55,4 @@ ADG0000054=Store entry set is empty
 ADG0000055=Unknown import format suffix for file {0} 
 ADG0000056=Received buffer error, buffer less than request {0}<{1}
 ADG0000057=Packed value of {0} validation error, value {1} does not fit into {2}-packed
+ADG0000058=Logical read with more then one descriptors not allowed, use search call

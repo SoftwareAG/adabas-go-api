@@ -438,7 +438,7 @@ func (adabas *Adabas) ReadPhysical(fileNr uint32, adabasRequest *adatypes.Adabas
 		return
 	}
 	adatypes.Central.Log.Debugf("Open flag %p %v readp", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
-	adatypes.Central.Log.Debugf("Physical read file ... ", l2.command())
+	adatypes.Central.Log.Debugf("Physical read file ... %s", l2.command())
 	if adabasRequest.Option.HoldRecords {
 		adabas.Acbx.Acbxcmd = l5.code()
 	} else {
@@ -519,8 +519,13 @@ func (adabas *Adabas) ReadLogicalWith(fileNr uint32, adabasRequest *adatypes.Ada
 
 	adabas.prepareBuffers(adabasRequest)
 	var add1 bytes.Buffer
-	for _, d := range adabasRequest.Descriptors {
-		add1.WriteString(d)
+	if len(adabasRequest.Descriptors) == 1 {
+		for _, d := range adabasRequest.Descriptors {
+			add1.WriteString(d)
+		}
+	} else {
+		err = adatypes.NewGenericError(58)
+		return
 	}
 	add1.WriteString("        ")
 	copy(adabas.Acbx.Acbxadd1[:], add1.Bytes()[0:7])
@@ -540,10 +545,11 @@ func (adabas *Adabas) SearchLogicalWith(fileNr uint32, adabasRequest *adatypes.A
 	adatypes.Central.Log.Debugf("Read logical ... %s dbid=%d", l3.command(), adabas.Acbx.Acbxdbid)
 	adabas.Acbx.Acbxcmd = s2.code()
 	adabas.Acbx.resetCop()
-	adabas.Acbx.Acbxcop[1] = 'H'
+	adabas.Acbx.Acbxcop[0] = 'H'
 	adabas.Acbx.Acbxcop[1] = 'A'
 
 	adabas.Acbx.Acbxisn = 0
+	adabas.Acbx.Acbxisl = 0
 	adabas.Acbx.Acbxisq = 0
 	adabas.Acbx.Acbxcid = [4]uint8{0xff, 0xff, 0xff, 0xff}
 

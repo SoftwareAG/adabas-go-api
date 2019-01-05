@@ -726,7 +726,7 @@ var statisMessages = []struct {
 	{"ADAGEFD014", "en", "ADABD length incorrect"},
 	{"ADAGEFE000", "en", "CT limit exceeded, or attached buffer overflow"},
 	{"ADAGEFF000", "en", "Insufficient space in attached buffer"},
-	{"ADG0000001", "en", "Unknown network driver %s given"},
+	{"ADG0000001", "en", "Unknown network driver '{0}' given"},
 	{"ADG0000002", "en", "Invalid Adabas command send: {0}"},
 	{"ADG0000003", "en", "Invalid Adabas command received: {0}"},
 	{"ADG0000004", "en", "Buffer input error"},
@@ -780,8 +780,8 @@ var statisMessages = []struct {
 	{"ADG0000052", "en", "Set value error: {0}"},
 	{"ADG0000053", "en", "Store record error: {0}"},
 	{"ADG0000054", "en", "Store entry set is empty"},
-	{"ADG0000055", "en", "Unknown import foramt suffix for file {0} "},
+	{"ADG0000055", "en", "Unknown import format suffix for file {0} "},
 	{"ADG0000056", "en", "Received buffer error, buffer less than request {0}<{1}"},
 	{"ADG0000057", "en", "Packed value of {0} validation error, value {1} does not fit into {2}-packed"},
+	{"ADG0000058", "en", "Logical read with more then one descriptors not allowed, use search call"},
 }
-
