@@ -214,7 +214,6 @@ func TestDefinitionQueryGroupField(t *testing.T) {
 
 	assert.Equal(t, "U4,4,B,GS,1,A.",
 		request.FormatBuffer.String())
-
 }
 
 func TestDefinitionQueryGroupFieldTwice(t *testing.T) {

@@ -21,7 +21,6 @@ package adabas
 
 import (
 	"encoding/json"
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -68,26 +67,30 @@ func (URL *URL) examineURL(url string) error {
 		dbid, err := strconv.Atoi(url)
 		if err != nil {
 			adatypes.Central.Log.Debugf("No numeric: %v", err)
-			err = fmt.Errorf("%s is no valid database id", url)
+			//err = fmt.Errorf("%s is no valid database id", url)
+			err = adatypes.NewGenericError(70, url)
 			return err
 		}
 		URL.Dbid = Dbid(dbid)
 		return nil
 	}
 	if len(match) < 4 {
-		return fmt.Errorf("Invalid URL given, need to be like <dbid>(<protocol>:<host>:<port>)")
+		//return fmt.Errorf("Invalid URL given, need to be like <dbid>(<protocol>:<host>:<port>)")
+		return adatypes.NewGenericError(71)
 	}
 
 	dbid, err := strconv.Atoi(match[1])
 	if err != nil {
 		adatypes.Central.Log.Debugf("Dbid not numeric: %v", err)
-		err = fmt.Errorf("%s is no valid database id", match[1])
+		//		err = fmt.Errorf("%s is no valid database id", match[1])
+		err = adatypes.NewGenericError(70, match[1])
 		return err
 	}
 	port, err := strconv.Atoi(match[4])
 	if err != nil {
 		adatypes.Central.Log.Debugf("Port not numeric: %v", err)
-		err = fmt.Errorf("%s is no valid port number", match[4])
+		// err = fmt.Errorf("%s is no valid port number", match[4])
+		err = adatypes.NewGenericError(72, match[4])
 		return err
 	}
 	URL.Dbid = Dbid(dbid)
@@ -116,6 +119,6 @@ func (URL *URL) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &v); err != nil {
 		return err
 	}
-	fmt.Println("Got " + v)
+	adatypes.Central.Log.Debugf("Got " + v)
 	return URL.examineURL(v)
 }

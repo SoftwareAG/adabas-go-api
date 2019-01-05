@@ -252,19 +252,19 @@ func NewDefinitionWithTypes(types []IAdaType) *Definition {
 }
 
 // NewDefinitionWithCondition create new definition with condition
-func NewDefinitionWithCondition(types []IAdaType, condition FieldCondition) *Definition {
-	def := NewDefinition()
-	def.fileFieldTree = def.activeFieldTree
-	def.activeFieldTree.SubTypes = types
-	t := TraverserMethods{EnterFunction: adaptFlags}
-	def.TraverseTypes(t, false, nil)
-	def.activeFieldTree.condition = condition
-	Central.Log.Debugf("Create new defintion with condition %d", condition.lengthFieldIndex)
-	for _, v := range types {
-		v.SetParent(def.activeFieldTree)
-	}
-	return def
-}
+// func NewDefinitionWithCondition(types []IAdaType, condition FieldCondition) *Definition {
+// 	def := NewDefinition()
+// 	def.fileFieldTree = def.activeFieldTree
+// 	def.activeFieldTree.SubTypes = types
+// 	t := TraverserMethods{EnterFunction: adaptFlags}
+// 	def.TraverseTypes(t, false, nil)
+// 	def.activeFieldTree.condition = condition
+// 	Central.Log.Debugf("Create new defintion with condition %d", condition.lengthFieldIndex)
+// 	for _, v := range types {
+// 		v.SetParent(def.activeFieldTree)
+// 	}
+// 	return def
+// }
 
 func adaptParentReference(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
 	adaType.SetParent(parentType)
@@ -496,10 +496,10 @@ func (def *Definition) AppendType(adaType IAdaType) {
 }
 
 // createAdaTypes traverse through the tree of definition calling a callback method
-func (def *Definition) createAdaTypes() error {
-	t := TraverserMethods{EnterFunction: createValue}
-	return def.TraverseTypes(t, true, nil)
-}
+// func (def *Definition) createAdaTypes() error {
+// 	t := TraverserMethods{EnterFunction: createValue}
+// 	return def.TraverseTypes(t, true, nil)
+// }
 
 // Traverser api to handle tree traverses for type definitions
 type Traverser func(adaType IAdaType, parentType IAdaType, level int, x interface{}) error
@@ -804,6 +804,9 @@ func searchRequestValue(adaValue IAdaValue, x interface{}) (TraverseResult, erro
 func (adabasRequest *AdabasRequest) GetValue(name string) (IAdaValue, error) {
 	vs := &valueSearch{name: name}
 	tm := TraverserValuesMethods{EnterFunction: searchRequestValue}
+	if adabasRequest.Definition == nil {
+		return nil, NewGenericError(26)
+	}
 	_, err := adabasRequest.Definition.TraverseValues(tm, vs)
 	if err != nil {
 		return nil, err

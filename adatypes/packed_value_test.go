@@ -20,6 +20,7 @@
 package adatypes
 
 import (
+	"encoding/binary"
 	"fmt"
 	"testing"
 
@@ -73,6 +74,13 @@ func TestPackedData(t *testing.T) {
 	assert.Equal(t, int64(123), pa.packedToLong())
 	assert.Equal(t, "123", pa.String())
 
+	assert.Equal(t, binary.LittleEndian, pa.Type().Endian())
+	pa.Type().SetEndian(binary.LittleEndian)
+	assert.Equal(t, binary.LittleEndian, pa.Type().Endian())
+	pa.Type().SetEndian(binary.BigEndian)
+	assert.Equal(t, binary.BigEndian, pa.Type().Endian())
+	assert.False(t, pa.Type().IsStructure())
+	assert.False(t, pa.Type().IsSpecialDescriptor())
 }
 
 func TestPackedCheckValid(t *testing.T) {

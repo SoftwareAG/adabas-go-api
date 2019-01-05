@@ -67,5 +67,7 @@ func TestAdabasMessageError(t *testing.T) {
 	ada.Acbx.Acbxrsp = 120
 	ada.Acbx.Acbxerrc = 0
 	assert.Equal(t, "ADAGE78000: Unknown error response 120 subcode 0 (ADAGE78000) (rsp=120,subrsp=0,dbid=21,file=0)", NewError(ada).Error())
+	m := []string{"ADAGE78000", "Unknown error response 120 subcode 0 (ADAGE78000) (rsp=120,subrsp=0,dbid=21,file=0)"}
+	assert.Equal(t, m, ada.getAdabasMessage())
 
 }

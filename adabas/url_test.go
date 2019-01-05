@@ -20,8 +20,9 @@
 package adabas
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestURL(t *testing.T) {
@@ -34,11 +35,11 @@ func TestURL(t *testing.T) {
 	assert.Equal(t, "host:1234", URL.URL())
 	URL, err = newURL("124(adatcp://host:xx)")
 	assert.Error(t, err)
-	assert.Equal(t, "124(adatcp://host:xx) is no valid database id", err.Error())
+	assert.Equal(t, "ADG0000070: '124(adatcp://host:xx)' is no valid database id", err.Error())
 	assert.Nil(t, URL)
 	URL, err = newURL("444(tcpip://host:xx)")
 	assert.Error(t, err)
-	assert.Equal(t, "444(tcpip://host:xx) is no valid database id", err.Error())
+	assert.Equal(t, "ADG0000070: '444(tcpip://host:xx)' is no valid database id", err.Error())
 	assert.Nil(t, URL)
 	URL, err = newURL("222(tcpip://host:1234)")
 	assert.NoError(t, err)
@@ -48,4 +49,13 @@ func TestURL(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "333(adatcp://host:123)", URL.String())
 	assert.Equal(t, "host:123", URL.URL())
+	URL, err = newURL("(abc://host:123)")
+	assert.Error(t, err)
+	URL, err = newURL("a(xxx://abc:)")
+	assert.Error(t, err)
+	assert.Equal(t, "ADG0000070: 'a(xxx://abc:)' is no valid database id", err.Error())
+	URL, err = newURL("123(xxx://abc:a)")
+	assert.Error(t, err)
+	assert.Equal(t, "ADG0000070: '123(xxx://abc:a)' is no valid database id", err.Error())
+
 }

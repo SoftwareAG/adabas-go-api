@@ -84,6 +84,10 @@ func TestInt8(t *testing.T) {
 	fl, flerr := up.Float()
 	assert.NoError(t, flerr)
 	assert.Equal(t, 1024.0, fl)
+	v = []byte{0x80, 0x10, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
+	assert.Equal(t, v, up.Bytes())
+	assert.Equal(t, "1024", up.String())
+
 }
 
 func ExampleInt8_SetValue() {
@@ -274,6 +278,11 @@ func TestUInt8(t *testing.T) {
 	fl, flerr := up.Float()
 	assert.NoError(t, flerr)
 	assert.Equal(t, 1024.0, fl)
+
+	v := []byte{0x80, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
+	assert.Equal(t, v, up.Bytes())
+	assert.Equal(t, "1024", up.String())
+
 }
 
 func ExampleUInt8_SetValue() {

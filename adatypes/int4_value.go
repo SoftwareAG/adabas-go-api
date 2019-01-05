@@ -23,6 +23,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"math"
 	"strconv"
 )
 
@@ -85,20 +86,23 @@ func (value *uint32Value) parseBuffer(helper *BufferHelper, option *BufferOption
 }
 
 func (value *uint32Value) Int32() (int32, error) {
-	return 0, errors.New("Cannot convert value to signed 32-bit integer")
+	if value.value > uint32(math.MaxInt32) {
+		return 0, errors.New("Cannot convert value to signed 32-bit integer")
+	}
+	return int32(value.value), nil
 }
 
 func (value *uint32Value) UInt32() (uint32, error) {
-	return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+	return value.value, nil
 }
 func (value *uint32Value) Int64() (int64, error) {
-	return 0, errors.New("Cannot convert value to signed 64-bit integer")
+	return int64(value.value), nil
 }
 func (value *uint32Value) UInt64() (uint64, error) {
-	return 0, errors.New("Cannot convert value to unsigned 64-bit integer")
+	return uint64(value.value), nil
 }
 func (value *uint32Value) Float() (float64, error) {
-	return 0, errors.New("Cannot convert value to 64-bit float")
+	return float64(value.value), nil
 }
 
 type int32Value struct {
@@ -124,9 +128,9 @@ func (value *int32Value) Value() interface{} {
 }
 
 func (value *int32Value) Bytes() []byte {
-	v := make([]byte, 4)
-	binary.PutVarint(v, int64(value.value))
-	return v
+	var buffer bytes.Buffer
+	binary.Write(&buffer, endian(), value.value)
+	return buffer.Bytes()
 }
 
 func (value *int32Value) SetStringValue(stValue string) {
@@ -160,18 +164,27 @@ func (value *int32Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 }
 
 func (value *int32Value) Int32() (int32, error) {
-	return 0, errors.New("Cannot convert value to signed 32-bit integer")
+	return value.value, nil
 }
 
 func (value *int32Value) UInt32() (uint32, error) {
-	return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+	if value.value < 0 {
+		return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+	}
+	return uint32(value.value), nil
 }
+
 func (value *int32Value) Int64() (int64, error) {
-	return 0, errors.New("Cannot convert value to signed 64-bit integer")
+	return int64(value.value), nil
 }
+
 func (value *int32Value) UInt64() (uint64, error) {
-	return 0, errors.New("Cannot convert value to unsigned 64-bit integer")
+	if value.value < 0 {
+		return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+	}
+	return uint64(value.value), nil
 }
+
 func (value *int32Value) Float() (float64, error) {
-	return 0, errors.New("Cannot convert value to 64-bit float")
+	return float64(value.value), nil
 }
