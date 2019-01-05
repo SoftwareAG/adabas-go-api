@@ -126,7 +126,7 @@ func (fieldType FieldType) FormatCharacter() string {
 		return "A"
 	case FieldTypeUnicode, FieldTypeLAUnicode, FieldTypeLBUnicode:
 		return "W"
-	case FieldTypeUByte, FieldTypeUInt2, FieldTypeUInt4, FieldTypeUInt8, FieldTypeShort:
+	case FieldTypeUByte, FieldTypeUInt2, FieldTypeUInt4, FieldTypeUInt8, FieldTypeShort, FieldTypeByteArray:
 		return "B"
 	case FieldTypePacked:
 		return "P"

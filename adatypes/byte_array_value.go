@@ -35,6 +35,7 @@ type byteArrayValue struct {
 
 func newByteArrayValue(initType IAdaType) *byteArrayValue {
 	value := byteArrayValue{adaValue: adaValue{adatype: initType}}
+	value.value = make([]byte, initType.Length())
 	return &value
 }
 
