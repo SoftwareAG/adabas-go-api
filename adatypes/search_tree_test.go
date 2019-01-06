@@ -311,6 +311,36 @@ func TestSearchRangeMfNoHigher(t *testing.T) {
 
 }
 
+func TestSearchRangeMfNoHigherAlpha(t *testing.T) {
+	f, err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+
+	searchInfo := NewSearchInfo(mainframe, "SA=[10111011:10111013)")
+	searchInfo.Definition = tDefinition()
+	tree := &SearchTree{}
+	searchInfo.extractBinding(tree, searchInfo.search)
+	assert.Equal(t, "SA,8,A,S,SA,8,A,N,SA,8,A.", tree.SearchBuffer())
+	var buffer bytes.Buffer
+	tree.ValueBuffer(&buffer)
+	valueBuffer := buffer.Bytes()
+	fmt.Println(valueBuffer)
+	if !assert.Len(t, valueBuffer, 24) {
+		return
+	}
+	assert.Equal(t, "10111011", string(valueBuffer[0:8]))
+	assert.Equal(t, "10111013", string(valueBuffer[8:16]))
+	assert.Equal(t, "10111013", string(valueBuffer[16:]))
+	descriptors := tree.OrderBy()
+	fmt.Println("Descriptors ", descriptors)
+	assert.True(t, searchInfo.NeedSearch)
+
+}
+
 func TestSearchRangeMfNoBorder(t *testing.T) {
 	f, err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
@@ -424,6 +454,7 @@ func tDefinition() *Definition {
 		NewType(FieldTypeUInt2, "I2"),
 		NewType(FieldTypeUInt8, "U8"),
 		NewStructureList(FieldTypeGroup, "AB", OccNone, groupLayout),
+		NewTypeWithLength(FieldTypeString, "SA", 8),
 		NewType(FieldTypeUInt8, "AA"),
 	}
 	layout[6].AddOption(FieldOptionUQ)
