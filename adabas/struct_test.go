@@ -24,7 +24,6 @@ import (
 	"os"
 	"reflect"
 	"testing"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -130,7 +129,7 @@ func TestStructStore(t *testing.T) {
 	defer connection.Close()
 
 	e := []*Employees{
-		&Employees{ID: "GOSTORE", Birth: time.Now().Unix(), Name: "ABC"},
+		&Employees{ID: "GOSTORE", Birth: 123478, Name: "ABC"},
 	}
 	err = ReflectStore(e, connection, "Employees")
 	if assert.NoError(t, err) {

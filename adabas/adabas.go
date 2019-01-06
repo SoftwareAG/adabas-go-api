@@ -546,7 +546,11 @@ func (adabas *Adabas) SearchLogicalWith(fileNr uint32, adabasRequest *adatypes.A
 	adabas.Acbx.Acbxcmd = s2.code()
 	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxcop[0] = 'H'
-	adabas.Acbx.Acbxcop[1] = 'A'
+	if adabasRequest.Option.Ascending {
+		adabas.Acbx.Acbxcop[1] = ' '
+	} else {
+		adabas.Acbx.Acbxcop[1] = 'D'
+	}
 
 	adabas.Acbx.Acbxisn = 0
 	adabas.Acbx.Acbxisl = 0

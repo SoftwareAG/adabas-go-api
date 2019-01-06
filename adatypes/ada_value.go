@@ -40,6 +40,7 @@ type BufferOption struct {
 	HoldRecords    bool
 	ExchangeRecord bool
 	PartialLobSize bool
+	Ascending      bool
 	multipleSize   uint32
 }
 
@@ -47,7 +48,7 @@ type BufferOption struct {
 func NewBufferOption(store bool, secondCall bool) *BufferOption {
 	return &BufferOption{MultifetchCall: false, StoreCall: store, HoldRecords: false,
 		ExchangeRecord: false, SecondCall: secondCall, NeedSecondCall: false,
-		multipleSize: defaultMultipleSize}
+		multipleSize: defaultMultipleSize, Ascending: true}
 }
 
 // IAdaValue defines standard interface for all values
