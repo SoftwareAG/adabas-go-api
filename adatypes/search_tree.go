@@ -171,10 +171,13 @@ func (tree *SearchTree) addValue(value *SearchValue) {
 func (tree *SearchTree) OrderBy() []string {
 	var uniqueDescriptors []string
 	if tree.node != nil {
+		Central.Log.Debugf("Search node descriptor")
 		descriptors := tree.node.orderBy()
+		Central.Log.Debugf("Descriptor list: %v", descriptors)
 		for _, d := range descriptors {
 			add := true
 			for _, ud := range uniqueDescriptors {
+				Central.Log.Debugf("Check descriptor %s to unique descriptor %s", d, ud)
 				if d == ud {
 					add = false
 					break
@@ -186,6 +189,7 @@ func (tree *SearchTree) OrderBy() []string {
 			}
 		}
 	} else {
+		Central.Log.Debugf("Empty node use value descriptor")
 		descriptor := tree.value.orderBy()
 		if descriptor != "" {
 			Central.Log.Debugf("Add value descriptor : %s", descriptor)
@@ -357,7 +361,9 @@ func (value *SearchValue) String() string {
 }
 
 func (value *SearchValue) orderBy() string {
+	Central.Log.Debugf("Check descriptor %s", value.adaType.Name())
 	if value.value.Type().IsOption(FieldOptionDE) {
+		Central.Log.Debugf("Found descriptor %s", value.adaType.Name())
 		return value.value.Type().ShortName()
 	}
 	return ""
@@ -587,10 +593,11 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 		if searchInfo.platform.IsMainframe() {
 			searchInfo.NeedSearch = true
 			//                SearchTree notLowerLevel = null;
+			var notLowerLevel *SearchValue
 			if value[0] == '(' {
 				//                if (value.charAt(0) == '(') {
 				//                    LOGGER.debug("Mainframe NOT operator minimum Range");
-				notLowerLevel := &SearchValue{field: strings.TrimSpace(field), comp: NONE}
+				notLowerLevel = &SearchValue{field: strings.TrimSpace(field), comp: NONE}
 				//                    notLowerLevel =
 				//                        request.createSearchNode(field.trim(), C.NONE);
 				//                    extractSearchNodeValue(searchInfo, startValue,
@@ -611,21 +618,26 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 				if err != nil {
 					return
 				}
-				notRangeNode := &SearchNode{logic: NOT}
-				notRangeNode.addValue(notUpperLevel)
-				rangeNode.addNode(notRangeNode)
-				//                    LOGGER.debug("Mainframe NOT operator maximum Range");
-				//                    if (notLowerLevel == null) {
-				//                        SearchTree notLevel =
-				//                            request.createSearchNode(field.trim(), C.NONE);
-				//                        extractSearchNodeValue(searchInfo, endValue, notLevel);
-				//                        lowerLevel.bound(notLevel, Logic.NOT);
-				//                    } else {
-				//                        SearchTree notLevel =
-				//                            request.createSearchNode(field.trim(), C.NE);
-				//                        extractSearchNodeValue(searchInfo, endValue, notLevel);
-				//                        notLowerLevel.bound(notLevel, Logic.AND);
-				//                    }
+				if notLowerLevel == nil {
+					notRangeNode := &SearchNode{logic: NOT}
+					notRangeNode.addValue(notUpperLevel)
+					rangeNode.addNode(notRangeNode)
+					//                    LOGGER.debug("Mainframe NOT operator maximum Range");
+					//                    if (notLowerLevel == null) {
+					//                        SearchTree notLevel =
+					//                            request.createSearchNode(field.trim(), C.NONE);
+					//                        extractSearchNodeValue(searchInfo, endValue, notLevel);
+					//                        lowerLevel.bound(notLevel, Logic.NOT);
+				} else {
+					//                        SearchTree notLevel =
+					//                            request.createSearchNode(field.trim(), C.NE);
+					//                        extractSearchNodeValue(searchInfo, endValue, notLevel);
+					//                        notLowerLevel.bound(notLevel, Logic.AND);
+					notRangeNode := &SearchNode{logic: AND}
+					notUpperLevel.comp = NE
+					notRangeNode.addValue(notUpperLevel)
+					rangeNode.addNode(notRangeNode)
+				}
 			}
 		}
 		rangeNode.addValue(upperLevel)

@@ -354,11 +354,10 @@ func TestSearchRangeMfNoBorder(t *testing.T) {
 	searchInfo.Definition = tDefinition()
 	tree := &SearchTree{}
 	searchInfo.extractBinding(tree, searchInfo.search)
-	assert.Equal(t, "AA,8,B,S,AA,8,B,N,AA,8,B,N,AA,8,B.", tree.SearchBuffer())
+	assert.Equal(t, "AA,8,B,S,AA,8,B,N,AA,8,B,D,AA,8,B,NE.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
-	fmt.Println(valueBuffer)
 	if !assert.Len(t, valueBuffer, 32) {
 		return
 	}
@@ -457,8 +456,8 @@ func tDefinition() *Definition {
 		NewTypeWithLength(FieldTypeString, "SA", 8),
 		NewType(FieldTypeUInt8, "AA"),
 	}
-	layout[6].AddOption(FieldOptionUQ)
-	layout[6].AddOption(FieldOptionDE)
+	layout[7].AddOption(FieldOptionUQ)
+	layout[7].AddOption(FieldOptionDE)
 
 	testDefinition := NewDefinitionWithTypes(layout)
 	return testDefinition
