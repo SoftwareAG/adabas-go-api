@@ -54,7 +54,7 @@ func (value *uint64Value) Value() interface{} {
 
 func (value *uint64Value) Bytes() []byte {
 	v := make([]byte, 8)
-	binary.PutUvarint(v, uint64(value.value))
+	value.adatype.Endian().PutUint64(v, value.value)
 	return v
 }
 

@@ -402,7 +402,7 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.AdabasRequest) {
 	}
 	adatypes.Central.Log.Debugf("ABD init 0 %p\n", adabas.AdabasBuffers[0])
 	adabas.AdabasBuffers[1] = NewBuffer(AbdAQRb)
-	adabas.AdabasBuffers[1].Allocate(adabasRequest.RecordBufferLength)
+	adabas.AdabasBuffers[1].Allocate(adabasRequest.RecordBufferLength + adabasRequest.RecordBufferShift)
 	if adabas.AdabasBuffers[1].abd.Abdver[0] != 'G' {
 		adatypes.Central.Log.Infof("ABD init 1 error %p\n", adabas.AdabasBuffers[1])
 		os.Exit(100)

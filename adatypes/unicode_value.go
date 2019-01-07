@@ -150,9 +150,9 @@ func (value *unicodeValue) StoreBuffer(helper *BufferHelper) error {
 	if value.Type().Length() == 0 {
 		Central.Log.Debugf("Add length to buffer ...%d", len(value.value))
 		switch value.adatype.Type() {
-		case FieldTypeLAString:
+		case FieldTypeLAUnicode:
 			helper.PutUInt16(uint16(len(value.value)) + 2)
-		case FieldTypeLBString:
+		case FieldTypeLBUnicode:
 			helper.PutUInt32(uint32(len(value.value)) + 4)
 		default:
 			helper.PutUInt8(uint8(len(value.value)) + 1)
@@ -169,7 +169,7 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 
 	if option.SecondCall {
 		Central.Log.Debugf("Old size of lob data %d of %d", len(value.value), value.lobSize)
-		if value.Type().Type() == FieldTypeLBString && uint32(len(value.value)) < value.lobSize {
+		if value.Type().Type() == FieldTypeLBUnicode && uint32(len(value.value)) < value.lobSize {
 			data, rErr := helper.ReceiveBytes(value.lobSize - uint32(len(value.value)))
 			if rErr != nil {
 				err = rErr

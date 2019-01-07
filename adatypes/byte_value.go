@@ -64,6 +64,10 @@ func (value *byteValue) SetValue(v interface{}) error {
 	case byte, int8:
 		value.value = v.(int8)
 		return nil
+	case string:
+		ba := []byte(v.(string))
+		value.value = int8(ba[0])
+		return nil
 	case []byte:
 		value.value = int8(v.([]byte)[0])
 		return nil
@@ -178,12 +182,15 @@ func (value *ubyteValue) Int32() (int32, error) {
 func (value *ubyteValue) UInt32() (uint32, error) {
 	return uint32(value.value), nil
 }
+
 func (value *ubyteValue) Int64() (int64, error) {
 	return int64(value.value), nil
 }
+
 func (value *ubyteValue) UInt64() (uint64, error) {
 	return uint64(value.value), nil
 }
+
 func (value *ubyteValue) Float() (float64, error) {
 	return float64(value.value), nil
 }

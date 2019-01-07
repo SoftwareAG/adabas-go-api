@@ -23,6 +23,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -93,6 +94,24 @@ func (value *byteArrayValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 }
 
 func (value *byteArrayValue) StoreBuffer(helper *BufferHelper) error {
+	if value.Type().Length() == 0 {
+		if len(value.value) > 0 {
+			Central.Log.Debugf("Add byte array ...")
+			err := helper.putByte(byte(len(value.value)))
+			if err != nil {
+				return err
+			}
+			return helper.putBytes(value.value)
+		}
+		Central.Log.Debugf("Add empty byte array")
+		err := helper.putByte(2)
+		if err != nil {
+			return err
+		}
+		return helper.putByte(0)
+
+	}
+	Central.Log.Debugf("Fix byte array len ...")
 	return helper.putBytes(value.value)
 }
 
@@ -107,4 +126,21 @@ func (value *byteArrayValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 	value.value, err = helper.ReceiveBytes(uint32(len))
 	Central.Log.Debugf("Buffer get bytes offset=%v %s", helper.offset, value.Type().String())
 	return
+}
+
+func (value *byteArrayValue) Int32() (int32, error) {
+	return 0, errors.New("Cannot convert value to signed 32-bit integer")
+}
+
+func (value *byteArrayValue) UInt32() (uint32, error) {
+	return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+}
+func (value *byteArrayValue) Int64() (int64, error) {
+	return 0, errors.New("Cannot convert value to signed 64-bit integer")
+}
+func (value *byteArrayValue) UInt64() (uint64, error) {
+	return 0, errors.New("Cannot convert value to unsigned 64-bit integer")
+}
+func (value *byteArrayValue) Float() (float64, error) {
+	return 0, errors.New("Cannot convert value to 64-bit float")
 }

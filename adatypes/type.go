@@ -202,6 +202,10 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 		Central.Log.Debugf("Return byte value")
 		adaValue = newByteValue(adaType)
 		return
+	case FieldTypeByteArray:
+		Central.Log.Debugf("Return byte array value")
+		adaValue = newByteArrayValue(adaType)
+		return
 	case FieldTypeLength, FieldTypeUByte, FieldTypeCharacter:
 		Central.Log.Debugf("Return byte value")
 		adaValue = newUByteValue(adaType)
@@ -502,7 +506,7 @@ func (adaType *StructureType) Option() string {
 
 // Value return type specific value structure object
 func (adaType *StructureType) Value() (adaValue IAdaValue, err error) {
-	Central.Log.Debugf("Create field type of %v", adaType.fieldType)
+	Central.Log.Debugf("Create structure type of %v", adaType.fieldType)
 	switch adaType.fieldType {
 	case FieldTypeStructure, FieldTypeGroup, FieldTypePeriodGroup, FieldTypeMultiplefield:
 		Central.Log.Debugf("Return Structure value")

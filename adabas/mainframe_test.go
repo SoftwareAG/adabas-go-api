@@ -115,6 +115,7 @@ func ExampleReadRequest_fileMfBorder() {
 	// Result data:
 	// Dump all result values
 	// Record Isn: 0383
+	// Record Quantity: 0001
 	//   AA = > 11100302 <
 	//   AB = [ 1 ]
 	//    AC = > ROSWITHA             <

@@ -80,6 +80,9 @@ func TestUInt2Byte(t *testing.T) {
 	int2.SetStringValue("2000")
 	assert.Equal(t, uint16(2000), int2.value)
 
+	int2.SetValue([]byte{0x18, 0xfc})
+	assert.Equal(t, uint16(64536), int2.value)
+
 	int2.SetValue(1024)
 	assert.Equal(t, uint16(1024), int2.Value())
 	i32, i32err := int2.Int32()
@@ -94,5 +97,9 @@ func TestUInt2Byte(t *testing.T) {
 	fl, flerr := int2.Float()
 	assert.NoError(t, flerr)
 	assert.Equal(t, 1024.0, fl)
+
+	int2.SetValue(64536)
+	assert.Equal(t, uint16(64536), int2.value)
+	assert.Equal(t, []byte{0x18, 0xfc}, int2.Bytes())
 
 }

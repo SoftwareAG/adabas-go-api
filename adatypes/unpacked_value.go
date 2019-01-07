@@ -76,6 +76,21 @@ func (value *unpackedValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOpt
 }
 
 func (value *unpackedValue) StoreBuffer(helper *BufferHelper) error {
+	if value.Type().Length() == 0 {
+		if len(value.value) > 0 {
+			err := helper.putByte(1)
+			if err != nil {
+				return err
+			}
+			return helper.putBytes(value.value)
+		}
+		err := helper.putByte(2)
+		if err != nil {
+			return err
+		}
+		return helper.putByte(0)
+
+	}
 	return helper.putBytes(value.value)
 }
 
@@ -107,6 +122,10 @@ func (value *unpackedValue) Float() (float64, error) {
 
 func (value *unpackedValue) unpackedToLong(ebcdic bool) int64 {
 	end := len(value.value) - 1
+	// In case it is variable length
+	if end < 0 {
+		return 0
+	}
 	for (end > 0) && (value.value[end] == 0) {
 		end--
 	}
@@ -119,6 +138,7 @@ func (value *unpackedValue) unpackedToLong(ebcdic bool) int64 {
 		longValue += (int64(v[i]) & 0xf) * base
 		base *= 10
 	}
+	Central.Log.Debugf("Index %d of %d", end, len(v))
 	if ebcdic {
 		if (v[end+1-1] & 0xf0) < 0xf0 {
 			longValue = -longValue

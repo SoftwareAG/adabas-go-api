@@ -93,6 +93,12 @@ func (value *packedValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 }
 
 func (value *packedValue) StoreBuffer(helper *BufferHelper) error {
+	if value.Type().Length() == 0 {
+		err := helper.putByte(byte(len(value.value)))
+		if err != nil {
+			return err
+		}
+	}
 	return helper.putBytes(value.value)
 }
 

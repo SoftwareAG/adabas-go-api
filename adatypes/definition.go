@@ -769,6 +769,7 @@ type AdabasRequest struct {
 	FormatBuffer       bytes.Buffer
 	RecordBuffer       *BufferHelper
 	RecordBufferLength uint32
+	RecordBufferShift  uint32
 	PeriodLength       uint32
 	SearchTree         *SearchTree
 	Parser             RequestParser

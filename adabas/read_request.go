@@ -33,8 +33,9 @@ const (
 // ReadRequest request instance handling field query information
 type ReadRequest struct {
 	commonRequest
-	Limit      uint64
-	Multifetch uint32
+	Limit             uint64
+	Multifetch        uint32
+	RecordBufferShift uint32
 }
 
 // NewReadRequestCommon create a request defined by another request (not even ReadRequest required)
@@ -173,6 +174,7 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.AdabasRequ
 		return
 	}
 	adabasRequest.Definition = request.definition
+	adabasRequest.RecordBufferShift = request.RecordBufferShift
 	return
 }
 
@@ -335,7 +337,7 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 // ReadLogicalBy read in logical order given by the descriptor argument
 func (request *ReadRequest) ReadLogicalBy(descriptors string) (result *RequestResult, err error) {
 	result = &RequestResult{}
-	err = request.ReadLogicalByWithParser("NAME", nil, result)
+	err = request.ReadLogicalByWithParser(descriptors, nil, result)
 	if err != nil {
 		return nil, err
 	}
