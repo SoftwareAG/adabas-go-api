@@ -34,7 +34,7 @@ func newUnpackedValue(initType IAdaType) *unpackedValue {
 		return nil
 	}
 	value := unpackedValue{adaValue: adaValue{adatype: initType}}
-	value.value = make([]byte, initType.Length())
+	value.LongToUnpacked(0, int(initType.Length()), false)
 	return &value
 }
 
@@ -84,12 +84,7 @@ func (value *unpackedValue) StoreBuffer(helper *BufferHelper) error {
 			}
 			return helper.putBytes(value.value)
 		}
-		err := helper.putByte(2)
-		if err != nil {
-			return err
-		}
-		return helper.putByte(0)
-
+		return helper.putBytes([]byte{2, 0x30})
 	}
 	return helper.putBytes(value.value)
 }

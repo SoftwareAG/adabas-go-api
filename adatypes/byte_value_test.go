@@ -2,6 +2,7 @@ package adatypes
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	log "github.com/sirupsen/logrus"
@@ -41,6 +42,37 @@ func TestIntByte(t *testing.T) {
 	assert.NoError(t, flerr)
 	assert.Equal(t, 100.0, fl)
 
+	err = int2.SetValue(-1)
+	assert.NoError(t, err)
+
+	assert.Equal(t, int8(-1), int2.value)
+	assert.Equal(t, []byte{0xff}, int2.Bytes())
+	int2.SetValue(-2)
+	assert.Equal(t, int8(-2), int2.value)
+	assert.Equal(t, []byte{0xfe}, int2.Bytes())
+	fmt.Println(int2.String())
+
+	b := []byte{0xff, 0xfe, 0, 1, 2, 126, 127, 128, 129}
+	iv := []int8{-1, -2, 0, 1, 2, 126, int8(math.MaxInt8), int8(math.MinInt8), -127}
+	fmt.Printf("Range %d to %d\n", int8(math.MaxInt8), int8(math.MinInt8))
+	assert.Equal(t, int8(b[0]), int8(-1))
+	assert.Equal(t, int8(b[1]), int8(-2))
+	for i, bv := range b {
+		assert.Equal(t, iv[i], convert(bv))
+	}
+	//	assert.Equal(t, 0x45, byte(0xff))
+	assert.Equal(t, int8(-1), convert(b[0]))
+	assert.Equal(t, int8(-2), convert(b[1]))
+}
+
+func convert(b byte) int8 {
+	var i8 int8
+	if b > 126 {
+		i8 = -int8(256 - int(b))
+	} else {
+		i8 = int8(b)
+	}
+	return i8
 }
 
 func TestUIntByte(t *testing.T) {

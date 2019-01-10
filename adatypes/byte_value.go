@@ -41,7 +41,7 @@ func (value *byteValue) ByteValue() byte {
 }
 
 func (value *byteValue) String() string {
-	return strconv.Itoa(int(value.ByteValue()))
+	return fmt.Sprintf("%d", value.value)
 }
 
 func (value *byteValue) Value() interface{} {
@@ -64,12 +64,24 @@ func (value *byteValue) SetValue(v interface{}) error {
 	case byte, int8:
 		value.value = v.(int8)
 		return nil
+	case int, int32:
+		val := v.(int)
+		value.value = int8(val)
+		return nil
+	case int64:
+		val := v.(int64)
+		value.value = int8(val)
+		return nil
 	case string:
-		ba := []byte(v.(string))
-		value.value = int8(ba[0])
+		sv := v.(string)
+		ba, err := strconv.Atoi(sv)
+		if err != nil {
+			return err
+		}
+		value.value = int8(ba)
 		return nil
 	case []byte:
-		value.value = int8(v.([]byte)[0])
+		value.value = convertByteToInt8(v.([]byte)[0])
 		return nil
 	}
 	return fmt.Errorf("Value interface not supported %T", v)
@@ -121,7 +133,7 @@ func (value *ubyteValue) ByteValue() byte {
 }
 
 func (value *ubyteValue) String() string {
-	return strconv.Itoa(int(value.ByteValue()))
+	return fmt.Sprintf("%d", value.value)
 }
 
 func (value *ubyteValue) Value() interface{} {

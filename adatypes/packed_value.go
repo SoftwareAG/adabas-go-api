@@ -32,7 +32,11 @@ type packedValue struct {
 
 func newPackedValue(initType IAdaType) *packedValue {
 	value := packedValue{adaValue: adaValue{adatype: initType}}
-	value.value = make([]byte, initType.Length())
+	vlen := initType.Length()
+	value.value = make([]byte, vlen)
+	if vlen > 0 {
+		value.value[vlen-1] = positivePackedIndicator()
+	}
 	return &value
 }
 
@@ -94,7 +98,11 @@ func (value *packedValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 
 func (value *packedValue) StoreBuffer(helper *BufferHelper) error {
 	if value.Type().Length() == 0 {
-		err := helper.putByte(byte(len(value.value)))
+		vlen := len(value.value)
+		if vlen == 0 {
+			return helper.putBytes([]byte{2, positivePackedIndicator()})
+		}
+		err := helper.putByte(byte(vlen))
 		if err != nil {
 			return err
 		}

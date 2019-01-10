@@ -119,8 +119,9 @@ type SearchInfo struct {
 
 // SearchTree tree entry point
 type SearchTree struct {
-	node  *SearchNode
-	value *SearchValue
+	node              *SearchNode
+	value             *SearchValue
+	uniqueDescriptors []string
 }
 
 // String provide string of search tree
@@ -169,14 +170,17 @@ func (tree *SearchTree) addValue(value *SearchValue) {
 
 // OrderBy provide list of descriptor names for this search
 func (tree *SearchTree) OrderBy() []string {
-	var uniqueDescriptors []string
+	return tree.uniqueDescriptors
+}
+
+func (tree *SearchTree) evalueDescriptors() bool {
 	if tree.node != nil {
 		Central.Log.Debugf("Search node descriptor")
 		descriptors := tree.node.orderBy()
 		Central.Log.Debugf("Descriptor list: %v", descriptors)
 		for _, d := range descriptors {
 			add := true
-			for _, ud := range uniqueDescriptors {
+			for _, ud := range tree.uniqueDescriptors {
 				Central.Log.Debugf("Check descriptor %s to unique descriptor %s", d, ud)
 				if d == ud {
 					add = false
@@ -185,7 +189,7 @@ func (tree *SearchTree) OrderBy() []string {
 			}
 			if add {
 				Central.Log.Debugf("Add node descriptor : %s", d)
-				uniqueDescriptors = append(uniqueDescriptors, d)
+				tree.uniqueDescriptors = append(tree.uniqueDescriptors, d)
 			}
 		}
 	} else {
@@ -193,11 +197,11 @@ func (tree *SearchTree) OrderBy() []string {
 		descriptor := tree.value.orderBy()
 		if descriptor != "" {
 			Central.Log.Debugf("Add value descriptor : %s", descriptor)
-			uniqueDescriptors = append(uniqueDescriptors, descriptor)
+			tree.uniqueDescriptors = append(tree.uniqueDescriptors, descriptor)
 		}
 	}
-	Central.Log.Debugf("Unique descriptor list: %v", uniqueDescriptors)
-	return uniqueDescriptors
+	Central.Log.Debugf("Unique descriptor list: %v", tree.uniqueDescriptors)
+	return len(tree.uniqueDescriptors) != 1
 }
 
 // SearchFields provide list of field names for this search
@@ -461,24 +465,19 @@ func NewSearchInfo(platform *Platform, search string) *SearchInfo {
 	return &searchInfo
 }
 
-// ParseSearch parse search tree
-func (searchInfo *SearchInfo) ParseSearch() (tree *SearchTree, err error) {
-	Central.Log.Debugf("Parse search info: %#v", searchInfo)
-	tree = &SearchTree{}
-	err = searchInfo.extractBinding(tree, searchInfo.search)
-	if err != nil {
-		return nil, err
-	}
-	return
-}
-
 // GenerateTree generate tree search information
 func (searchInfo *SearchInfo) GenerateTree() (tree *SearchTree, err error) {
+	Central.Log.Debugf("Generate search tree: %#v", searchInfo)
 	tree = &SearchTree{}
 	err = searchInfo.extractBinding(tree, searchInfo.search)
 	if err != nil {
 		return nil, err
 	}
+	searchNeeded := tree.evalueDescriptors()
+	if !searchInfo.NeedSearch {
+		searchInfo.NeedSearch = searchNeeded
+	}
+	Central.Log.Debugf("Need search call: %v", searchInfo.NeedSearch)
 	return
 }
 
@@ -541,10 +540,7 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 		 */
 		var minimumRange comparator
 		var maximumRange comparator
-		//             isMainframe := false;
-		//            if (request != null && request.getTarget().isMainframe()) {
-		//                isMainframe = true;
-		//            }
+
 		if searchInfo.platform.IsMainframe() {
 			minimumRange = NONE
 			maximumRange = NONE
@@ -563,7 +559,6 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 		lowerLevel.comp = minimumRange
 
 		/* Generate lower level value */
-		//   lowerLevel = request.createSearchNode(field.trim(), minimumRange);
 		columnIndex := strings.IndexByte(value, ':')
 		startValue := value[1:columnIndex]
 		Central.Log.Debugf("Search range start value %s %v", startValue, minimumRange)
@@ -572,42 +567,29 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 		if err != nil {
 			return
 		}
-		//searchInfo.extractSearchNodeValue(startValue, lowerLevel)
 		rangeNode.addValue(lowerLevel)
 
 		/* Generate upper level value */
 		upperLevel := &SearchValue{field: strings.TrimSpace(field), comp: maximumRange}
-		//            SearchTree upperLevel =
-		//                request.createSearchNode(field.trim(), maximumRange);
 		endValue := value[columnIndex+1 : len(value)-1]
 		Central.Log.Debugf("Search range end value: %s", startValue)
 
-		//searchInfo.extractSearchNodeValue(endValue, upperLevel)
 		err = searchInfo.searchFieldValue(upperLevel, endValue)
 		if err != nil {
 			return
 		}
-		// lowerLevel.bound(upperLevel, Logic.RANGE)
 
 		/* On mainframe add NOT operator to exclude ranges */
 		if searchInfo.platform.IsMainframe() {
 			searchInfo.NeedSearch = true
-			//                SearchTree notLowerLevel = null;
 			var notLowerLevel *SearchValue
 			if value[0] == '(' {
-				//                if (value.charAt(0) == '(') {
-				//                    LOGGER.debug("Mainframe NOT operator minimum Range");
 				notLowerLevel = &SearchValue{field: strings.TrimSpace(field), comp: NONE}
-				//                    notLowerLevel =
-				//                        request.createSearchNode(field.trim(), C.NONE);
-				//                    extractSearchNodeValue(searchInfo, startValue,
-				//                        notLowerLevel);
 				err = searchInfo.searchFieldValue(notLowerLevel, startValue)
 				if err != nil {
 					return
 				}
 
-				//                    lowerLevel.bound(notLowerLevel, Logic.NOT);
 				notRangeNode := &SearchNode{logic: NOT}
 				notRangeNode.addValue(notLowerLevel)
 				rangeNode.addNode(notRangeNode)
@@ -622,17 +604,7 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 					notRangeNode := &SearchNode{logic: NOT}
 					notRangeNode.addValue(notUpperLevel)
 					rangeNode.addNode(notRangeNode)
-					//                    LOGGER.debug("Mainframe NOT operator maximum Range");
-					//                    if (notLowerLevel == null) {
-					//                        SearchTree notLevel =
-					//                            request.createSearchNode(field.trim(), C.NONE);
-					//                        extractSearchNodeValue(searchInfo, endValue, notLevel);
-					//                        lowerLevel.bound(notLevel, Logic.NOT);
 				} else {
-					//                        SearchTree notLevel =
-					//                            request.createSearchNode(field.trim(), C.NE);
-					//                        extractSearchNodeValue(searchInfo, endValue, notLevel);
-					//                        notLowerLevel.bound(notLevel, Logic.AND);
 					notRangeNode := &SearchNode{logic: AND}
 					notUpperLevel.comp = NE
 					notRangeNode.addValue(notUpperLevel)
@@ -647,7 +619,6 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 		if len(field) > (len(search) - len(value)) {
 			Central.Log.Debugf("FL %d sl=%d vl=%d", len(field),
 				len(search), len(value))
-			// throw new QueryException(QueryExceptionInfo.ACJ00113, search);
 			return
 		}
 		comparer := search[len(field) : len(search)-len(value)]
@@ -724,11 +695,7 @@ func (searchInfo *SearchInfo) extractBinarySearchNodeValue(value string, searchT
 				}
 				constantString := regexp.MustCompile("[-H]*#\\{").ReplaceAllString(restString, "")
 				constantString = regexp.MustCompile("}.*").ReplaceAllString(constantString, "")
-				//                         constantString := restString
-				//                            .replaceAll("[-H]*#\\{", "").replaceAll("}.*", "");
 				restString = regexp.MustCompile("#\\{[0-9]*\\} *").ReplaceAllString(restString, "")
-				//                        restString =
-				//                            restString.replaceFirst("#\\{[0-9]*\\} *", "");
 				Central.Log.Debugf("Constant string : ",
 					constantString)
 				Central.Log.Debugf("Rest string : ", restString)
@@ -746,10 +713,6 @@ func (searchInfo *SearchInfo) extractBinarySearchNodeValue(value string, searchT
 					//					binaryValue = searchTreeNode.binaryValue(		searchInfo.constants[index])
 				}
 				output.Write(binaryValue)
-				//				Central.Log.Debugf("Search field = <{}> of index {}",
-				//						java.util.Arrays.toString(binaryValue), index)
-				//					Central.Log.Debugf(
-				//						DatatypeConverter.printHexBinary(binaryValue))
 				if !strings.Contains(restString, ConstantIndicator) {
 					break
 				}

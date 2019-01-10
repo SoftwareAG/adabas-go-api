@@ -19,7 +19,9 @@ func TestFieldTypeStore(t *testing.T) {
 
 	storeRequest := NewStoreRequest("23", 270)
 	defer storeRequest.Close()
-	err := storeRequest.StoreFields("*")
+	err := storeRequest.StoreFields("S1,U1,S2,U2,S4,U4,S8,U8,AF,BR,B1,F4,F8,A1,AS,A2,AB,AF,WU,WL,W4,WF,PA,PF,UP,UF,UE")
+	//	err := storeRequest.StoreFields("S1,U1,S2,U2,S4,U4,S8,U8,BR,B1,F4,F8,A1,AS,A2,AB,AF,WU,WL,W4,WF,PA,PF,UP")
+	//err := storeRequest.StoreFields("*")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -31,31 +33,39 @@ func TestFieldTypeStore(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
+	x1, _ := storeRecord.searchValue("S1")
+	if !assert.Equal(t, "-1", x1.String()) {
+		return
+	}
 	err = storeRecord.SetValue("U1", "1")
 	if !assert.NoError(t, err) {
 		return
 	}
-	err = storeRecord.SetValue("S2", "1000")
+	err = storeRecord.SetValue("S2", "-1000")
 	if !assert.NoError(t, err) {
 		return
 	}
-	err = storeRecord.SetValue("U2", "-1000")
+	x2, _ := storeRecord.searchValue("S2")
+	if !assert.Equal(t, "-1000", x2.String()) {
+		return
+	}
+	err = storeRecord.SetValue("U2", "1000")
 	if !assert.NoError(t, err) {
 		return
 	}
-	err = storeRecord.SetValue("S4", "1000")
+	err = storeRecord.SetValue("S4", "-100000")
 	if !assert.NoError(t, err) {
 		return
 	}
-	err = storeRecord.SetValue("U4", "-1000")
+	err = storeRecord.SetValue("U4", "1000")
 	if !assert.NoError(t, err) {
 		return
 	}
-	err = storeRecord.SetValue("S8", "1000")
+	err = storeRecord.SetValue("S8", "-1000")
 	if !assert.NoError(t, err) {
 		return
 	}
-	err = storeRecord.SetValue("U8", "-1000")
+	err = storeRecord.SetValue("U8", "1000")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -95,11 +105,11 @@ func TestFieldTypeStore(t *testing.T) {
 	storeRequest.EndTransaction()
 }
 
-func TestFieldType(t *testing.T) {
+func TestFieldTypeRead(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
+	f := initTestLogWithFile(t, "field_type.log")
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
@@ -117,7 +127,9 @@ func TestFieldType(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	err = request.QueryFields("*")
+	err = request.QueryFields("S1,U1,S2,U2,S4,U4,S8,U8,AF,BR,B1,F4,F8,A1")
+	//	err = request.QueryFields("S1,U1,S2,U2,S4,U4,S8,U8,AF,BR,B1,F4,F8,A1,AS,A2,AB,AF,WU,WL,W4,WF,PA,PF,UP,UF,UE")
+	//err = request.QueryFields("*")
 	if !assert.NoError(t, cerr) {
 		return
 	}
@@ -128,14 +140,21 @@ func TestFieldType(t *testing.T) {
 		return
 	}
 	if assert.NotNil(t, result) {
-		assert.Equal(t, 4, len(result.Values))
-		assert.Equal(t, 4, result.NrRecords())
-		// err = result.DumpValues()
-		// assert.NoError(t, err)
-		kaVal := result.Values[0].HashFields["AA"]
-		kaVal = result.Values[3].HashFields["KA"]
+		assert.Equal(t, 1, len(result.Values))
+		assert.Equal(t, 1, result.NrRecords())
+		err = result.DumpValues()
+		assert.NoError(t, err)
+		kaVal := result.Values[0].HashFields["S1"]
+		assert.Equal(t, "-1", kaVal.String())
+		kaVal = result.Values[0].HashFields["U1"]
 		if assert.NotNil(t, kaVal) {
-			assert.Equal(t, "ಸೆನಿಓರ್ ಪ್ರೋಗ್ೃಾಮ್ಮೇರ್  ", kaVal.String())
+			assert.Equal(t, "1", kaVal.String())
 		}
+		kaVal = result.Values[0].HashFields["S2"]
+		assert.Equal(t, "-100000", kaVal.String())
+		kaVal = result.Values[0].HashFields["S4"]
+		assert.Equal(t, "-1000", kaVal.String())
+		kaVal = result.Values[0].HashFields["A1"]
+		assert.Equal(t, "X", kaVal.String())
 	}
 }

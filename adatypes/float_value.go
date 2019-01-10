@@ -33,7 +33,7 @@ type floatValue struct {
 
 func newFloatValue(initType IAdaType) *floatValue {
 	value := floatValue{adaValue: adaValue{adatype: initType}}
-	value.value = make([]byte, 4)
+	value.value = make([]byte, initType.Length())
 	return &value
 }
 

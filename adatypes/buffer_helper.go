@@ -149,11 +149,21 @@ func (helper *BufferHelper) ReceiveInt8() (res int8, err error) {
 	if (helper.offset + 1) <= uint32(len(helper.buffer)) {
 		b := helper.buffer[helper.offset]
 		helper.offset++
-		res = int8(b)
+		res = convertByteToInt8(b)
 		return
 	}
 	err = errors.New("Buffer overflow")
 	return
+}
+
+func convertByteToInt8(b byte) int8 {
+	var i8 int8
+	if b > 126 {
+		i8 = -int8(256 - int(b))
+	} else {
+		i8 = int8(b)
+	}
+	return i8
 }
 
 // ReceiveUInt8 receive 1-byte  unsigned integer
@@ -211,7 +221,12 @@ func (helper *BufferHelper) ReceiveInt16() (res int16, err error) {
 // PutInt16 put 2-byte  integer
 func (helper *BufferHelper) PutInt16(data int16) (err error) {
 	tmp := make([]byte, 2)
-	binary.PutVarint(tmp, int64(data))
+	if endian() == binary.LittleEndian {
+		tmp[0], tmp[1] = uint8(data&0xff), uint8(data>>8)
+	} else {
+		tmp[0], tmp[1] = uint8(data>>8), uint8(data&0xff)
+	}
+	Central.Log.Debugf("Put int 16 from %d to %#v", data, tmp)
 	helper.putBytes(tmp)
 	return
 }
@@ -250,8 +265,13 @@ func (helper *BufferHelper) ReceiveInt32() (res int32, err error) {
 // PutInt32 put 4-byte  integer
 func (helper *BufferHelper) PutInt32(data int32) (err error) {
 	tmp := make([]byte, 4)
-	binary.PutVarint(tmp, int64(data))
+	//	binary.PutVarint(tmp, int64(data))
 	// helper.order.PutInt64(tmp, data)
+	if endian() == binary.LittleEndian {
+		tmp[0], tmp[1], tmp[2], tmp[3] = uint8(data&0xff), uint8(data>>8&0xff), uint8(data>>16&0xff), uint8(data>>24&0xff)
+	} else {
+		tmp[0], tmp[1], tmp[2], tmp[3] = uint8(data>>24), uint8(data>>16&0xff), uint8(data>>8&0xff), uint8(data&0xff)
+	}
 	helper.putBytes(tmp)
 	return
 }
@@ -292,6 +312,13 @@ func (helper *BufferHelper) PutInt64(data int64) (err error) {
 	tmp := make([]byte, 8)
 	binary.PutVarint(tmp, data)
 	// helper.order.PutInt64(tmp, data)
+	if endian() == binary.LittleEndian {
+		tmp[0], tmp[1], tmp[2], tmp[3] = uint8(data&0xff), uint8(data>>8&0xff), uint8(data>>16&0xff), uint8(data>>24&0xff)
+		tmp[4], tmp[5], tmp[6], tmp[7] = uint8(data>>32&0xff), uint8(data>>40&0xff), uint8(data>>48&0xff), uint8(data>>56&0xff)
+	} else {
+		tmp[0], tmp[1], tmp[2], tmp[3] = uint8(data>>56&0xff), uint8(data>>48&0xff), uint8(data>>40&0xff), uint8(data>>32&0xff)
+		tmp[4], tmp[5], tmp[6], tmp[7] = uint8(data>>24), uint8(data>>16&0xff), uint8(data>>8&0xff), uint8(data&0xff)
+	}
 	helper.putBytes(tmp)
 	return
 }

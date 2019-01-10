@@ -288,7 +288,7 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 			return
 		}
 		searchInfo.Definition = request.definition
-		tree, err = searchInfo.ParseSearch()
+		tree, err = searchInfo.GenerateTree()
 		if err != nil {
 			return
 		}
@@ -301,7 +301,7 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 	} else {
 		adatypes.Central.Log.Debugf("Use Definition ...")
 		searchInfo.Definition = request.definition
-		tree, err = searchInfo.ParseSearch()
+		tree, err = searchInfo.GenerateTree()
 		if err != nil {
 			return
 		}
@@ -416,7 +416,7 @@ func (request *ReadRequest) HistogramWith(search string) (result *RequestResult,
 	}
 	searchInfo := adatypes.NewSearchInfo(request.adabas.ID.platform(request.adabas.URL.String()), search)
 	searchInfo.Definition = request.definition
-	tree, err := searchInfo.ParseSearch()
+	tree, err := searchInfo.GenerateTree()
 	if err != nil {
 		return
 	}

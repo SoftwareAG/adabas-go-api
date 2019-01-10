@@ -559,8 +559,12 @@ func (adabas *Adabas) SearchLogicalWith(fileNr uint32, adabasRequest *adatypes.A
 
 	adabas.prepareBuffers(adabasRequest)
 	var add1 bytes.Buffer
-	for _, d := range adabasRequest.Descriptors {
-		add1.WriteString(d)
+	if len(adabasRequest.Descriptors) > 0 {
+		for _, d := range adabasRequest.Descriptors {
+			add1.WriteString(d)
+		}
+	} else {
+		add1.WriteString("ISN")
 	}
 	add1.WriteString("        ")
 	copy(adabas.Acbx.Acbxadd1[:], add1.Bytes()[0:7])
