@@ -1,9 +1,12 @@
 package adabas
 
 import (
+	"bytes"
 	"fmt"
+	"strings"
 	"testing"
 
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -173,6 +176,43 @@ func TestFieldTypeRead(t *testing.T) {
 	}
 }
 
+func dumpFieldTypeValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
+	if adaValue == nil {
+		record := x.(*ResultRecord)
+		if record == nil {
+			return adatypes.EndTraverser, adatypes.NewGenericError(25)
+		}
+		fmt.Printf("Record found:\n")
+	} else {
+
+		y := strings.Repeat(" ", int(adaValue.Type().Level()))
+
+		if x == nil {
+			brackets := ""
+			switch {
+			case adaValue.PeriodIndex() > 0 && adaValue.MultipleIndex() > 0:
+				brackets = fmt.Sprintf("[%02d,%02d]", adaValue.PeriodIndex(), adaValue.MultipleIndex())
+			case adaValue.PeriodIndex() > 0:
+				brackets = fmt.Sprintf("[%02d]", adaValue.PeriodIndex())
+			case adaValue.MultipleIndex() > 0:
+				brackets = fmt.Sprintf("[%02d]", adaValue.MultipleIndex())
+			default:
+			}
+
+			if adaValue.Type().IsStructure() {
+				structureValue := adaValue.(*adatypes.StructureValue)
+				fmt.Println(y+" "+adaValue.Type().Name()+brackets+" = [", structureValue.NrElements(), "]")
+			} else {
+				fmt.Printf("%s %s%s = > %s <\n", y, adaValue.Type().Name(), brackets, adaValue.String())
+			}
+		} else {
+			buffer := x.(*bytes.Buffer)
+			buffer.WriteString(fmt.Sprintln(y, adaValue.Type().Name(), "= >", adaValue.String(), "<"))
+		}
+	}
+	return adatypes.Continue, nil
+}
+
 func ExampleFieldType() {
 	f, err := initLogWithFile("field_type.log")
 	if err != nil {
@@ -213,12 +253,11 @@ func ExampleFieldType() {
 		fmt.Println("Error reading records", rerr)
 		return
 	}
-	result.DumpValues()
+	t := adatypes.TraverserValuesMethods{EnterFunction: dumpFieldTypeValues}
+	_, err = result.TraverseValues(t, nil)
 	//Output: Connect to  23
 	// Adabas url=23 fnr=0
-	// Dump all result values
-	// Record Isn: 0007
-	// Record Quantity: 0002
+	// Record found:
 	//   IT = [ 1 ]
 	//    S1 = > 0 <
 	//    U1 = > 0 <
@@ -252,8 +291,7 @@ func ExampleFieldType() {
 	//    UP = > 0 <
 	//    UF = > 0 <
 	//    UE = > 0 <
-	// Record Isn: 0008
-	// Record Quantity: 0002
+	// Record found:
 	//   IT = [ 1 ]
 	//    S1 = > -1 <
 	//    U1 = > 1 <
