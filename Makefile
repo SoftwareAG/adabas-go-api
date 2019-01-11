@@ -21,7 +21,7 @@ DATE       ?= $(shell date +%FT%T%z)
 VERSION    ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/null || \
 			cat $(CURDIR)/.version 2> /dev/null || echo v0)
 TMPPATH    ?= /tmp
-GOPATH      = $(TMPPATH)/tmp_gopath.$(shell id -u)
+GOPATH      = $(TMPPATH)/tmp_adabas-go-api.$(shell id -u)
 BIN         = $(CURDIR)/bin
 LOGPATH     = $(CURDIR)/logs
 TESTFILES   = $(CURDIR)/files

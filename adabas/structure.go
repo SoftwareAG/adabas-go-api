@@ -400,33 +400,33 @@ type Status struct {
 // ID Adabas Id
 type ID struct {
 	connectionMap map[string]*Status
-	adaID         *AID
+	AdaID         *AID
 }
 
 func (adaid *ID) setUser(User string) {
 	for i := 0; i < 8; i++ {
-		adaid.adaID.User[i] = ' '
+		adaid.AdaID.User[i] = ' '
 	}
 
-	copy(adaid.adaID.User[:], User)
+	copy(adaid.AdaID.User[:], User)
 }
 
 func (adaid *ID) setHost(Host string) {
 	for i := 0; i < 8; i++ {
-		adaid.adaID.Node[i] = ' '
+		adaid.AdaID.Node[i] = ' '
 	}
 
-	copy(adaid.adaID.Node[:], Host)
+	copy(adaid.AdaID.Node[:], Host)
 }
 
 func (adaid *ID) setID(pid uint32) {
-	adaid.adaID.Pid = pid
+	adaid.AdaID.Pid = pid
 }
 
 // String return string representation of Adabas ID
 func (adaid *ID) String() string {
-	return fmt.Sprintf("%s:%s [%d] %x", string(adaid.adaID.Node[0:8]), string(adaid.adaID.User[0:8]),
-		adaid.adaID.Pid, adaid.adaID.Timestamp)
+	return fmt.Sprintf("%s:%s [%d] %x", string(adaid.AdaID.Node[0:8]), string(adaid.AdaID.User[0:8]),
+		adaid.AdaID.Pid, adaid.AdaID.Timestamp)
 }
 
 func (adaid *ID) status(url string) *Status {
