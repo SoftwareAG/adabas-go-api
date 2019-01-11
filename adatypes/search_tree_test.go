@@ -352,8 +352,10 @@ func TestSearchRangeMfNoBorder(t *testing.T) {
 
 	searchInfo := NewSearchInfo(mainframe, "AA=(12:44)")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
 	assert.Equal(t, "AA,8,B,S,AA,8,B,N,AA,8,B,D,AA,8,B,NE.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
