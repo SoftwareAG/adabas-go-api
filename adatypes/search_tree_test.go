@@ -386,8 +386,10 @@ func TestSearchValue(t *testing.T) {
 
 	searchInfo := NewSearchInfo(opensystem, "AA=123")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
 	assert.Equal(t, "AA,8,B,EQ.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
@@ -418,8 +420,10 @@ func TestSearchFields(t *testing.T) {
 
 	searchInfo := NewSearchInfo(opensystem, "AA=123 AND BC=1")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
 	assert.Equal(t, "AA,8,B,EQ,D,BC,1,B,EQ.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
@@ -490,8 +494,10 @@ func TestSearchComplex(t *testing.T) {
 
 	searchInfo := NewSearchInfo(opensystem, "AA=(12:44] AND AD='SMITH'")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
 	Central.Log.Debugf("Search Tree:", tree.String())
 
 	assert.Equal(t, "AA,8,B,GT,S,AA,8,B,LE,D,AD,6,A,EQ.", tree.SearchBuffer())
@@ -522,8 +528,10 @@ func TestSearchExtractOr2Binding(t *testing.T) {
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 OR BC=2 OR AC=1")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	err = searchInfo.extractBinding(tree, searchInfo.search)
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
 	assert.NoError(t, err)
 	Central.Log.Debugf(tree.String())
 	assert.Equal(t, "AA,8,B,EQ,R,BC,1,B,EQ,R,AC,1,P,EQ.", tree.SearchBuffer())
@@ -541,8 +549,7 @@ func TestSearchExtractOr2BindingError(t *testing.T) {
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 OR BC=2 OR CC=1 OR  DD=2")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	err = searchInfo.extractBinding(tree, searchInfo.search)
+	_, err = searchInfo.GenerateTree()
 	assert.Error(t, err)
 	assert.Equal(t, "ADG0000041: No field CC found in file definition", err.Error())
 }
