@@ -154,15 +154,15 @@ func parseAuth(id *ID, value string) error {
 		v := x[i+1 : l]
 		switch n {
 		case "host":
-			id.setHost(v)
+			id.SetHost(v)
 		case "user":
-			id.setUser(v)
+			id.SetUser(v)
 		case "id":
 			i, err := strconv.Atoi(v)
 			if err != nil {
 				return err
 			}
-			id.setID(uint32(i))
+			id.SetID(uint32(i))
 		}
 	}
 	return nil

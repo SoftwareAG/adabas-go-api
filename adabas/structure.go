@@ -403,7 +403,8 @@ type ID struct {
 	AdaID         *AID
 }
 
-func (adaid *ID) setUser(User string) {
+// SetUser set the user id name into the ID, prepare byte array correctly
+func (adaid *ID) SetUser(User string) {
 	for i := 0; i < 8; i++ {
 		adaid.AdaID.User[i] = ' '
 	}
@@ -411,7 +412,8 @@ func (adaid *ID) setUser(User string) {
 	copy(adaid.AdaID.User[:], User)
 }
 
-func (adaid *ID) setHost(Host string) {
+// SetHost set the host id name into the ID, prepare byte array correctly
+func (adaid *ID) SetHost(Host string) {
 	for i := 0; i < 8; i++ {
 		adaid.AdaID.Node[i] = ' '
 	}
@@ -419,7 +421,8 @@ func (adaid *ID) setHost(Host string) {
 	copy(adaid.AdaID.Node[:], Host)
 }
 
-func (adaid *ID) setID(pid uint32) {
+// SetID set the pid into the ID, prepare byte array correctly
+func (adaid *ID) SetID(pid uint32) {
 	adaid.AdaID.Pid = pid
 }
 

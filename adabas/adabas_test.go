@@ -245,7 +245,7 @@ func TestAdabasFdt(t *testing.T) {
 
 	log.Debug("TEST: ", t.Name())
 	adabas := NewAdabas(23)
-	adabas.ID.setUser("fdt")
+	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
 	errOpen := adabas.Open()
@@ -278,7 +278,7 @@ func ExampleAdabas_readFileDefinition11() {
 	defer f.Close()
 
 	adabas := NewAdabas(23)
-	adabas.ID.setUser("fdt")
+	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
 	err = adabas.Open()
@@ -350,7 +350,7 @@ func ExampleAdabas_readFileDefinition9() {
 	defer f.Close()
 
 	adabas := NewAdabas(23)
-	adabas.ID.setUser("fdt")
+	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
 	err = adabas.Open()
@@ -456,7 +456,7 @@ func ExampleAdabas_readFileDefinition9RestrictF0() {
 	defer f.Close()
 
 	adabas := NewAdabas(23)
-	adabas.ID.setUser("fdt")
+	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
 	err = adabas.Open()
@@ -506,7 +506,7 @@ func ExampleAdabas_readFileDefinition9Restricted() {
 	defer f.Close()
 
 	adabas := NewAdabas(23)
-	adabas.ID.setUser("fdt")
+	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
 	err = adabas.Open()
@@ -553,7 +553,7 @@ func TestAdabasFdtNewEmployee(t *testing.T) {
 
 	log.Debug("TEST: ", t.Name())
 	adabas := NewAdabas(23)
-	adabas.ID.setUser("newempl")
+	adabas.ID.SetUser("newempl")
 
 	fmt.Println("Open database")
 	err := adabas.Open()
@@ -586,7 +586,7 @@ func TestAdabasFdtHyperexit(t *testing.T) {
 
 	log.Debug("TEST: ", t.Name())
 	adabas := NewAdabas(23)
-	adabas.ID.setUser("hyper")
+	adabas.ID.SetUser("hyper")
 	defer adabas.Close()
 
 	fmt.Println("Open database")
@@ -628,7 +628,7 @@ func TestAdabasFdtNewEmployeeRemote(t *testing.T) {
 	}
 	defer adabas.Close()
 
-	adabas.ID.setUser("newempl")
+	adabas.ID.SetUser("newempl")
 
 	fmt.Println("Open database")
 	err := adabas.Open()
