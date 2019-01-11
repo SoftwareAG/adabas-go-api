@@ -430,7 +430,7 @@ func (adaType *StructureType) NrFields() int {
 }
 
 func (adaType *StructureType) parseBuffer(helper *BufferHelper, option *BufferOption) {
-	Central.Log.Debugf("Parse Structure offset=%d", helper.offset)
+	Central.Log.Debugf("Parse Structure type offset=%d", helper.offset)
 }
 
 // Traverse Traverse through the definition tree calling a callback method for each node

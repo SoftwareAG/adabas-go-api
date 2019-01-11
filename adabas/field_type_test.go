@@ -8,24 +8,38 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const recordNamePrefix = "FIELD-TYPE-TEST"
+
 func TestFieldTypeStore(t *testing.T) {
 	f := initTestLogWithFile(t, "field_type.log")
 	defer f.Close()
 
-	// cErr := clearFile(16)
-	// if !assert.NoError(t, cErr) {
-	// 	return
-	// }
+	cErr := clearFile(270)
+	if !assert.NoError(t, cErr) {
+		return
+	}
 
 	storeRequest := NewStoreRequest("23", 270)
 	defer storeRequest.Close()
-	err := storeRequest.StoreFields("S1,U1,S2,U2,S4,U4,S8,U8,AF,BR,B1,F4,F8,A1,AS,A2,AB,AF,WU,WL,W4,WF,PA,PF,UP,UF,UE")
+	//err := storeRequest.StoreFields("S1,U1,S2,U2,S4,U4,S8,U8,AF,BR,B1,F4,F8,A1,AS,A2,AB,AF,WU,WL,W4,WF,PA,PF,UP,UF,UE")
 	//	err := storeRequest.StoreFields("S1,U1,S2,U2,S4,U4,S8,U8,BR,B1,F4,F8,A1,AS,A2,AB,AF,WU,WL,W4,WF,PA,PF,UP")
-	//err := storeRequest.StoreFields("*")
+	err := storeRequest.StoreFields("*")
 	if !assert.NoError(t, err) {
 		return
 	}
 	storeRecord, serr := storeRequest.CreateRecord()
+	if !assert.NoError(t, serr) {
+		return
+	}
+	err = storeRecord.SetValue("AF", recordNamePrefix)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = storeRequest.Store(storeRecord)
+	if !assert.NoError(t, err) {
+		return
+	}
+	storeRecord, serr = storeRequest.CreateRecord()
 	if !assert.NoError(t, serr) {
 		return
 	}
@@ -93,7 +107,7 @@ func TestFieldTypeStore(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	err = storeRecord.SetValue("AF", "FIELD-TYPE-TEST")
+	err = storeRecord.SetValue("AF", recordNamePrefix)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -127,34 +141,151 @@ func TestFieldTypeRead(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	err = request.QueryFields("S1,U1,S2,U2,S4,U4,S8,U8,AF,BR,B1,F4,F8,A1")
-	//	err = request.QueryFields("S1,U1,S2,U2,S4,U4,S8,U8,AF,BR,B1,F4,F8,A1,AS,A2,AB,AF,WU,WL,W4,WF,PA,PF,UP,UF,UE")
-	//err = request.QueryFields("*")
+	//err = request.QueryFields("S1,U1,S2,U2,S4,U4,S8,U8,AF,BR,B1,F4,F8,A1")
+	//err = request.QueryFields("S1,U1,S2,U2,S4,U4,S8,U8,AF,BR,B1,F4,F8,A1,AS,A2,AB,AF,WU,WL,W4,WF,PA,PF,UP,UF,UE")
+	err = request.QueryFields("*")
 	if !assert.NoError(t, cerr) {
 		return
 	}
 	request.Limit = 0
 	request.RecordBufferShift = 64000
-	result, rerr := request.ReadLogicalWith("AF=FIELD-TYPE-TEST")
+	result, rerr := request.ReadLogicalWith("AF=" + recordNamePrefix)
 	if !assert.NoError(t, rerr) {
 		return
 	}
 	if assert.NotNil(t, result) {
-		assert.Equal(t, 1, len(result.Values))
-		assert.Equal(t, 1, result.NrRecords())
+		assert.Equal(t, 2, len(result.Values))
+		assert.Equal(t, 2, result.NrRecords())
 		err = result.DumpValues()
 		assert.NoError(t, err)
-		kaVal := result.Values[0].HashFields["S1"]
+		kaVal := result.Values[1].HashFields["S1"]
 		assert.Equal(t, "-1", kaVal.String())
-		kaVal = result.Values[0].HashFields["U1"]
+		kaVal = result.Values[1].HashFields["U1"]
 		if assert.NotNil(t, kaVal) {
 			assert.Equal(t, "1", kaVal.String())
 		}
-		kaVal = result.Values[0].HashFields["S2"]
-		assert.Equal(t, "-100000", kaVal.String())
-		kaVal = result.Values[0].HashFields["S4"]
+		kaVal = result.Values[1].HashFields["S2"]
 		assert.Equal(t, "-1000", kaVal.String())
-		kaVal = result.Values[0].HashFields["A1"]
+		kaVal = result.Values[1].HashFields["S4"]
+		assert.Equal(t, "-100000", kaVal.String())
+		kaVal = result.Values[1].HashFields["A1"]
 		assert.Equal(t, "X", kaVal.String())
 	}
+}
+
+func ExampleFieldType() {
+	f, err := initLogWithFile("field_type.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+	url := "23"
+	fmt.Println("Connect to ", url)
+	connection, cerr := NewConnection("acj;target=" + url)
+	if cerr != nil {
+		fmt.Println("Error creating database connection", cerr)
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	openErr := connection.Open()
+	if openErr != nil {
+		fmt.Println("Error opening database", openErr)
+		return
+	}
+	request, err := connection.CreateReadRequest(270)
+	if err != nil {
+		fmt.Println("Error creating read request", err)
+		return
+	}
+	//err = request.QueryFields("S1,U1,S2,U2,S4,U4,S8,U8,AF,BR,B1,F4,F8,A1")
+	err = request.QueryFields("IT,BB,TY,AA,WC,PI,UI")
+	//err = request.QueryFields("*")
+	if err != nil {
+		fmt.Println("Error query fields", err)
+		return
+	}
+	request.Limit = 0
+	request.RecordBufferShift = 64000
+	result, rerr := request.ReadLogicalWith("AF=" + recordNamePrefix)
+	if rerr != nil {
+		fmt.Println("Error reading records", rerr)
+		return
+	}
+	result.DumpValues()
+	//Output: Connect to  23
+	// Adabas url=23 fnr=0
+	// Dump all result values
+	// Record Isn: 0007
+	// Record Quantity: 0002
+	//   IT = [ 1 ]
+	//    S1 = > 0 <
+	//    U1 = > 0 <
+	//    S2 = > 0 <
+	//    U2 = > 0 <
+	//    S4 = > 0 <
+	//    U4 = > 0 <
+	//    S8 = > 0 <
+	//    U8 = > 0 <
+	//   BB = [ 1 ]
+	//    BR = > 0 <
+	//    B1 = > 0 <
+	//   TY = [ 1 ]
+	//    F4 = > 0.000000 <
+	//    F8 = > 0.000000 <
+	//   AA = [ 1 ]
+	//    A1 = >   <
+	//    AS = >   <
+	//    A2 = >   <
+	//    AB = >  <
+	//    AF = > FIELD-TYPE-TEST      <
+	//   WC = [ 1 ]
+	//    WU = >   <
+	//    WL = >   <
+	//    W4 = >   <
+	//    WF = >                                                    <
+	//   PI = [ 1 ]
+	//    PA = > 0 <
+	//    PF = > 0 <
+	//   UI = [ 1 ]
+	//    UP = > 0 <
+	//    UF = > 0 <
+	//    UE = > 0 <
+	// Record Isn: 0008
+	// Record Quantity: 0002
+	//   IT = [ 1 ]
+	//    S1 = > -1 <
+	//    U1 = > 1 <
+	//    S2 = > -1000 <
+	//    U2 = > 1000 <
+	//    S4 = > -100000 <
+	//    U4 = > 1000 <
+	//    S8 = > -1000 <
+	//    U8 = > 1000 <
+	//   BB = [ 1 ]
+	//    BR = > 0 <
+	//    B1 = > 255 <
+	//   TY = [ 1 ]
+	//    F4 = > 0.000000 <
+	//    F8 = > 0.000000 <
+	//   AA = [ 1 ]
+	//    A1 = > X <
+	//    AS = > NORMALSTRING <
+	//    A2 = > LARGESTRING <
+	//    AB = > LOBST <
+	//    AF = > FIELD-TYPE-TEST      <
+	//   WC = [ 1 ]
+	//    WU = >   <
+	//    WL = >   <
+	//    W4 = >   <
+	//    WF = >                                                    <
+	//   PI = [ 1 ]
+	//    PA = > 0 <
+	//    PF = > 0 <
+	//   UI = [ 1 ]
+	//    UP = > 0 <
+	//    UF = > 0 <
+	//    UE = > 0 <
+
 }

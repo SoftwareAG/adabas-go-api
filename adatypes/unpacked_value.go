@@ -90,6 +90,15 @@ func (value *unpackedValue) StoreBuffer(helper *BufferHelper) error {
 }
 
 func (value *unpackedValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
+	if value.Type().Length() == 0 {
+		length, errh := helper.ReceiveUInt8()
+		if errh != nil {
+			return EndTraverser, errh
+		}
+		if uint8(len(value.value)) != length-1 {
+			value.value = make([]byte, length-1)
+		}
+	}
 	value.value, err = helper.ReceiveBytes(uint32(len(value.value)))
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Buffer get unpacked offset=%d", helper.offset)

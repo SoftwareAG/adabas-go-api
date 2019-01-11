@@ -223,7 +223,7 @@ func (value *StructureValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 		Central.Log.Debugf("Skip parsing %s offset=%d", value.Type().Name(), helper.offset)
 		return
 	}
-	Central.Log.Debugf("Parse structure buffer %s secondCall=%v offset=%d", value.Type().Name(), option.SecondCall, helper.offset)
+	Central.Log.Debugf("Parse structure buffer %s secondCall=%v offset=%d/%X", value.Type().Name(), option.SecondCall, helper.offset, helper.offset)
 	if value.adatype.HasFlagSet(FlagOptionPE) && value.adatype.HasFlagSet(FlagOptionMU) {
 		return value.parseBufferWithMUPE(helper, option)
 	}

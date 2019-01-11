@@ -115,11 +115,21 @@ func (value *packedValue) parseBuffer(helper *BufferHelper, option *BufferOption
 		Central.Log.Debugf("Skip parsing %s offset=%d", value.Type().Name(), helper.offset)
 		return
 	}
+	if value.Type().Length() == 0 {
+		length, errh := helper.ReceiveUInt8()
+		if errh != nil {
+			return EndTraverser, errh
+		}
+		if uint8(len(value.value)) != length-1 {
+			value.value = make([]byte, length-1)
+		}
+	}
+
 	value.value, err = helper.ReceiveBytes(uint32(len(value.value)))
 	if err != nil {
 		return
 	}
-	Central.Log.Debugf("Buffer get packed %s -> offset=%d %X(%d)", value.adatype.Name(), helper.offset, value.value, len(value.value))
+	Central.Log.Debugf("Buffer get packed %s -> offset=%d/%X(%d)", value.adatype.Name(), helper.offset, helper.offset, len(value.value))
 	return
 }
 

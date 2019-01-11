@@ -122,6 +122,10 @@ func (value *byteArrayValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 		if err != nil {
 			return
 		}
+		if len == 0 {
+			return EndTraverser, NewGenericError(0)
+		}
+		len--
 	}
 	value.value, err = helper.ReceiveBytes(uint32(len))
 	Central.Log.Debugf("Buffer get bytes offset=%v %s", helper.offset, value.Type().String())
