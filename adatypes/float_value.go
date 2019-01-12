@@ -22,7 +22,9 @@ package adatypes
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
+	"math"
 	"strconv"
 )
 
@@ -41,7 +43,8 @@ func float32ToByte(f float32) []byte {
 	buf := new(bytes.Buffer)
 	err := binary.Write(buf, binary.BigEndian, f)
 	if err != nil {
-		fmt.Println("binary.Write failed:", err)
+		Central.Log.Debugf("binary.Write failed: %v", err)
+		return nil
 	}
 	return buf.Bytes()
 }
@@ -51,8 +54,8 @@ func byteToFLoat32(b []byte) float32 {
 	var f float32
 	err := binary.Read(buf, binary.BigEndian, &f)
 	if err != nil {
-		fmt.Println("binary.Read failed:", err)
-		panic("XXX")
+		Central.Log.Debugf("binary.Read failed: %v", err)
+		return 0
 	}
 	return f
 
@@ -90,6 +93,16 @@ func (value *floatValue) SetValue(v interface{}) error {
 	case float64:
 		f := float32(v.(float64))
 		value.value = float32ToByte(f)
+	case string:
+		vs := v.(string)
+		value.SetStringValue(vs)
+	case []byte:
+		bv := v.([]byte)
+		if uint32(len(bv)) > value.Type().Length() {
+			return errors.New("Cannot set byte array, length to small")
+		}
+		copy(value.value[:len(bv)], bv[:])
+		// value.value = bv
 	default:
 		i, err := value.commonInt64Convert(v)
 		if err != nil {
@@ -116,18 +129,41 @@ func (value *floatValue) parseBuffer(helper *BufferHelper, option *BufferOption)
 }
 
 func (value *floatValue) Int32() (int32, error) {
-	return int32(byteToFLoat32(value.value)), nil
+	fl := byteToFLoat32(value.value)
+	if fl == float32(math.Floor(float64(fl))) {
+		return int32(fl), nil
+	}
+	return 0, errors.New("Cannot convert value to signed 32-bit integer")
+	//	return int32(byteToFLoat32(value.value)), nil
 }
 
 func (value *floatValue) UInt32() (uint32, error) {
-	return uint32(byteToFLoat32(value.value)), nil
+	fl := byteToFLoat32(value.value)
+	if fl >= 0 && fl == float32(math.Floor(float64(fl))) {
+		return uint32(fl), nil
+	}
+	return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+	//	return uint32(byteToFLoat32(value.value)), nil
 }
+
 func (value *floatValue) Int64() (int64, error) {
-	return int64(byteToFLoat32(value.value)), nil
+	fl := byteToFLoat32(value.value)
+	if fl == float32(math.Floor(float64(fl))) {
+		return int64(fl), nil
+	}
+	return 0, errors.New("Cannot convert value to signed 64-bit integer")
+	//	return int64(byteToFLoat32(value.value)), nil
 }
+
 func (value *floatValue) UInt64() (uint64, error) {
-	return uint64(byteToFLoat32(value.value)), nil
+	fl := byteToFLoat32(value.value)
+	if fl >= 0 && fl == float32(math.Floor(float64(fl))) {
+		return uint64(fl), nil
+	}
+	return 0, errors.New("Cannot convert value to unsigned 64-bit integer")
+	//	return uint64(byteToFLoat32(value.value)), nil
 }
+
 func (value *floatValue) Float() (float64, error) {
 	return float64(byteToFLoat32(value.value)), nil
 }
