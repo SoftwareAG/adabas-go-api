@@ -104,7 +104,7 @@ func TestUInt4Byte(t *testing.T) {
 	bint4 := int4.Bytes()
 	fmt.Println(bint4)
 	assert.Equal(t, 4, len(bint4))
-	int4.SetValue(4294967295)
+	int4.SetValue(uint32(4294967295))
 	assert.Equal(t, uint32(4294967295), int4.value)
 	maxBuffer := []byte{0xff, 0xff, 0xff, 0xff}
 	assert.Equal(t, maxBuffer, int4.Bytes())
