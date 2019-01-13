@@ -368,7 +368,7 @@ func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 		Central.Log.Debugf("Error converting %v", x)
 		return 0, fmt.Errorf("Cannot convert value type %T to int64", x)
 	}
-	Central.Log.Debugf("Converted value %v", val)
+	Central.Log.Debugf("Converted value %v from %T", val, x)
 	return val, nil
 }
 

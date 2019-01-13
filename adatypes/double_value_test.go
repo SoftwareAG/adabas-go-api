@@ -26,6 +26,12 @@ import (
 )
 
 func TestDouble(t *testing.T) {
+	f, err := initLogWithFile("double.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
 	adaType := NewType(FieldTypeDouble, "DL")
 	adaType.length = 8
 	fl := newDoubleValue(adaType)
@@ -37,4 +43,55 @@ func TestDouble(t *testing.T) {
 	fl.SetValue(0.5)
 	assert.Equal(t, float64(0.5), fl.Value())
 
+}
+
+func TestDoubleCheck(t *testing.T) {
+	f, err := initLogWithFile("double.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	adaType := NewType(FieldTypeDouble, "FL")
+	adaType.length = 8
+	fl := newDoubleValue(adaType)
+	assert.Equal(t, float64(0), fl.Value())
+	fl.SetStringValue("0.1")
+	assert.Equal(t, float64(0.1), fl.Value())
+	fl.SetStringValue("10.1")
+	assert.Equal(t, []byte{0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x24, 0x40}, fl.Bytes())
+	assert.Equal(t, float64(10.1), fl.Value())
+	fl.SetStringValue("-10.1")
+	assert.Equal(t, []byte{0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x24, 0xc0}, fl.Bytes())
+	assert.Equal(t, float64(-10.1), fl.Value())
+	fl.SetValue(0.5)
+	assert.Equal(t, float64(0.5), fl.Value())
+	_, serr := fl.Int32()
+	assert.Error(t, serr)
+	assert.Equal(t, []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xe0, 0x3f}, fl.Bytes())
+	fl.SetValue("10.0")
+	assert.Equal(t, []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x24, 0x40}, fl.Bytes())
+	assert.Equal(t, float64(10.0), fl.Value())
+	u32int, e32err := fl.UInt32()
+	assert.NoError(t, e32err)
+	assert.Equal(t, uint32(10), u32int)
+	u64int, e64err := fl.UInt64()
+	assert.NoError(t, e64err)
+	assert.Equal(t, uint64(10), u64int)
+	i32int, i32err := fl.Int32()
+	assert.NoError(t, i32err)
+	assert.Equal(t, int32(10), i32int)
+	i64int, i64err := fl.Int64()
+	assert.NoError(t, i64err)
+	assert.Equal(t, int64(10), i64int)
+	fl.SetValue(float32(20.1))
+	assert.Equal(t, float64(20.1), fl.Value())
+	fl.SetValue(float64(21.1))
+	assert.Equal(t, float64(21.1), fl.Value())
+	fl.SetValue(uint32(22))
+	assert.Equal(t, float64(22.0), fl.Value())
+	fl.SetValue(uint64(23))
+	assert.Equal(t, float64(23.0), fl.Value())
+	fl.SetValue([]byte{0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x24, 0xc0})
+	assert.Equal(t, float64(-10.1), fl.Value())
 }

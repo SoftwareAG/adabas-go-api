@@ -254,7 +254,7 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 		case (4):
 			adaValue = newFloatValue(adaType)
 		case (8):
-			adaValue = newFloatValue(adaType)
+			adaValue = newDoubleValue(adaType)
 		default:
 			err = errors.New("Error creating type value for: " + adaType.String())
 		}

@@ -2,6 +2,7 @@ package adabas
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
@@ -94,6 +95,14 @@ func TestFieldTypeStore(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
+	err = storeRecord.SetValue("F4", 21.1)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = storeRecord.SetValue("F8", 123456.1)
+	if !assert.NoError(t, err) {
+		return
+	}
 	err = storeRecord.SetValue("A1", "X")
 	if !assert.NoError(t, err) {
 		return
@@ -159,8 +168,8 @@ func TestFieldTypeRead(t *testing.T) {
 	if assert.NotNil(t, result) {
 		assert.Equal(t, 2, len(result.Values))
 		assert.Equal(t, 2, result.NrRecords())
-		err = result.DumpValues()
-		assert.NoError(t, err)
+		//err = result.DumpValues()
+		//assert.NoError(t, err)
 		kaVal := result.Values[1].HashFields["S1"]
 		assert.Equal(t, "-1", kaVal.String())
 		kaVal = result.Values[1].HashFields["U1"]
@@ -173,7 +182,30 @@ func TestFieldTypeRead(t *testing.T) {
 		assert.Equal(t, "-100000", kaVal.String())
 		kaVal = result.Values[1].HashFields["A1"]
 		assert.Equal(t, "X", kaVal.String())
+		kaVal = result.Values[1].HashFields["F4"]
+		assert.Equal(t, "21.100000", kaVal.String())
+		kaVal = result.Values[1].HashFields["F8"]
+		assert.Equal(t, float64(123456.100000), kaVal.Value())
+		err = jsonOutput(result.Values[0])
+		if !assert.NoError(t, err) {
+			return
+		}
+		jsonOutput(result.Values[1])
+		if !assert.NoError(t, err) {
+			return
+		}
 	}
+}
+
+func jsonOutput(r *ResultRecord) error {
+	_, jsonErr := json.Marshal(r)
+	if jsonErr != nil {
+		fmt.Println("Error", jsonErr)
+		// r.DumpValues()
+		return jsonErr
+	}
+	// fmt.Println(string(x))
+	return nil
 }
 
 func dumpFieldTypeValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
@@ -305,8 +337,8 @@ func ExampleFieldType() {
 	//    BR = > 0 <
 	//    B1 = > 255 <
 	//   TY = [ 1 ]
-	//    F4 = > 0.000000 <
-	//    F8 = > 0.000000 <
+	//    F4 = > 21.100000 <
+	//    F8 = > 123456.100000 <
 	//   AA = [ 1 ]
 	//    A1 = > X <
 	//    AS = > NORMALSTRING <

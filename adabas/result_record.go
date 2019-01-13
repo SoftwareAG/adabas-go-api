@@ -32,7 +32,7 @@ type ResultRecord struct {
 	quantity   uint64
 	Value      []adatypes.IAdaValue
 	HashFields map[string]adatypes.IAdaValue `xml:"-" json:"-"`
-	definition *adatypes.Definition
+	definition *adatypes.Definition          `xml:"-" json:"-"`
 }
 
 func hashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {

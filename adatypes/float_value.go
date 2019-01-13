@@ -39,9 +39,9 @@ func newFloatValue(initType IAdaType) *floatValue {
 	return &value
 }
 
-func float32ToByte(f float32) []byte {
+func float32ToByte(f interface{}) []byte {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.BigEndian, f)
+	err := binary.Write(buf, endian(), f)
 	if err != nil {
 		Central.Log.Debugf("binary.Write failed: %v", err)
 		return nil
@@ -52,7 +52,7 @@ func float32ToByte(f float32) []byte {
 func byteToFLoat32(b []byte) float32 {
 	buf := bytes.NewBuffer(b)
 	var f float32
-	err := binary.Read(buf, binary.BigEndian, &f)
+	err := binary.Read(buf, endian(), &f)
 	if err != nil {
 		Central.Log.Debugf("binary.Read failed: %v", err)
 		return 0
@@ -124,7 +124,7 @@ func (value *floatValue) StoreBuffer(helper *BufferHelper) error {
 }
 
 func (value *floatValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
-	helper.ReceiveBytes(value.Type().Length())
+	value.value, err = helper.ReceiveBytes(value.Type().Length())
 	return
 }
 

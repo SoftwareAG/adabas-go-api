@@ -25,7 +25,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFloating(t *testing.T) {
+func TestFloating32(t *testing.T) {
+	f, err := initLogWithFile("float.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
 	adaType := NewType(FieldTypeFloat, "FL")
 	adaType.length = 4
 	fl := newFloatValue(adaType)
@@ -40,8 +45,8 @@ func TestFloating(t *testing.T) {
 	assert.Equal(t, float32(-10.1), fl.Value())
 	fl.SetValue(0.5)
 	assert.Equal(t, float32(0.5), fl.Value())
-	_, err := fl.Int32()
-	assert.Error(t, err)
+	_, serr := fl.Int32()
+	assert.Error(t, serr)
 	assert.Equal(t, []byte{0x3f, 0x0, 0x0, 0x0}, fl.Bytes())
 	fl.SetValue("10.0")
 	assert.Equal(t, []byte{0x41, 0x20, 0x0, 0x0}, fl.Bytes())

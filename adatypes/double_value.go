@@ -22,6 +22,7 @@ package adatypes
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"strconv"
 )
@@ -39,7 +40,7 @@ func newDoubleValue(initType IAdaType) *doubleValue {
 
 func float64ToByte(f float64) []byte {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.BigEndian, f)
+	err := binary.Write(buf, endian(), f)
 	if err != nil {
 		fmt.Println("binary.Write failed:", err)
 	}
@@ -49,7 +50,7 @@ func float64ToByte(f float64) []byte {
 func byteToFLoat64(b []byte) float64 {
 	buf := bytes.NewBuffer(b)
 	var f float64
-	err := binary.Read(buf, binary.BigEndian, &f)
+	err := binary.Read(buf, endian(), &f)
 	if err != nil {
 		fmt.Println("binary.Read failed:", err)
 	}
@@ -87,12 +88,22 @@ func (value *doubleValue) SetValue(v interface{}) error {
 		value.value = float64ToByte(f)
 	case float64:
 		value.value = float64ToByte(v.(float64))
+	case string:
+		vs := v.(string)
+		value.SetStringValue(vs)
+	case []byte:
+		bv := v.([]byte)
+		if uint32(len(bv)) > value.Type().Length() {
+			return errors.New("Cannot set byte array, length to small")
+		}
+		copy(value.value[:len(bv)], bv[:])
+		// value.value = bv
 	default:
 		i, err := value.commonInt64Convert(v)
 		if err != nil {
 			return err
 		}
-		value.value = float32ToByte(float32(i))
+		value.value = float64ToByte(float64(i))
 		return nil
 	}
 	return nil
@@ -108,7 +119,7 @@ func (value *doubleValue) StoreBuffer(helper *BufferHelper) error {
 }
 
 func (value *doubleValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
-	helper.ReceiveBytes(value.Type().Length())
+	value.value, err = helper.ReceiveBytes(value.Type().Length())
 	return
 }
 
