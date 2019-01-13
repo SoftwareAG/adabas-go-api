@@ -142,9 +142,9 @@ func (value *unpackedValue) StoreBuffer(helper *BufferHelper) error {
 				return err
 			}
 			return helper.putBytes(value.value)
-		} else {
-			return helper.putBytes([]byte{2, 0x30})
 		}
+		return helper.putBytes([]byte{2, 0x30})
+
 	}
 	return helper.putBytes(value.value)
 }

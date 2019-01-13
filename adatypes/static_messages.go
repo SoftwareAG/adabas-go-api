@@ -784,6 +784,7 @@ var statisMessages = []struct {
 	{"ADG0000056", "en", "Received buffer error, buffer less than request {0}<{1}"},
 	{"ADG0000057", "en", "Packed value of {0} validation error, value {1} does not fit into {2}-packed"},
 	{"ADG0000058", "en", "Logical read with more then one descriptors not allowed, use search call"},
+	{"ADG0000059", "en", "Input byte array to great to store"},
 	{"ADG0000070", "en", "'{0}' is no valid database id"},
 	{"ADG0000071", "en", "Invalid URL given, need to be like <dbid>(<protocol>://<host>:<port>)"},
 	{"ADG0000072", "en", "'{0}' is no valid port number"},
