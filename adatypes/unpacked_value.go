@@ -21,6 +21,7 @@ package adatypes
 
 import (
 	"bytes"
+	"math"
 	"strconv"
 )
 
@@ -64,7 +65,65 @@ func (value *unpackedValue) SetStringValue(stValue string) {
 }
 
 func (value *unpackedValue) SetValue(v interface{}) error {
+	Central.Log.Debugf("Set packed value to %v", v)
+	iLen := value.Type().Length()
+	switch v.(type) {
+	case []byte:
+		bv := v.([]byte)
+		switch {
+		case iLen != 0 && uint32(len(bv)) > iLen:
+			return NewGenericError(59)
+		case uint32(len(bv)) < iLen:
+			copy(value.value, bv)
+		default:
+			value.value = bv
+		}
+		Central.Log.Debugf("Use byte array")
+	default:
+		v, err := value.commonInt64Convert(v)
+		if err != nil {
+			return err
+		}
+		Central.Log.Debugf("Got ... %v", v)
+		if iLen != 0 {
+			err = value.checkValidValue(v, value.Type().Length())
+			if err != nil {
+				return err
+			}
+		} else {
+			iLen = value.createLength(v)
+		}
+
+		value.LongToUnpacked(v, int(iLen), false)
+		Central.Log.Debugf("Packed value %s", value.String())
+	}
 	return nil
+}
+
+func (value *unpackedValue) checkValidValue(intValue int64, len uint32) error {
+	maxValue := int64(1)
+	for i := uint32(0); i < len; i++ {
+		maxValue *= 10
+	}
+	absValue := int64(math.Abs(float64(intValue)))
+	Central.Log.Debugf("Check valid value absolute value %d < max %d", absValue, maxValue)
+	if absValue < maxValue {
+		return nil
+	}
+	return NewGenericError(57, value.Type().Name(), intValue, len)
+}
+
+func (value *unpackedValue) createLength(v int64) uint32 {
+	maxValue := int64(1)
+	cipher := uint32(0)
+	for maxValue < v {
+		maxValue *= 10
+		cipher++
+	}
+	cipher = cipher + 1
+	value.value = make([]byte, cipher)
+	Central.Log.Debugf("Create size of %d for %d", cipher, v)
+	return cipher
 }
 
 func (value *unpackedValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
@@ -78,13 +137,14 @@ func (value *unpackedValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOpt
 func (value *unpackedValue) StoreBuffer(helper *BufferHelper) error {
 	if value.Type().Length() == 0 {
 		if len(value.value) > 0 {
-			err := helper.putByte(1)
+			err := helper.putByte(byte(len(value.value) + 1))
 			if err != nil {
 				return err
 			}
 			return helper.putBytes(value.value)
+		} else {
+			return helper.putBytes([]byte{2, 0x30})
 		}
-		return helper.putBytes([]byte{2, 0x30})
 	}
 	return helper.putBytes(value.value)
 }

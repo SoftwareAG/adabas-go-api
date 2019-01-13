@@ -123,6 +123,42 @@ func TestFieldTypeStore(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
+	err = storeRecord.SetValue("WU", "Санкт-Петербург")
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = storeRecord.SetValue("WL", "அ-8பவனி கொம்பிலேக்")
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = storeRecord.SetValue("W4", "ಸೆನಿಓರ್ ಪ್ರೋಗ್ೃಾಮ್ಮೇರ್")
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = storeRecord.SetValue("WF", "директор")
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = storeRecord.SetValue("PA", "123")
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = storeRecord.SetValue("PF", "1234")
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = storeRecord.SetValue("UP", "51234")
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = storeRecord.SetValue("UF", "542")
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = storeRecord.SetValue("UE", "1234")
+	if !assert.NoError(t, err) {
+		return
+	}
 	storeRecord.DumpValues()
 	err = storeRequest.Store(storeRecord)
 	if !assert.NoError(t, err) {
@@ -180,6 +216,13 @@ func TestFieldTypeRead(t *testing.T) {
 		assert.Equal(t, "-1000", kaVal.String())
 		kaVal = result.Values[1].HashFields["S4"]
 		assert.Equal(t, "-100000", kaVal.String())
+		kaVal = result.Values[1].HashFields["BR"]
+		assert.Equal(t, []byte{0x0, 0x10, 0x20}, kaVal.Value())
+		db := []byte{0xff, 0x10, 0x5, 0x0, 0x10, 0x20}
+		b := make([]byte, 122)
+		copy(b[:len(db)], db)
+		kaVal = result.Values[1].HashFields["B1"]
+		assert.Equal(t, b, kaVal.Value())
 		kaVal = result.Values[1].HashFields["A1"]
 		assert.Equal(t, "X", kaVal.String())
 		kaVal = result.Values[1].HashFields["F4"]
@@ -300,8 +343,8 @@ func ExampleFieldType() {
 	//    S8 = > 0 <
 	//    U8 = > 0 <
 	//   BB = [ 1 ]
-	//    BR = > 0 <
-	//    B1 = > 0 <
+	//    BR = > [0] <
+	//    B1 = > [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0] <
 	//   TY = [ 1 ]
 	//    F4 = > 0.000000 <
 	//    F8 = > 0.000000 <
@@ -334,8 +377,8 @@ func ExampleFieldType() {
 	//    S8 = > -1000 <
 	//    U8 = > 1000 <
 	//   BB = [ 1 ]
-	//    BR = > 0 <
-	//    B1 = > 255 <
+	//    BR = > [0 16 32] <
+	//    B1 = > [255 16 5 0 16 32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0] <
 	//   TY = [ 1 ]
 	//    F4 = > 21.100000 <
 	//    F8 = > 123456.100000 <
@@ -346,16 +389,15 @@ func ExampleFieldType() {
 	//    AB = > LOBST <
 	//    AF = > FIELD-TYPE-TEST      <
 	//   WC = [ 1 ]
-	//    WU = >   <
-	//    WL = >   <
-	//    W4 = >   <
-	//    WF = >                                                    <
+	//    WU = > Санкт-Петербург <
+	//    WL = > அ-8பவனி கொம்பிலேக் <
+	//    W4 = > ಸೆನಿಓರ್ ಪ್ರೋಗ್ೃಾಮ್ಮೇರ್ <
+	//    WF = > директор                                   <
 	//   PI = [ 1 ]
-	//    PA = > 0 <
-	//    PF = > 0 <
+	//    PA = > 123 <
+	//    PF = > 1234 <
 	//   UI = [ 1 ]
-	//    UP = > 0 <
-	//    UF = > 0 <
-	//    UE = > 0 <
-
+	//    UP = > 51234 <
+	//    UF = > 542 <
+	//    UE = > 1234 <
 }

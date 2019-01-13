@@ -67,9 +67,18 @@ func (value *packedValue) SetStringValue(stValue string) {
 
 func (value *packedValue) SetValue(v interface{}) error {
 	Central.Log.Debugf("Set packed value to %v", v)
+	iLen := value.Type().Length()
 	switch v.(type) {
 	case []byte:
-		value.value = v.([]byte)
+		bv := v.([]byte)
+		switch {
+		case iLen != 0 && uint32(len(bv)) > iLen:
+			return NewGenericError(59)
+		case uint32(len(bv)) < iLen:
+			copy(value.value, bv)
+		default:
+			value.value = bv
+		}
 		Central.Log.Debugf("Use byte array")
 	default:
 		v, err := value.commonInt64Convert(v)
@@ -77,12 +86,16 @@ func (value *packedValue) SetValue(v interface{}) error {
 			return err
 		}
 		Central.Log.Debugf("Got ... %v", v)
-		err = value.checkValidValue(v, value.Type().Length())
-		if err != nil {
-			return err
+		if iLen != 0 {
+			err = value.checkValidValue(v, value.Type().Length())
+			if err != nil {
+				return err
+			}
+		} else {
+			iLen = value.createLength(v)
 		}
 
-		value.LongToPacked(v, value.Type().Length())
+		value.LongToPacked(v, iLen)
 		Central.Log.Debugf("Packed value %s", value.String())
 	}
 	return nil
@@ -102,7 +115,8 @@ func (value *packedValue) StoreBuffer(helper *BufferHelper) error {
 		if vlen == 0 {
 			return helper.putBytes([]byte{2, positivePackedIndicator()})
 		}
-		err := helper.putByte(byte(vlen))
+		Central.Log.Debugf("Create variable len=%d", vlen)
+		err := helper.putByte(byte(vlen + 1))
 		if err != nil {
 			return err
 		}
@@ -185,6 +199,7 @@ func (value *packedValue) packedToLong() int64 {
 
 	return longValue
 }
+
 func (value *packedValue) checkValidValue(intValue int64, len uint32) error {
 	maxValue := int64(1)
 	for i := uint32(0); i < (len*2)-1; i++ {
@@ -196,6 +211,19 @@ func (value *packedValue) checkValidValue(intValue int64, len uint32) error {
 		return nil
 	}
 	return NewGenericError(57, value.Type().Name(), intValue, len)
+}
+
+func (value *packedValue) createLength(v int64) uint32 {
+	maxValue := int64(1)
+	cipher := uint32(0)
+	for maxValue < v {
+		maxValue *= 10
+		cipher++
+	}
+	cipher = (cipher + 1) / 2
+	value.value = make([]byte, cipher)
+	Central.Log.Debugf("Create size of %d for %d", cipher, v)
+	return cipher
 }
 
 // LongToPacked convert long values (int64) to packed values

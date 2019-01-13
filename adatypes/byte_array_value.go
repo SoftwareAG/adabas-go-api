@@ -48,7 +48,7 @@ func (value *byteArrayValue) ByteValue() byte {
 }
 
 func (value *byteArrayValue) String() string {
-	return strconv.Itoa(int(value.ByteValue()))
+	return fmt.Sprintf("%v", value.value)
 }
 
 func (value *byteArrayValue) Value() interface{} {
@@ -74,9 +74,15 @@ func (value *byteArrayValue) SetStringValue(stValue string) {
 }
 
 func (value *byteArrayValue) SetValue(v interface{}) error {
+	Central.Log.Debugf("Set value for %s using ... %T", value.Type().Name(), v)
 	switch v.(type) {
 	case []byte:
-		copy(value.value, v.([]byte))
+		b := v.([]byte)
+		if value.Type().Length() == 0 {
+			value.value = b
+		} else {
+			copy(value.value, b)
+		}
 		return nil
 	case string:
 		value.value = []byte(v.(string))
@@ -97,7 +103,7 @@ func (value *byteArrayValue) StoreBuffer(helper *BufferHelper) error {
 	if value.Type().Length() == 0 {
 		if len(value.value) > 0 {
 			Central.Log.Debugf("Add byte array ...")
-			err := helper.putByte(byte(len(value.value)))
+			err := helper.putByte(byte(len(value.value) + 1))
 			if err != nil {
 				return err
 			}
@@ -128,7 +134,7 @@ func (value *byteArrayValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 		len--
 	}
 	value.value, err = helper.ReceiveBytes(uint32(len))
-	Central.Log.Debugf("Buffer get bytes offset=%v %s", helper.offset, value.Type().String())
+	Central.Log.Debugf("Byte array parse bytes offset=%X len=%d value=%#v", helper.offset, len, value.value)
 	return
 }
 
