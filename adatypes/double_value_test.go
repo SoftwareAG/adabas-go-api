@@ -20,6 +20,7 @@
 package adatypes
 
 import (
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -85,7 +86,7 @@ func TestDoubleCheck(t *testing.T) {
 	assert.NoError(t, i64err)
 	assert.Equal(t, int64(10), i64int)
 	fl.SetValue(float32(20.1))
-	assert.Equal(t, float64(20.1), fl.Value())
+	assert.True(t, math.Abs(fl.Value().(float64)-20.1) < 0.001)
 	fl.SetValue(float64(21.1))
 	assert.Equal(t, float64(21.1), fl.Value())
 	fl.SetValue(uint32(22))

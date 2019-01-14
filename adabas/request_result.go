@@ -250,7 +250,9 @@ func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 			(*oldMap)[adaValue.Type().Name()] = req.dataMap
 		} else {
 			switch adaValue.Type().Type() {
-			case adatypes.FieldTypePacked, adatypes.FieldTypeByte, adatypes.FieldTypeUnpacked, adatypes.FieldTypeUByte:
+			case adatypes.FieldTypePacked, adatypes.FieldTypeUnpacked, adatypes.FieldTypeByte, adatypes.FieldTypeUByte,
+				adatypes.FieldTypeUInt2, adatypes.FieldTypeInt2, adatypes.FieldTypeUInt4, adatypes.FieldTypeInt4,
+				adatypes.FieldTypeUInt8, adatypes.FieldTypeInt8, adatypes.FieldTypeDouble, adatypes.FieldTypeFloat:
 				v, err := adaValue.Int64()
 				if err != nil {
 					adatypes.Central.Log.Debugf("Error marshal JSON %s: %v", adaValue.Type().Name(), err)

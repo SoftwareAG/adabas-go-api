@@ -24,6 +24,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 )
 
@@ -124,7 +125,11 @@ func (value *doubleValue) parseBuffer(helper *BufferHelper, option *BufferOption
 }
 
 func (value *doubleValue) Int32() (int32, error) {
-	return int32(byteToFLoat64(value.value)), nil
+	fl := byteToFLoat64(value.value)
+	if fl != math.Trunc(fl) {
+		return 0, errors.New("Cannot convert value to signed 32-bit integer")
+	}
+	return int32(fl), nil
 }
 
 func (value *doubleValue) UInt32() (uint32, error) {

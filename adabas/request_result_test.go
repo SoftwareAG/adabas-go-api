@@ -168,7 +168,7 @@ func ExampleRequestResult_JsonMarshal() {
 		return
 	}
 	fmt.Println(string(res))
-	// Output: {"Record":[{"AA":"10","B1":0,"GR":{"G1":"0","GX":" ","PA":9},"I2":"0","I8":"0","ISN":10,"U8":"0","UB":"0"},{"AA":"20","B1":0,"GR":{"G1":"0","GX":" ","PA":3},"I2":"0","I8":"0","ISN":11,"U8":"0","UB":"0"}]}
+	// Output: {"Record":[{"AA":10,"B1":0,"GR":{"G1":"0","GX":" ","PA":9},"I2":0,"I8":0,"ISN":10,"U8":0,"UB":0},{"AA":20,"B1":0,"GR":{"G1":"0","GX":" ","PA":3},"I2":0,"I8":0,"ISN":11,"U8":0,"UB":0}]}
 }
 
 func ExampleRequestResult_XmlMarshal() {
@@ -202,7 +202,7 @@ func TestRequestResult(t *testing.T) {
 	assert.Nil(t, record)
 	j, err := json.Marshal(result)
 	assert.NoError(t, err)
-	assert.Equal(t, "{\"Record\":[{\"AA\":\"10\",\"B1\":0,\"GR\":{\"G1\":\"0\",\"GX\":\" \",\"PA\":9},\"I2\":\"0\",\"I8\":\"0\",\"ISN\":10,\"U8\":\"0\",\"UB\":\"0\"},{\"AA\":\"20\",\"B1\":0,\"GR\":{\"G1\":\"0\",\"GX\":\" \",\"PA\":3},\"I2\":\"0\",\"I8\":\"0\",\"ISN\":11,\"U8\":\"0\",\"UB\":\"0\"}]}", string(j))
+	assert.Equal(t, "{\"Record\":[{\"AA\":10,\"B1\":0,\"GR\":{\"G1\":\"0\",\"GX\":\" \",\"PA\":9},\"I2\":0,\"I8\":0,\"ISN\":10,\"U8\":0,\"UB\":0},{\"AA\":20,\"B1\":0,\"GR\":{\"G1\":\"0\",\"GX\":\" \",\"PA\":3},\"I2\":0,\"I8\":0,\"ISN\":11,\"U8\":0,\"UB\":0}]}", string(j))
 	x, err := xml.Marshal(result)
 	assert.NoError(t, err)
 	assert.Equal(t, "<Response><Record ISN=\"10\"><AA>10</AA><B1>0</B1><UB>0</UB><I2>0</I2><U8>0</U8><GR><G1>0</G1><GX> </GX><PA>9</PA></GR><I8>0</I8></Record><Record ISN=\"11\"><AA>20</AA><B1>0</B1><UB>0</UB><I2>0</I2><U8>0</U8><GR><G1>0</G1><GX> </GX><PA>3</PA></GR><I8>0</I8></Record></Response>", string(x))
