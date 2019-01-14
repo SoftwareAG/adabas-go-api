@@ -39,4 +39,7 @@ func TestSuperDesc(t *testing.T) {
 	assert.Error(t, err)
 	_, err = sv.UInt64()
 	assert.Error(t, err)
+	_, err = sv.Float()
+	assert.Error(t, err)
+
 }

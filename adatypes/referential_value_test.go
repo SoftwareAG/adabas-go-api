@@ -28,6 +28,7 @@ func TestReferential(t *testing.T) {
 	assert.Equal(t, uint32(0), helper.Offset())
 	sv.StoreBuffer(helper)
 	assert.Equal(t, uint32(0), helper.Offset())
+	assert.Equal(t, "", sv.Value())
 	_, err = sv.Int32()
 	assert.Error(t, err)
 	_, err = sv.Int64()
@@ -35,5 +36,7 @@ func TestReferential(t *testing.T) {
 	_, err = sv.UInt32()
 	assert.Error(t, err)
 	_, err = sv.UInt64()
+	assert.Error(t, err)
+	_, err = sv.Float()
 	assert.Error(t, err)
 }

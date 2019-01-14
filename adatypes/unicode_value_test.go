@@ -304,3 +304,38 @@ func TestUnicodeLBParseBufferVariable(t *testing.T) {
 	v = []byte{0x41, 0x42, 0x43}
 	assert.Equal(t, v, adaValue.Value())
 }
+
+func TestUnicodeLBVariable(t *testing.T) {
+	f, err := initLogWithFile("unicode_value.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+	typ := NewType(FieldTypeLBUnicode, "XX")
+	typ.length = 0
+	adaValue := newUnicodeValue(typ)
+	assert.NotNil(t, adaValue)
+	v := []byte{}
+	assert.Equal(t, v, adaValue.Value())
+	assert.Equal(t, "", adaValue.String())
+	assert.Equal(t, v, adaValue.Bytes())
+	adaValue.SetValue("ABC")
+	v = []byte{0x41, 0x42, 0x43}
+	assert.Equal(t, v, adaValue.Value())
+	assert.Equal(t, "ABC", adaValue.String())
+	adaValue.SetValue("äöüß")
+	v = []byte{0xc3, 0xa4, 0xc3, 0xb6, 0xc3, 0xbc, 0xc3, 0x9f}
+	assert.Equal(t, v, adaValue.Value())
+	assert.Equal(t, "äöüß", adaValue.String())
+	assert.Equal(t, v, adaValue.Bytes())
+	assert.Equal(t, byte(0xc3), adaValue.ByteValue())
+	v = []byte{0x41, 0x42, 0x43}
+	adaValue.SetValue(v)
+	assert.Equal(t, v, adaValue.Value())
+	assert.Equal(t, "ABC", adaValue.String())
+	option := &BufferOption{}
+	var buffer bytes.Buffer
+	l := adaValue.FormatBuffer(&buffer, option)
+	assert.Equal(t, "XXL,4,XX(0,4096)", buffer.String())
+	assert.Equal(t, uint32(0x1004), l)
+}
