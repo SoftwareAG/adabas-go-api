@@ -136,6 +136,9 @@ func NewAdabass(target string) (*Adabas, error) {
 
 // NewAdabasWithID create a new Adabas struct instance using string parameter
 func NewAdabasWithID(target string, ID *ID) (*Adabas, error) {
+	if ID == nil {
+		return nil, adatypes.NewGenericError(60)
+	}
 	adatypes.Central.Log.Debugf("Use new Adabas with Adabas ID: %s", ID.String())
 	// fmt.Println("Create URL", target)
 	URL, err := newURL(target)
@@ -313,7 +316,6 @@ func (adabas *Adabas) sendTCP() (err error) {
 	if err != nil {
 		adatypes.Central.Log.Debugf("Read buffer error, destroy context ... %v", err)
 		tcpConn.Disconnect()
-		adabas.transactions.connection = nil
 		return
 	}
 
