@@ -167,11 +167,12 @@ test-coverage-tools: | $(GOCOVMERGE) $(GOCOV) $(GOCOVXML)
 test-coverage: COVERAGE_DIR := $(CURDIR)/test/coverage
 test-coverage: fmt lint vendor test-coverage-tools | $(BASE) ; $(info $(M) running coverage tests…) @ ## Run coverage tests
 	$Q mkdir -p $(COVERAGE_DIR)/coverage
-	$Q cd $(BASE) && for pkg in $(TESTPKGS); do \
+	$Q cd $(BASE) && for pkg in $(TESTPKGS); do echo "Coverage for $$pkg"; \
 		TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
 	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
+	    ENABLE_DEBUG=0 WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
 		$(GO) test \
 			-coverpkg=$$($(GO) list -f '{{ join .Deps "\n" }}' $$pkg | \
 					grep '^$(PACKAGE)/' | grep -v '^$(PACKAGE)/vendor/' | \
