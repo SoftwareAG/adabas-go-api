@@ -17,7 +17,7 @@
 *
  */
 
- package adatypes
+package adatypes
 
 import (
 	"fmt"

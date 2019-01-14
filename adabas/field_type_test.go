@@ -17,7 +17,7 @@
 *
  */
 
- package adabas
+package adabas
 
 import (
 	"bytes"
