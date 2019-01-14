@@ -20,12 +20,19 @@
 package adatypes
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestStructureValue(t *testing.T) {
+	f, err := initLogWithFile("structure_value.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
 	}
@@ -55,4 +62,9 @@ func TestStructureValue(t *testing.T) {
 	eui64, errui64 := vsl.UInt64()
 	assert.Equal(t, uint64(0), eui64)
 	assert.Error(t, errui64)
+
+	option := &BufferOption{}
+	var buffer bytes.Buffer
+	vsl.FormatBuffer(&buffer, option)
+	assert.Equal(t, "", buffer.String())
 }

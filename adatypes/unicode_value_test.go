@@ -311,6 +311,7 @@ func TestUnicodeLBVariable(t *testing.T) {
 		return
 	}
 	defer f.Close()
+
 	typ := NewType(FieldTypeLBUnicode, "XX")
 	typ.length = 0
 	adaValue := newUnicodeValue(typ)
