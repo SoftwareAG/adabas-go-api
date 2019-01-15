@@ -172,8 +172,8 @@ func NewAdabasID() *ID {
 	}
 	id := atomic.AddUint32(&idCounter, 1)
 	adatypes.Central.Log.Debugf("Create new ID(local) with %v", AdaID.Node)
-
-	AdaID.Pid = (AdaID.Pid - (AdaID.Pid % 100)) + id
+	AdaID.Timestamp = uint64(time.Now().Unix())
+	AdaID.Pid = uint32((AdaID.Timestamp - (AdaID.Timestamp % 100)) + uint64(id))
 	return &aid
 }
 

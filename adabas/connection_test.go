@@ -234,7 +234,7 @@ func TestConnectionOpenOpen(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-
+	// time.Sleep(10 * time.Second)
 }
 
 func TestConnectionOpenFail(t *testing.T) {
