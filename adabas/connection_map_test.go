@@ -370,11 +370,14 @@ func ExampleAdabas_readFileDefinitionMap() {
 	}
 	defer f.Close()
 
+	log.Debug("TEST: ExampleAdabas_readFileDefinitionMap")
+
 	connection, cerr := NewConnection("acj;map;config=[24,4]")
 	if cerr != nil {
 		return
 	}
 	defer connection.Close()
+
 	request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
 	if rerr != nil {
 		fmt.Println("Error create request", rerr)

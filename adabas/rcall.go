@@ -34,12 +34,14 @@ func NewAdabasID() *ID {
 	adaid := AID{level: 3, Pid: uint32(os.Getpid()), size: adabasIDSize}
 	aid := ID{AdaID: &adaid, connectionMap: make(map[string]*Status)}
 	curUser, err := user.Current()
+	adatypes.Central.Log.Debugf("Create new ID(remote) with %s", curUser)
 	if err != nil {
 		copy(adaid.User[:], ([]byte("Unknown"))[:8])
 	} else {
 		copy(adaid.User[:], ([]byte(curUser.Username))[:8])
 	}
 	host, err := os.Hostname()
+	adatypes.Central.Log.Debugf("Current host is %s", curUser)
 	if err != nil {
 		copy(adaid.Node[:], ([]byte("Unknown"))[:8])
 	} else {

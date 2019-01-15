@@ -28,10 +28,15 @@ TESTFILES   = $(CURDIR)/files
 REFERENCES  = $(TESTFILES)/references
 MESSAGES    = $(CURDIR)/messages
 CURLOGPATH  = $(CURDIR)/logs
+
+# Test parameter
 WCPHOST    ?= wcphost:30011
 ADATCPHOST ?= tcphost:60177
 ADAMFDBID  ?= 54712
 TESTOUTPUT ?= $(CURDIR)/test
+ENABLE_DEBUG ?= 0
+
+# Executables
 EXECS       = tests/employee_client tests/testsuite tests/simple_read
 LIBS        = slib/adaapi
 BASE        = $(GOPATH)/src/$(PACKAGE)
@@ -153,7 +158,7 @@ test-xml: prepare fmt lint vendor $(TESTOUTPUT) | $(BASE) $(GO2XUNIT) ; $(info $
 	$Q cd $(BASE) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
 	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
-	    ENABLE_DEBUG=0 WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
+	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
 	    $(GO) test -timeout $(TIMEOUT)s $(GO_FLAGS) -v $(ARGS) $(TESTPKGS) | tee $(TESTOUTPUT)/tests.output
 	sh $(CURDIR)/sh/evaluteQueues.sh
 	$(GO2XUNIT) -input $(TESTOUTPUT)/tests.output -output $(TESTOUTPUT)/tests.xml
@@ -172,7 +177,7 @@ test-coverage: fmt lint vendor test-coverage-tools | $(BASE) ; $(info $(M) runni
 	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
-	    ENABLE_DEBUG=0 WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
+	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
 		$(GO) test \
 			-coverpkg=$$($(GO) list -f '{{ join .Deps "\n" }}' $$pkg | \
 					grep '^$(PACKAGE)/' | grep -v '^$(PACKAGE)/vendor/' | \

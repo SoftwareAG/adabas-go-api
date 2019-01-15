@@ -17,7 +17,7 @@ func TestConnectionComplexSearch(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	connection, err := NewConnection("acj;target=23")
+	connection, err := NewConnection("acj;target=23;auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
 	if !assert.NoError(t, err) {
 		return
 	}
