@@ -24,6 +24,8 @@ import (
 	"errors"
 )
 
+/* Template only: Collation descriptors are not supported at the moment */
+
 type collationValue struct {
 	adaValue
 }

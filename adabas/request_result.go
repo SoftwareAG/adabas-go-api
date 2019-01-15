@@ -65,44 +65,56 @@ func (requestResult *RequestResult) NrRecords() int {
 	return len(requestResult.Values)
 }
 
-func dumpValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
-	if adaValue == nil {
-		record := x.(*ResultRecord)
-		if record == nil {
-			return adatypes.EndTraverser, adatypes.NewGenericError(25)
-		}
-		if record.Isn > 0 {
+func prepareResultRecordDump(x interface{}, b interface{}) (adatypes.TraverseResult, error) {
+	record := x.(*ResultRecord)
+	var buffer *bytes.Buffer
+	if b != nil {
+		buffer = b.(*bytes.Buffer)
+	}
+	if record == nil {
+		return adatypes.EndTraverser, adatypes.NewGenericError(25)
+	}
+	if record.Isn > 0 {
+		if buffer == nil {
 			fmt.Printf("Record Isn: %04d\n", record.Isn)
+		} else {
+			buffer.WriteString(fmt.Sprintf("Record Isn: %04d\n", record.Isn))
 		}
-		if record.quantity > 0 {
+	}
+	if record.quantity > 0 {
+		if buffer == nil {
 			fmt.Printf("Record Quantity: %04d\n", record.quantity)
+		} else {
+			buffer.WriteString(fmt.Sprintf("Record Quantity: %04d\n", record.quantity))
+		}
+	}
+	return adatypes.Continue, nil
+}
+
+func dumpResultRecord(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
+	y := strings.Repeat(" ", int(adaValue.Type().Level()))
+
+	if x == nil {
+		brackets := ""
+		switch {
+		case adaValue.PeriodIndex() > 0 && adaValue.MultipleIndex() > 0:
+			brackets = fmt.Sprintf("[%02d,%02d]", adaValue.PeriodIndex(), adaValue.MultipleIndex())
+		case adaValue.PeriodIndex() > 0:
+			brackets = fmt.Sprintf("[%02d]", adaValue.PeriodIndex())
+		case adaValue.MultipleIndex() > 0:
+			brackets = fmt.Sprintf("[%02d]", adaValue.MultipleIndex())
+		default:
+		}
+
+		if adaValue.Type().IsStructure() {
+			structureValue := adaValue.(*adatypes.StructureValue)
+			fmt.Println(y+" "+adaValue.Type().Name()+brackets+" = [", structureValue.NrElements(), "]")
+		} else {
+			fmt.Printf("%s %s%s = > %s <\n", y, adaValue.Type().Name(), brackets, adaValue.String())
 		}
 	} else {
-
-		y := strings.Repeat(" ", int(adaValue.Type().Level()))
-
-		if x == nil {
-			brackets := ""
-			switch {
-			case adaValue.PeriodIndex() > 0 && adaValue.MultipleIndex() > 0:
-				brackets = fmt.Sprintf("[%02d,%02d]", adaValue.PeriodIndex(), adaValue.MultipleIndex())
-			case adaValue.PeriodIndex() > 0:
-				brackets = fmt.Sprintf("[%02d]", adaValue.PeriodIndex())
-			case adaValue.MultipleIndex() > 0:
-				brackets = fmt.Sprintf("[%02d]", adaValue.MultipleIndex())
-			default:
-			}
-
-			if adaValue.Type().IsStructure() {
-				structureValue := adaValue.(*adatypes.StructureValue)
-				fmt.Println(y+" "+adaValue.Type().Name()+brackets+" = [", structureValue.NrElements(), "]")
-			} else {
-				fmt.Printf("%s %s%s = > %s <\n", y, adaValue.Type().Name(), brackets, adaValue.String())
-			}
-		} else {
-			buffer := x.(*bytes.Buffer)
-			buffer.WriteString(fmt.Sprintln(y, adaValue.Type().Name(), "= >", adaValue.String(), "<"))
-		}
+		buffer := x.(*bytes.Buffer)
+		buffer.WriteString(fmt.Sprintln(y, adaValue.Type().Name(), "= >", adaValue.String(), "<"))
 	}
 	return adatypes.Continue, nil
 }
@@ -110,7 +122,7 @@ func dumpValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseRe
 // DumpValues traverse through the tree of values calling a callback method
 func (requestResult *RequestResult) DumpValues() (err error) {
 	fmt.Println("Dump all result values")
-	t := adatypes.TraverserValuesMethods{EnterFunction: dumpValues}
+	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareResultRecordDump, EnterFunction: dumpResultRecord}
 	_, err = requestResult.TraverseValues(t, nil)
 	return
 }
@@ -125,8 +137,8 @@ func (requestResult *RequestResult) TraverseValues(t adatypes.TraverserValuesMet
 	adatypes.Central.Log.Debugf("Go through records -> ", len(requestResult.Values))
 	var tr adatypes.TraverseResult
 	for _, record := range requestResult.Values {
-		if t.EnterFunction != nil {
-			tr, err = t.EnterFunction(nil, record)
+		if t.PrepareFunction != nil {
+			tr, err = t.PrepareFunction(record, x)
 			if err != nil || tr == adatypes.SkipStructure {
 				return
 			}
@@ -143,7 +155,7 @@ func (requestResult *RequestResult) TraverseValues(t adatypes.TraverserValuesMet
 
 func (requestResult *RequestResult) String() string {
 	var buffer bytes.Buffer
-	t := adatypes.TraverserValuesMethods{EnterFunction: dumpValues}
+	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareResultRecordDump, EnterFunction: dumpResultRecord}
 	requestResult.TraverseValues(t, &buffer)
 	return buffer.String()
 }

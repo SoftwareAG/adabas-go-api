@@ -128,7 +128,8 @@ func (record *ResultRecord) traverse(t adatypes.TraverserValuesMethods, x interf
 // DumpValues traverse through the tree of values calling a callback method
 func (record *ResultRecord) DumpValues() {
 	fmt.Println("Dump all result values")
-	t := adatypes.TraverserValuesMethods{EnterFunction: dumpValues}
+	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareResultRecordDump,
+		EnterFunction: dumpResultRecord}
 	//record.dumpValue(t, nil)
 	record.traverse(t, nil)
 }

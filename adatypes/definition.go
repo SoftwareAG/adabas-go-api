@@ -527,6 +527,9 @@ const (
 	SkipStructure
 )
 
+// PrepareTraverser prepare giving current main object
+type PrepareTraverser func(t interface{}, x interface{}) (TraverseResult, error)
+
 // TraverserValues api to handle tree traverses for values
 type TraverserValues func(value IAdaValue, x interface{}) (TraverseResult, error)
 
@@ -541,8 +544,9 @@ func (def *Definition) TraverseTypes(t TraverserMethods, activeTree bool, x inte
 
 // TraverserValuesMethods structure for Traverser values
 type TraverserValuesMethods struct {
-	EnterFunction TraverserValues
-	LeaveFunction TraverserValues
+	PrepareFunction PrepareTraverser
+	EnterFunction   TraverserValues
+	LeaveFunction   TraverserValues
 }
 
 // TraverseValues traverse through the tree of values calling a callback method
