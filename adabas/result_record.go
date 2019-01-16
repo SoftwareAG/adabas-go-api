@@ -22,6 +22,8 @@ package adabas
 import (
 	"bytes"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
@@ -143,6 +145,27 @@ func (record *ResultRecord) searchValue(field string) (adatypes.IAdaValue, bool)
 
 // SetValue set the value for a specific field
 func (record *ResultRecord) SetValue(field string, value interface{}) (err error) {
+	if strings.ContainsRune(field, '[') {
+		i := strings.IndexRune(field, '[')
+		e := strings.IndexRune(field, ']')
+		index, xerr := strconv.Atoi(field[i+1 : e])
+		if xerr != nil {
+			return xerr
+		}
+		eField := field[:i]
+		f := field[e+1:]
+		i = strings.IndexRune(f, '[')
+		if i == -1 {
+			return record.SetValueWithIndex(eField, []uint32{uint32(index)}, value)
+		}
+		e = strings.IndexRune(f, ']')
+		muindex, merr := strconv.Atoi(f[i+1 : e])
+		if merr != nil {
+			return merr
+		}
+
+		return record.SetValueWithIndex(eField, []uint32{uint32(index), uint32(muindex)}, value)
+	}
 	if adaValue, ok := record.searchValue(field); ok {
 		err = adaValue.SetValue(value)
 		adatypes.Central.Log.Debugf("Set %s [%T] value err=%v", field, adaValue, err)

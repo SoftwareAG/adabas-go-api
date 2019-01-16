@@ -640,3 +640,76 @@ func TestStoreMapMissing(t *testing.T) {
 		request.Close()
 	}
 }
+
+func TestStorePeriod(t *testing.T) {
+	f := initTestLogWithFile(t, "store.log")
+	defer f.Close()
+
+	adabas := NewAdabas(23)
+	mr := NewMapRepository(adabas, 250)
+	mapName := "EMPLDDM-MASSLOAD"
+
+	readRequest, rErr := NewMapNameRequestRepo(mapName, adabas, mr)
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	defer readRequest.Close()
+	readRequest.Limit = 0
+	readRequest.QueryFields("")
+	result, rerr := readRequest.ReadPhysicalSequence()
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	fmt.Println("Nr entries in database", result.NrRecords())
+
+	storeRequest, err := NewAdabasMapNameStoreRequest(adabas, readRequest.adabasMap)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer storeRequest.Close()
+
+	recErr := storeRequest.StoreFields("PERSONNEL-ID,FULL-NAME,SALARY,BONUS")
+	if !assert.NoError(t, recErr) {
+		return
+	}
+
+	for i := 0; i < 1; i++ {
+		fmt.Println("Add record", i)
+		storeRecord, rErr := storeRequest.CreateRecord()
+		if !assert.NoError(t, rErr) {
+			return
+		}
+		if !assert.NotNil(t, storeRecord) {
+			return
+		}
+		err = storeRecord.SetValue("PERSONNEL-ID", fmt.Sprintf("K%07d", i+1))
+		if !assert.NoError(t, err) {
+			return
+		}
+		err = storeRecord.SetValue("NAME", fmt.Sprintf("NAME XXX %07d", i+1))
+		if !assert.NoError(t, err) {
+			return
+		}
+		err = storeRecord.SetValueWithIndex("SALARY", []uint32{3}, 100000)
+		if !assert.NoError(t, err) {
+			return
+		}
+		err = storeRecord.SetValue("SALARY[2]", 50000)
+		if !assert.NoError(t, err) {
+			return
+		}
+		err = storeRecord.SetValue("BONUS[1][1]", 1000)
+		if !assert.NoError(t, err) {
+			return
+		}
+
+		storeRequest.Store(storeRecord)
+	}
+	fmt.Println("End of transaction")
+	err = storeRequest.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
+	fmt.Println("Done")
+
+}
