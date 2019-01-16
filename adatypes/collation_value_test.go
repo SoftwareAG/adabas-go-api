@@ -8,7 +8,7 @@ import (
 )
 
 func TestCollationValue(t *testing.T) {
-	collationType := NewCollationType("AA", 4,"PA","de@collation=phonebook")
+	collationType := NewCollationType("AA", 4, "PA", "de@collation=phonebook")
 
 	v, err := collationType.Value()
 	assert.NoError(t, err)

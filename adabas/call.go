@@ -23,6 +23,8 @@ package adabas
 
 import (
 	"fmt"
+	"os"
+	"os/user"
 	"sync/atomic"
 	"time"
 	"unsafe"
@@ -153,9 +155,25 @@ var idCounter uint32
 func NewAdabasID() *ID {
 	AdaID := AID{level: 3, size: adabasIDSize}
 	aid := ID{AdaID: &AdaID, connectionMap: make(map[string]*Status)}
-	C.lnk_get_adabas_id(adabasIDSize, (*C.uchar)(unsafe.Pointer(&AdaID)))
+	//	C.lnk_get_adabas_id(adabasIDSize, (*C.uchar)(unsafe.Pointer(&AdaID)))
+	curUser, err := user.Current()
+	adatypes.Central.Log.Debugf("Create new ID(local) with %s", curUser.Username)
+	if err != nil {
+		copy(AdaID.User[:], ([]byte("Unknown"))[:8])
+	} else {
+		copy(AdaID.User[:], ([]byte(curUser.Username + "        "))[:8])
+	}
+	host, err := os.Hostname()
+	adatypes.Central.Log.Debugf("Current host is %s", curUser)
+	if err != nil {
+		copy(AdaID.Node[:], ([]byte("Unknown"))[:8])
+	} else {
+		copy(AdaID.Node[:], ([]byte(host + "        "))[:8])
+	}
 	id := atomic.AddUint32(&idCounter, 1)
-	AdaID.Pid = (AdaID.Pid - (AdaID.Pid % 100)) + id
+	adatypes.Central.Log.Debugf("Create new ID(local) with %v", AdaID.Node)
+	AdaID.Timestamp = uint64(time.Now().Unix())
+	AdaID.Pid = uint32((AdaID.Timestamp - (AdaID.Timestamp % 100)) + uint64(id))
 	return &aid
 }
 

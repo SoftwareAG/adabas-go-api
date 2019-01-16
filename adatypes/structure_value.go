@@ -220,7 +220,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 // Parse the structure
 func (value *StructureValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 	if option.SecondCall {
-		Central.Log.Debugf("Skip parsing %s offset=%d", value.Type().Name(), helper.offset)
+		Central.Log.Debugf("Skip parsing %s offset=%X", value.Type().Name(), helper.offset)
 		return
 	}
 	Central.Log.Debugf("Parse structure buffer %s secondCall=%v offset=%d/%X", value.Type().Name(), option.SecondCall, helper.offset, helper.offset)
@@ -259,6 +259,7 @@ func (value *StructureValue) evaluateOccurence(helper *BufferHelper) (occNumber 
 			break
 		}
 	}
+	Central.Log.Debugf("Evaluate occurrence for %s of type %d to %d", value.Type().Name(), subStructure.occ, occNumber)
 	return
 }
 
@@ -274,12 +275,15 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 	Central.Log.Debugf("Occurence %d period index=%d", occNumber, value.peIndex)
 	switch value.Type().Type() {
 	case FieldTypePeriodGroup, FieldTypeMultiplefield:
+		Central.Log.Debugf("Init values")
 		for i := uint32(0); i < uint32(occNumber); i++ {
 			value.initSubValues(i, i+1, true)
 		}
+		Central.Log.Debugf("Init values finished")
 		return
 	case FieldTypeStructure:
 	default:
+		Central.Log.Debugf("Unused type=%d", value.Type().Type())
 		return
 	}
 	Central.Log.Debugf("Start going through elements=%d", value.NrElements())
@@ -314,19 +318,25 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 
 // Search for structures by name
 func (value *StructureValue) search(fieldName string) IAdaValue {
+	Central.Log.Debugf("Search field %s elements=%d", fieldName, len(value.Elements))
 	for _, val := range value.Elements {
 		for _, v := range val.Values {
+			Central.Log.Debugf("Searched in value %s", v.Type().Name())
 			if v.Type().Name() == fieldName {
 				return v
 			}
 			if v.Type().IsStructure() {
+				Central.Log.Debugf("Structure search")
 				subValue := v.(*StructureValue).search(fieldName)
 				if subValue != nil {
 					return subValue
 				}
+			} else {
+				Central.Log.Debugf("No structure search")
 			}
 		}
 	}
+	Central.Log.Debugf("Searched field %s not found", fieldName)
 	return nil
 }
 

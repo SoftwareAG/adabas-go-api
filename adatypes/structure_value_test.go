@@ -26,7 +26,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStructureValue(t *testing.T) {
+func TestStructureValueGroup(t *testing.T) {
 	f, err := initLogWithFile("structure_value.log")
 	if !assert.NoError(t, err) {
 		return
@@ -45,7 +45,7 @@ func TestStructureValue(t *testing.T) {
 		NewType(FieldTypeString, "GS"),
 		NewType(FieldTypePacked, "GP"),
 	}
-	sl := NewStructureList(FieldTypeGroup, "GR", OccNone, groupLayout)
+	sl := NewStructureList(FieldTypeGroup, "GR", OccByte, groupLayout)
 	assert.Equal(t, "GR", sl.Name())
 	assert.Equal(t, " 1, GR  ; GR  PE=false MU=false REMOVE=true", sl.String())
 	v, err := sl.Value()
@@ -67,4 +67,160 @@ func TestStructureValue(t *testing.T) {
 	var buffer bytes.Buffer
 	vsl.FormatBuffer(&buffer, option)
 	assert.Equal(t, "", buffer.String())
+
+	b := make([]byte, 100)
+	b[0] = 2
+	helper := NewHelper(b, 100, endian())
+	_, err = vsl.parseBuffer(helper, option)
+	assert.NoError(t, err)
+}
+
+func TestStructureValuePeriod(t *testing.T) {
+	f, err := initLogWithFile("structure_value.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	groupLayout := []IAdaType{
+		NewTypeWithLength(FieldTypeCharacter, "GC", 1),
+		NewType(FieldTypeString, "GS"),
+		NewType(FieldTypePacked, "GP"),
+	}
+	sl := NewStructureList(FieldTypePeriodGroup, "PE", OccByte, groupLayout)
+	assert.Equal(t, "PE", sl.Name())
+	assert.Equal(t, " 1, PE ,PE ; PE  PE=true MU=false REMOVE=true", sl.String())
+	v, err := sl.Value()
+	assert.NoError(t, err)
+	vsl := v.(*StructureValue)
+	b := make([]byte, 100)
+	b[0] = 2
+	b[4] = 'X'
+	b[5] = 0x1c
+	helper := NewHelper(b, 100, endian())
+
+	option := &BufferOption{}
+	_, err = vsl.parseBuffer(helper, option)
+	assert.NoError(t, err)
+	assert.Equal(t, "", vsl.String())
+	vpm := vsl.search("GS")
+	assert.NotNil(t, vpm)
+	assert.Equal(t, 2, vsl.NrElements())
+	assert.NotNil(t, vsl.Value())
+	eui32, errui32 := vsl.UInt32()
+	assert.Equal(t, uint32(0), eui32)
+	assert.Error(t, errui32)
+	eui64, errui64 := vsl.UInt64()
+	assert.Equal(t, uint64(0), eui64)
+	assert.Error(t, errui64)
+
+	var buffer bytes.Buffer
+	vsl.FormatBuffer(&buffer, option)
+	assert.Equal(t, "PEC,4,PE1-N", buffer.String())
+
+	gc1a := vsl.Get("GC", 1)
+	assert.NotNil(t, gc1a)
+	assert.Equal(t, uint8(0x0), gc1a.Value())
+	gc1b := vsl.Get("GC", 1)
+	assert.NotNil(t, gc1b)
+	assert.Equal(t, uint8(0x0), gc1b.Value())
+	assert.Equal(t, gc1a, gc1b)
+	gc2 := vsl.Get("GC", 2)
+	assert.NotNil(t, gc2)
+	assert.Equal(t, uint8(0x0), gc2.Value())
+	assert.NotEqual(t, gc1a, gc2)
+
+}
+
+func TestStructureValuePeriodMU(t *testing.T) {
+	f, err := initLogWithFile("structure_value.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	multipleLayout := []IAdaType{
+		NewType(FieldTypePacked, "PM"),
+	}
+	for _, l := range multipleLayout {
+		l.SetLevel(2)
+		l.AddFlag(FlagOptionMUGhost)
+	}
+	groupLayout := []IAdaType{
+		NewTypeWithLength(FieldTypeCharacter, "GC", 1),
+		NewStructureList(FieldTypeMultiplefield, "PM", OccByte, multipleLayout),
+		NewType(FieldTypeString, "GS"),
+		NewType(FieldTypePacked, "GP"),
+	}
+
+	for _, l := range groupLayout {
+		l.SetLevel(1)
+		l.AddFlag(FlagOptionMUGhost)
+		if l.Type() == FieldTypeMultiplefield {
+			s := l.(*StructureType)
+			l.AddFlag(FlagOptionMU)
+			s.occ = OccCapacity
+		}
+	}
+	sl := NewStructureList(FieldTypePeriodGroup, "PE", OccByte, groupLayout)
+	sl.AddFlag(FlagOptionMUGhost)
+	sl.AddFlag(FlagOptionMU)
+	assert.Equal(t, "PE", sl.Name())
+	assert.Equal(t, " 1, PE ,PE ; PE  PE=true MU=true REMOVE=true", sl.String())
+	v, err := sl.Value()
+	assert.NoError(t, err)
+	vsl := v.(*StructureValue)
+	b := make([]byte, 100)
+	b[0] = 2
+	b[4] = 'X'
+	b[5] = 0x1c
+	helper := NewHelper(b, 100, endian())
+
+	option := &BufferOption{}
+	assert.False(t, option.NeedSecondCall)
+	var buffer bytes.Buffer
+	vsl.FormatBuffer(&buffer, option)
+	assert.Equal(t, "PEC,4", buffer.String())
+	_, err = vsl.parseBuffer(helper, option)
+	assert.True(t, option.NeedSecondCall)
+	assert.NoError(t, err)
+	assert.Equal(t, "", vsl.String())
+	vpm := vsl.search("PM")
+	assert.NotNil(t, vpm)
+	assert.Equal(t, 2, vsl.NrElements())
+	assert.NotNil(t, vsl.Value())
+	eui32, errui32 := vsl.UInt32()
+	assert.Equal(t, uint32(0), eui32)
+	assert.Error(t, errui32)
+	eui64, errui64 := vsl.UInt64()
+	assert.Equal(t, uint64(0), eui64)
+	assert.Error(t, errui64)
+
+	buffer.Reset()
+	option.SecondCall = true
+	vsl.FormatBuffer(&buffer, option)
+	assert.Equal(t, "", buffer.String())
+
+	gc1a := vsl.Get("GC", 1)
+	assert.NotNil(t, gc1a)
+	assert.Equal(t, uint8(0x0), gc1a.Value())
+	gc1b := vsl.Get("GC", 1)
+	assert.NotNil(t, gc1b)
+	assert.Equal(t, uint8(0x0), gc1b.Value())
+	assert.Equal(t, gc1a, gc1b)
+	gc2 := vsl.Get("GC", 2)
+	assert.NotNil(t, gc2)
+	assert.Equal(t, uint8(0x0), gc2.Value())
+	assert.NotEqual(t, gc1a, gc2)
+
+	_, err = vsl.UInt32()
+	assert.Error(t, err)
+	_, err = vsl.UInt64()
+	assert.Error(t, err)
+	_, err = vsl.Int32()
+	assert.Error(t, err)
+	_, err = vsl.Int64()
+	assert.Error(t, err)
+	_, err = vsl.Float()
+	assert.Error(t, err)
 }

@@ -21,9 +21,10 @@ package adabas
 
 import (
 	"fmt"
-	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"reflect"
 	"testing"
+
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -58,6 +59,8 @@ func TestMapFields(t *testing.T) {
 
 	log.Debug("TEST: ", t.Name())
 	adabas := NewAdabas(24)
+	defer adabas.Close()
+
 	mr := NewMapRepository(adabas, 4)
 	log.Debugf("Repository %#v\n", *mr)
 	m, err := mr.readAdabasMap(adabas, "EMPLOYEES-NAT-DDM")
@@ -98,6 +101,8 @@ func TestMaps(t *testing.T) {
 
 	log.Debug("TEST: ", t.Name())
 	adabas := NewAdabas(23)
+	defer adabas.Close()
+
 	mr := NewMapRepository(adabas, 250)
 	err := mr.LoadMapRepository(adabas)
 	assert.NoError(t, err)
@@ -121,8 +126,11 @@ func TestMapCreate(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	repository := NewMapRepository(NewAdabas(23), 250)
-	dataRepository := NewMapRepository(NewAdabas(23), 11)
+	adabas := NewAdabas(23)
+	defer adabas.Close()
+
+	repository := NewMapRepository(adabas, 250)
+	dataRepository := NewMapRepository(adabas, 11)
 	newMap := NewAdabasMap("GOTESTMAP", &repository.DatabaseURL)
 	newMap.Data = &dataRepository.DatabaseURL
 	newMap.addFields("AA", "PERSONNEL-ID")

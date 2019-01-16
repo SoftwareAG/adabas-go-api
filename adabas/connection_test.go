@@ -208,6 +208,53 @@ func TestConnectionSimpleTypes(t *testing.T) {
 	storeRequest.EndTransaction()
 }
 
+func TestConnectionOpenOpen(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "connection.log")
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+	connection, err := NewConnection("acj;target=23")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	err = connection.Open()
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = connection.Open()
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = connection.Release()
+	if !assert.NoError(t, err) {
+		return
+	}
+	// time.Sleep(10 * time.Second)
+}
+
+func TestConnectionOpenFail(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "connection.log")
+	defer f.Close()
+
+	log.Debug("TEST: ", t.Name())
+	connection, err := NewConnection("acj;target=222")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	err = connection.Open()
+	assert.Error(t, err)
+}
+
 func TestConnectionMultipleFields(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
