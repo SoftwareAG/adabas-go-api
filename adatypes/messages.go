@@ -55,7 +55,7 @@ func (e Error) Error() string {
 
 // NewGenericError create a genernic non Adabas response error
 func NewGenericError(code errorCode, args ...interface{}) *Error {
-	Central.Log.Debugf("Generate generice error for error code %d", code)
+	Central.Log.Debugf("Generate generic error for error code %d", code)
 	msgCode := fmt.Sprintf("ADG%07d", code)
 	// fmt.Printf("Generated out of %d -> %s\n", code, msgCode)
 	msg := Translate("en", msgCode)
@@ -68,6 +68,7 @@ func NewGenericError(code errorCode, args ...interface{}) *Error {
 		re := regexp.MustCompile(c)
 		msg = re.ReplaceAllString(msg, m)
 	}
+	Central.Log.Debugf("Generic error message created:[%s] %s", msgCode, msg)
 	return &Error{When: time.Now(), Code: msgCode, Message: msg}
 }
 

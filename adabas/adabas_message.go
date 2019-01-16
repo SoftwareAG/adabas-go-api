@@ -72,6 +72,7 @@ func NewError(adbas *Adabas) *Error {
 	}
 	msg = fmt.Sprintf("%s (rsp=%d,subrsp=%d,dbid=%s,file=%d)", msg, adbas.Acbx.Acbxrsp,
 		adbas.Acbx.Acbxerrc, adbas.URL.String(), adbas.Acbx.Acbxfnr)
+	adatypes.Central.Log.Debugf("Adabas error message created:[%s] %s", msgCode, msg)
 	return &Error{When: time.Now(), Code: msgCode, Message: msg, Response: adbas.Acbx.Acbxrsp, SubResponse: adbas.Acbx.Acbxerrc, Addition2: adbas.Acbx.Acbxadd2}
 }
 

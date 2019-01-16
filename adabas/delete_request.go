@@ -90,6 +90,28 @@ func NewMapNameDeleteRequest(adabas *Adabas, mapName string) (request *DeleteReq
 	return
 }
 
+// NewMapNameDeleteRequestRepo create a new delete Request instance
+func NewMapNameDeleteRequestRepo(mapName string, adabas *Adabas, mapRepository *Repository) (request *DeleteRequest, err error) {
+	var adabasMap *Map
+	adabasMap, err = mapRepository.SearchMap(adabas, mapName)
+	if err != nil {
+		return
+	}
+	dbid, repErr := adabasMap.Data.dbid()
+	if repErr != nil {
+		err = repErr
+		return
+	}
+	clonedAdabas := NewClonedAdabas(adabas)
+	adabas.SetDbid(dbid)
+	adatypes.Central.Log.Debugf("Delete: Adabas new map reference to %d", adabasMap.Data.Fnr)
+
+	dataRepository := NewMapRepository(adabas, adabasMap.Data.Fnr)
+	request = &DeleteRequest{commonRequest: commonRequest{mapName: mapName, adabas: clonedAdabas, adabasMap: adabasMap,
+		repository: dataRepository}}
+	return
+}
+
 // Open Open the Adabas session
 func (deleteRequest *DeleteRequest) Open() (err error) {
 	err = deleteRequest.commonOpen()

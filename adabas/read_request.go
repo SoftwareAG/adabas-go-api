@@ -68,15 +68,15 @@ func NewMapRequest(mapName string, url string, fnr uint32) (*ReadRequest, error)
 }*/
 
 // NewMapNameRequestRepo create a new Request instance
-func NewMapNameRequestRepo(mapName string, repository *Repository) (request *ReadRequest, err error) {
+func NewMapNameRequestRepo(mapName string, adabas *Adabas, repository *Repository) (request *ReadRequest, err error) {
 	if repository == nil {
 		err = adatypes.NewGenericError(20)
 		return
 	}
-	adabas, aerr := NewAdabass(repository.URL.String())
-	if aerr != nil {
-		return nil, aerr
-	}
+	// adabas, aerr := NewAdabass(repository.URL.String())
+	// if aerr != nil {
+	// 	return nil, aerr
+	// }
 	err = repository.LoadMapRepository(adabas)
 	if err != nil {
 		return

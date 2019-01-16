@@ -418,7 +418,7 @@ func TestRequestWithMapLogicalBy(t *testing.T) {
 	log.Debug("TEST: ", t.Name())
 	adabas := NewAdabas(24)
 	mapRepository := NewMapRepository(adabas, 4)
-	request, err := NewMapNameRequestRepo("EMPLOYEES-NAT-DDM", mapRepository)
+	request, err := NewMapNameRequestRepo("EMPLOYEES-NAT-DDM", adabas, mapRepository)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -481,8 +481,9 @@ func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
 
 	log.Debug("TEST: ", t.Name())
 
-	request, err := NewMapNameRequestRepo("EMPLOYEES-NAT-DDM",
-		NewMapRepository(NewAdabas(24), 4))
+	adabas := NewAdabas(24)
+	request, err := NewMapNameRequestRepo("EMPLOYEES-NAT-DDM", adabas,
+		NewMapRepository(adabas, 4))
 	if !assert.NoError(t, err) {
 		return
 	}

@@ -580,7 +580,7 @@ func validateUsingMap(t *testing.T, isn adatypes.Isn) {
 	fmt.Println("Validate using Map")
 	adabas := NewAdabas(23)
 	mapRepository := NewMapRepository(adabas, 4)
-	request, err := NewMapNameRequestRepo("LOBEXAMPLE", mapRepository)
+	request, err := NewMapNameRequestRepo("LOBEXAMPLE", adabas, mapRepository)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -628,7 +628,7 @@ func TestStoreMapMissing(t *testing.T) {
 	fmt.Println("Validate using Map invalid")
 	adabas := NewAdabas(23)
 	mapRepository := NewMapRepository(adabas, 4)
-	request, err := NewMapNameRequestRepo("NONMAP", mapRepository)
+	request, err := NewMapNameRequestRepo("NONMAP", adabas, mapRepository)
 	if assert.Error(t, err) {
 		if assert.Nil(t, request) {
 			assert.Equal(t, "ADG0000014: Map NONMAP not found in repository", err.Error())

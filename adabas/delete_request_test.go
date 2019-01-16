@@ -36,6 +36,170 @@ func testCallback(adabasRequest *adatypes.AdabasRequest, x interface{}) (err err
 	return
 }
 
+func prepareCall(t *testing.T, mapName string) {
+	adabas := NewAdabas(23)
+	mr := NewMapRepository(adabas, 250)
+	readRequest, rErr := NewMapNameRequestRepo(mapName, adabas, mr)
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	defer readRequest.Close()
+	readRequest.Limit = 0
+	readRequest.QueryFields("")
+	result, rerr := readRequest.ReadPhysicalSequence()
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	fmt.Println("Nr entries in database", result.NrRecords())
+
+	storeRequest, err := NewAdabasMapNameStoreRequest(adabas, readRequest.adabasMap)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer storeRequest.Close()
+
+	recErr := storeRequest.StoreFields("PERSONNEL-ID,FULL-NAME")
+	if !assert.NoError(t, recErr) {
+		return
+	}
+
+	for i := 0; i < 3-result.NrRecords(); i++ {
+		fmt.Println("Add record", i)
+		storeRecord, rErr := storeRequest.CreateRecord()
+		if !assert.NoError(t, rErr) {
+			return
+		}
+		if !assert.NotNil(t, storeRecord) {
+			return
+		}
+		err = storeRecord.SetValue("PERSONNEL-ID", fmt.Sprintf("K%07d", i+1))
+		if !assert.NoError(t, err) {
+			return
+		}
+		err = storeRecord.SetValue("NAME", fmt.Sprintf("NAME XXX %07d", i+1))
+		if !assert.NoError(t, err) {
+			return
+		}
+		storeRequest.Store(storeRecord)
+	}
+	err = storeRequest.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
+
+}
+
+func TestDeleteRequestByMapNameCommonRepo(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "delete.log")
+	defer f.Close()
+
+	mapName := "EMPLDDM-MASSLOAD"
+	prepareCall(t, mapName)
+
+	adabas := NewAdabas(23)
+	fmt.Println("Delete record with map name:", mapName)
+	AddMapRepository(adabas, 250)
+	defer DelMapRepository(adabas, 250)
+
+	deleteRequest, err := NewMapNameDeleteRequest(adabas, mapName)
+	if !assert.NoError(t, err) {
+		fmt.Println("Delete Request error", err)
+		return
+	}
+	fmt.Println("Check request in map", mapName, "and delete in", deleteRequest.adabas.String(), deleteRequest.repository.Fnr)
+	if !assert.NotNil(t, deleteRequest) {
+		fmt.Println("Delete Request nil", deleteRequest)
+		return
+	}
+	defer deleteRequest.Close()
+	fmt.Println("Query entries in map", mapName)
+	adatypes.Central.Log.Debugf("New map request after clear map")
+	readRequest, rErr := NewMapNameRequest(adabas, mapName)
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	defer readRequest.Close()
+	fmt.Println("Clear all entries in map", mapName)
+	// Need to call all and don't need to read the data for deleting all records
+	readRequest.Limit = 1
+	readRequest.QueryFields("")
+	fmt.Println("Read request in map", mapName, "and delete in", readRequest.adabas.String(), readRequest.repository.Fnr)
+	result, rerr := readRequest.ReadPhysicalSequence()
+	if !assert.NoError(t, rerr) {
+		return
+	}
+
+	if !assert.Equal(t, 1, len(result.Values)) {
+		return
+	}
+	fmt.Println("Values: ", len(result.Values), result.NrRecords())
+	err = deleteRequest.Delete(result.Values[0].Isn)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	err = deleteRequest.EndTransaction()
+	if !assert.NoError(t, rerr) {
+		return
+	}
+}
+
+func TestDeleteRequestByMapNameRepository(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "delete.log")
+	defer f.Close()
+
+	mapName := "EMPLDDM-MASSLOAD"
+	adabas := NewAdabas(23)
+	fmt.Println("Delete record with map name:", mapName)
+	mr := NewMapRepository(adabas, 250)
+
+	deleteRequest, err := NewMapNameDeleteRequestRepo(mapName, adabas, mr)
+	if !assert.NoError(t, err) {
+		fmt.Println("Delete Request error", err)
+		return
+	}
+	fmt.Println("Check request in map", mapName, "and delete in", deleteRequest.adabas.String(), deleteRequest.repository.Fnr)
+	if !assert.NotNil(t, deleteRequest) {
+		fmt.Println("Delete Request nil", deleteRequest)
+		return
+	}
+	defer deleteRequest.Close()
+	fmt.Println("Query entries in map", mapName)
+	adatypes.Central.Log.Debugf("New map request after clear map")
+	readRequest, rErr := NewMapNameRequestRepo(mapName, adabas, mr)
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	defer readRequest.Close()
+	fmt.Println("Clear all entries in map", mapName)
+	// Need to call all and don't need to read the data for deleting all records
+	readRequest.Limit = 1
+	readRequest.QueryFields("")
+	fmt.Println("Read request in map", mapName, "and delete in", readRequest.adabas.String(), readRequest.repository.Fnr)
+	result, rerr := readRequest.ReadPhysicalSequence()
+	if !assert.NoError(t, rerr) {
+		return
+	}
+
+	if !assert.Equal(t, 1, len(result.Values)) {
+		return
+	}
+	fmt.Println("Values: ", len(result.Values), result.NrRecords())
+	err = deleteRequest.Delete(result.Values[0].Isn)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	err = deleteRequest.EndTransaction()
+	if !assert.NoError(t, rerr) {
+		return
+	}
+}
+
 func clearFile(file uint32) error {
 	connection, err := NewConnection("acj;target=23")
 	if err != nil {
