@@ -116,8 +116,11 @@ func callAdabas(c caller) {
 	if c.counter < 50 || steps == 0 {
 		steps = 50
 	}
+	maxTime := 1.0
 
+	last := time.Now()
 	tid := strconv.Itoa(int(c.threadNr))
+
 	for i := 0; i < c.counter; i++ {
 		l := adatypes.Central.Log.(*log.Logger)
 		l.WithFields(log.Fields{
@@ -146,9 +149,16 @@ func callAdabas(c caller) {
 			return
 		}
 
-		if i > 0 && i%steps == 0 {
-			fmt.Printf("Call thread %d counter %d query for %s\n", c.threadNr,
-				i, c.name)
+		newTime := time.Now()
+		diff := newTime.Sub(last)
+		//fmt.Println(diff.Minutes())
+		if (i > 0 && i%steps == 0) || (diff.Minutes() > maxTime) {
+			if diff.Minutes() > maxTime {
+				maxTime += 1.0
+			}
+			fmt.Printf("Call thread %d counter %d query for %s used %v\n", c.threadNr,
+				i, c.name, diff)
+			//			last = newTime
 		}
 		var result *adabas.RequestResult
 		result, err = readRequest.ReadLogicalWith("AE=" + c.name)
