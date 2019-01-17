@@ -32,9 +32,9 @@ import (
 )
 
 const (
-	massLoadEmployees     = "EMPLDDM-MASSLOAD"
+	massLoadEmployees     = "EMPLDDM-GOLOAD"
 	massLoadSystrans      = "Empl-MassLoad.systrans"
-	massLoadSystransStore = "EMPLDDM-MASSLOAD-STORE"
+	massLoadSystransStore = "EMPLDDM-GOLOAD-STORE"
 	mapVehicles           = "VEHICLES"
 	vehicleSystransStore  = "Vehi.systrans"
 	lengthPicture         = 1386643

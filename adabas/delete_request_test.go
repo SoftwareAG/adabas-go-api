@@ -96,7 +96,7 @@ func TestDeleteRequestByMapNameCommonRepo(t *testing.T) {
 	f := initTestLogWithFile(t, "delete.log")
 	defer f.Close()
 
-	mapName := "EMPLDDM-MASSLOAD"
+	mapName := massLoadEmployees
 	prepareCall(t, mapName)
 
 	adabas := NewAdabas(adabasModDBID)
@@ -153,7 +153,7 @@ func TestDeleteRequestByMapNameRepository(t *testing.T) {
 	f := initTestLogWithFile(t, "delete.log")
 	defer f.Close()
 
-	mapName := "EMPLDDM-MASSLOAD"
+	mapName := massLoadEmployees
 	adabas := NewAdabas(adabasModDBID)
 	fmt.Println("Delete record with map name:", mapName)
 	mr := NewMapRepository(adabas, 250)

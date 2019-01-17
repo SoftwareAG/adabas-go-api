@@ -805,6 +805,7 @@ var statisMessages = []struct {
 	{"ADG0000058", "en", "Logical read with more then one descriptors not allowed, use search call"},
 	{"ADG0000059", "en", "Input byte array to great to store"},
 	{"ADG0000060", "en", "New Adabas ID cannot created because input ID is nil"},
+	{"ADG0000061", "en", "Multiple field not provided"},
 	{"ADG0000070", "en", "'{0}' is no valid database id"},
 	{"ADG0000071", "en", "Invalid URL given, need to be like <dbid>(<protocol>://<host>:<port>)"},
 	{"ADG0000072", "en", "'{0}' is no valid port number"},
