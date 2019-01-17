@@ -86,7 +86,7 @@ func TestStoreAdabasFields(t *testing.T) {
 
 func prepareCreateTestMap(t *testing.T, mapName string, fileName string, dataRepository *DatabaseURL) error {
 	// fmt.Println("Check existing of map", mapName)
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	mr := NewMapRepository(adabas, 250)
 	sm, err := mr.SearchMap(adabas, mapName)
 	if err == nil {
@@ -124,12 +124,12 @@ func TestStoreFailMapFieldsCheck(t *testing.T) {
 
 	fmt.Println("Start : TestStoreFailMapFieldsCheck")
 
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(23), Fnr: 11}
+	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 11}
 	perr := prepareCreateTestMap(t, massLoadEmployees, massLoadSystrans, dataRepository)
 	if perr != nil {
 		return
 	}
-	ada := NewAdabas(23)
+	ada := NewAdabas(adabasModDBID)
 	AddMapRepository(ada, 250)
 	defer DelMapRepository(ada, 250)
 	adabasMap, serr := SearchMapRepository(ada, massLoadEmployees)
@@ -163,13 +163,13 @@ func TestStoreMapFields(t *testing.T) {
 	defer f.Close()
 
 	fmt.Println("Prepare create test map")
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(23), Fnr: 16}
+	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
 	if perr != nil {
 		return
 	}
 
-	ada := NewAdabas(23)
+	ada := NewAdabas(adabasModDBID)
 	AddMapRepository(ada, 250)
 	defer DelMapRepository(ada, 250)
 
@@ -295,12 +295,12 @@ func TestStoreMapFieldsPeriods(t *testing.T) {
 	f := initTestLogWithFile(t, "store.log")
 	defer f.Close()
 
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(23), Fnr: 16}
+	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
 	if perr != nil {
 		return
 	}
-	ada := NewAdabas(23)
+	ada := NewAdabas(adabasModDBID)
 	AddMapRepository(ada, 250)
 	defer DelMapRepository(ada, 250)
 
@@ -354,12 +354,12 @@ func TestStoreUpdateMapField(t *testing.T) {
 	f := initTestLogWithFile(t, "store.log")
 	defer f.Close()
 
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(23), Fnr: 16}
+	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
 	if perr != nil {
 		return
 	}
-	ada := NewAdabas(23)
+	ada := NewAdabas(adabasModDBID)
 	AddMapRepository(ada, 250)
 	defer DelMapRepository(ada, 250)
 
@@ -443,7 +443,7 @@ func TestStoreWithMapLobFile(t *testing.T) {
 	f := initTestLogWithFile(t, "store.log")
 	defer f.Close()
 
-	// dataRepository := &DatabaseURL{Adabas: NewAdabas(23), Fnr: 11}
+	// dataRepository := &DatabaseURL{Adabas: NewAdabas(adabasModDBID), Fnr: 11}
 	// prepareCreateTestMap(t, "LOBPUCTURE", "Lobpicture.systrans", dataRepository)
 
 	//	clearAdabasFile(t, "24", 4)
@@ -481,7 +481,7 @@ func TestStoreWithMapLobFile(t *testing.T) {
 	h.Write(data)
 	fmt.Printf("SHA ALL: %x\n", h.Sum(nil))
 
-	ada := NewAdabas(23)
+	ada := NewAdabas(adabasModDBID)
 	AddMapRepository(ada, 4)
 	defer DelMapRepository(ada, 4)
 
@@ -541,7 +541,7 @@ func TestStoreWithMapLobFile(t *testing.T) {
 
 func validateUsingAdabas(t *testing.T, isn adatypes.Isn) {
 	fmt.Println("Validate using Adabas")
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 160)
 	defer request.Close()
 	openErr := request.Open()
@@ -578,7 +578,7 @@ func validateUsingAdabas(t *testing.T, isn adatypes.Isn) {
 
 func validateUsingMap(t *testing.T, isn adatypes.Isn) {
 	fmt.Println("Validate using Map")
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	mapRepository := NewMapRepository(adabas, 4)
 	request, err := NewMapNameRequestRepo("LOBEXAMPLE", adabas, mapRepository)
 	if !assert.NoError(t, err) {
@@ -626,7 +626,7 @@ func TestStoreMapMissing(t *testing.T) {
 	defer f.Close()
 
 	fmt.Println("Validate using Map invalid")
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	mapRepository := NewMapRepository(adabas, 4)
 	request, err := NewMapNameRequestRepo("NONMAP", adabas, mapRepository)
 	if assert.Error(t, err) {
@@ -645,7 +645,7 @@ func TestStorePeriod(t *testing.T) {
 	f := initTestLogWithFile(t, "store.log")
 	defer f.Close()
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	mr := NewMapRepository(adabas, 250)
 	mapName := "EMPLDDM-MASSLOAD"
 

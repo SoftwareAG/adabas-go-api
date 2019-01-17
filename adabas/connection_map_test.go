@@ -564,12 +564,12 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	}
 
 	// fmt.Println("Prepare create test map")
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(23), Fnr: 16}
+	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
 	if perr != nil {
 		return
 	}
-	dataRepository = &DatabaseURL{URL: *newURLWithDbid(23), Fnr: 19}
+	dataRepository = &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 19}
 	vehicleMapName := mapVehicles + "Go"
 	perr = prepareCreateTestMap(t, vehicleMapName, vehicleSystransStore, dataRepository)
 	if perr != nil {

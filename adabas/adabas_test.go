@@ -31,6 +31,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	adabasModDBID = 23
+)
+
 func TestAdabasFailure(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
@@ -85,7 +89,7 @@ func TestAdabasOk23(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 
 	var abds []*Buffer
 	abds = append(abds, NewBuffer(AbdAQFb))
@@ -205,7 +209,7 @@ func TestAdabasOpen(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 
 	var abds []*Buffer
 	abds = append(abds, NewBuffer(AbdAQFb))
@@ -244,7 +248,7 @@ func TestAdabasFdt(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
@@ -277,7 +281,7 @@ func ExampleAdabas_readFileDefinition11() {
 	}
 	defer f.Close()
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
@@ -349,7 +353,7 @@ func ExampleAdabas_readFileDefinition9() {
 	}
 	defer f.Close()
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
@@ -455,7 +459,7 @@ func ExampleAdabas_readFileDefinition9RestrictF0() {
 	}
 	defer f.Close()
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
@@ -505,7 +509,7 @@ func ExampleAdabas_readFileDefinition9Restricted() {
 	}
 	defer f.Close()
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
@@ -552,7 +556,7 @@ func TestAdabasFdtNewEmployee(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("newempl")
 
 	fmt.Println("Open database")
@@ -585,7 +589,7 @@ func TestAdabasFdtHyperexit(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("hyper")
 	defer adabas.Close()
 
@@ -714,7 +718,7 @@ func TestAdabasReadPhysical(t *testing.T) {
 
 	log.Debug("TEST: ", t.Name())
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	err := adabas.Open()
 	if !assert.NoError(t, err) {
 		return
@@ -742,7 +746,7 @@ func TestAdabasReadLogical(t *testing.T) {
 
 	log.Debug("TEST: ", t.Name())
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	err := adabas.Open()
 	if !assert.NoError(t, err) {
 		return
@@ -770,7 +774,7 @@ func TestAdabasReadIsn(t *testing.T) {
 
 	log.Debug("TEST: ", t.Name())
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	err := adabas.Open()
 	if !assert.NoError(t, err) {
 		return
@@ -796,7 +800,7 @@ func TestAdabasSearchogical(t *testing.T) {
 
 	log.Debug("TEST: ", t.Name())
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	err := adabas.Open()
 	if !assert.NoError(t, err) {
 		return

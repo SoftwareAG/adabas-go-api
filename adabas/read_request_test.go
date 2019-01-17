@@ -34,7 +34,7 @@ func TestRequestPhysicalSimpleTypes(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.QueryFields("AA,AC,AD")
@@ -49,7 +49,7 @@ func TestRequestPhysicalMultipleField(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	err := request.QueryFields("AA,AC,AD,AZ")
@@ -71,7 +71,7 @@ func TestRequestLogicalWithQueryFields(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.QueryFields("AA,AC,AD")
@@ -90,7 +90,7 @@ func TestRequestLogicalWithFields(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	result := &RequestResult{}
@@ -109,7 +109,7 @@ func TestReadRequestLogicalBy(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.QueryFields("AA,AC,AD")
@@ -128,7 +128,7 @@ func TestReadRequestLogicalByAll(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.Limit = 2
@@ -201,7 +201,7 @@ func ExampleReadRequest_ReadLogicalBy() {
 	}
 	defer f.Close()
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.Limit = 2
@@ -233,7 +233,7 @@ func TestReadRequestLogicalBySuperDescriptor(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.QueryFields("AA,AC,AD")
@@ -252,7 +252,7 @@ func TestReadRequestHistogramDescriptorField(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	request.Limit = 10
 	defer request.Close()
@@ -275,7 +275,7 @@ func TestReadRequestHistogramSuperDescriptor(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.Limit = 10
@@ -307,7 +307,7 @@ func ExampleReadRequest_histogramWith() {
 	}
 	defer f.Close()
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	result, err := request.HistogramWith("AA=20010100")
@@ -372,7 +372,7 @@ func BenchmarkReadRequest_Small(b *testing.B) {
 		return
 	}
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.Limit = 0
@@ -391,7 +391,7 @@ func BenchmarkReadRequest(b *testing.B) {
 
 	assert.NoError(b, err)
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	request.Limit = 0
 	defer request.Close()

@@ -53,7 +53,7 @@ func TestMapImportPrepare(t *testing.T) {
 func TestMapImport(t *testing.T) {
 	f := initTestLogWithFile(t, "store.log")
 	defer f.Close()
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	mr := NewMapRepository(adabas, 250)
 	p := os.Getenv("TESTFILES")
 	if p == "" {
@@ -61,7 +61,7 @@ func TestMapImport(t *testing.T) {
 	}
 	name := p + "/" + "EmployeeX.systrans"
 
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(23), Fnr: 11}
+	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 11}
 	maps, err := mr.ImportMapRepository(adabas, "*", name, dataRepository)
 	if !assert.NoError(t, err) {
 		fmt.Println(err)
@@ -81,7 +81,7 @@ func TestMapImportMassLoad(t *testing.T) {
 	f := initTestLogWithFile(t, "store.log")
 	defer f.Close()
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	mr := NewMapRepository(adabas, 250)
 	p := os.Getenv("TESTFILES")
 	if p == "" {
@@ -89,7 +89,7 @@ func TestMapImportMassLoad(t *testing.T) {
 	}
 	name := p + "/" + "Empl-MassLoad.systrans"
 
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(23), Fnr: 11}
+	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 11}
 	maps, err := mr.ImportMapRepository(adabas, "*", name, dataRepository)
 	if !assert.NoError(t, err) {
 		fmt.Println(err)

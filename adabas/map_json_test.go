@@ -10,7 +10,7 @@ func TestMapImportJson(t *testing.T) {
 	f := initTestLogWithFile(t, "mapjson.log")
 	defer f.Close()
 
-	adabas := NewAdabas(23)
+	adabas := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 	p := os.Getenv("TESTFILES")
 	if p == "" {

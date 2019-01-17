@@ -36,15 +36,15 @@ type Employees struct {
 	FirstName string `adabas:"FirstName"`
 }
 
-func initEmployees(t *testing.T) {
-	ada := NewAdabas(23)
+func initEmployees(t *testing.T) error {
+	ada := NewAdabas(adabasModDBID)
 	defer ada.Close()
-	mr := NewMapRepository(ada, 4)
+	mr := NewMapRepository(ada, 249)
 
 	_, mErr := mr.SearchMap(ada, "Employees")
 	if mErr == nil {
 		fmt.Println("Employees map already available")
-		return
+		return mErr
 	}
 	fmt.Println("Error reading map:", mErr)
 
@@ -56,7 +56,7 @@ func initEmployees(t *testing.T) {
 	fmt.Println("Loading ...." + name)
 	file, err := os.Open(name)
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	defer file.Close()
 
@@ -64,14 +64,18 @@ func initEmployees(t *testing.T) {
 
 	maps, err := ParseJSONFileForFields(file)
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	assert.Equal(t, 1, len(maps))
 	for _, m := range maps {
 		m.Repository = mapRepository
 		err = m.Store()
+		if err != nil {
+			return err
+		}
 	}
 
+	return nil
 }
 
 func TestStructSimple(t *testing.T) {
@@ -82,8 +86,11 @@ func TestStructSimple(t *testing.T) {
 	defer f.Close()
 
 	log.Debug("TEST: ", t.Name())
-	initEmployees(t)
-	connection, err := NewConnection("acj;map;config=[23,4]")
+	ierr := initEmployees(t)
+	if !assert.NoError(t, ierr) {
+		return
+	}
+	connection, err := NewConnection("acj;map;config=[23,249]")
 	if !assert.NoError(t, err) {
 		return
 	}
