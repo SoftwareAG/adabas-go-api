@@ -32,6 +32,7 @@ import (
 )
 
 const (
+	storeEmployeesMap     = "EMPLDDM-GOSTORE"
 	massLoadEmployees     = "EMPLDDM-GOLOAD"
 	massLoadSystrans      = "Empl-MassLoad.systrans"
 	massLoadSystransStore = "EMPLDDM-GOLOAD-STORE"
