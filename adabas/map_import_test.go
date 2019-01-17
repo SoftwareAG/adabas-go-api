@@ -96,7 +96,7 @@ func TestMapImportMassLoad(t *testing.T) {
 	}
 	fmt.Println("Number of maps", len(maps))
 	for _, m := range maps {
-		m.Name = "EMPLDDM-MASSLOAD"
+		m.Name = massLoadEmployees
 		fmt.Println("MAP", m.Name)
 		err = m.Store()
 		if !assert.NoError(t, err) {
