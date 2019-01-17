@@ -96,6 +96,12 @@ func TestDeleteRequestByMapNameCommonRepo(t *testing.T) {
 	f := initTestLogWithFile(t, "delete.log")
 	defer f.Close()
 
+	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 11}
+	perr := prepareCreateTestMap(t, massLoadEmployees, massLoadSystrans, dataRepository)
+	if perr != nil {
+		return
+	}
+
 	mapName := massLoadEmployees
 	prepareCall(t, mapName)
 
