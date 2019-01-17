@@ -78,6 +78,38 @@ func initEmployees(t *testing.T) error {
 	return nil
 }
 
+func TestStructStore(t *testing.T) {
+	f, lErr := initLogWithFile("structure.log")
+	if !assert.NoError(t, lErr) {
+		return
+	}
+	defer f.Close()
+
+	cErr := clearFile(16)
+	if !assert.NoError(t, cErr) {
+		return
+	}
+
+	log.Debug("TEST: ", t.Name())
+	initEmployees(t)
+	connection, err := NewConnection("acj;map;config=[23,249]")
+	if !assert.NoError(t, err) {
+		return
+	}
+	if !assert.NotNil(t, connection) {
+		return
+	}
+	defer connection.Close()
+
+	e := []*Employees{
+		&Employees{ID: "GOSTORE", Birth: 123478, Name: "ABC"},
+	}
+	err = ReflectStore(e, connection, "Employees")
+	if assert.NoError(t, err) {
+		connection.EndTransaction()
+	}
+}
+
 func TestStructSimple(t *testing.T) {
 	f, lErr := initLogWithFile("structure.log")
 	if !assert.NoError(t, lErr) {
@@ -105,41 +137,12 @@ func TestStructSimple(t *testing.T) {
 	fmt.Println(e, ts)
 	employeesType := reflect.TypeOf((*Employees)(nil)).Elem()
 	fmt.Println(reflect.TypeOf((*Employees)(nil)).Elem())
-	list, err := ReflectSearch("Employees", employeesType, connection, "Id=50004000")
-	for c, l := range list {
-		e := l.(*Employees)
-		fmt.Printf("%d:%#v %s\n", c, l, e.Name)
-	}
-}
-
-func TestStructStore(t *testing.T) {
-	f, lErr := initLogWithFile("structure.log")
-	if !assert.NoError(t, lErr) {
-		return
-	}
-	defer f.Close()
-
-	cErr := clearFile(16)
-	if !assert.NoError(t, cErr) {
-		return
-	}
-
-	log.Debug("TEST: ", t.Name())
-	initEmployees(t)
-	connection, err := NewConnection("acj;map;config=[23,4]")
+	list, err := ReflectSearch("Employees", employeesType, connection, "ID=GOSTORE")
 	if !assert.NoError(t, err) {
 		return
 	}
-	if !assert.NotNil(t, connection) {
-		return
-	}
-	defer connection.Close()
-
-	e := []*Employees{
-		&Employees{ID: "GOSTORE", Birth: 123478, Name: "ABC"},
-	}
-	err = ReflectStore(e, connection, "Employees")
-	if assert.NoError(t, err) {
-		connection.EndTransaction()
+	for c, l := range list {
+		e := l.(*Employees)
+		fmt.Printf("%d:%#v %s\n", c, l, e.Name)
 	}
 }

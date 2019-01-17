@@ -49,7 +49,25 @@ func structParser(adabasRequest *adatypes.AdabasRequest, x interface{}) error {
 			return err
 		}
 		if v != nil {
-			s.Field(i).SetString(v.String())
+			fmt.Println(fieldName, v, s.Field(i), s.Field(i).Type())
+			switch s.Field(i).Interface().(type) {
+			case int8, int32, int64:
+				vi, err := v.Int64()
+				if err != nil {
+					return err
+				}
+				s.Field(i).SetInt(vi)
+			case uint8, uint32, uint64:
+				vui, err := v.UInt64()
+				if err != nil {
+					return err
+				}
+				s.Field(i).SetUint(vui)
+			case string:
+				s.Field(i).SetString(v.String())
+			default:
+				return fmt.Errorf("Type %v for %s not supported", s.Field(i).Type(), fieldName)
+			}
 		}
 	}
 	structResult.entries = append(structResult.entries, s.Addr().Interface())
