@@ -601,6 +601,61 @@ func ExampleReadRequest_file() {
 	//    AD = > ELLEN                <
 }
 
+func ExampleConnection_PeriodGroup() {
+	initLogWithFile("connection.log")
+	connection, cerr := NewConnection("acj;target=23")
+	if cerr != nil {
+		return
+	}
+	defer connection.Close()
+	request, err := connection.CreateReadRequest(11)
+	if err != nil {
+		fmt.Println("Error read map : ", err)
+		return
+	}
+	fmt.Println("Connection : ", connection)
+
+	fmt.Println("Limit query data:")
+	request.QueryFields("AA,AB,AQ,AZ")
+	fmt.Println("Read logical data:")
+	result, rerr := request.ReadISN(250)
+	if rerr != nil {
+		fmt.Println("Error reading", rerr)
+		return
+	}
+	fmt.Println("Result data:")
+	result.DumpValues()
+	// Output: Connection :  Adabas url=23 fnr=0
+	// Limit query data:
+	// Read logical data:
+	// Result data:
+	// Dump all result values
+	// Record Isn: 0250
+	//   AA = > 11222222 <
+	//   AB = [ 1 ]
+	//    AC = > ANTONIA              <
+	//    AE = > MARTENS              <
+	//    AD = > MARIA                <
+	//   AQ = [ 3 ]
+	//    AR[01] = > EUR <
+	//    AS[01] = > 29743 <
+	//    AT[01] = [ 2 ]
+	//     AT[01,01] = > 4615 <
+	//     AT[01,02] = > 8000 <
+	//    AR[02] = > EUR <
+	//    AS[02] = > 22153 <
+	//    AT[02] = [ 2 ]
+	//     AT[02,01] = > 3589 <
+	//     AT[02,02] = > 6000 <
+	//    AR[03] = > EUR <
+	//    AS[03] = > 20769 <
+	//    AT[03] = [ 1 ]
+	//     AT[03,01] = > 1538 <
+	//   AZ = [ 2 ]
+	//    AZ[01] = > GER <
+	//    AZ[02] = > TUR <
+}
+
 func ExampleReadRequest_wide_character() {
 	initLogWithFile("connection.log")
 	connection, cerr := NewConnection("acj;target=23")
