@@ -705,6 +705,76 @@ func ExampleReadRequest_wide_character() {
 	//   KA = > रीसेपसणिस्त                                  <
 }
 
+func ExampleReadRequest_MarhsalJSON() {
+	initLogWithFile("connection.log")
+	connection, cerr := NewConnection("acj;target=23")
+	if cerr != nil {
+		return
+	}
+	defer connection.Close()
+	request, err := connection.CreateReadRequest(11)
+	if err != nil {
+		fmt.Println("Error read map : ", err)
+		return
+	}
+	fmt.Println("Connection : ", connection)
+
+	fmt.Println("Limit query data:")
+	request.QueryFields("*")
+	fmt.Println("Read logical data:")
+	result, rErr := request.ReadISN(1)
+	if rErr != nil {
+		fmt.Println("Error reading", rErr)
+		return
+	}
+	x, jsonErr := json.Marshal(result)
+	if jsonErr != nil {
+		fmt.Println("Error", jsonErr)
+		return
+	}
+	fmt.Println(string(x))
+
+	// Output: Connection :  Adabas url=23 fnr=0
+	// Limit query data:
+	// Read logical data:
+	// {"Records":[{"A1":{"AI":["26 AVENUE RHIN ET DA"]},"A2":{"AM":"44864858","AN":"1033"},"A3":{"AU":19,"AV":5},"AA":"50005800","AB":{"AC":"SIMONE","AD":"","AE":"ADAM"},"AF":"M","AG":"F","AH":712981,"AO":"VENT59","AP":"CHEF DE SERVICE","AQ":[{"AR":"EUR","AS":963,"AT":[138]}],"AW":{"AX":19990801,"AY":19990831},"AZ":["FRE","ENG"],"ISN":1}]}
+}
+
+func ExampleConnection_MarhsalJSON_250() {
+	initLogWithFile("connection.log")
+	connection, cerr := NewConnection("acj;target=23")
+	if cerr != nil {
+		return
+	}
+	defer connection.Close()
+	request, err := connection.CreateReadRequest(11)
+	if err != nil {
+		fmt.Println("Error read map : ", err)
+		return
+	}
+	fmt.Println("Connection : ", connection)
+
+	fmt.Println("Limit query data:")
+	request.QueryFields("*")
+	fmt.Println("Read logical data:")
+	result, rErr := request.ReadISN(250)
+	if rErr != nil {
+		fmt.Println("Error reading", rErr)
+		return
+	}
+	x, jsonErr := json.Marshal(result)
+	if jsonErr != nil {
+		fmt.Println("Error", jsonErr)
+		return
+	}
+	fmt.Println(string(x))
+
+	// Output: Connection :  Adabas url=23 fnr=0
+	// Limit query data:
+	// Read logical data:
+	// {"Records":[{"A1":{"AI":["26 AVENUE RHIN ET DA"]},"A2":{"AM":"44864858","AN":"1033"},"A3":{"AU":19,"AV":5},"AA":"50005800","AB":{"AC":"SIMONE","AD":"","AE":"ADAM"},"AF":"M","AG":"F","AH":712981,"AO":"VENT59","AP":"CHEF DE SERVICE","AQ":[{"AR":"EUR","AS":963,"AT":[138]}],"AW":{"AX":19990801,"AY":19990831},"AZ":["FRE","ENG"],"ISN":1}]}
+}
+
 type testedValue struct {
 	longName  string
 	shortName string

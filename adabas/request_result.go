@@ -57,7 +57,7 @@ func (record *ResultRecord) createRecordBuffer(helper *adatypes.BufferHelper) (e
 // RequestResult contains the result information of the request
 type RequestResult struct {
 	XMLName xml.Name        `xml:"Response" json:"-"`
-	Values  []*ResultRecord `xml:"Record" json:"Record"`
+	Values  []*ResultRecord `xml:"Records" json:"Records"`
 }
 
 // NrRecords number of records in the result
@@ -244,36 +244,72 @@ type dataValue struct {
 }
 
 type request struct {
-	Values  []*map[string]interface{} `json:"Record"`
+	Values  []*map[string]interface{} `json:"Records"`
 	dataMap *map[string]interface{}
 	stack   *adatypes.Stack
 	buffer  bytes.Buffer
 }
 
+func evaluateValue(adaValue adatypes.IAdaValue) (interface{}, error) {
+	switch adaValue.Type().Type() {
+	case adatypes.FieldTypePacked, adatypes.FieldTypeUnpacked, adatypes.FieldTypeByte, adatypes.FieldTypeUByte,
+		adatypes.FieldTypeUInt2, adatypes.FieldTypeInt2, adatypes.FieldTypeUInt4, adatypes.FieldTypeInt4,
+		adatypes.FieldTypeUInt8, adatypes.FieldTypeInt8, adatypes.FieldTypeDouble, adatypes.FieldTypeFloat:
+		v, err := adaValue.Int64()
+		if err != nil {
+			adatypes.Central.Log.Debugf("Error marshal JSON %s: %v", adaValue.Type().Name(), err)
+			return adatypes.EndTraverser, err
+		}
+		return v, nil
+	default:
+		return strings.Trim(adaValue.String(), " "), nil
+	}
+	return nil, adatypes.NewGenericError(-1)
+}
+
 func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
-	if !adaValue.Type().IsSpecialDescriptor() {
-		adatypes.Central.Log.Debugf("Marshal JSON %s", adaValue.Type().Name())
+	if !adaValue.Type().IsSpecialDescriptor() && !adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost) {
+		adatypes.Central.Log.Debugf("Marshal JSON %s -> type=%T MU ghost=%v", adaValue.Type().Name(),
+			adaValue, adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost))
 		req := x.(*request)
 		if adaValue.Type().IsStructure() {
-			req.stack.Push(req.dataMap)
-			dataMap := make(map[string]interface{})
-			oldMap := req.dataMap
-			req.dataMap = &dataMap
-			(*oldMap)[adaValue.Type().Name()] = req.dataMap
-		} else {
+			adatypes.Central.Log.Debugf("Structure Marshal JSON %s", adaValue.Type().Name())
 			switch adaValue.Type().Type() {
-			case adatypes.FieldTypePacked, adatypes.FieldTypeUnpacked, adatypes.FieldTypeByte, adatypes.FieldTypeUByte,
-				adatypes.FieldTypeUInt2, adatypes.FieldTypeInt2, adatypes.FieldTypeUInt4, adatypes.FieldTypeInt4,
-				adatypes.FieldTypeUInt8, adatypes.FieldTypeInt8, adatypes.FieldTypeDouble, adatypes.FieldTypeFloat:
-				v, err := adaValue.Int64()
-				if err != nil {
-					adatypes.Central.Log.Debugf("Error marshal JSON %s: %v", adaValue.Type().Name(), err)
-					return adatypes.EndTraverser, err
+			case adatypes.FieldTypeMultiplefield:
+				var sa []interface{}
+				sv := adaValue.(*adatypes.StructureValue)
+				for _, values := range sv.Elements {
+					for _, vi := range values.Values {
+						v, err := evaluateValue(vi)
+						if err != nil {
+							return adatypes.EndTraverser, err
+						}
+						sa = append(sa, v)
+					}
 				}
-				(*req.dataMap)[adaValue.Type().Name()] = v
+				(*req.dataMap)[adaValue.Type().Name()] = sa
+				return adatypes.SkipStructure, nil
+			case adatypes.FieldTypePeriodGroup:
+				var sa []interface{}
+				req.stack.Push(req.dataMap)
+				dataMap := make(map[string]interface{})
+				oldMap := req.dataMap
+				req.dataMap = &dataMap
+				sa = append(sa, req.dataMap)
+				(*oldMap)[adaValue.Type().Name()] = sa
 			default:
-				(*req.dataMap)[adaValue.Type().Name()] = adaValue.String()
+				req.stack.Push(req.dataMap)
+				dataMap := make(map[string]interface{})
+				oldMap := req.dataMap
+				req.dataMap = &dataMap
+				(*oldMap)[adaValue.Type().Name()] = req.dataMap
 			}
+		} else {
+			v, err := evaluateValue(adaValue)
+			if err != nil {
+				return adatypes.EndTraverser, err
+			}
+			(*req.dataMap)[adaValue.Type().Name()] = v
 		}
 	} else {
 		adatypes.Central.Log.Debugf("Skip Marshal JSON %s", adaValue.Type().Name())
@@ -282,7 +318,7 @@ func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 }
 
 func traverseMarshalJSONEnd(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
-	if adaValue.Type().IsStructure() {
+	if adaValue.Type().IsStructure() && adaValue.Type().Type() != adatypes.FieldTypeMultiplefield {
 		req := x.(*request)
 		dataMap, err := req.stack.Pop()
 		if err != nil {

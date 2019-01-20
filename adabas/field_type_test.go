@@ -260,13 +260,13 @@ func TestFieldTypeRead(t *testing.T) {
 }
 
 func jsonOutput(r *ResultRecord) error {
-	_, jsonErr := json.Marshal(r)
+	x, jsonErr := json.Marshal(r)
 	if jsonErr != nil {
 		fmt.Println("Error", jsonErr)
 		// r.DumpValues()
 		return jsonErr
 	}
-	// fmt.Println(string(x))
+	fmt.Println(string(x))
 	return nil
 }
 
