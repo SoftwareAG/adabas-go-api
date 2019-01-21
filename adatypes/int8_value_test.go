@@ -88,6 +88,22 @@ func TestInt8(t *testing.T) {
 	assert.Equal(t, v, up.Bytes())
 	assert.Equal(t, "1024", up.String())
 
+	up.SetValue(1234)
+	ui32, ui32err := up.UInt32()
+	assert.NoError(t, ui32err)
+	assert.Equal(t, uint32(1234), ui32)
+	i32, i32err = up.Int32()
+	assert.NoError(t, i32err)
+	assert.Equal(t, int32(1234), i32)
+
+	up.SetValue(-1234)
+	ui32, ui32err = up.UInt32()
+	assert.Error(t, ui32err)
+	assert.Equal(t, uint32(0), ui32)
+	i32, i32err = up.Int32()
+	assert.NoError(t, i32err)
+	assert.Equal(t, int32(-1234), i32)
+
 }
 
 func ExampleInt8_SetValue() {
@@ -282,6 +298,26 @@ func TestUInt8(t *testing.T) {
 	v := []byte{0x00, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
 	assert.Equal(t, v, up.Bytes())
 	assert.Equal(t, "1024", up.String())
+
+	up.SetValue(1234)
+	ui32, ui32err := up.UInt32()
+	assert.NoError(t, ui32err)
+	assert.Equal(t, uint32(1234), ui32)
+	i32, i32err = up.Int32()
+	assert.NoError(t, i32err)
+	assert.Equal(t, int32(1234), i32)
+
+	err = up.SetValue(-1234)
+	assert.Error(t, err)
+	ui32, ui32err = up.UInt32()
+	assert.NoError(t, ui32err)
+	assert.Equal(t, uint32(1234), ui32)
+	i32, i32err = up.Int32()
+	assert.NoError(t, i32err)
+	assert.Equal(t, int32(1234), i32)
+	ui64, ui64err = up.UInt64()
+	assert.NoError(t, ui64err)
+	assert.Equal(t, uint64(1234), ui64)
 
 }
 

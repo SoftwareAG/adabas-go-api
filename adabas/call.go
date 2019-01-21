@@ -1,4 +1,4 @@
-// +build adalnk
+// +build adalnk,cgo
 
 /*
 * Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
