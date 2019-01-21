@@ -648,7 +648,7 @@ func TestStorePeriod(t *testing.T) {
 
 	adabas := NewAdabas(adabasModDBID)
 	mr := NewMapRepository(adabas, 250)
-	mapName := "EMPLDDM-MASSLOAD"
+	mapName := massLoadSystransStore
 
 	readRequest, rErr := NewMapNameRequestRepo(mapName, adabas, mr)
 	if !assert.NoError(t, rErr) {

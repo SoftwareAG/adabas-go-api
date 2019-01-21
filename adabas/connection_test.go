@@ -792,7 +792,7 @@ func ExampleReadRequest_MarhsalJSON() {
 	// Output: Connection :  Adabas url=23 fnr=0
 	// Limit query data:
 	// Read logical data:
-	// {"Records":[{"A1":{"AI":["26 AVENUE RHIN ET DA"]},"A2":{"AM":"44864858","AN":"1033"},"A3":{"AU":19,"AV":5},"AA":"50005800","AB":{"AC":"SIMONE","AD":"","AE":"ADAM"},"AF":"M","AG":"F","AH":712981,"AO":"VENT59","AP":"CHEF DE SERVICE","AQ":[{"AR":"EUR","AS":963,"AT":[138]}],"AW":{"AX":19990801,"AY":19990831},"AZ":["FRE","ENG"],"ISN":1}]}
+	// {"Records":[{"A1":{"AI":["26 AVENUE RHIN ET DA"],"AJ":"JOIGNY","AK":"89300","AL":"F"},"A2":{"AM":"44864858","AN":"1033"},"A3":{"AU":19,"AV":5},"AA":"50005800","AB":{"AC":"SIMONE","AD":"","AE":"ADAM"},"AF":"M","AG":"F","AH":712981,"AO":"VENT59","AP":"CHEF DE SERVICE","AQ":[{"AR":"EUR","AS":963,"AT":[138]}],"AW":[{"AX":19990801,"AY":19990831}],"AZ":["FRE","ENG"],"ISN":1}]}
 }
 
 func ExampleConnection_MarhsalJSON_250() {
