@@ -168,7 +168,7 @@ func ExampleRequestResult_JsonMarshal() {
 		return
 	}
 	fmt.Println(string(res))
-	// Output: {"Record":[{"AA":10,"B1":0,"GR":{"G1":"0","GX":" ","PA":9},"I2":0,"I8":0,"ISN":10,"U8":0,"UB":0},{"AA":20,"B1":0,"GR":{"G1":"0","GX":" ","PA":3},"I2":0,"I8":0,"ISN":11,"U8":0,"UB":0}]}
+	// Output: {"Record":[{"AA":10,"B1":0,"GR":{"G1":"0","GX":"","PA":9},"I2":0,"I8":0,"ISN":10,"U8":0,"UB":0},{"AA":20,"B1":0,"GR":{"G1":"0","GX":"","PA":3},"I2":0,"I8":0,"ISN":11,"U8":0,"UB":0}]}
 }
 
 func ExampleRequestResult_XmlMarshal() {
