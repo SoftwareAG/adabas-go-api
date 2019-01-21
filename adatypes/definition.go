@@ -533,6 +533,9 @@ const (
 // PrepareTraverser prepare giving current main object
 type PrepareTraverser func(t interface{}, x interface{}) (TraverseResult, error)
 
+// ElementTraverser prepare start of an element
+type ElementTraverser func(value IAdaValue, nr, max int, x interface{}) (TraverseResult, error)
+
 // TraverserValues api to handle tree traverses for values
 type TraverserValues func(value IAdaValue, x interface{}) (TraverseResult, error)
 
@@ -550,6 +553,7 @@ type TraverserValuesMethods struct {
 	PrepareFunction PrepareTraverser
 	EnterFunction   TraverserValues
 	LeaveFunction   TraverserValues
+	ElementFunction ElementTraverser
 }
 
 // TraverseValues traverse through the tree of values calling a callback method

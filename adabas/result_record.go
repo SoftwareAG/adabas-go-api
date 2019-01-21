@@ -102,7 +102,7 @@ func (record *ResultRecord) traverse(t adatypes.TraverserValuesMethods, x interf
 	for _, value := range record.Value {
 		adatypes.Central.Log.Debugf("Go through value %s %d", value.Type().Name(), value.Type().Type())
 		if t.EnterFunction != nil {
-			adatypes.Central.Log.Debugf("Enter %s %d", value.Type().Name(), value.Type().Type())
+			adatypes.Central.Log.Debugf("Enter field=%s Type=%d", value.Type().Name(), value.Type().Type())
 			ret, err = t.EnterFunction(value, x)
 			if err != nil {
 				return

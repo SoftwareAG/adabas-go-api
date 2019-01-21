@@ -345,8 +345,15 @@ func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (
 	Central.Log.Debugf("Traverse level %d structure: %s", value.Type().Level(), value.Type().Name())
 	Central.Log.Debugf("Nr sub elements=%d", value.NrElements())
 	if value.Elements != nil { // && len(value.Elements[0].Values) > 0 {
+		nr := len(value.Elements)
 		for e, val := range value.Elements {
 			Central.Log.Debugf("%d: Nr sub values=%d", e, len(val.Values))
+			if t.ElementFunction != nil {
+				ret, err = t.ElementFunction(value, e, nr, x)
+				if err != nil || ret == EndTraverser {
+					return
+				}
+			}
 			for i, v := range val.Values {
 				Central.Log.Debugf("Traverse node %d.element and %d.value at %s[%d,%d] for %s[%d,%d]", e, i, v.Type().Name(),
 					v.PeriodIndex(), v.MultipleIndex(), value.Type().Name(), value.PeriodIndex(), value.MultipleIndex())

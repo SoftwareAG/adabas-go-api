@@ -244,10 +244,11 @@ type dataValue struct {
 }
 
 type request struct {
-	Values  []*map[string]interface{} `json:"Records"`
-	dataMap *map[string]interface{}
-	stack   *adatypes.Stack
-	buffer  bytes.Buffer
+	Values         []*map[string]interface{} `json:"Records"`
+	dataMap        *map[string]interface{}
+	stack          *adatypes.Stack
+	buffer         bytes.Buffer
+	structureArray []interface{}
 }
 
 func evaluateValue(adaValue adatypes.IAdaValue) (interface{}, error) {
@@ -269,8 +270,8 @@ func evaluateValue(adaValue adatypes.IAdaValue) (interface{}, error) {
 
 func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	if !adaValue.Type().IsSpecialDescriptor() && !adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost) {
-		adatypes.Central.Log.Debugf("Marshal JSON %s -> type=%T MU ghost=%v", adaValue.Type().Name(),
-			adaValue, adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost))
+		adatypes.Central.Log.Debugf("Marshal JSON level=%d %s -> type=%T MU ghost=%v", adaValue.Type().Level(),
+			adaValue.Type().Name(), adaValue, adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost))
 		req := x.(*request)
 		if adaValue.Type().IsStructure() {
 			adatypes.Central.Log.Debugf("Structure Marshal JSON %s", adaValue.Type().Name())
@@ -291,13 +292,15 @@ func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 				adatypes.Central.Log.Debugf("Skip rest of MU Marshal JSON %s", adaValue.Type().Name())
 				// return adatypes.SkipStructure, nil
 			case adatypes.FieldTypePeriodGroup:
-				var sa []interface{}
-				req.stack.Push(req.dataMap)
-				dataMap := make(map[string]interface{})
-				oldMap := req.dataMap
-				req.dataMap = &dataMap
-				sa = append(sa, req.dataMap)
-				(*oldMap)[adaValue.Type().Name()] = sa
+				// var sa []interface{}
+				// fmt.Println(adaValue.Type().Name(), (*req.dataMap)[adaValue.Type().Name()])
+				// debug.PrintStack()
+				// req.stack.Push(req.dataMap)
+				// dataMap := make(map[string]interface{})
+				// oldMap := req.dataMap
+				// req.dataMap = &dataMap
+				// sa = append(sa, req.dataMap)
+				// (*oldMap)[adaValue.Type().Name()] = sa
 			default:
 				req.stack.Push(req.dataMap)
 				dataMap := make(map[string]interface{})
@@ -318,6 +321,19 @@ func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 	return adatypes.Continue, nil
 }
 
+func traverseElementMarshalJSON(adaValue adatypes.IAdaValue, nr, max int, x interface{}) (adatypes.TraverseResult, error) {
+	if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup {
+		req := x.(*request)
+		if req.structureArray == nil {
+			req.stack.Push(req.dataMap)
+		}
+		dataMap := make(map[string]interface{})
+		req.dataMap = &dataMap
+		req.structureArray = append(req.structureArray, req.dataMap)
+	}
+	return adatypes.Continue, nil
+}
+
 func traverseMarshalJSONEnd(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	if adaValue.Type().IsStructure() && adaValue.Type().Type() != adatypes.FieldTypeMultiplefield {
 		req := x.(*request)
@@ -326,6 +342,10 @@ func traverseMarshalJSONEnd(adaValue adatypes.IAdaValue, x interface{}) (adatype
 			return adatypes.EndTraverser, err
 		}
 		req.dataMap = dataMap.((*map[string]interface{}))
+		if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup {
+			(*req.dataMap)[adaValue.Type().Name()] = req.structureArray
+			req.structureArray = nil
+		}
 	}
 	return adatypes.Continue, nil
 }
@@ -334,7 +354,8 @@ func traverseMarshalJSONEnd(adaValue adatypes.IAdaValue, x interface{}) (adatype
 func (requestResult *RequestResult) MarshalJSON() ([]byte, error) {
 	req := &request{}
 	adatypes.Central.Log.Debugf("Marshal JSON go through records -> %d", len(requestResult.Values))
-	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalJSON, LeaveFunction: traverseMarshalJSONEnd}
+	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalJSON, LeaveFunction: traverseMarshalJSONEnd,
+		ElementFunction: traverseElementMarshalJSON}
 	req.stack = adatypes.NewStack()
 
 	for _, record := range requestResult.Values {
