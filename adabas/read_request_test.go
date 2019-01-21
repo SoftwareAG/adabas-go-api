@@ -377,6 +377,7 @@ func BenchmarkReadRequest_Small(b *testing.B) {
 	defer request.Close()
 	request.Limit = 0
 	request.QueryFields("AA,AC,AD")
+
 	result := &RequestResult{}
 	err = request.ReadLogicalByWithParser("AA", nil, result)
 	fmt.Println("Dump result received ...")
@@ -432,6 +433,8 @@ func TestRequestWithMapLogicalBy(t *testing.T) {
 		if !assert.NoError(t, err) {
 			return
 		}
+		assert.True(t, request.IsOpen())
+
 		fmt.Println("After query fields")
 		result := &RequestResult{}
 		err = request.ReadLogicalByWithParser("PERSONNEL-ID", nil, result)
