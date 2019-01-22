@@ -1051,7 +1051,7 @@ func TestConnectionADATCPSimpleRemote(t *testing.T) {
 
 	url := adabasTCPLocation()
 	fmt.Println("Connect to ", url)
-	connection, err := NewConnection("acj;target=" + url + ")")
+	connection, err := NewConnection("acj;target=177(adatcp://" + url + ")")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1178,7 +1178,7 @@ func TestConnectionADATCPReadRemote(t *testing.T) {
 	log.Debug("TEST: ", t.Name())
 	url := adabasTCPLocation()
 	fmt.Println("Connect to ", url)
-	connection, cerr := NewConnection("acj;target=" + url + ")")
+	connection, cerr := NewConnection("acj;target=177(adatcp://" + url + ")")
 	if !assert.NoError(t, cerr) {
 		return
 	}
@@ -1340,7 +1340,7 @@ func TestConnectionADIS(t *testing.T) {
 	log.Debug("TEST: ", t.Name())
 	url := adabasTCPLocation()
 	fmt.Println("Connect to ", url)
-	connection, cerr := NewConnection("acj;target=" + url + ")")
+	connection, cerr := NewConnection("acj;target=177(adatcp://" + url + ")")
 	if !assert.NoError(t, cerr) {
 		return
 	}
