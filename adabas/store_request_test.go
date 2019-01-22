@@ -27,6 +27,7 @@ import (
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -355,12 +356,16 @@ func TestStoreUpdateMapField(t *testing.T) {
 	f := initTestLogWithFile(t, "store.log")
 	defer f.Close()
 
+	log.Infof("TEST: %s", t.Name())
+
 	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
 	if perr != nil {
 		return
 	}
 	ada := NewAdabas(adabasModDBID)
+	defer ada.Close()
+
 	AddMapRepository(ada, 250)
 	defer DelMapRepository(ada, 250)
 
@@ -373,6 +378,7 @@ func TestStoreUpdateMapField(t *testing.T) {
 	if !assert.NoError(t, serr) {
 		return
 	}
+	adatypes.Central.Log.Debugf("Create new map store request")
 	storeRequest, err := NewAdabasMapNameStoreRequest(ada, adabasMap)
 	if !assert.NoError(t, err) {
 		return
@@ -399,6 +405,7 @@ func TestStoreUpdateMapField(t *testing.T) {
 	}
 	storeRequest.EndTransaction()
 
+	log.Infof("First validate data in database ....")
 	checkUpdateCorrectRead(t, "1111111", storeRecord.Isn)
 
 	err = storeRecord.SetValue("PERSONNEL-ID", "9999999")
@@ -411,6 +418,7 @@ func TestStoreUpdateMapField(t *testing.T) {
 	}
 	storeRequest.EndTransaction()
 
+	log.Infof("Second validate data in database ....")
 	checkUpdateCorrectRead(t, "9999999", storeRecord.Isn)
 
 }
@@ -628,6 +636,8 @@ func TestStoreMapMissing(t *testing.T) {
 
 	fmt.Println("Validate using Map invalid")
 	adabas := NewAdabas(adabasModDBID)
+	defer adabas.Close()
+
 	mapRepository := NewMapRepository(adabas, 4)
 	request, err := NewMapNameRequestRepo("NONMAP", adabas, mapRepository)
 	if assert.Error(t, err) {
