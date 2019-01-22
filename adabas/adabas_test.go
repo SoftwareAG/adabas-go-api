@@ -39,7 +39,7 @@ func TestAdabasFailure(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(0)
 
 	var abds []*Buffer
@@ -88,7 +88,7 @@ func TestAdabasOk23(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 
 	var abds []*Buffer
@@ -144,7 +144,7 @@ func TestAdabasOpen(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 
 	var abds []*Buffer
@@ -183,7 +183,7 @@ func TestAdabasFdt(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
 
@@ -491,7 +491,7 @@ func TestAdabasFdtNewEmployee(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("newempl")
 
@@ -524,7 +524,7 @@ func TestAdabasFdtHyperexit(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("hyper")
 	defer adabas.Close()
@@ -556,7 +556,7 @@ func TestAdabasFdtNewEmployeeRemote(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	log.Debug("Network location ", entireNetworkLocation())
 	url := "201(tcpip://" + entireNetworkLocation() + ")"
@@ -600,7 +600,7 @@ func TestAdabasUnknownDriver(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	log.Debug("Network location ", entireNetworkLocation())
 	url := "201(abc://" + entireNetworkLocation() + ")"
@@ -652,7 +652,7 @@ func TestAdabasReadPhysical(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	adabas := NewAdabas(adabasModDBID)
 	err := adabas.Open()
@@ -680,7 +680,7 @@ func TestAdabasReadLogical(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	adabas := NewAdabas(adabasModDBID)
 	err := adabas.Open()
@@ -708,7 +708,7 @@ func TestAdabasReadIsn(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	adabas := NewAdabas(adabasModDBID)
 	err := adabas.Open()
@@ -734,7 +734,7 @@ func TestAdabasSearchogical(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	adabas := NewAdabas(adabasModDBID)
 	err := adabas.Open()

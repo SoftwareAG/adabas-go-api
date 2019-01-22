@@ -161,7 +161,7 @@ func TestConnectionSimpleTypes(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=23")
 	if !assert.NoError(t, err) {
 		return
@@ -215,7 +215,7 @@ func TestConnectionOpenOpen(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=23")
 	if !assert.NoError(t, err) {
 		return
@@ -244,7 +244,7 @@ func TestConnectionOpenFail(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=222")
 	if !assert.NoError(t, err) {
 		return
@@ -262,7 +262,7 @@ func TestConnectionMultipleFields(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=23")
 	if !assert.NoError(t, err) {
 		return
@@ -303,7 +303,7 @@ func TestConnectionStorePeriodFields(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=23")
 	if !assert.NoError(t, err) {
 		return
@@ -347,7 +347,7 @@ func TestConnectionMultifetch(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=23")
 	if !assert.NoError(t, err) {
 		return
@@ -380,7 +380,7 @@ func TestConnectionPeriodAndMultipleField(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=23")
 	if !assert.NoError(t, err) {
 		return
@@ -411,7 +411,7 @@ func TestConnectionRemote(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	url := "201(tcpip://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url + ")")
@@ -488,7 +488,7 @@ func TestConnectionWithMap(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;map;config=[24,4]")
 	if !assert.NoError(t, err) {
 		return
@@ -525,7 +525,7 @@ func TestConnectionAllMap(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;map;config=[24,4]")
 	if !assert.NoError(t, cerr) {
 		return
@@ -872,7 +872,7 @@ func TestConnectionReadMap(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;target=24")
 	if !assert.NoError(t, cerr) {
 		return
@@ -1047,7 +1047,7 @@ func TestConnectionADATCPSimpleRemote(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	url := adabasTCPLocation()
 	fmt.Println("Connect to ", url)
@@ -1068,7 +1068,7 @@ func TestConnectionReadOneLocal(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	url := "23"
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
@@ -1103,7 +1103,7 @@ func TestConnectionReadAllLocal(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	url := "23"
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
@@ -1139,7 +1139,7 @@ func TestConnectionReadSpecialLocal(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	url := "23"
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
@@ -1175,7 +1175,7 @@ func TestConnectionADATCPReadRemote(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	url := adabasTCPLocation()
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=177(adatcp://" + url + ")")
@@ -1210,7 +1210,7 @@ func TestConnectionReadUnicode(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	url := "23"
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
@@ -1258,7 +1258,7 @@ func TestConnectionReadDeepPEFields(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	url := "23"
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
@@ -1303,7 +1303,7 @@ func TestConnectionReadAllFields9(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	url := "23"
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
@@ -1337,7 +1337,7 @@ func TestConnectionADIS(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	url := adabasTCPLocation()
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=177(adatcp://" + url + ")")
@@ -1354,7 +1354,7 @@ func TestConnectionNotConnected(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	url := "111(adatcp://xxx:60001)"
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url + ")")
@@ -1374,7 +1374,7 @@ func TestConnectionSimpleStore(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=23")
 	if !assert.NoError(t, err) {
 		return
@@ -1498,7 +1498,7 @@ func TestConnectionSimpleMultipleStore(t *testing.T) {
 		return
 	}
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=23")
 	if !assert.NoError(t, err) {
 		return

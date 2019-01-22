@@ -35,7 +35,7 @@ func TestUnpackedNil(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	up := newUnpackedValue(nil)
 	assert.Nil(t, up)
 }
@@ -47,7 +47,7 @@ func TestUnpacked(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUnpacked, "UP")
 	adaType.length = 4
 	up := newUnpackedValue(adaType)
@@ -94,7 +94,7 @@ func TestUnpackedFormatBuffer(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUnpacked, "UP")
 	adaType.length = 4
 	up := newUnpackedValue(adaType)

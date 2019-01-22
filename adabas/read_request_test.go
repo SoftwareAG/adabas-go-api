@@ -33,7 +33,7 @@ func TestRequestPhysicalSimpleTypes(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
@@ -48,7 +48,7 @@ func TestRequestPhysicalMultipleField(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
@@ -70,7 +70,7 @@ func TestRequestLogicalWithQueryFields(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
@@ -89,7 +89,7 @@ func TestRequestLogicalWithFields(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
@@ -108,7 +108,7 @@ func TestReadRequestLogicalBy(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
@@ -127,7 +127,7 @@ func TestReadRequestLogicalByAll(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
@@ -160,7 +160,7 @@ func TestRequestRemoteLogicalByAll(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	url := "201(tcpip://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
 	ID := NewAdabasID()
@@ -232,7 +232,7 @@ func TestReadRequestLogicalBySuperDescriptor(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
@@ -251,7 +251,7 @@ func TestReadRequestHistogramDescriptorField(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	request.Limit = 10
@@ -274,7 +274,7 @@ func TestReadRequestHistogramSuperDescriptor(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
@@ -330,7 +330,7 @@ func TestReadRequestReadMap(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(24)
 	request := NewRequestAdabas(adabas, 4)
 	defer request.Close()
@@ -354,7 +354,7 @@ func TestReadRequestMissingFile(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(24)
 	request := NewRequestAdabas(adabas, 123)
 	defer request.Close()
@@ -416,7 +416,7 @@ func TestRequestWithMapLogicalBy(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(24)
 	mapRepository := NewMapRepository(adabas, 4)
 	request, err := NewMapNameRequestRepo("EMPLOYEES-NAT-DDM", adabas, mapRepository)
@@ -449,7 +449,7 @@ func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	ada := NewAdabas(24)
 	AddMapRepository(ada, 4)
 	defer DelMapRepository(ada, 4)
@@ -482,7 +482,7 @@ func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	adabas := NewAdabas(24)
 	request, err := NewMapNameRequestRepo("EMPLOYEES-NAT-DDM", adabas,

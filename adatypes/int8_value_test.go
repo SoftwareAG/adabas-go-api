@@ -36,7 +36,7 @@ func TestInt8Nil(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	up := newInt8Value(nil)
 	assert.Nil(t, up)
 }
@@ -48,7 +48,7 @@ func TestInt8(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt8, "I8")
 	up := newInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
@@ -214,7 +214,7 @@ func TestInt8FormatBuffer(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt8, "I8")
 	up := newInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
@@ -232,7 +232,7 @@ func TestInt8ParseBuffer(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt8, "I8")
 	up := newInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
@@ -257,7 +257,7 @@ func TestUInt8Nil(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	up := newUInt8Value(nil)
 	assert.Nil(t, up)
 }
@@ -269,7 +269,7 @@ func TestUInt8(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt8, "I8")
 	up := newUInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
@@ -433,7 +433,7 @@ func TestUInt8FormatBuffer(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt8, "U8")
 	up := newUInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)

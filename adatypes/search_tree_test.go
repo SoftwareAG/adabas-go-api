@@ -39,7 +39,7 @@ func TestSearchSimpleTree(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA='XXXXX' AND BC='2'")
 	assert.Equal(t, "XXXXX", searchInfo.constants[0])
@@ -56,7 +56,7 @@ func TestSearchExtraTree(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA='XX\\'XXX' AND BC='2'")
 	assert.Equal(t, "XX\\'XXX", searchInfo.constants[0])
@@ -73,7 +73,7 @@ func TestSearchSecondTree(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 AND BC='12342'")
 	assert.Equal(t, "12342", searchInfo.constants[0])
@@ -89,7 +89,7 @@ func TestSearchExtractAndBinding(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 AND BC=2")
 	searchInfo.Definition = tDefinition()
@@ -108,7 +108,7 @@ func TestSearchExtractOrBinding(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 OR BC=2")
 	searchInfo.Definition = tDefinition()
@@ -127,7 +127,7 @@ func TestSearchStringValue(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AD='ABCDEF' AND BC=2")
 	searchInfo.Definition = tDefinition()
@@ -152,7 +152,7 @@ func TestSearchVarStringValue(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AD='ABCDEF' AND BC=2")
 	searchInfo.Definition = tDefinition()
@@ -177,7 +177,7 @@ func TestSearchTwoStringValue(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AE='ABCDEF' AND AD='X123'")
 	searchInfo.Definition = tDefinition()
@@ -203,7 +203,7 @@ func TestSearchRange(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=[12:44]")
 	searchInfo.Definition = tDefinition()
@@ -229,7 +229,7 @@ func TestSearchRangeMf(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "AA=[12:44]")
 	searchInfo.Definition = tDefinition()
@@ -258,7 +258,7 @@ func TestSearchRangeMfNoLower(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "AA=(12:44]")
 	searchInfo.Definition = tDefinition()
@@ -288,7 +288,7 @@ func TestSearchRangeMfNoHigher(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "AA=[12:44)")
 	searchInfo.Definition = tDefinition()
@@ -318,7 +318,7 @@ func TestSearchRangeMfNoHigherAlpha(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "SA=[10111011:10111013)")
 	searchInfo.Definition = tDefinition()
@@ -348,7 +348,7 @@ func TestSearchRangeMfNoBorder(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "AA=(12:44)")
 	searchInfo.Definition = tDefinition()
@@ -382,7 +382,7 @@ func TestSearchValue(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=123")
 	searchInfo.Definition = tDefinition()
@@ -490,7 +490,7 @@ func TestSearchComplex(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=(12:44] AND AD='SMITH'")
 	searchInfo.Definition = tDefinition()
@@ -524,7 +524,7 @@ func TestSearchExtractOr2Binding(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 OR BC=2 OR AC=1")
 	searchInfo.Definition = tDefinition()
@@ -545,7 +545,7 @@ func TestSearchExtractOr2BindingError(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 OR BC=2 OR CC=1 OR  DD=2")
 	searchInfo.Definition = tDefinition()

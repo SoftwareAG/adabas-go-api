@@ -90,7 +90,7 @@ func TestStructStore(t *testing.T) {
 		return
 	}
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	initEmployees(t)
 	connection, err := NewConnection("acj;map;config=[23,249]")
 	if !assert.NoError(t, err) {
@@ -117,7 +117,7 @@ func TestStructSimple(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	ierr := initEmployees(t)
 	if !assert.NoError(t, ierr) {
 		return

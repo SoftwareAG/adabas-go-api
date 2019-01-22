@@ -34,7 +34,7 @@ func TestHelperBuffer(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	byteBuffer := []byte{1, 1, 2, 3, 4, 5, 6, 'a', 'b', 'A', 'Z'}
 	helper := NewHelper(byteBuffer, len(byteBuffer), binary.LittleEndian)
 	assert.Equal(t, uint32(0), helper.offset)
@@ -74,7 +74,7 @@ func TestHelperInteger16(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	byteBuffer := []byte{1, 0, 0, 1, 1, 2, 0x3, 0x4}
 	helper := NewHelper(byteBuffer, len(byteBuffer), binary.LittleEndian)
 	assert.Equal(t, uint32(0), helper.offset)
@@ -106,7 +106,7 @@ func TestHelperInteger32(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	byteBuffer := []byte{1, 0, 0, 0, 1, 0, 0, 0, 0x1, 0x2, 0x3, 0x4, 0x1, 0x2, 0x3, 0x4}
 	helper := NewHelper(byteBuffer, len(byteBuffer), binary.LittleEndian)
 	assert.Equal(t, uint32(0), helper.offset)
@@ -138,7 +138,7 @@ func TestHelperIntegerLittleEndian64(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	byteBuffer := []byte{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1}
 	helper := NewHelper(byteBuffer, len(byteBuffer), binary.LittleEndian)
 	assert.Equal(t, uint32(0), helper.offset)
@@ -177,7 +177,7 @@ func TestHelperIntegerBigEndian64(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	byteBuffer := []byte{0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 8, 7, 6, 5, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7, 8}
 	helper := NewHelper(byteBuffer, len(byteBuffer), binary.BigEndian)
 	assert.Equal(t, uint32(0), helper.offset)
@@ -240,7 +240,7 @@ func TestHelperBufferBufferOverflow(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	byteBuffer := []byte{1, 1, 2, 3, 4, 5, 6, 'a', 'b', 'A', 'Z'}
 	helper := NewHelper(byteBuffer, len(byteBuffer), binary.LittleEndian)
 	res, err := helper.ReceiveBytes(100)
@@ -268,7 +268,7 @@ func TestHelperStringBufferOverflow(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	byteBuffer := []byte("ABCDEFG")
 	helper := NewHelper(byteBuffer, len(byteBuffer), binary.LittleEndian)
 	res, err := helper.ReceiveString(100)

@@ -34,7 +34,7 @@ func TestDefinitionGroup(t *testing.T) {
 	}
 
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	groupLayout := []IAdaType{
 		NewType(FieldTypeCharacter, "G1"),
@@ -66,7 +66,7 @@ func TestDefinitionPeriodic(t *testing.T) {
 	}
 
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	groupLayout := []IAdaType{
 		NewType(FieldTypeCharacter, "GC"),
@@ -100,7 +100,7 @@ func TestDefinitionMultiple(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
@@ -138,7 +138,7 @@ func TestDefinitionQuerySimple(t *testing.T) {
 	}
 
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
@@ -176,7 +176,7 @@ func TestDefinitionQueryGroupField(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
@@ -222,7 +222,7 @@ func TestDefinitionQueryGroupFieldTwice(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
@@ -294,7 +294,7 @@ func TestDefinitionQueryWithLongname(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	multipleLayout := []IAdaType{
 		NewLongNameType(FieldTypePacked, "Packed", "PA"),
@@ -332,7 +332,7 @@ func TestDefinitionCreateValues(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
@@ -394,7 +394,7 @@ func TestDefinitionQueryMultipleField(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "GM"),
@@ -677,7 +677,7 @@ func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	testDefinition := createPeriodGroupMultiplerField()
 	testDefinition.DumpTypes(false, false)
@@ -740,7 +740,7 @@ func TestDefinitionRestrictPeriodic(t *testing.T) {
 	}
 
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	groupLayout := []IAdaType{
 		NewType(FieldTypeCharacter, "GC"),
@@ -826,7 +826,7 @@ func TestDefinitionRestrictPeriodicWithMU(t *testing.T) {
 	}
 
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 
 	testDefinition := createLayoutWithPEandMU()
 	testDefinition.DumpValues(false)

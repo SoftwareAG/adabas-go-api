@@ -35,7 +35,7 @@ func TestPackedData(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypePacked, "PA")
 	adaType.length = 4
 	pa := newPackedValue(adaType)
@@ -90,7 +90,7 @@ func TestPackedCheckValid(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypePacked, "PA")
 	adaType.length = 1
 	pa := newPackedValue(adaType)

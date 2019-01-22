@@ -34,7 +34,7 @@ func TestMapFieldFieldName(t *testing.T) {
 	f := initTestLogWithFile(t, "map.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	tests := []struct {
 		name string
 		cc   mapField
@@ -57,7 +57,7 @@ func TestMapFields(t *testing.T) {
 	f := initTestLogWithFile(t, "map.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(24)
 	defer adabas.Close()
 
@@ -99,7 +99,7 @@ func TestMaps(t *testing.T) {
 	f := initTestLogWithFile(t, "map.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 
@@ -125,7 +125,7 @@ func TestMapCreate(t *testing.T) {
 	f := initTestLogWithFile(t, "map.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 

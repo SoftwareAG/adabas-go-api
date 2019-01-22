@@ -34,7 +34,7 @@ func TestIntByte(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeByte, "XX")
 	int2 := newByteValue(adaType)
 	assert.Equal(t, int8(0), int2.value)
@@ -100,7 +100,7 @@ func TestUIntByte(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUByte, "XX")
 	int2 := newUByteValue(adaType)
 	assert.Equal(t, uint8(0), int2.value)

@@ -201,7 +201,7 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;map;config=[24,4]")
 	if !assert.NoError(t, cerr) {
 		return
@@ -256,7 +256,7 @@ func TestConnectionMapPointingToRemote(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;map;config=[24,4];auth=NONE,user=TCMapPoin,id=4,host=REMOTE")
 	if !assert.NoError(t, cerr) {
 		return
@@ -326,7 +326,7 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	cErr := clearFile(16)
 	if !assert.NoError(t, cErr) {
 		return

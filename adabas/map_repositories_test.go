@@ -31,7 +31,7 @@ func TestMapRepository(t *testing.T) {
 	f := initTestLogWithFile(t, "map_repositories.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	AddMapRepository(NewAdabas(24), 4)
 	defer DelMapRepository(NewAdabas(24), 4)
 	adabas := NewAdabas(0)
@@ -46,7 +46,7 @@ func TestMapRepositoryReadAll(t *testing.T) {
 	f := initTestLogWithFile(t, "map_repositories.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(24)
 	defer adabas.Close()
 	mr := NewMapRepository(adabas, 4)

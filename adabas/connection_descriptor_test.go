@@ -16,7 +16,7 @@ func TestConnectionComplexSearch(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=23;auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
 	if !assert.NoError(t, err) {
 		return
@@ -44,7 +44,7 @@ func TestConnectionSuperDescriptor(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=24")
 	if !assert.NoError(t, err) {
 		return

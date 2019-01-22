@@ -33,7 +33,7 @@ func TestTypeOptions(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeString, "AB")
 	assert.Equal(t, "AB", adaType.Name())
 	assert.Equal(t, uint32(1), adaType.Length())
@@ -65,7 +65,7 @@ func TestTypeFlags(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	assert.Equal(t, uint8(1), FlagOptionPE.Bit())
 	assert.Equal(t, uint8(2), FlagOptionMU.Bit())
 }
@@ -76,7 +76,7 @@ func TestTypeReferential(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	refType := NewReferentialType("RE", 1, [2]string{"PK", "FK"}, 1, 2, 1)
 	assert.Equal(t, "RE=REFINT(FK,1,PK/DC,UN) ; RE  PE=false MU=false REMOVE=true", refType.String())
 	refType = NewReferentialType("RE", 1, [2]string{"PK", "FK"}, 1, 1, 2)
@@ -91,7 +91,7 @@ func TestTypeLongName(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	ty := NewLongNameType(FieldTypeByte, "ABC", "XX")
 	assert.Equal(t, "ABC", ty.Name())
 	assert.Equal(t, "XX", ty.ShortName())
@@ -110,7 +110,7 @@ func TestTypeFlagsSetClear(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	ty := NewLongNameType(FieldTypeByte, "ABC", "XX")
 	assert.True(t, ty.HasFlagSet(FlagOptionToBeRemoved))
 	ty.AddFlag(FlagOptionMU)

@@ -193,7 +193,7 @@ func TestFieldTypeRead(t *testing.T) {
 	f := initTestLogWithFile(t, "field_type.log")
 	defer f.Close()
 
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	url := "23"
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)

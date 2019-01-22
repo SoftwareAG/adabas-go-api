@@ -28,7 +28,7 @@ import (
 )
 
 func TestABD(t *testing.T) {
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adabasBuffer := NewBuffer(AbdAQFb)
 	assert.Equal(t, uint8('F'), adabasBuffer.abd.Abdid)
 	adabasBuffer.Allocate(10)
@@ -46,7 +46,7 @@ func TestABD(t *testing.T) {
 }
 
 func TestAcbxReset(t *testing.T) {
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	var acbx Acbx
 	// fmt.Println(acbx)
 	assert.Equal(t, [2]byte{0, 0}, acbx.Acbxver)

@@ -33,7 +33,7 @@ func TestByteArray(t *testing.T) {
 		return
 	}
 	defer f.Close()
-	log.Debug("TEST: ", t.Name())
+	log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeByteArray, "XX")
 	barray := newByteArrayValue(adaType)
 	assert.Equal(t, []byte{0x0}, barray.value)
