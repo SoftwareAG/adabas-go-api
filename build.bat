@@ -1,6 +1,6 @@
 @echo off
 
-set GOPATH=%cd%\tmp_gopath
+rem set GOPATH=%cd%\tmp_gopath
 mkdir %GOPATH%
 
 set CGO_CFLAGS=-I%ACLDIR%\..\inc 
