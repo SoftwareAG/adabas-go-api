@@ -763,3 +763,20 @@ func TestAdabasSearchogical(t *testing.T) {
 	}
 	assert.Equal(t, uint32(5), counter)
 }
+
+func TestAdabasCloned(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "adabas.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+
+	adabas := NewAdabas(adabasModDBID)
+	clonedAdabas := NewClonedAdabas(adabas)
+
+	assert.Equal(t, adabas.ID, clonedAdabas.ID)
+	assert.False(t, adabas.Acbx == clonedAdabas.Acbx)
+	assert.True(t, adabas.status == clonedAdabas.status)
+}

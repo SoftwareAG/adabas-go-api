@@ -554,6 +554,8 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
+	log.Infof("TEST: %s", t.Name())
+
 	cErr := clearFile(16)
 	if !assert.NoError(t, cErr) {
 		return
@@ -563,7 +565,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 		return
 	}
 
-	// fmt.Println("Prepare create test map")
+	log.Infof("Prepare create test map")
 	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
 	if perr != nil {
@@ -576,6 +578,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 		return
 	}
 
+	log.Infof("Create connection...")
 	connection, err := NewConnection("acj;map;config=[23,250]")
 	if !assert.NoError(t, err) {
 		return
@@ -621,6 +624,8 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	fmt.Println("End transaction")
 	connection.EndTransaction()
 	fmt.Println("Check stored data")
+
+	log.Infof("Check stored data")
 	checkStoreByFile(t, "23", 16, multipleTransactionRefName)
 	checkStoreByFile(t, "23", 19, multipleTransactionRefName2)
 

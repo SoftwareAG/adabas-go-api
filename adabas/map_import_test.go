@@ -24,14 +24,19 @@ import (
 	"os"
 	"testing"
 
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMapImportPrepare(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
+	f := initTestLogWithFile(t, "mapimport.log")
 	defer f.Close()
 
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
 	deleteRequest := NewDeleteRequest("23", 250)
+	defer deleteRequest.Close()
+
 	request := NewRequest("23", 250)
 	request.Limit = 0
 	defer request.Close()
@@ -51,9 +56,12 @@ func TestMapImportPrepare(t *testing.T) {
 }
 
 func TestMapImport(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
+	f := initTestLogWithFile(t, "mapimport.log")
 	defer f.Close()
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas := NewAdabas(adabasModDBID)
+	defer adabas.Close()
+
 	mr := NewMapRepository(adabas, 250)
 	p := os.Getenv("TESTFILES")
 	if p == "" {
@@ -78,10 +86,13 @@ func TestMapImport(t *testing.T) {
 }
 
 func TestMapImportMassLoad(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
+	f := initTestLogWithFile(t, "mapimport.log")
 	defer f.Close()
 
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
 	adabas := NewAdabas(adabasModDBID)
+	defer adabas.Close()
 	mr := NewMapRepository(adabas, 250)
 	p := os.Getenv("TESTFILES")
 	if p == "" {

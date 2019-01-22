@@ -124,11 +124,11 @@ func NewAdabasMapNameRequest(adabas *Adabas, adabasMap *Map) (request *ReadReque
 	}
 	adatypes.Central.Log.Debugf("Read: Adabas new map reference for %s to %d -> %#v", adabasMap.Name,
 		adabasMap.Data.Fnr, adabas.ID.platform)
-	//cloneAdabas := NewClonedAdabas(adabas)
+	cloneAdabas := NewClonedAdabas(adabas)
 
 	dataRepository := NewMapRepository(adabas, adabasMap.Data.Fnr)
 	request = &ReadRequest{Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
-		commonRequest: commonRequest{mapName: adabasMap.Name, adabas: adabas, adabasMap: adabasMap,
+		commonRequest: commonRequest{mapName: adabasMap.Name, adabas: cloneAdabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
 }
@@ -148,10 +148,10 @@ func NewRequest(url string, fnr uint32) *ReadRequest {
 
 // NewRequestAdabas create a new Request instance
 func NewRequestAdabas(adabas *Adabas, fnr uint32) *ReadRequest {
-	// clonedAdabas := NewClonedAdabas(adabas)
+	clonedAdabas := NewClonedAdabas(adabas)
 
 	return &ReadRequest{Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
-		commonRequest: commonRequest{adabas: adabas,
+		commonRequest: commonRequest{adabas: clonedAdabas,
 			repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}
 }
 

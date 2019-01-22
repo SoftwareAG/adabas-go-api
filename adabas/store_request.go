@@ -45,17 +45,17 @@ func NewStoreRequest(url string, fnr uint32) *StoreRequest {
 
 // NewStoreRequestAdabas create a new Request instance
 func NewStoreRequestAdabas(adabas *Adabas, fnr uint32) *StoreRequest {
-	// clonedAdabas := NewClonedAdabas(adabas)
-	return &StoreRequest{commonRequest: commonRequest{adabas: adabas,
+	clonedAdabas := NewClonedAdabas(adabas)
+	return &StoreRequest{commonRequest: commonRequest{adabas: clonedAdabas,
 		repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}
 }
 
 // NewAdabasMapNameStoreRequest create new map name store request
 func NewAdabasMapNameStoreRequest(adabas *Adabas, adabasMap *Map) (request *StoreRequest, err error) {
-	//clonedAdabas := NewClonedAdabas(adabas)
+	clonedAdabas := NewClonedAdabas(adabas)
 	dataRepository := NewMapRepository(adabas, adabasMap.Data.Fnr)
 	request = &StoreRequest{commonRequest: commonRequest{mapName: adabasMap.Name,
-		adabas:    adabas,
+		adabas:    clonedAdabas,
 		adabasMap: adabasMap, repository: dataRepository}}
 	return
 }
