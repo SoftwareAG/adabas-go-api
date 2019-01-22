@@ -1,7 +1,7 @@
 @echo off
 
 rem set GOPATH=%cd%\tmp_gopath
-mkdir %GOPATH%
+rem mkdir %GOPATH%
 
 set CGO_CFLAGS=-I%ACLDIR%\..\inc 
 set CGO_LDFLAGS=-L%ACLDIR% -L%ACLDIR%\..\lib -ladalnkx  
