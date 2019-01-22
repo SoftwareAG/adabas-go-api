@@ -20,13 +20,17 @@
 package adabas
 
 import (
-	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"testing"
+
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestResultRecord(t *testing.T) {
+	f := initTestLogWithFile(t, "resultrecord.log")
+	defer f.Close()
+
 	resultNil, err := NewResultRecord(nil)
 	assert.Error(t, err)
 	assert.Nil(t, resultNil)

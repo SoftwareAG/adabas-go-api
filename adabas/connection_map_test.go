@@ -12,7 +12,7 @@ import (
 )
 
 func BenchmarkConnection_cached(b *testing.B) {
-	f, err := initLogWithFile("connection.log")
+	f, err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -58,7 +58,7 @@ func readAll(b *testing.B) error {
 }
 
 func BenchmarkConnection_noreconnect(b *testing.B) {
-	f, err := initLogWithFile("connection.log")
+	f, err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -95,7 +95,7 @@ func BenchmarkConnection_noreconnect(b *testing.B) {
 }
 
 func TestAuth(t *testing.T) {
-	f, err := initLogWithFile("connection.log")
+	f, err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -122,7 +122,7 @@ func TestConnectionRemoteMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f, err := initLogWithFile("connection.log")
+	f, err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -159,7 +159,7 @@ func TestConnectionRemoteMap(t *testing.T) {
 }
 
 func BenchmarkConnection_noreconnectremote(b *testing.B) {
-	f, err := initLogWithFile("connection.log")
+	f, err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -198,7 +198,7 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
+	f := initTestLogWithFile(t, "connection_map.log")
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
@@ -253,7 +253,7 @@ func TestConnectionMapPointingToRemote(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
+	f := initTestLogWithFile(t, "connection_map.log")
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
@@ -323,7 +323,7 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
+	f := initTestLogWithFile(t, "connection_map.log")
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
@@ -363,7 +363,7 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 }
 
 func ExampleAdabas_readFileDefinitionMap() {
-	f, err := initLogWithFile("adabas.log")
+	f, err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -417,7 +417,7 @@ func ExampleAdabas_readFileDefinitionMap() {
 }
 
 func ExampleAdabas_readFileDefinitionMapGroup() {
-	f, err := initLogWithFile("adabas.log")
+	f, err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -470,7 +470,7 @@ func ExampleAdabas_readFileDefinitionMapGroup() {
 }
 
 func BenchmarkConnection_simple(b *testing.B) {
-	f, err := initLogWithFile("connection.log")
+	f, err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -551,7 +551,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
+	f := initTestLogWithFile(t, "connection_map.log")
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())

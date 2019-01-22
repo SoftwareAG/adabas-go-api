@@ -13,7 +13,7 @@ func TestConnectionComplexSearch(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
+	f := initTestLogWithFile(t, "connection_descriptor.log")
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
@@ -41,7 +41,7 @@ func TestConnectionSuperDescriptor(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
+	f := initTestLogWithFile(t, "connection_descriptor.log")
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
