@@ -154,7 +154,7 @@ test-xml-bench:     ARGS=-run=__absolutelynothing__ -bench=. ## Run benchmarks
 $(TEST_XML_TARGETS): NAME=$(MAKECMDGOALS:test-xml-%=%)
 $(TEST_XML_TARGETS): test-xml
 test-xml: prepare fmt lint vendor $(TESTOUTPUT) | $(BASE) $(GO2XUNIT) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
-	sh $(CURDIR)/sh/evalutaeQueues.sh
+	sh $(CURDIR)/sh/evaluateQueues.sh
 	$Q cd $(BASE) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
 	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
