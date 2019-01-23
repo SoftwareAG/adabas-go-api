@@ -27,7 +27,7 @@ import (
 
 const (
 	maxReadRecordLimit     = 20
-	defaultMultifetchLimit = 1
+	defaultMultifetchLimit = 10
 )
 
 // ReadRequest request instance handling field query information
