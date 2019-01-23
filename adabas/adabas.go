@@ -684,6 +684,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.AdabasRequest, x interfac
 					}
 					adatypes.Central.Log.Debugf("ISN %d", isn)
 					adabasRequest.Isn = adatypes.Isn(isn)
+					adabas.Acbx.Acbxisn = adatypes.Isn(isn)
 					_, err = multifetchHelper.ReceiveUInt32()
 					if err != nil {
 						return
@@ -738,6 +739,7 @@ func (adabas *Adabas) secondCall(adabasRequest *adatypes.AdabasRequest, x interf
 			return
 		}
 		acbx := *adabas.Acbx
+		abd := adabas.AdabasBuffers
 		tmpAdabasRequest.Isn = adabasRequest.Isn
 		tmpAdabasRequest.Definition = adabasRequest.Definition
 		tmpAdabasRequest.Option.SecondCall = true
@@ -752,8 +754,9 @@ func (adabas *Adabas) secondCall(adabasRequest *adatypes.AdabasRequest, x interf
 			adatypes.Central.Log.Debugf("Parse buffer of temporary request ended with error: ", err)
 			return
 		}
-		adatypes.Central.Log.Debugf("Parse buffer of temporary request ended")
+		adatypes.Central.Log.Debugf("Parse buffer of temporary request ended, reset to old adabas request")
 		*adabas.Acbx = acbx
+		adabas.AdabasBuffers = abd
 		adatypes.Central.Log.Debugf("Second call done")
 
 		adabasRequest.Option.NeedSecondCall = false
