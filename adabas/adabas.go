@@ -436,9 +436,10 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.AdabasRequest) {
 
 	}
 	if adabasRequest.Multifetch > 1 {
+		adatypes.Central.Log.Debugf("Create multifetch buffer for %d multifetch entries", adabasRequest.Multifetch)
 		index := len(adabas.AdabasBuffers) - 1
 		adabas.AdabasBuffers[index] = NewBuffer(AbdAQMb)
-		adabas.AdabasBuffers[index].Allocate(adabasRequest.Multifetch * 32)
+		adabas.AdabasBuffers[index].Allocate(4 + (adabasRequest.Multifetch * 16))
 	}
 
 }
@@ -719,8 +720,8 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.AdabasRequest, x interfac
 			break
 		}
 
-		adatypes.Central.Log.Debugf("Limit=")
-		if (adabasRequest.Limit > 0) && (count == adabasRequest.Limit) {
+		adatypes.Central.Log.Debugf("Limit=%d count=%d", adabasRequest.Limit, count)
+		if (adabasRequest.Limit > 0) && (count >= adabasRequest.Limit) {
 			break
 		}
 
