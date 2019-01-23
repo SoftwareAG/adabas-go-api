@@ -468,16 +468,20 @@ func (adabas *Adabas) ReadPhysical(fileNr uint32, adabasRequest *adatypes.Adabas
 	adabas.Acbx.Acbxisq = 0
 	adabas.Acbx.Acbxcid = [4]uint8{0xff, 0xff, 0xff, 0xff}
 
+	multifetch := adabasRequest.Multifetch
+	if multifetch < 1 {
+		multifetch = 1
+	}
 	adabas.AdabasBuffers = make([]*Buffer, nrMultifetch)
 	adabas.AdabasBuffers[0] = NewBuffer(AbdAQFb)
 	adabas.AdabasBuffers[0].buffer = adabasRequest.FormatBuffer.Bytes()
 	adabas.AdabasBuffers[0].abd.Abdsize = uint64(adabasRequest.FormatBuffer.Len())
 	adabas.AdabasBuffers[0].abd.Abdsend = adabas.AdabasBuffers[0].abd.Abdsize
 	adabas.AdabasBuffers[1] = NewBuffer(AbdAQRb)
-	adabas.AdabasBuffers[1].Allocate(adabasRequest.Multifetch * adabasRequest.RecordBufferLength)
-	if adabasRequest.Multifetch > 1 {
+	adabas.AdabasBuffers[1].Allocate(multifetch * adabasRequest.RecordBufferLength)
+	if multifetch > 1 {
 		adabas.AdabasBuffers[2] = NewBuffer(AbdAQMb)
-		adabas.AdabasBuffers[2].Allocate(adabasRequest.Multifetch * 32)
+		adabas.AdabasBuffers[2].Allocate(multifetch * 32)
 	}
 
 	adabas.Acbx.Acbxfnr = fileNr
