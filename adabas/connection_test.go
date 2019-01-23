@@ -373,6 +373,39 @@ func TestConnectionMultifetch(t *testing.T) {
 	assert.Equal(t, 1107, len(result.Values))
 }
 
+func TestConnectionNoMultifetch(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "connection.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
+	if !assert.NoError(t, err) {
+		return
+	}
+	if !assert.NotNil(t, connection) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	connection.Open()
+	readRequest, rErr := connection.CreateReadRequest(11)
+	assert.NoError(t, rErr)
+	readRequest.Limit = 0
+	readRequest.Multifetch = 1
+
+	qErr := readRequest.QueryFields("AA,AB")
+	assert.NoError(t, qErr)
+	fmt.Println("Result data:")
+	result := &RequestResult{}
+	err = readRequest.ReadPhysicalSequenceWithParser(nil, result)
+	assert.NoError(t, err)
+	// result.DumpValues()
+	assert.Equal(t, 1107, len(result.Values))
+}
+
 func TestConnectionPeriodAndMultipleField(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
