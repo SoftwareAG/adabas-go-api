@@ -616,7 +616,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.AdabasRequest, x interfac
 	var responseCode uint32
 	for responseCode == 0 {
 		if !adabasRequest.Option.SecondCall {
-			adabasRequest.Definition.Values = nil
+			//adabasRequest.Definition.Values = nil
 			adabasRequest.Definition.CreateValues(false)
 		}
 		// Call Adabas
@@ -708,7 +708,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.AdabasRequest, x interfac
 
 				// If multifetch on, create values for next parse step, only possible on read calls
 				if nrMultifetchEntries > 0 {
-					adabasRequest.Definition.Values = nil
+					//adabasRequest.Definition.Values = nil
 					adabasRequest.Definition.CreateValues(false)
 				}
 			}

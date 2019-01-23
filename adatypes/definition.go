@@ -766,6 +766,7 @@ func createValue(adaType IAdaType, parentType IAdaType, level int, x interface{}
 
 // CreateValues Create new value tree
 func (def *Definition) CreateValues(forStoring bool) (err error) {
+	def.Values = nil
 	Central.Log.Debugf("Create values from types for storing=%v", forStoring)
 	parameter := &stackParameter{definition: def, forStoring: forStoring, stack: NewStack()}
 	t := TraverserMethods{EnterFunction: createValue}
