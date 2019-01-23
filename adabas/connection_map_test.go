@@ -332,7 +332,7 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 		return
 	}
 
-	connection, cerr := NewConnection("acj;map;config=[23,4]")
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
 	if !assert.NoError(t, cerr) {
 		return
 	}
@@ -579,7 +579,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	}
 
 	log.Infof("Create connection...")
-	connection, err := NewConnection("acj;map;config=[23,250]")
+	connection, err := NewConnection("acj;map;config=[" + adabasModDBIDs + ",250]")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -626,7 +626,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	fmt.Println("Check stored data")
 
 	log.Infof("Check stored data")
-	checkStoreByFile(t, "23", 16, multipleTransactionRefName)
-	checkStoreByFile(t, "23", 19, multipleTransactionRefName2)
+	checkStoreByFile(t, adabasModDBIDs, 16, multipleTransactionRefName)
+	checkStoreByFile(t, adabasModDBIDs, 19, multipleTransactionRefName2)
 
 }

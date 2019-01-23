@@ -91,7 +91,7 @@ func TestStoreAdabasFields(t *testing.T) {
 func prepareCreateTestMap(t *testing.T, mapName string, fileName string, dataRepository *DatabaseURL) error {
 	adabas := NewAdabas(adabasModDBID)
 	defer adabas.Close()
-	
+
 	mr := NewMapRepository(adabas, 250)
 	sm, err := mr.SearchMap(adabas, mapName)
 	if err == nil {
@@ -432,7 +432,7 @@ func TestStoreUpdateMapField(t *testing.T) {
 func checkUpdateCorrectRead(t *testing.T, value string, isn adatypes.Isn) {
 	id := NewAdabasID()
 	copy(id.AdaID.User[:], []byte("CHECK   "))
-	adabas, err := NewAdabasWithID("23", id)
+	adabas, err := NewAdabasWithID(adabasModDBIDs, id)
 	if !assert.NoError(t, err) {
 		return
 	}

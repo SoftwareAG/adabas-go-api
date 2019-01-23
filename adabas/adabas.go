@@ -674,6 +674,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.AdabasRequest, x interfac
 						return
 					}
 				}
+
 				adatypes.Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values == nil))
 				_, err = adabasRequest.Definition.ParseBuffer(adabasRequest.RecordBuffer, adabasRequest.Option)
 				if err != nil {
@@ -689,6 +690,11 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.AdabasRequest, x interfac
 					return
 				}
 				nrMultifetchEntries--
+
+				// If multifetch on, create values for next parse step, only possible on read calls
+				if nrMultifetchEntries > 0 {
+					adabasRequest.Definition.CreateValues(false)
+				}
 			}
 
 		} else {

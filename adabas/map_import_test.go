@@ -34,10 +34,10 @@ func TestMapImportPrepare(t *testing.T) {
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
-	deleteRequest := NewDeleteRequest("23", 250)
+	deleteRequest := NewDeleteRequest(adabasModDBIDs, 250)
 	defer deleteRequest.Close()
 
-	request := NewRequest("23", 250)
+	request := NewRequest(adabasModDBIDs, 250)
 	request.Limit = 0
 	defer request.Close()
 	err := request.QueryFields("")
