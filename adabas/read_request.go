@@ -220,7 +220,12 @@ func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes
 	}
 	adabasRequest.Limit = request.Limit
 	if request.Multifetch > 1 {
-		adabasRequest.Multifetch = request.Multifetch
+		if request.Limit < uint64(request.Multifetch) {
+			adabasRequest.Multifetch = uint32(request.Limit)
+		} else {
+			adabasRequest.Multifetch = request.Multifetch
+		}
+
 	} else {
 		adabasRequest.Multifetch = 1
 	}
