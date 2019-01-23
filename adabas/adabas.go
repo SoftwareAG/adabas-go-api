@@ -393,6 +393,12 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.AdabasRequest) {
 	if adabasRequest.SearchTree != nil {
 		bufferCount = 4
 	}
+	multifetch := adabasRequest.Multifetch
+	if multifetch > 1 {
+		bufferCount++
+	} else {
+		multifetch = 1
+	}
 	adabas.AdabasBuffers = make([]*Buffer, bufferCount)
 	adabas.AdabasBuffers[0] = NewBuffer(AbdAQFb)
 	adabas.AdabasBuffers[0].buffer = adabasRequest.FormatBuffer.Bytes()
@@ -404,7 +410,7 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.AdabasRequest) {
 	}
 	adatypes.Central.Log.Debugf("ABD init 0 %p\n", adabas.AdabasBuffers[0])
 	adabas.AdabasBuffers[1] = NewBuffer(AbdAQRb)
-	adabas.AdabasBuffers[1].Allocate(adabasRequest.RecordBufferLength + adabasRequest.RecordBufferShift)
+	adabas.AdabasBuffers[1].Allocate(multifetch*adabasRequest.RecordBufferLength + adabasRequest.RecordBufferShift)
 	if adabas.AdabasBuffers[1].abd.Abdver[0] != 'G' {
 		adatypes.Central.Log.Infof("ABD init 1 error %p\n", adabas.AdabasBuffers[1])
 		os.Exit(100)
@@ -428,6 +434,11 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.AdabasRequest) {
 		adabas.AdabasBuffers[3].abd.Abdsize = uint64(buffer.Len())
 		adabas.AdabasBuffers[3].abd.Abdsend = adabas.AdabasBuffers[3].abd.Abdsize
 
+	}
+	if adabasRequest.Multifetch > 1 {
+		index := len(adabas.AdabasBuffers) - 1
+		adabas.AdabasBuffers[index] = NewBuffer(AbdAQMb)
+		adabas.AdabasBuffers[index].Allocate(adabasRequest.Multifetch * 32)
 	}
 
 }
@@ -506,7 +517,7 @@ func (adabas *Adabas) ReadLogicalWith(fileNr uint32, adabasRequest *adatypes.Ada
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("Read logical ... %s dbid=%d", l3.command(), adabas.Acbx.Acbxdbid)
+	adatypes.Central.Log.Debugf("Read logical ... %s dbid=%d multifetch=%d", l3.command(), adabas.Acbx.Acbxdbid, adabasRequest.Multifetch)
 	if adabasRequest.Option.HoldRecords {
 		adabas.Acbx.Acbxcmd = l6.code()
 	} else {
@@ -514,6 +525,9 @@ func (adabas *Adabas) ReadLogicalWith(fileNr uint32, adabasRequest *adatypes.Ada
 	}
 	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxcop[1] = 'A'
+	if adabasRequest.Multifetch > 1 {
+		adabas.Acbx.Acbxcop[0] = 'M'
+	}
 
 	adabas.Acbx.Acbxisn = 0
 	adabas.Acbx.Acbxisq = 0
@@ -647,6 +661,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.AdabasRequest, x interfac
 				adatypes.Central.Log.Debugf("Nr of multifetch entries %d", nrMultifetchEntries)
 			}
 			for nrMultifetchEntries > 0 {
+				adatypes.Central.Log.Debugf("Nr of multifetch entries left: %d", nrMultifetchEntries)
 				if multifetchHelper != nil {
 					recordLength, rErr := multifetchHelper.ReceiveUInt32()
 					if rErr != nil {
@@ -693,6 +708,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.AdabasRequest, x interfac
 
 				// If multifetch on, create values for next parse step, only possible on read calls
 				if nrMultifetchEntries > 0 {
+					adabasRequest.Definition.Values = nil
 					adabasRequest.Definition.CreateValues(false)
 				}
 			}

@@ -162,7 +162,7 @@ func TestConnectionSimpleTypes(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	connection, err := NewConnection("acj;target=23")
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -216,7 +216,7 @@ func TestConnectionOpenOpen(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	connection, err := NewConnection("acj;target=23")
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -263,7 +263,7 @@ func TestConnectionMultipleFields(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	connection, err := NewConnection("acj;target=23")
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -304,7 +304,7 @@ func TestConnectionStorePeriodFields(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	connection, err := NewConnection("acj;target=23")
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -348,7 +348,7 @@ func TestConnectionMultifetch(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	connection, err := NewConnection("acj;target=23")
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -381,7 +381,7 @@ func TestConnectionPeriodAndMultipleField(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	connection, err := NewConnection("acj;target=23")
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -558,7 +558,7 @@ func TestConnectionAllMap(t *testing.T) {
 
 func ExampleReadRequest_file() {
 	initLogWithFile("connection.log")
-	connection, cerr := NewConnection("acj;target=23")
+	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
 	if cerr != nil {
 		return
 	}
@@ -603,7 +603,7 @@ func ExampleReadRequest_file() {
 
 func ExampleConnection_PeriodGroup() {
 	initLogWithFile("connection.log")
-	connection, cerr := NewConnection("acj;target=23")
+	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
 	if cerr != nil {
 		return
 	}
@@ -658,7 +658,7 @@ func ExampleConnection_PeriodGroup() {
 
 func ExampleReadRequest_wide_character() {
 	initLogWithFile("connection.log")
-	connection, cerr := NewConnection("acj;target=23")
+	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
 	if cerr != nil {
 		return
 	}
@@ -762,7 +762,7 @@ func ExampleReadRequest_wide_character() {
 
 func ExampleReadRequest_MarhsalJSON() {
 	initLogWithFile("connection.log")
-	connection, cerr := NewConnection("acj;target=23")
+	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
 	if cerr != nil {
 		return
 	}
@@ -797,7 +797,7 @@ func ExampleReadRequest_MarhsalJSON() {
 
 func ExampleConnection_MarhsalJSON_250() {
 	initLogWithFile("connection.log")
-	connection, cerr := NewConnection("acj;target=23")
+	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
 	if cerr != nil {
 		return
 	}
@@ -961,7 +961,7 @@ func ExampleReadRequest_blendMap() {
 
 func ExampleReadRequest_isn() {
 	initLogWithFile("connection.log")
-	connection, cerr := NewConnection("acj;target=23")
+	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
 	if cerr != nil {
 		return
 	}
@@ -1069,7 +1069,7 @@ func TestConnectionReadOneLocal(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	url := "23"
+	url := adabasModDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
 	if !assert.NoError(t, cerr) {
@@ -1104,7 +1104,7 @@ func TestConnectionReadAllLocal(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	url := "23"
+	url := adabasModDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
 	if !assert.NoError(t, cerr) {
@@ -1140,7 +1140,7 @@ func TestConnectionReadSpecialLocal(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	url := "23"
+	url := adabasModDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
 	if !assert.NoError(t, cerr) {
@@ -1211,7 +1211,7 @@ func TestConnectionReadUnicode(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	url := "23"
+	url := adabasModDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
 	if !assert.NoError(t, cerr) {
@@ -1259,7 +1259,7 @@ func TestConnectionReadDeepPEFields(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	url := "23"
+	url := adabasModDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
 	if !assert.NoError(t, cerr) {
@@ -1304,7 +1304,7 @@ func TestConnectionReadAllFields9(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	url := "23"
+	url := adabasModDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
 	if !assert.NoError(t, cerr) {
@@ -1375,7 +1375,7 @@ func TestConnectionSimpleStore(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	connection, err := NewConnection("acj;target=23")
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1408,7 +1408,7 @@ func TestConnectionSimpleStore(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	checkStoreByFile(t, "23", 16, "777777")
+	checkStoreByFile(t, adabasModDBIDs, 16, "777777")
 }
 
 func checkStoreByFile(t *testing.T, target string, file uint32, search string) error {
@@ -1499,7 +1499,7 @@ func TestConnectionSimpleMultipleStore(t *testing.T) {
 	}
 
 	log.Infof("TEST: %s", t.Name())
-	connection, err := NewConnection("acj;target=23")
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1538,6 +1538,6 @@ func TestConnectionSimpleMultipleStore(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	checkStoreByFile(t, "23", 16, "16555")
-	checkStoreByFile(t, "23", 19, "19555")
+	checkStoreByFile(t, adabasModDBIDs, 16, "16555")
+	checkStoreByFile(t, adabasModDBIDs, 19, "19555")
 }

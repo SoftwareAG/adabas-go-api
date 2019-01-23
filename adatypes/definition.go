@@ -44,7 +44,8 @@ type parserBufferTr struct {
 func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
 	parameter := x.(*parserBufferTr)
 
-	Central.Log.Debugf("Start Parseing value .... %s pos=%d", adaValue.Type().Name(), parameter.helper.offset)
+	Central.Log.Debugf("Start parsing value .... %s offset=%d/%X", adaValue.Type().Name(),
+		parameter.helper.offset, parameter.helper.offset)
 	Central.Log.Debugf("Parse value .... second=%v need second=%v",
 		parameter.option.SecondCall, parameter.option.NeedSecondCall)
 	// On second call, to collect MU fields in an PE group, skip all other parser tasks
@@ -564,8 +565,9 @@ func (def *Definition) TraverseValues(t TraverserValuesMethods, x interface{}) (
 		Central.Log.Debugf("Done create values")
 	}
 	Central.Log.Debugf("Traverse through level 1 values -> %d", len(def.Values))
-	for _, value := range def.Values {
-		Central.Log.Debugf("Found level %d value %s %d", value.Type().Level(), value.Type().Name(), value.Type().Type())
+	for i, value := range def.Values {
+		Central.Log.Debugf("Found level %d value name=%s type=%d fieldindex=%d", value.Type().Level(),
+			value.Type().Name(), value.Type().Type(), i)
 		ret, err = t.EnterFunction(value, x)
 		if err != nil || ret == EndTraverser {
 			return

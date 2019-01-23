@@ -355,12 +355,13 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 		err = adatypes.NewGenericError(23)
 		return
 	}
-	adatypes.Central.Log.Debugf("prepare request ...")
+	adatypes.Central.Log.Debugf("Prepare read logical by request ... %s", descriptors)
 	adabasRequest, prepareErr := request.prepareRequest()
 	if prepareErr != nil {
 		err = prepareErr
 		return
 	}
+	adabasRequest.Multifetch = request.Multifetch
 	if resultParser == nil {
 		adabasRequest.Parser = parseRead
 	} else {
@@ -372,7 +373,7 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 		return
 	}
 
-	adatypes.Central.Log.Debugf("read logical by ...%d", request.repository.Fnr)
+	adatypes.Central.Log.Debugf("Read logical by ...%d", request.repository.Fnr)
 	err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, x)
 	return
 }

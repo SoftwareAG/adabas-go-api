@@ -385,7 +385,7 @@ func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (
 						return
 					}
 				}
-				Central.Log.Debugf("%d %s-%s", i, value.Type().Name(), v.Type().Name())
+				Central.Log.Debugf("Traverse index=%d/%d pfield=%s-field=%s", i, nr, value.Type().Name(), v.Type().Name())
 			}
 		}
 	}
