@@ -630,7 +630,6 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.AdabasRequest, x interfac
 		if adabas.Acbx.Acbxrsp == AdaEOF {
 			return
 		}
-		count++
 		// Error received from Adabas
 		if adabas.Acbx.Acbxrsp != AdaNormal {
 			log.Errorf("Error reading data: %s", adabas.getAdabasMessage())
@@ -661,6 +660,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.AdabasRequest, x interfac
 				adatypes.Central.Log.Debugf("Nr of multifetch entries %d", nrMultifetchEntries)
 			}
 			for nrMultifetchEntries > 0 {
+				count++
 				adatypes.Central.Log.Debugf("Nr of multifetch entries left: %d", nrMultifetchEntries)
 				if multifetchHelper != nil {
 					recordLength, rErr := multifetchHelper.ReceiveUInt32()
