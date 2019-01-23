@@ -23,6 +23,10 @@ func BenchmarkConnection_cached(b *testing.B) {
 	defer adatypes.FinitDefinitionCache()
 
 	for i := 0; i < 1000; i++ {
+		fmt.Print(".")
+		if i%100 == 0 {
+			fmt.Printf("%d/1000", i)
+		}
 		err = readAll(b)
 		if err != nil {
 			return
@@ -46,7 +50,6 @@ func readAll(b *testing.B) error {
 		return err
 	}
 	request.Limit = 0
-	fmt.Println("Read logigcal data:")
 	result, rErr := request.ReadLogicalBy("NAME")
 	if !assert.NoError(b, rErr) {
 		return rErr
