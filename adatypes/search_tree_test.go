@@ -79,6 +79,9 @@ func TestSearchSecondTree(t *testing.T) {
 	assert.Equal(t, "12342", searchInfo.constants[0])
 	assert.Equal(t, "AA=1 AND BC=#{1}", searchInfo.search)
 	assert.False(t, searchInfo.NeedSearch)
+	x, xerr := searchInfo.expandConstants("#{1}")
+	assert.Equal(t, []byte{0x31, 0x32, 0x33, 0x34, 0x32}, x)
+	assert.NoError(t, xerr)
 
 }
 
@@ -552,4 +555,23 @@ func TestSearchExtractOr2BindingError(t *testing.T) {
 	_, err = searchInfo.GenerateTree()
 	assert.Error(t, err)
 	assert.Equal(t, "ADG0000041: No field CC found in file definition", err.Error())
+}
+
+func TestSearchMixedValue(t *testing.T) {
+	f, err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "AA=0x00'ABCD'0")
+	assert.Equal(t, "ABCD", searchInfo.constants[0])
+	assert.Equal(t, "AA=0x00#{1}0", searchInfo.search)
+	assert.False(t, searchInfo.NeedSearch)
+	x, xerr := searchInfo.expandConstants("0x00#{1}0")
+	assert.Equal(t, []byte{0, 65, 66, 67, 68, 0}, x)
+	assert.NoError(t, xerr)
+
 }

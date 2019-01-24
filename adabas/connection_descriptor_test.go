@@ -64,3 +64,32 @@ func TestConnectionSuperDescriptor(t *testing.T) {
 	fmt.Println("Super Descriptor read done")
 	fmt.Println(result.String())
 }
+
+func TestConnectionSuperDescSearch(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "connection_descriptor.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs + ";auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+
+	connection.Open()
+	readRequest, rErr := connection.CreateReadRequest(16)
+	assert.NoError(t, rErr)
+	err = readRequest.QueryFields("AA,AB")
+	assert.NoError(t, err)
+
+	adatypes.Central.Log.Debugf("Test Search complex with ...")
+	result, rerr := readRequest.ReadLogicalWith("S2=['BADABAS__'0:'BADABAS__'255]")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	fmt.Println("Complex search done")
+	fmt.Println(result)
+}

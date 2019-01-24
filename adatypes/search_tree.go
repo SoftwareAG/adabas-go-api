@@ -23,11 +23,14 @@ package adatypes
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"math" //"encoding/binary"
 	"regexp"
 	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // ConstantIndicator constant indicator is replaced with constants
@@ -365,7 +368,7 @@ func (value *SearchValue) String() string {
 }
 
 func (value *SearchValue) orderBy() string {
-	Central.Log.Debugf("Check descriptor %s", value.adaType.Name())
+	Central.Log.Debugf("Order by %s", value.adaType.Name())
 	if value.value.Type().IsOption(FieldOptionDE) {
 		Central.Log.Debugf("Found descriptor %s", value.adaType.Name())
 		return value.value.Type().ShortName()
@@ -412,7 +415,7 @@ func NewSearchInfo(platform *Platform, search string) *SearchInfo {
 	searchInfo := SearchInfo{platform: platform, NeedSearch: false}
 	searchString := search
 	searchWithConstants := searchString
-	Central.Log.Debugf("start: %s", searchWithConstants)
+	Central.Log.Debugf("Search constants: %s", searchWithConstants)
 	index := 1
 	startConstants := strings.IndexByte(searchWithConstants, '\'')
 
@@ -646,35 +649,73 @@ func (searchInfo *SearchInfo) searchFieldValue(searchValue *SearchValue, value s
 	if err != nil {
 		return
 	}
+	Central.Log.Debugf("Expand constants %s", value)
 	expandedValue, subErr := searchInfo.expandConstants(value)
 	if subErr != nil {
 		err = subErr
 		return
 	}
 	Central.Log.Debugf("Expanded value >%s<", expandedValue)
-	searchValue.value.SetStringValue(expandedValue)
+	searchValue.value.SetValue(expandedValue)
 	return
 }
 
-func (searchInfo *SearchInfo) expandConstants(value string) (expandConstant string, err error) {
+func (searchInfo *SearchInfo) expandConstants(value string) (expandConstant []byte, err error) {
 	expandedValue := value
+	var buffer bytes.Buffer
+	posIndicator := 0
+	postIndicator := 0
 	for strings.Contains(expandedValue, ConstantIndicator) {
-		posIndicator := strings.IndexByte(expandedValue, ConstantIndicator[0])
+		posIndicator = strings.IndexByte(expandedValue, ConstantIndicator[0])
 		constantString := regexp.MustCompile(".*#{").ReplaceAllString(expandedValue, "")
 		Central.Log.Debugf("Constant without indicator id: %s", constantString)
 		constantString = regexp.MustCompile("}.*").ReplaceAllString(constantString, "")
 		Central.Log.Debugf("Constant id: %s", constantString)
-		postIndicator := strings.IndexByte(expandedValue, '}') + 1
+		postIndicator = strings.IndexByte(expandedValue, '}') + 1
 		index, error := strconv.Atoi(constantString)
 		if error != nil {
 			err = error
 			return
 		}
-		expandedValue = value[:posIndicator] + searchInfo.constants[index-1] + value[postIndicator:]
-		Central.Log.Debugf("%d->%s", posIndicator, expandedValue)
+		if posIndicator > 0 {
+			appendNumericValue(&buffer, value[:posIndicator])
+		}
+		expandedValue = value[postIndicator:]
+		buffer.WriteString(searchInfo.constants[index-1])
+		Central.Log.Debugf("Expand start=%s -> %d->%s ->end=%s", value[:posIndicator], posIndicator,
+			expandedValue, value[postIndicator:])
 	}
-	expandConstant = expandedValue
+	Central.Log.Debugf("Rest value=%s", value[postIndicator:])
+	appendNumericValue(&buffer, value[postIndicator:])
+	expandConstant = buffer.Bytes()
 	return
+}
+
+func appendNumericValue(buffer *bytes.Buffer, v string) {
+	Central.Log.Debugf("Offset=%d\n", buffer.Len())
+	if v != "" {
+		// Work on hexadecimal value
+		if strings.HasPrefix(v, "0x") {
+			src := []byte(v[2:])
+			Central.Log.Debugf("Append numeric %s\n", v[2:])
+			dst := make([]byte, hex.DecodedLen(len(src)))
+			n, err := hex.Decode(dst, src)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			Central.Log.Debugf("Byte value %v\n", dst[:n])
+			buffer.Write(dst[:n])
+		} else {
+			va, err := strconv.Atoi(v)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			buffer.WriteByte(byte(va))
+			Central.Log.Debugf("Byte value -> offset=%d\n", buffer.Len())
+		}
+	}
 }
 
 func (searchInfo *SearchInfo) extractBinarySearchNodeValue(value string, searchTreeNode *SearchValue) int {

@@ -54,6 +54,8 @@ func (value *superDescValue) Bytes() []byte {
 }
 
 func (value *superDescValue) SetStringValue(stValue string) {
+	Central.Log.Debugf("Set value for super descriptor of %s to %s length=%d", value.adatype.Name(), stValue, value.adatype.Length())
+	
 }
 
 func (value *superDescValue) SetValue(v interface{}) error {
