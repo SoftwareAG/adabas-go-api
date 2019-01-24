@@ -80,6 +80,8 @@ type Acbx struct {
 	Acbxrsv4     [16]byte /* +B0  Reserved - must be 0x00     */
 }
 
+// Adabas command code definitions, list of valid Adabas calls
+
 type commandCode uint
 
 const (

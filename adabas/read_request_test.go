@@ -380,7 +380,7 @@ func BenchmarkReadRequest_Small(b *testing.B) {
 
 	result := &RequestResult{}
 	err = request.ReadLogicalByWithParser("AA", nil, result)
-	fmt.Println("Dump result received ...")
+	//fmt.Println("Dump result received ...")
 	if result != nil {
 		assert.Equal(b, 1107, result.NrRecords())
 		// result.DumpValues()
@@ -401,7 +401,7 @@ func BenchmarkReadRequest(b *testing.B) {
 	assert.NoError(b, err)
 	assert.NotNil(b, result)
 	if result != nil {
-		fmt.Println("Dump result received ...")
+		//fmt.Println("Dump result received ...")
 		assert.Equal(b, 1107, result.NrRecords())
 		// result.DumpValues()
 	}

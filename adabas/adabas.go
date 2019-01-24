@@ -398,7 +398,9 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.AdabasRequest) {
 	} else {
 		multifetch = 1
 	}
+
 	adabas.AdabasBuffers = make([]*Buffer, bufferCount)
+	// Create format buffer for the call
 	adabas.AdabasBuffers[0] = NewBuffer(AbdAQFb)
 	adabas.AdabasBuffers[0].buffer = adabasRequest.FormatBuffer.Bytes()
 	adabas.AdabasBuffers[0].abd.Abdsize = uint64(adabasRequest.FormatBuffer.Len())
@@ -408,33 +410,17 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.AdabasRequest) {
 		os.Exit(100)
 	}
 	adatypes.Central.Log.Debugf("ABD init 0 %p\n", adabas.AdabasBuffers[0])
+
+	// Create record buffer for the call
 	adabas.AdabasBuffers[1] = NewBufferWithSize(AbdAQRb,
 		multifetch*(adabasRequest.RecordBufferLength+adabasRequest.RecordBufferShift))
-	if adabas.AdabasBuffers[1].abd.Abdver[0] != 'G' {
-		adatypes.Central.Log.Infof("ABD init 1 error %p\n", adabas.AdabasBuffers[1])
-		os.Exit(100)
-	}
 	adatypes.Central.Log.Debugf("ABD init 1 %p\n", adabas.AdabasBuffers[1])
+
 	// Define search and value buffer to search
 	if adabasRequest.SearchTree != nil {
 		adatypes.Central.Log.Debugf("Search logical added")
 		adabas.AdabasBuffers[2] = SearchAdabasBuffer(adabasRequest.SearchTree)
-		// adabas.AdabasBuffers[2] = NewBuffer(AbdAQSb)
-		// sb := adabasRequest.SearchTree.SearchBuffer()
-		// adatypes.Central.Log.Debugf("Search buffer created: %s", sb)
-		// adabas.AdabasBuffers[2].buffer = []byte(sb)
-		// adabas.AdabasBuffers[2].abd.Abdsize = uint64(len(sb))
-		// adabas.AdabasBuffers[2].abd.Abdsend = adabas.AdabasBuffers[2].abd.Abdsize
-		// adatypes.Central.Log.Debugf("Send search buffer of size %d -> send=%d", adabas.AdabasBuffers[2].abd.Abdsize,
-		// 	adabas.AdabasBuffers[2].abd.Abdsend)
 		adabas.AdabasBuffers[3] = ValueAdabasBuffer(adabasRequest.SearchTree)
-		// adabas.AdabasBuffers[3] = NewBuffer(AbdAQVb)
-		// var buffer bytes.Buffer
-		// adabasRequest.SearchTree.ValueBuffer(&buffer)
-		// adabas.AdabasBuffers[3].buffer = buffer.Bytes()
-		// adabas.AdabasBuffers[3].abd.Abdsize = uint64(buffer.Len())
-		// adabas.AdabasBuffers[3].abd.Abdsend = adabas.AdabasBuffers[3].abd.Abdsize
-
 	}
 	if adabasRequest.Multifetch > 1 {
 		adatypes.Central.Log.Debugf("Create multifetch buffer for %d multifetch entries", adabasRequest.Multifetch)
