@@ -23,10 +23,10 @@ func BenchmarkConnection_cached(b *testing.B) {
 	defer adatypes.FinitDefinitionCache()
 
 	for i := 0; i < 1000; i++ {
-		fmt.Print(".")
-		if i%100 == 0 {
-			fmt.Printf("%d/1000", i)
-		}
+		// fmt.Print(".")
+		// if (i+1)%100 == 0 {
+		// 	fmt.Printf("%d/1000\n", i)
+		// }
 		err = readAll(b)
 		if err != nil {
 			return
@@ -75,6 +75,10 @@ func BenchmarkConnection_noreconnect(b *testing.B) {
 	defer connection.Close()
 
 	for i := 0; i < 1000; i++ {
+		// fmt.Print(".")
+		// if (i+1)%100 == 0 {
+		// 	fmt.Printf("%d/1000\n", i)
+		// }
 		request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
 		if !assert.NoError(b, rerr) {
 			fmt.Println("Error create request", rerr)
@@ -86,7 +90,6 @@ func BenchmarkConnection_noreconnect(b *testing.B) {
 		}
 		request.Limit = 0
 		result := &RequestResult{}
-		fmt.Println("Read logigcal data:")
 		err = request.ReadLogicalByWithParser("NAME", nil, result)
 		if !assert.NoError(b, err) {
 			return
@@ -176,6 +179,10 @@ func BenchmarkConnection_noreconnectremote(b *testing.B) {
 	defer connection.Close()
 
 	for i := 0; i < 1000; i++ {
+		// fmt.Print(".")
+		// if (i+1)%100 == 0 {
+		// 	fmt.Printf("%d/1000\n", i)
+		// }
 		request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
 		if !assert.NoError(b, rerr) {
 			fmt.Println("Error create request", rerr)
@@ -481,6 +488,10 @@ func BenchmarkConnection_simple(b *testing.B) {
 	defer f.Close()
 
 	for i := 0; i < 1000; i++ {
+		// fmt.Print(".")
+		// if (i+1)%100 == 0 {
+		// 	fmt.Printf("%d/1000\n", i)
+		// }
 		err = readAll(b)
 		if err != nil {
 			return

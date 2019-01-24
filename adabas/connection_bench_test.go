@@ -25,7 +25,6 @@ func BenchmarkConnection_noMultifetch(b *testing.B) {
 		return
 	}
 	defer connection.Close()
-	fmt.Println(connection)
 	connection.Open()
 	readRequest, rErr := connection.CreateReadRequest(11)
 	assert.NoError(b, rErr)
@@ -34,7 +33,6 @@ func BenchmarkConnection_noMultifetch(b *testing.B) {
 
 	qErr := readRequest.QueryFields("AA,AB")
 	assert.NoError(b, qErr)
-	fmt.Println("Result data:")
 	result := &RequestResult{}
 	err = readRequest.ReadPhysicalSequenceWithParser(nil, result)
 	assert.NoError(b, err)
@@ -58,7 +56,6 @@ func BenchmarkConnection_Multifetch(b *testing.B) {
 		return
 	}
 	defer connection.Close()
-	fmt.Println(connection)
 	connection.Open()
 	readRequest, rErr := connection.CreateReadRequest(11)
 	assert.NoError(b, rErr)
@@ -67,7 +64,6 @@ func BenchmarkConnection_Multifetch(b *testing.B) {
 
 	qErr := readRequest.QueryFields("AA,AB")
 	assert.NoError(b, qErr)
-	fmt.Println("Result data:")
 	result := &RequestResult{}
 	err = readRequest.ReadPhysicalSequenceWithParser(nil, result)
 	assert.NoError(b, err)
