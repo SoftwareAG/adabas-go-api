@@ -82,7 +82,7 @@ func TestAdabasFailure(t *testing.T) {
 	assert.Equal(t, uint16(148), adabas.Acbx.Acbxrsp)
 }
 
-func TestAdabasOk23(t *testing.T) {
+func TestAdabasOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
