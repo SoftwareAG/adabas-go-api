@@ -314,6 +314,34 @@ func TestSearchRangeMfNoHigher(t *testing.T) {
 
 }
 
+func TestSearchRangeAlpha(t *testing.T) {
+	f, err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "SA=[10111011:10111101]")
+	searchInfo.Definition = tDefinition()
+	tree := &SearchTree{}
+	searchInfo.extractBinding(tree, searchInfo.search)
+	assert.Equal(t, "SA,8,A,GE,S,SA,8,A,LE.", tree.SearchBuffer())
+	var buffer bytes.Buffer
+	tree.ValueBuffer(&buffer)
+	valueBuffer := buffer.Bytes()
+	if !assert.Len(t, valueBuffer, 16) {
+		return
+	}
+	assert.Equal(t, "10111011", string(valueBuffer[0:8]))
+	assert.Equal(t, "10111101", string(valueBuffer[8:]))
+	descriptors := tree.OrderBy()
+	fmt.Println("Descriptors ", descriptors)
+	assert.False(t, searchInfo.NeedSearch)
+
+}
+
 func TestSearchRangeMfNoHigherAlpha(t *testing.T) {
 	f, err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {

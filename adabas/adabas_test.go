@@ -728,7 +728,7 @@ func TestAdabasReadIsn(t *testing.T) {
 	}
 }
 
-func TestAdabasSearchogical(t *testing.T) {
+func TestAdabasSearchLogical(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}

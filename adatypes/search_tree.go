@@ -665,6 +665,10 @@ func (searchInfo *SearchInfo) expandConstants(value string) (expandConstant []by
 	var buffer bytes.Buffer
 	posIndicator := 0
 	postIndicator := 0
+	if !strings.Contains(expandedValue, ConstantIndicator) {
+		expandConstant = []byte(value)
+		return
+	}
 	for strings.Contains(expandedValue, ConstantIndicator) {
 		posIndicator = strings.IndexByte(expandedValue, ConstantIndicator[0])
 		constantString := regexp.MustCompile(".*#{").ReplaceAllString(expandedValue, "")
