@@ -59,9 +59,14 @@ func (request *commonRequest) Close() {
 	request.isOpen = false
 }
 
-// Close closes the Adabas session
+// Endtransaction end the transaction of the Adabas session
 func (request *commonRequest) EndTransaction() error {
 	return request.adabas.EndTransaction()
+}
+
+// Backout closes the Adabas session
+func (request *commonRequest) BackoutTransaction() error {
+	return request.adabas.BackoutTransaction()
 }
 
 // Open Open the Adabas session

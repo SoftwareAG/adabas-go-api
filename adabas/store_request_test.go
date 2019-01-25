@@ -430,6 +430,10 @@ func TestStoreUpdateMapField(t *testing.T) {
 }
 
 func checkUpdateCorrectRead(t *testing.T, value string, isn adatypes.Isn) {
+	checkUpdateCorrectReadNumber(t, value, []adatypes.Isn{isn}, 1)
+}
+
+func checkUpdateCorrectReadNumber(t *testing.T, value string, isns []adatypes.Isn, number int) {
 	id := NewAdabasID()
 	copy(id.AdaID.User[:], []byte("CHECK   "))
 	adabas, err := NewAdabasWithID(adabasModDBIDs, id)
@@ -440,7 +444,7 @@ func checkUpdateCorrectRead(t *testing.T, value string, isn adatypes.Isn) {
 	defer request.Close()
 	request.QueryFields("AA")
 	result := &RequestResult{}
-	err = request.ReadLogicalWithWithParser("AA="+value, nil, result)
+	err = request.ReadLogicalWithWithParser("AA=["+value+":"+value+"a]", nil, result)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -450,7 +454,7 @@ func checkUpdateCorrectRead(t *testing.T, value string, isn adatypes.Isn) {
 	} else {
 		result.DumpValues()
 	}
-	assert.Equal(t, 1, len(result.Values))
+	assert.Equal(t, number, len(result.Values))
 
 }
 
@@ -735,4 +739,208 @@ func TestStorePeriod(t *testing.T) {
 	}
 	fmt.Println("Done")
 
+}
+
+func TestStoreEndTransaction(t *testing.T) {
+	f := initTestLogWithFile(t, "store.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+
+	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
+	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
+	if perr != nil {
+		return
+	}
+	ada := NewAdabas(adabasModDBID)
+	defer ada.Close()
+
+	AddMapRepository(ada, 250)
+	defer DelMapRepository(ada, 250)
+
+	clearErr := clearMap(t, ada, massLoadSystransStore)
+	if !assert.NoError(t, clearErr) {
+		return
+	}
+	adatypes.Central.Log.Debugf("Search map after clear map")
+	adabasMap, serr := SearchMapRepository(ada, massLoadSystransStore)
+	if !assert.NoError(t, serr) {
+		return
+	}
+	adatypes.Central.Log.Debugf("Create new map store request")
+	storeRequest, err := NewAdabasMapNameStoreRequest(ada, adabasMap)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer storeRequest.Close()
+
+	recErr := storeRequest.StoreFields("PERSONNEL-ID,NAME")
+	if !assert.NoError(t, recErr) {
+		return
+	}
+	var isns []adatypes.Isn
+	for i := 0; i < 10; i++ {
+		storeRecord, rErr := storeRequest.CreateRecord()
+		if !assert.NoError(t, rErr) {
+			return
+		}
+		if !assert.NotNil(t, storeRecord) {
+			return
+		}
+		err = storeRecord.SetValue("PERSONNEL-ID", fmt.Sprintf("CLTEST%02d", (i+1)))
+		if !assert.NoError(t, err) {
+			return
+		}
+		err = storeRecord.SetValue("NAME", fmt.Sprintf("CLTEST%d", i))
+		if !assert.NoError(t, err) {
+			return
+		}
+		err = storeRequest.Store(storeRecord)
+		if !assert.NoError(t, err) {
+			return
+		}
+		isns = append(isns, storeRecord.Isn)
+	}
+	checkUpdateCorrectReadNumber(t, "CLTEST", isns, 10)
+
+	storeRequest.EndTransaction()
+
+	log.Infof("First validate data in database ....")
+	checkUpdateCorrectReadNumber(t, "CLTEST", isns, 10)
+}
+
+func TestStoreCloseWithBackout(t *testing.T) {
+	f := initTestLogWithFile(t, "store.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+
+	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
+	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
+	if perr != nil {
+		return
+	}
+	ada := NewAdabas(adabasModDBID)
+	defer ada.Close()
+
+	AddMapRepository(ada, 250)
+	defer DelMapRepository(ada, 250)
+
+	clearErr := clearMap(t, ada, massLoadSystransStore)
+	if !assert.NoError(t, clearErr) {
+		return
+	}
+	adatypes.Central.Log.Debugf("Search map after clear map")
+	adabasMap, serr := SearchMapRepository(ada, massLoadSystransStore)
+	if !assert.NoError(t, serr) {
+		return
+	}
+	adatypes.Central.Log.Debugf("Create new map store request")
+	storeRequest, err := NewAdabasMapNameStoreRequest(ada, adabasMap)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer storeRequest.Close()
+
+	recErr := storeRequest.StoreFields("PERSONNEL-ID,NAME")
+	if !assert.NoError(t, recErr) {
+		return
+	}
+	var isns []adatypes.Isn
+	for i := 0; i < 10; i++ {
+		storeRecord, rErr := storeRequest.CreateRecord()
+		if !assert.NoError(t, rErr) {
+			return
+		}
+		if !assert.NotNil(t, storeRecord) {
+			return
+		}
+		err = storeRecord.SetValue("PERSONNEL-ID", fmt.Sprintf("CLTEST%02d", (i+1)))
+		if !assert.NoError(t, err) {
+			return
+		}
+		err = storeRecord.SetValue("NAME", fmt.Sprintf("CLTEST%d", i))
+		if !assert.NoError(t, err) {
+			return
+		}
+		err = storeRequest.Store(storeRecord)
+		if !assert.NoError(t, err) {
+			return
+		}
+		isns = append(isns, storeRecord.Isn)
+	}
+	checkUpdateCorrectReadNumber(t, "CLTEST", isns, 10)
+
+	storeRequest.Close()
+
+	log.Infof("First validate data in database ....")
+	checkUpdateCorrectReadNumber(t, "CLTEST", isns, 0)
+}
+
+func TestStoreBackout(t *testing.T) {
+	f := initTestLogWithFile(t, "store.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+
+	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
+	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
+	if perr != nil {
+		return
+	}
+	ada := NewAdabas(adabasModDBID)
+	defer ada.Close()
+
+	AddMapRepository(ada, 250)
+	defer DelMapRepository(ada, 250)
+
+	clearErr := clearMap(t, ada, massLoadSystransStore)
+	if !assert.NoError(t, clearErr) {
+		return
+	}
+	adatypes.Central.Log.Debugf("Search map after clear map")
+	adabasMap, serr := SearchMapRepository(ada, massLoadSystransStore)
+	if !assert.NoError(t, serr) {
+		return
+	}
+	adatypes.Central.Log.Debugf("Create new map store request")
+	storeRequest, err := NewAdabasMapNameStoreRequest(ada, adabasMap)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer storeRequest.Close()
+
+	recErr := storeRequest.StoreFields("PERSONNEL-ID,NAME")
+	if !assert.NoError(t, recErr) {
+		return
+	}
+	var isns []adatypes.Isn
+	for i := 0; i < 10; i++ {
+		storeRecord, rErr := storeRequest.CreateRecord()
+		if !assert.NoError(t, rErr) {
+			return
+		}
+		if !assert.NotNil(t, storeRecord) {
+			return
+		}
+		err = storeRecord.SetValue("PERSONNEL-ID", fmt.Sprintf("BTTEST%02d", (i+1)))
+		if !assert.NoError(t, err) {
+			return
+		}
+		err = storeRecord.SetValue("NAME", fmt.Sprintf("BTTEST%d", i))
+		if !assert.NoError(t, err) {
+			return
+		}
+		err = storeRequest.Store(storeRecord)
+		if !assert.NoError(t, err) {
+			return
+		}
+		isns = append(isns, storeRecord.Isn)
+	}
+	checkUpdateCorrectReadNumber(t, "BTTEST", isns, 10)
+
+	storeRequest.BackoutTransaction()
+
+	log.Infof("First validate data in database ....")
+	checkUpdateCorrectReadNumber(t, "BTTEST", isns, 0)
 }

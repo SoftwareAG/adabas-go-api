@@ -20,6 +20,7 @@
 package adabas
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -245,6 +246,29 @@ func TestReadRequestLogicalBySuperDescriptor(t *testing.T) {
 		fmt.Println("Dump result received ...")
 		result.DumpValues()
 	}
+}
+
+func TestReadRequestAllJson(t *testing.T) {
+	f := initTestLogWithFile(t, "request.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	adabas := NewAdabas(adabasModDBID)
+	request := NewRequestAdabas(adabas, 16)
+	defer request.Close()
+	request.QueryFields("*")
+	request.Limit = 1
+	result, err := request.ReadLogicalBy("AA")
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	result.DumpValues()
+	res, jerr := json.Marshal(result)
+	if jerr != nil {
+		fmt.Println("Error generating JSON", jerr)
+		return
+	}
+	fmt.Println(string(res))
+
 }
 
 func TestReadRequestHistogramDescriptorField(t *testing.T) {
