@@ -22,6 +22,7 @@ VERSION    ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/nu
 			cat $(CURDIR)/.version 2> /dev/null || echo v0)
 TMPPATH    ?= /tmp
 GOPATH      = $(TMPPATH)/tmp_adabas-go-api.$(shell id -u)
+GO111MODULE = off
 BIN         = $(CURDIR)/bin
 LOGPATH     = $(CURDIR)/logs
 TESTFILES   = $(CURDIR)/files
@@ -49,7 +50,7 @@ CGO_EXT_LDFLAGS = $(if $(ACLDIR),-lsagsmp2 -lsagxts3 -ladazbuf,)
 GO_TAGS     = $(if $(ACLDIR),"release adalnk","release")
 GO_FLAGS    = $(if $(debug),"-x",) -tags $(GO_TAGS)
 
-export GOPATH
+export GOPATH GO111MODULE
 
 GO      = go
 GODOC   = godoc
