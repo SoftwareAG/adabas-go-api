@@ -33,6 +33,7 @@ type BufferHelper struct {
 	buffer []byte
 	max    int
 	order  binary.ByteOrder
+	search bool
 }
 
 // BufferOverflow error indicates the read after the buffer maximal position

@@ -94,7 +94,7 @@ func (value *superDescValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 }
 
 func (value *superDescValue) StoreBuffer(helper *BufferHelper) error {
-	if len(value.value) > 0 {
+	if helper.search && len(value.value) > 0 {
 		return helper.putBytes(value.value)
 
 	}
