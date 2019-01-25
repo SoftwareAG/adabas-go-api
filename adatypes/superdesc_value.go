@@ -54,11 +54,17 @@ func (value *superDescValue) Bytes() []byte {
 }
 
 func (value *superDescValue) SetStringValue(stValue string) {
-	Central.Log.Debugf("Set value for super descriptor of %s to %s length=%d", value.adatype.Name(), stValue, value.adatype.Length())
-
+	Central.Log.Debugf("Set string value for super descriptor of %s to %s length=%d", value.adatype.Name(), stValue, value.adatype.Length())
+	value.value = []byte(stValue)
 }
 
 func (value *superDescValue) SetValue(v interface{}) error {
+	Central.Log.Debugf("Set value for super descriptor of %s to %v length=%d", value.adatype.Name(), v, value.adatype.Length())
+	switch v.(type) {
+	case []byte:
+		value.value = v.([]byte)
+	default:
+	}
 	return nil
 }
 
@@ -76,7 +82,11 @@ func (value *superDescValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 	adaType := value.Type().(*AdaSuperType)
 	buffer.WriteString(adaType.shortName)
 	buffer.WriteString(",")
-	buffer.WriteString(strconv.Itoa(int(value.Type().Length())))
+	sdLen := int(value.Type().Length())
+	if len(value.value) > 0 {
+		sdLen = len(value.value)
+	}
+	buffer.WriteString(strconv.Itoa(sdLen))
 	buffer.WriteString(",")
 	buffer.WriteString(fmt.Sprintf("%c", adaType.FdtFormat))
 	Central.Log.Debugf("Got FB %s", buffer.String())
@@ -84,6 +94,10 @@ func (value *superDescValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 }
 
 func (value *superDescValue) StoreBuffer(helper *BufferHelper) error {
+	if len(value.value) > 0 {
+		return helper.putBytes(value.value)
+
+	}
 	return nil
 }
 
