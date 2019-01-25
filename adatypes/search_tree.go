@@ -649,26 +649,25 @@ func (searchInfo *SearchInfo) searchFieldValue(searchValue *SearchValue, value s
 	if err != nil {
 		return
 	}
-	Central.Log.Debugf("Expand constants %s", value)
-	expandedValue, subErr := searchInfo.expandConstants(value)
+	subErr := searchInfo.expandConstants(searchValue, value)
 	if subErr != nil {
 		err = subErr
 		return
 	}
-	Central.Log.Debugf("Expanded value >%s<", expandedValue)
-	searchValue.value.SetValue(expandedValue)
 	return
 }
 
-func (searchInfo *SearchInfo) expandConstants(value string) (expandConstant []byte, err error) {
+func (searchInfo *SearchInfo) expandConstants(searchValue *SearchValue, value string) (err error) {
+	Central.Log.Debugf("Expand constants %s", value)
 	expandedValue := value
 	var buffer bytes.Buffer
 	posIndicator := 0
 	postIndicator := 0
 	if !strings.Contains(expandedValue, ConstantIndicator) {
-		expandConstant = []byte(value)
+		searchValue.value.SetStringValue(value)
 		return
 	}
+	numPart := false
 	for strings.Contains(expandedValue, ConstantIndicator) {
 		posIndicator = strings.IndexByte(expandedValue, ConstantIndicator[0])
 		constantString := regexp.MustCompile(".*#{").ReplaceAllString(expandedValue, "")
@@ -683,20 +682,30 @@ func (searchInfo *SearchInfo) expandConstants(value string) (expandConstant []by
 		}
 		if posIndicator > 0 {
 			appendNumericValue(&buffer, value[:posIndicator])
+			numPart = true
 		}
 		expandedValue = value[postIndicator:]
 		buffer.WriteString(searchInfo.constants[index-1])
-		Central.Log.Debugf("Expand start=%s -> %d->%s ->end=%s", value[:posIndicator], posIndicator,
+		Central.Log.Debugf("Expand start=%s -> %d->%v ->end=%s", value[:posIndicator], posIndicator,
 			expandedValue, value[postIndicator:])
 	}
 	Central.Log.Debugf("Rest value=%s", value[postIndicator:])
-	appendNumericValue(&buffer, value[postIndicator:])
-	expandConstant = buffer.Bytes()
+	if value[postIndicator:] != "" {
+		appendNumericValue(&buffer, value[postIndicator:])
+		numPart = true
+	}
+	if numPart {
+		Central.Log.Debugf("Numeric part available ....")
+		err = searchValue.value.SetValue(buffer.Bytes())
+	} else {
+		Central.Log.Debugf("No Numeric part available ....%s", string(expandedValue))
+		searchValue.value.SetStringValue(buffer.String())
+	}
 	return
 }
 
 func appendNumericValue(buffer *bytes.Buffer, v string) {
-	Central.Log.Debugf("Offset=%d\n", buffer.Len())
+	Central.Log.Debugf("Append numeric offset=%d\n", buffer.Len())
 	if v != "" {
 		// Work on hexadecimal value
 		if strings.HasPrefix(v, "0x") {

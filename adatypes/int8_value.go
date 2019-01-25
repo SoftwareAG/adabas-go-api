@@ -70,6 +70,7 @@ func (value *uint64Value) SetValue(v interface{}) error {
 	if err != nil {
 		return err
 	}
+	Central.Log.Debugf("Set UInt8 value to >%d<", x)
 	value.value = x
 	return nil
 }

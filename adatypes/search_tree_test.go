@@ -76,11 +76,16 @@ func TestSearchSecondTree(t *testing.T) {
 	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 AND BC='12342'")
+	searchValue := &SearchValue{}
+	adaType := NewType(FieldTypeString, "BC")
+	adaType.SetLength(0)
+	searchValue.value, _ = adaType.Value()
+
 	assert.Equal(t, "12342", searchInfo.constants[0])
 	assert.Equal(t, "AA=1 AND BC=#{1}", searchInfo.search)
 	assert.False(t, searchInfo.NeedSearch)
-	x, xerr := searchInfo.expandConstants("#{1}")
-	assert.Equal(t, []byte{0x31, 0x32, 0x33, 0x34, 0x32}, x)
+	xerr := searchInfo.expandConstants(searchValue, "#{1}")
+	assert.Equal(t, []byte{0x31, 0x32, 0x33, 0x34, 0x32}, searchValue.value.Bytes())
 	assert.NoError(t, xerr)
 
 }
@@ -595,11 +600,15 @@ func TestSearchMixedValue(t *testing.T) {
 	log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=0x00'ABCD'0")
+	searchValue := &SearchValue{}
+	adaType := NewType(FieldTypeString, "BC")
+	adaType.SetLength(0)
+	searchValue.value, _ = adaType.Value()
 	assert.Equal(t, "ABCD", searchInfo.constants[0])
 	assert.Equal(t, "AA=0x00#{1}0", searchInfo.search)
 	assert.False(t, searchInfo.NeedSearch)
-	x, xerr := searchInfo.expandConstants("0x00#{1}0")
-	assert.Equal(t, []byte{0, 65, 66, 67, 68, 0}, x)
+	xerr := searchInfo.expandConstants(searchValue, "0x00#{1}0")
+	assert.Equal(t, []byte{0, 65, 66, 67, 68, 0}, searchValue.value.Bytes())
 	assert.NoError(t, xerr)
 
 }
