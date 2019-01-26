@@ -449,9 +449,8 @@ func (record *ResultRecord) MarshalJSON() ([]byte, error) {
 	rec.buffer.WriteString(fmt.Sprintf("\"%s\":%v", "ISN", record.Isn))
 	rec.hasElements = true
 	_, err := record.traverse(tm, rec)
-	adatypes.Central.Log.Debugf("Error JSON %v", err)
-
 	rec.buffer.WriteByte('}')
+	adatypes.Central.Log.Debugf("Go JSON response %v -> %s", err, rec.buffer.String())
 
 	return rec.buffer.Bytes(), err
 }
