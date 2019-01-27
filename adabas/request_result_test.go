@@ -113,6 +113,34 @@ func generateDefinitionTest() *adatypes.Definition {
 	return testDefinition
 }
 
+func generateMUDefinitionTest() *adatypes.Definition {
+	muLayout := []adatypes.IAdaType{
+		adatypes.NewTypeWithLength(adatypes.FieldTypeString, "MU", 10),
+	}
+	groupLayout := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypePacked, "PA"),
+	}
+	layout := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypeUInt4, "AA"),
+		adatypes.NewType(adatypes.FieldTypeByte, "B1"),
+		adatypes.NewType(adatypes.FieldTypeUByte, "UB"),
+		adatypes.NewType(adatypes.FieldTypeUInt2, "I2"),
+		adatypes.NewType(adatypes.FieldTypeUInt4, "U4"),
+		adatypes.NewType(adatypes.FieldTypeUInt8, "U8"),
+		adatypes.NewStructureList(adatypes.FieldTypeMultiplefield, "MU", adatypes.OccNone, muLayout),
+		adatypes.NewStructureList(adatypes.FieldTypeGroup, "GR", adatypes.OccNone, groupLayout),
+		adatypes.NewType(adatypes.FieldTypeUInt8, "I8"),
+	}
+
+	testDefinition := adatypes.NewDefinitionWithTypes(layout)
+	err := testDefinition.CreateValues(false)
+	if err != nil {
+		fmt.Println("Error creating values")
+		return nil
+	}
+	return testDefinition
+}
+
 func generateResult() *RequestResult {
 	d := generateDefinitionTest()
 	result := &RequestResult{}
@@ -206,4 +234,78 @@ func TestRequestResult(t *testing.T) {
 	x, err := xml.Marshal(result)
 	assert.NoError(t, err)
 	assert.Equal(t, "<Response><Record ISN=\"10\"><AA>10</AA><B1>0</B1><UB>0</UB><I2>0</I2><U8>0</U8><GR><G1>0</G1><GX> </GX><PA>9</PA></GR><I8>0</I8></Record><Record ISN=\"11\"><AA>20</AA><B1>0</B1><UB>0</UB><I2>0</I2><U8>0</U8><GR><G1>0</G1><GX> </GX><PA>3</PA></GR><I8>0</I8></Record></Response>", string(x))
+}
+
+func TestRequestResultWithMU(t *testing.T) {
+	f, ferr := initLogWithFile("request_result.log")
+	if ferr != nil {
+		return
+	}
+	defer f.Close()
+
+	d := generateMUDefinitionTest()
+	record, err := NewResultRecord(d)
+	if !assert.NoError(t, err) {
+		fmt.Println("Result record generation error", err)
+		return
+	}
+
+	fmt.Println("Test request result:")
+
+	j, err := json.Marshal(record)
+	assert.NoError(t, err)
+	fmt.Println("JSON:", string(j))
+	assert.Equal(t, "{\"AA\":0,\"B1\":0,\"GR\":{\"PA\":0},\"I2\":0,\"I8\":0,\"ISN\":0,\"MU\":[],\"U4\":0,\"U8\":0,\"UB\":0}", string(j))
+	x, err := xml.Marshal(record)
+	assert.NoError(t, err)
+	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>0</AA><B1>0</B1><UB>0</UB><I2>0</I2><U4>0</U4><U8>0</U8><MU></MU><GR><PA>0</PA></GR><I8>0</I8></Record></Response>", string(x))
+}
+
+func TestRequestResultWithMUWithContent(t *testing.T) {
+	f, ferr := initLogWithFile("request_result.log")
+	if ferr != nil {
+		return
+	}
+	defer f.Close()
+
+	d := generateMUDefinitionTest()
+	record, err := NewResultRecord(d)
+	if !assert.NoError(t, err) {
+		fmt.Println("Result record generation error", err)
+		return
+	}
+
+	for i := uint32(0); i < 5; i++ {
+		adatypes.Central.Log.Infof("Set MU entry of %d", (i + 1))
+		err = record.SetValueWithIndex("MU", []uint32{i + 1}, fmt.Sprintf("AAX%03d", (i+1)))
+		if !assert.NoError(t, err) {
+			fmt.Println("Set MU error", err)
+			return
+		}
+	}
+	err = record.SetValue("AA", 2)
+	if !assert.NoError(t, err) {
+		fmt.Println("Set PA error", err)
+		return
+	}
+	err = record.SetValue("B1", 3)
+	if !assert.NoError(t, err) {
+		fmt.Println("Set PA error", err)
+		return
+	}
+	err = record.SetValue("PA", 1)
+	if !assert.NoError(t, err) {
+		fmt.Println("Set PA error", err)
+		return
+	}
+
+	fmt.Println("Test request result:")
+	record.DumpValues()
+	j, err := json.Marshal(record)
+	assert.NoError(t, err)
+	fmt.Println("JSON:", string(j))
+	assert.Equal(t, "{\"AA\":2,\"B1\":3,\"GR\":{\"PA\":1},\"I2\":0,\"I8\":0,\"ISN\":0,\"MU\":[\"AAX001\",\"AAX002\",\"AAX003\",\"AAX004\",\"AAX005\"],\"U4\":0,\"U8\":0,\"UB\":0}", string(j))
+	x, err := xml.Marshal(record)
+	assert.NoError(t, err)
+	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>2</AA><B1>3</B1><UB>0</UB><I2>0</I2><U4>0</U4><U8>0</U8><MU><MU>AAX001    </MU><MU>AAX002    </MU><MU>AAX003    </MU><MU>AAX004    </MU><MU>AAX005    </MU></MU><GR><PA>1</PA></GR><I8>0</I8></Record></Response>", string(x))
 }

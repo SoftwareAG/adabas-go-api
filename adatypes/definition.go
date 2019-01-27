@@ -1251,8 +1251,39 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 			return errors.New("Error searching value " + name + " (internal error)")
 		}
 	}
-	Central.Log.Debugf("Found and add value to %s %v set -> %v", val.Type().Name(), val.Type().Type(), x)
-	err = val.SetValue(x)
+	Central.Log.Debugf("Found and add value to %s type=%v %#v set -> %v %T %T", val.Type().Name(), val.Type().Type(),
+		index, x, val, val.Type())
+	switch val.Type().Type() {
+	case FieldTypeMultiplefield:
+		sv := val.(*StructureValue)
+		st := sv.Type().(*StructureType)
+		//sv.Type().
+		//	sv.Elements = append(sv.Elements, subValue)
+		if len(sv.Elements) == 0 {
+			e := &structureElement{}
+			sv.Elements = append(sv.Elements, e)
+		}
+		if len(sv.Elements[0].Values) >= int(index[0]) {
+			Central.Log.Debugf("Adapt %#v", st.SubTypes)
+			subValue := sv.Elements[0].Values[int(index[0]-1)]
+			err = subValue.SetValue(x)
+		} else {
+			subValue, serr := st.SubTypes[0].Value()
+			if serr != nil {
+				return serr
+			}
+			err = subValue.SetValue(x)
+			if err != nil {
+				return err
+			}
+			err = sv.addValue(subValue, index[0])
+			// subValue.setMultipleIndex(index[0])
+			// sv.Elements[0].Values = append(sv.Elements[0].Values, subValue)
+		}
+		Central.Log.Debugf("Add Multiple field, elements=%d", len(sv.Elements))
+	default:
+		err = val.SetValue(x)
+	}
 	return err
 }
 

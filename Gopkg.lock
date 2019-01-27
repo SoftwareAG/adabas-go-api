@@ -26,46 +26,46 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:9d57e200ef5ccc4217fe0a34287308bac652435e7c6513f6263e0493d2245c56"
+  digest = "1:9a3c631555e0351fdc4e696577bb63afd90c399d782a8462dba9d100d7021db3"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   pruneopts = ""
-  revision = "bcd833dfe83d3cebad139e4a29ed79cb2318bf95"
-  version = "v1.2.0"
+  revision = "e1e72e9de974bd926e5c56f83753fba2df402ce5"
+  version = "v1.3.0"
 
 [[projects]]
-  digest = "1:c587772fb8ad29ad4db67575dad25ba17a51f072ff18a22b4f0257a4d9c24f75"
+  digest = "1:381bcbeb112a51493d9d998bbba207a529c73dbb49b3fd789e48c63fac1f192c"
   name = "github.com/stretchr/testify"
   packages = [
     "assert",
     "require",
   ]
   pruneopts = ""
-  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
-  version = "v1.2.2"
+  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
+  version = "v1.3.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:52cfc16d4fc39fd1d779c9b52e391c7b2a31537b722d38aa9cca0f33d88d62ef"
+  digest = "1:278d561dd1f1743e1b8995f202f56314e33364b395b95514d7df91df48b267da"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = ""
-  revision = "eb0de9b17e854e9b1ccd9963efafc79862359959"
+  revision = "057139ce5d2bdbe6fe73c53679e24e9cf007f637"
 
 [[projects]]
   branch = "master"
-  digest = "1:f358024b019f87eecaadcb098113a40852c94fe58ea670ef3c3e2d2c7bd93db1"
+  digest = "1:7e3b61f51ebcb58b3894928ed7c63aae68820dec1dd57166e5d6e65ef2868f40"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = ""
-  revision = "4ed8d59d0b35e1e29334a206d1b3f38b1e5dfb31"
+  revision = "b90733256f2e882e81d52f9126de08df5615afd9"
 
 [[projects]]
   branch = "master"
-  digest = "1:71f4cad8dfc029bbd82106b45ce066edbb7c639e3686ac478f136b732231e162"
+  digest = "1:75e67ff69d0a449e66f5d5cdfec681ff46fc8882d008c844618bdfdefe08b6e6"
   name = "golang.org/x/text"
   packages = [
     "encoding",
@@ -77,7 +77,7 @@
     "unicode/cldr",
   ]
   pruneopts = ""
-  revision = "6f44c5a2ea40ee3593d98cdcc905cc1fdaa660e2"
+  revision = "e6919f6577db79269a6443b9dc46d18f2238fb5d"
 
 [solve-meta]
   analyzer-name = "dep"

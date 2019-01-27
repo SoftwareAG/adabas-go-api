@@ -443,6 +443,7 @@ func (value *StructureValue) SetStringValue(stValue string) {
 
 // SetValue set value for structure
 func (value *StructureValue) SetValue(v interface{}) error {
+	Central.Log.Infof("Structure set string, not implement yet %s -> %v", value.Type().Name(), v)
 	return nil
 }
 
