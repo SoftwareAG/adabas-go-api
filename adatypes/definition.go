@@ -357,6 +357,19 @@ func searchValueByName(adaValue IAdaValue, x interface{}) (TraverseResult, error
 	return Continue, nil
 }
 
+func searchValueByNameEnd(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
+	search := x.(*searchByName)
+	Central.Log.Debugf("Search end value by name %s and index %d:%d, found %s %d/%d", search.name, search.peIndex,
+		search.muIndex, adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex())
+	if adaValue.Type().Name() == search.name {
+		if search.peIndex == adaValue.PeriodIndex() && adaValue.Type().IsStructure() {
+			search.grFound = adaValue
+			return EndTraverser, nil
+		}
+	}
+	return Continue, nil
+}
+
 // Search search for a specific field structure in the tree
 func (def *Definition) Search(fieldName string) IAdaValue {
 	x := searchByName{name: fieldName}
@@ -401,6 +414,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 		element := strv.elementMap[index[0]-1]
 		if element == nil {
 			if create {
+				Central.Log.Debugf("Create new Element %d", index[0])
 				strv.initSubValues(index[0]-1, index[0], true)
 				element = strv.elementMap[index[0]-1]
 			} else {
@@ -420,7 +434,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 				x.peIndex = index[0]
 			default:
 			}
-			tvm := TraverserValuesMethods{EnterFunction: searchValueByName}
+			tvm := TraverserValuesMethods{EnterFunction: searchValueByName, LeaveFunction: searchValueByNameEnd}
 			_, err = strv.Traverse(tvm, &x)
 			if err == nil {
 				if x.found != nil {
@@ -1234,6 +1248,7 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 		Central.Log.Debugf("Search type error: %v", err)
 		return err
 	}
+	Central.Log.Debugf("Add value to %s %#v=%v", name, index, x)
 	var val IAdaValue
 	if !typ.HasFlagSet(FlagOptionPE) {
 		Central.Log.Debugf("Search name ....%s", name)
@@ -1251,8 +1266,8 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 			return errors.New("Error searching value " + name + " (internal error)")
 		}
 	}
-	Central.Log.Debugf("Found and add value to %s type=%v %#v set -> %v %T %T", val.Type().Name(), val.Type().Type(),
-		index, x, val, val.Type())
+	Central.Log.Debugf("Found value to add to %s type=%v [%d,%d] %T %T", val.Type().Name(), val.Type().Type(),
+		val.PeriodIndex(), val.MultipleIndex(), val, val.Type())
 	switch val.Type().Type() {
 	case FieldTypeMultiplefield:
 		sv := val.(*StructureValue)

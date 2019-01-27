@@ -88,6 +88,7 @@ func TestRequestResult_String(t *testing.T) {
 		})
 	}
 }
+
 func generateDefinitionTest() *adatypes.Definition {
 	groupLayout := []adatypes.IAdaType{
 		adatypes.NewType(adatypes.FieldTypeCharacter, "G1"),
@@ -129,6 +130,36 @@ func generateMUDefinitionTest() *adatypes.Definition {
 		adatypes.NewType(adatypes.FieldTypeUInt8, "U8"),
 		adatypes.NewStructureList(adatypes.FieldTypeMultiplefield, "MU", adatypes.OccNone, muLayout),
 		adatypes.NewStructureList(adatypes.FieldTypeGroup, "GR", adatypes.OccNone, groupLayout),
+		adatypes.NewType(adatypes.FieldTypeUInt8, "I8"),
+	}
+
+	testDefinition := adatypes.NewDefinitionWithTypes(layout)
+	err := testDefinition.CreateValues(false)
+	if err != nil {
+		fmt.Println("Error creating values")
+		return nil
+	}
+	return testDefinition
+}
+
+func generatePEMUDefinitionTest() *adatypes.Definition {
+	muLayout := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypeUInt4, "MU"),
+	}
+	groupLayout := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypePacked, "PA"),
+		adatypes.NewType(adatypes.FieldTypeUInt4, "PG"),
+	}
+	periodgroupLayout := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypePacked, "PP"),
+		adatypes.NewStructureList(adatypes.FieldTypeMultiplefield, "MU", adatypes.OccNone, muLayout),
+		adatypes.NewStructureList(adatypes.FieldTypeGroup, "GR", adatypes.OccNone, groupLayout),
+		adatypes.NewType(adatypes.FieldTypeUInt8, "G8"),
+	}
+	layout := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypeUInt4, "AA"),
+		adatypes.NewStructureList(adatypes.FieldTypePeriodGroup, "PE", adatypes.OccNone, periodgroupLayout),
+		adatypes.NewType(adatypes.FieldTypeUInt8, "U8"),
 		adatypes.NewType(adatypes.FieldTypeUInt8, "I8"),
 	}
 
@@ -308,4 +339,165 @@ func TestRequestResultWithMUWithContent(t *testing.T) {
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
 	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>2</AA><B1>3</B1><UB>0</UB><I2>0</I2><U4>0</U4><U8>0</U8><MU><MU>AAX001    </MU><MU>AAX002    </MU><MU>AAX003    </MU><MU>AAX004    </MU><MU>AAX005    </MU></MU><GR><PA>1</PA></GR><I8>0</I8></Record></Response>", string(x))
+}
+
+func TestRequestResultWithPEMUWithoutContent(t *testing.T) {
+	f, ferr := initLogWithFile("request_result.log")
+	if ferr != nil {
+		return
+	}
+	defer f.Close()
+
+	d := generatePEMUDefinitionTest()
+	record, err := NewResultRecord(d)
+	if !assert.NoError(t, err) {
+		fmt.Println("Result record generation error", err)
+		return
+	}
+
+	fmt.Println("Test request result:")
+	record.DumpValues()
+	j, err := json.Marshal(record)
+	assert.NoError(t, err)
+	fmt.Println("JSON:", string(j))
+	assert.Equal(t, "{\"AA\":0,\"I8\":0,\"ISN\":0,\"PE\":[],\"U8\":0}", string(j))
+	x, err := xml.Marshal(record)
+	assert.NoError(t, err)
+	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>0</AA><PE></PE><U8>0</U8><I8>0</I8></Record></Response>", string(x))
+}
+
+func TestRequestResultWithPEMUWithContent(t *testing.T) {
+	f, ferr := initLogWithFile("request_result.log")
+	if ferr != nil {
+		return
+	}
+	defer f.Close()
+
+	d := generatePEMUDefinitionTest()
+	record, err := NewResultRecord(d)
+	if !assert.NoError(t, err) {
+		fmt.Println("Result record generation error", err)
+		return
+	}
+
+	for i := uint32(0); i < 3; i++ {
+		adatypes.Central.Log.Infof("Set period group entry of %d", (i + 1))
+		err = record.SetValueWithIndex("PP", []uint32{i + 1}, (i + 1))
+		if !assert.NoError(t, err) {
+			fmt.Println("Set MU error", err)
+			return
+		}
+	}
+	err = record.SetValueWithIndex("MU", []uint32{1, 1}, 100)
+	if !assert.NoError(t, err) {
+		fmt.Println("Set MU error", err)
+		return
+	}
+	err = record.SetValueWithIndex("MU", []uint32{1, 2}, 122)
+	if !assert.NoError(t, err) {
+		fmt.Println("Set MU error", err)
+		return
+	}
+	err = record.SetValue("AA", 2)
+	if !assert.NoError(t, err) {
+		fmt.Println("Set PA error", err)
+		return
+	}
+	err = record.SetValue("U8", 3)
+	if !assert.NoError(t, err) {
+		fmt.Println("Set PA error", err)
+		return
+	}
+	err = record.SetValue("I8", 1)
+	if !assert.NoError(t, err) {
+		fmt.Println("Set PA error", err)
+		return
+	}
+
+	fmt.Println("Test request result:")
+	record.DumpValues()
+	j, err := json.Marshal(record)
+	assert.NoError(t, err)
+	fmt.Println("JSON:", string(j))
+	assert.Equal(t, "{\"AA\":2,\"I8\":1,\"ISN\":0,\"PE\":[{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[100,122],\"PP\":1},{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[],\"PP\":2},{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[],\"PP\":3}],\"U8\":3}", string(j))
+	x, err := xml.Marshal(record)
+	assert.NoError(t, err)
+	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>2</AA><PE><PP>1</PP><MU><MU>100</MU><MU>122</MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8><PP>2</PP><MU></MU><GR><PA>0</PA><PG>0</PG><PA>0</PA><PG>0</PG></GR><G8>0</G8><PP>3</PP><MU></MU><GR><PA>0</PA><PG>0</PG><PA>0</PA><PG>0</PG></GR><G8>0</G8></PE><U8>3</U8><I8>1</I8></Record></Response>", string(x))
+}
+
+func ExampleResultRecord_DumpValues() {
+	f, ferr := initLogWithFile("request_result.log")
+	if ferr != nil {
+		return
+	}
+	defer f.Close()
+
+	d := generatePEMUDefinitionTest()
+	record, err := NewResultRecord(d)
+	if err != nil {
+		fmt.Println("Result record generation error", err)
+		return
+	}
+
+	for i := uint32(0); i < 3; i++ {
+		adatypes.Central.Log.Infof("Set period group entry of %d", (i + 1))
+		err = record.SetValueWithIndex("PP", []uint32{i + 1}, (i + 1))
+		if err != nil {
+			fmt.Println("Set MU error", err)
+			return
+		}
+	}
+	err = record.SetValueWithIndex("MU", []uint32{1, 1}, 100)
+	if err != nil {
+		fmt.Println("Set MU error", err)
+		return
+	}
+	err = record.SetValueWithIndex("MU", []uint32{1, 2}, 122)
+	if err != nil {
+		fmt.Println("Set MU error", err)
+		return
+	}
+	err = record.SetValue("AA", 2)
+	if err != nil {
+		fmt.Println("Set PA error", err)
+		return
+	}
+	err = record.SetValue("U8", 3)
+	if err != nil {
+		fmt.Println("Set PA error", err)
+		return
+	}
+	err = record.SetValue("I8", 1)
+	if err != nil {
+		fmt.Println("Set PA error", err)
+		return
+	}
+
+	fmt.Println("Dump request result:")
+	record.DumpValues()
+
+	// Output: Dump request result:
+	// Dump all result values
+	//   AA = > 2 <
+	//   PE = [ 3 ]
+	//    PP[01] = > 1 <
+	//    MU[01] = [ 1 ]
+	//     MU[01,01] = > 100 <
+	//     MU[01,02] = > 122 <
+	//    GR[01] = [ 1 ]
+	//    G8[01] = > 0 <
+	//    PP[02] = > 2 <
+	//    MU[02] = [ 0 ]
+	//    GR[02] = [ 2 ]
+	//     PA[02] = > 0 <
+	//     PG[02] = > 0 <
+	//    G8[02] = > 0 <
+	//    PP[03] = > 3 <
+	//    MU[03] = [ 0 ]
+	//    GR[03] = [ 2 ]
+	//     PA[03] = > 0 <
+	//     PG[03] = > 0 <
+	//    G8[03] = > 0 <
+	//   U8 = > 3 <
+	//   I8 = > 1 <
 }
