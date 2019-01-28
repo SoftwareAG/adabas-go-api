@@ -132,7 +132,6 @@ func (record *ResultRecord) DumpValues() {
 	fmt.Println("Dump all result values")
 	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareResultRecordDump,
 		EnterFunction: dumpResultRecord}
-	//record.dumpValue(t, nil)
 	record.traverse(t, nil)
 }
 
