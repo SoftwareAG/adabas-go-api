@@ -1488,8 +1488,9 @@ func validateResult(t *testing.T, search string, result *RequestResult) error {
 	if !assert.NoError(t, err) {
 		return err
 	}
-	var re = regexp.MustCompile(`(?m)"ISN[^,]*,`)
+	var re = regexp.MustCompile(`(?m)[,]?"ISN[^,]*[},]`)
 	resultJSON = re.ReplaceAll(resultJSON, []byte(""))
+	fmt.Println(string(resultJSON))
 	rw := os.Getenv("REFERENCES")
 	doWrite := os.Getenv("REFERENCE_WRITE")
 	destinationFile := rw + "/" + search + ".json"
