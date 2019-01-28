@@ -357,6 +357,11 @@ func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (
 			for i, v := range val.Values {
 				Central.Log.Debugf("Traverse node %d.element and %d.value at %s[%d,%d] for %s[%d,%d]", e, i, v.Type().Name(),
 					v.PeriodIndex(), v.MultipleIndex(), value.Type().Name(), value.PeriodIndex(), value.MultipleIndex())
+				if value.PeriodIndex() != v.PeriodIndex() {
+					if value.Type().Type() != FieldTypePeriodGroup {
+						panic("Error index parent not correct")
+					}
+				}
 				if t.EnterFunction != nil {
 					ret, err = t.EnterFunction(v, x)
 					if err != nil || ret == EndTraverser {

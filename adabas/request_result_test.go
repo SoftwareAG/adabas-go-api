@@ -156,10 +156,15 @@ func generatePEMUDefinitionTest() *adatypes.Definition {
 		adatypes.NewStructureList(adatypes.FieldTypeGroup, "GR", adatypes.OccNone, groupLayout),
 		adatypes.NewType(adatypes.FieldTypeUInt8, "G8"),
 	}
+	periodgroup2Layout := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypePacked, "PX"),
+		adatypes.NewType(adatypes.FieldTypeUInt8, "PY"),
+	}
 	layout := []adatypes.IAdaType{
 		adatypes.NewType(adatypes.FieldTypeUInt4, "AA"),
 		adatypes.NewStructureList(adatypes.FieldTypePeriodGroup, "PE", adatypes.OccNone, periodgroupLayout),
 		adatypes.NewType(adatypes.FieldTypeUInt8, "U8"),
+		adatypes.NewStructureList(adatypes.FieldTypePeriodGroup, "P2", adatypes.OccNone, periodgroup2Layout),
 		adatypes.NewType(adatypes.FieldTypeUInt8, "I8"),
 	}
 
@@ -423,6 +428,64 @@ func TestRequestResultWithPEMUWithContent(t *testing.T) {
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
 	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>2</AA><PE><PP>1</PP><MU><MU>100</MU><MU>122</MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8><PP>2</PP><MU></MU><GR><PA>0</PA><PG>0</PG><PA>0</PA><PG>0</PG></GR><G8>0</G8><PP>3</PP><MU></MU><GR><PA>0</PA><PG>0</PG><PA>0</PA><PG>0</PG></GR><G8>0</G8></PE><U8>3</U8><I8>1</I8></Record></Response>", string(x))
+}
+
+func ExampleResultRecord_DumpValues2() {
+	f, ferr := initLogWithFile("request_result.log")
+	if ferr != nil {
+		return
+	}
+	defer f.Close()
+
+	d := generatePEMUDefinitionTest()
+	record, err := NewResultRecord(d)
+	if err != nil {
+		fmt.Println("Result record generation error", err)
+		return
+	}
+
+	fmt.Println("Dump request result:")
+	record.DumpValues()
+
+	// Output: Dump request result:
+	// Dump all result values
+	//   AA = > 0 <
+	//   PE = [ 0 ]
+	//   U8 = > 0 <
+	//   P2 = [ 0 ]
+	//   I8 = > 0 <
+}
+
+func ExampleResultRecord_DumpValues3() {
+	f, ferr := initLogWithFile("request_result.log")
+	if ferr != nil {
+		return
+	}
+	defer f.Close()
+
+	d := generatePEMUDefinitionTest()
+	record, err := NewResultRecord(d)
+	if err != nil {
+		fmt.Println("Result record generation error", err)
+		return
+	}
+
+	err = record.SetValueWithIndex("PX", []uint32{1, 1}, 122)
+	if err != nil {
+		fmt.Println("Set PX error", err)
+		return
+	}
+
+	fmt.Println("Dump request result:")
+	record.DumpValues()
+
+	// Output: Dump request result:
+	// Dump all result values
+	//   AA = > 0 <
+	//   PE = [ 0 ]
+	//   U8 = > 0 <
+	//   P2 = [ 0 ]
+	//   I8 = > 0 <
 }
 
 func ExampleResultRecord_DumpValues() {
