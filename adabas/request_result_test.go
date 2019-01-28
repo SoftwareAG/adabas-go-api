@@ -365,10 +365,10 @@ func TestRequestResultWithPEMUWithoutContent(t *testing.T) {
 	j, err := json.Marshal(record)
 	assert.NoError(t, err)
 	fmt.Println("JSON:", string(j))
-	assert.Equal(t, "{\"AA\":0,\"I8\":0,\"ISN\":0,\"PE\":[],\"U8\":0}", string(j))
+	assert.Equal(t, "{\"AA\":0,\"I8\":0,\"ISN\":0,\"P2\":[],\"PE\":[],\"U8\":0}", string(j))
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
-	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>0</AA><PE></PE><U8>0</U8><I8>0</I8></Record></Response>", string(x))
+	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>0</AA><PE></PE><U8>0</U8><P2></P2><I8>0</I8></Record></Response>", string(x))
 }
 
 func TestRequestResultWithPEMUWithContent(t *testing.T) {
@@ -424,10 +424,10 @@ func TestRequestResultWithPEMUWithContent(t *testing.T) {
 	j, err := json.Marshal(record)
 	assert.NoError(t, err)
 	fmt.Println("JSON:", string(j))
-	assert.Equal(t, "{\"AA\":2,\"I8\":1,\"ISN\":0,\"PE\":[{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[100,122],\"PP\":1},{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[],\"PP\":2},{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[],\"PP\":3}],\"U8\":3}", string(j))
+	assert.Equal(t, "{\"AA\":2,\"I8\":1,\"ISN\":0,\"P2\":[],\"PE\":[{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[100,122],\"PP\":1},{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[],\"PP\":2},{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[],\"PP\":3}],\"U8\":3}", string(j))
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
-	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>2</AA><PE><PP>1</PP><MU><MU>100</MU><MU>122</MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8><PP>2</PP><MU></MU><GR><PA>0</PA><PG>0</PG><PA>0</PA><PG>0</PG></GR><G8>0</G8><PP>3</PP><MU></MU><GR><PA>0</PA><PG>0</PG><PA>0</PA><PG>0</PG></GR><G8>0</G8></PE><U8>3</U8><I8>1</I8></Record></Response>", string(x))
+	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>2</AA><PE><PP>1</PP><MU><MU>100</MU><MU>122</MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8><PP>2</PP><MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8><PP>3</PP><MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8></PE><U8>3</U8><P2></P2><I8>1</I8></Record></Response>", string(x))
 }
 
 func ExampleResultRecord_DumpValues2() {

@@ -50,6 +50,7 @@ func TestStructureValueGroup(t *testing.T) {
 	assert.Equal(t, " 1, GR  ; GR  PE=false MU=false REMOVE=true", sl.String())
 	v, err := sl.Value()
 	vsl := v.(*StructureValue)
+	vsl.initSubValues(0, 0, true)
 	assert.NoError(t, err)
 	assert.Equal(t, "", vsl.String())
 	vpm := vsl.search("PM")
