@@ -397,7 +397,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 	}
 
 	// Main group name if period group use other
-	Central.Log.Debugf("Main group name : %s", c.Name())
+	Central.Log.Debugf("Main group parent name : %s", c.Name())
 	if c.Type() == FieldTypePeriodGroup {
 		var v IAdaValue
 		for _, v = range def.Values {
@@ -422,7 +422,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 				return
 			}
 		}
-		Central.Log.Debugf("Element : %v", element)
+		Central.Log.Debugf("Element : %#v", element)
 		for _, v = range element.Values {
 			x := searchByName{name: fieldName}
 			switch {
@@ -1248,7 +1248,10 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 		Central.Log.Debugf("Search type error: %v", err)
 		return err
 	}
-	Central.Log.Debugf("Add value to %s %#v=%v", name, index, x)
+	if len(index) == 2 && typ.Type() != FieldTypeMultiplefield && index[1] > 0 {
+		return NewGenericError(62)
+	}
+	Central.Log.Debugf("Set value %s with index=%#v value=%v", name, index, x)
 	var val IAdaValue
 	if !typ.HasFlagSet(FlagOptionPE) {
 		Central.Log.Debugf("Search name ....%s", name)

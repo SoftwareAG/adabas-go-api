@@ -59,6 +59,7 @@ ADG0000058=Logical read with more then one descriptors not allowed, use search c
 ADG0000059=Input byte array to great to store
 ADG0000060=New Adabas ID cannot created because input ID is nil
 ADG0000061=Multiple field not provided
+ADG0000062=Multiple field index on an non-Multiple field
 ADG0000070='{0}' is no valid database id
 ADG0000071=Invalid URL given, need to be like <dbid>(<protocol>://<host>:<port>)
 ADG0000072='{0}' is no valid port number

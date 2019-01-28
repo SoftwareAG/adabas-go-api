@@ -506,7 +506,7 @@ func (adaType *StructureType) Option() string {
 
 // Value return type specific value structure object
 func (adaType *StructureType) Value() (adaValue IAdaValue, err error) {
-	Central.Log.Debugf("Create structure type of %v", adaType.fieldType)
+	Central.Log.Debugf("Create structure type of %v", adaType.fieldType.name())
 	switch adaType.fieldType {
 	case FieldTypeStructure, FieldTypeGroup, FieldTypePeriodGroup, FieldTypeMultiplefield:
 		Central.Log.Debugf("Return Structure value")

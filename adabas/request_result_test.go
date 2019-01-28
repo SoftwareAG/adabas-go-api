@@ -151,13 +151,13 @@ func generatePEMUDefinitionTest() *adatypes.Definition {
 		adatypes.NewType(adatypes.FieldTypeUInt4, "PG"),
 	}
 	periodgroupLayout := []adatypes.IAdaType{
-		adatypes.NewType(adatypes.FieldTypePacked, "PP"),
+		adatypes.NewTypeWithLength(adatypes.FieldTypePacked, "PP", 2),
 		adatypes.NewStructureList(adatypes.FieldTypeMultiplefield, "MU", adatypes.OccNone, muLayout),
 		adatypes.NewStructureList(adatypes.FieldTypeGroup, "GR", adatypes.OccNone, groupLayout),
 		adatypes.NewType(adatypes.FieldTypeUInt8, "G8"),
 	}
 	periodgroup2Layout := []adatypes.IAdaType{
-		adatypes.NewType(adatypes.FieldTypePacked, "PX"),
+		adatypes.NewTypeWithLength(adatypes.FieldTypePacked, "PX", 8),
 		adatypes.NewType(adatypes.FieldTypeUInt8, "PY"),
 	}
 	layout := []adatypes.IAdaType{
@@ -471,20 +471,29 @@ func ExampleResultRecord_DumpValues3() {
 	}
 
 	err = record.SetValueWithIndex("PX", []uint32{1, 1}, 122)
+	if err == nil {
+		fmt.Println("Error setting PX with MU error", err)
+		return
+	}
+	fmt.Println("Correct error:", err)
+	err = record.SetValueWithIndex("PX", []uint32{1, 0}, 122)
 	if err != nil {
-		fmt.Println("Set PX error", err)
+		fmt.Println("Error setting PX error", err)
 		return
 	}
 
 	fmt.Println("Dump request result:")
 	record.DumpValues()
 
-	// Output: Dump request result:
+	// Output: Correct error: ADG0000062: Multiple field index on an non-Multiple field
+	// Dump request result:
 	// Dump all result values
 	//   AA = > 0 <
 	//   PE = [ 0 ]
 	//   U8 = > 0 <
-	//   P2 = [ 0 ]
+	//   P2 = [ 1 ]
+	//    PX[01] = > 122 <
+	//    PY[01] = > 0 <
 	//   I8 = > 0 <
 }
 
@@ -496,6 +505,7 @@ func ExampleResultRecord_DumpValues() {
 	defer f.Close()
 
 	d := generatePEMUDefinitionTest()
+
 	record, err := NewResultRecord(d)
 	if err != nil {
 		fmt.Println("Result record generation error", err)
@@ -503,18 +513,21 @@ func ExampleResultRecord_DumpValues() {
 	}
 
 	for i := uint32(0); i < 3; i++ {
-		adatypes.Central.Log.Infof("Set period group entry of %d", (i + 1))
+		adatypes.Central.Log.Infof("==> Set period group entry PP of %d", (i + 1))
 		err = record.SetValueWithIndex("PP", []uint32{i + 1}, (i + 1))
 		if err != nil {
-			fmt.Println("Set MU error", err)
+			fmt.Println("Set PP error", err)
 			return
 		}
+		adatypes.Central.Log.Infof("<== Set period group entry PP of %d", (i + 1))
 	}
+	adatypes.Central.Log.Infof("==> Set period MU")
 	err = record.SetValueWithIndex("MU", []uint32{1, 1}, 100)
 	if err != nil {
 		fmt.Println("Set MU error", err)
 		return
 	}
+	adatypes.Central.Log.Infof("==> Set second period MU")
 	err = record.SetValueWithIndex("MU", []uint32{1, 2}, 122)
 	if err != nil {
 		fmt.Println("Set MU error", err)
@@ -522,17 +535,17 @@ func ExampleResultRecord_DumpValues() {
 	}
 	err = record.SetValue("AA", 2)
 	if err != nil {
-		fmt.Println("Set PA error", err)
+		fmt.Println("Set AA error", err)
 		return
 	}
 	err = record.SetValue("U8", 3)
 	if err != nil {
-		fmt.Println("Set PA error", err)
+		fmt.Println("Set U8 error", err)
 		return
 	}
 	err = record.SetValue("I8", 1)
 	if err != nil {
-		fmt.Println("Set PA error", err)
+		fmt.Println("Set I8 error", err)
 		return
 	}
 
@@ -548,19 +561,22 @@ func ExampleResultRecord_DumpValues() {
 	//     MU[01,01] = > 100 <
 	//     MU[01,02] = > 122 <
 	//    GR[01] = [ 1 ]
+	//     PA[01] = > 0 <
+	//     PG[01] = > 0 <
 	//    G8[01] = > 0 <
 	//    PP[02] = > 2 <
 	//    MU[02] = [ 0 ]
-	//    GR[02] = [ 2 ]
+	//    GR[02] = [ 1 ]
 	//     PA[02] = > 0 <
 	//     PG[02] = > 0 <
 	//    G8[02] = > 0 <
 	//    PP[03] = > 3 <
 	//    MU[03] = [ 0 ]
-	//    GR[03] = [ 2 ]
+	//    GR[03] = [ 1 ]
 	//     PA[03] = > 0 <
 	//     PG[03] = > 0 <
 	//    G8[03] = > 0 <
 	//   U8 = > 3 <
+	//   P2 = [ 0 ]
 	//   I8 = > 1 <
 }

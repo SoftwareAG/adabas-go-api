@@ -46,12 +46,12 @@ type StructureValue struct {
 }
 
 func newStructure(initType IAdaType) *StructureValue {
-	Central.Log.Debugf("Create new structure value")
+	Central.Log.Debugf("Create new structure value %s", initType.Name())
 	value := StructureValue{adaValue: adaValue{adatype: initType}}
 	value.elementMap = make(map[uint32]*structureElement)
 	switch initType.Type() {
 	case FieldTypeGroup:
-		value.initSubValues(0, 0, false)
+	//	value.initSubValues(0, 0, false)
 	default:
 	}
 	return &value
@@ -62,7 +62,8 @@ func newStructure(initType IAdaType) *StructureValue {
  */
 func (value *StructureValue) initSubValues(index uint32, peIndex uint32, initMuFields bool) {
 	subType := value.adatype.(*StructureType)
-	Central.Log.Debugf("Init sub values for %s", value.adatype.Name())
+	Central.Log.Debugf("Init sub values for %s[%d,%d] -> %d,%d", value.adatype.Name(), value.PeriodIndex(),
+		value.MultipleIndex(), peIndex, index)
 
 	if value.Type().Type() != FieldTypeMultiplefield || initMuFields {
 		for _, st := range subType.SubTypes {
@@ -76,6 +77,10 @@ func (value *StructureValue) initSubValues(index uint32, peIndex uint32, initMuF
 				Central.Log.Debugf("Error %v", err)
 				return
 			}
+			stv.setPeriodIndex(peIndex)
+			Central.Log.Debugf("Add to %s[%d,%d] element %s[%d,%d] --> index=%d", value.Type().Name(), value.PeriodIndex(),
+				value.MultipleIndex(), stv.Type().Name(),
+				stv.PeriodIndex(), stv.MultipleIndex(), peIndex)
 			value.addValue(stv, index)
 			if stv.Type().IsStructure() {
 				stv.(*StructureValue).initSubValues(index, peIndex, false)
@@ -359,7 +364,8 @@ func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (
 					v.PeriodIndex(), v.MultipleIndex(), value.Type().Name(), value.PeriodIndex(), value.MultipleIndex())
 				if value.PeriodIndex() != v.PeriodIndex() {
 					if value.Type().Type() != FieldTypePeriodGroup {
-						panic("Error index parent not correct")
+						//panic("Error index parent not correct")
+						Central.Log.Debugf("!!!!----> Error index parent not correct for %s of %s", v.Type().Name(), value.Type().Name())
 					}
 				}
 				if t.EnterFunction != nil {
@@ -532,7 +538,7 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 		Central.Log.Debugf("Elements =%d", len(value.Elements))
 	}
 	curIndex := index
-	Central.Log.Debugf("Current index = %d", curIndex)
+	Central.Log.Debugf("Current add value index = %d", curIndex)
 	if element, ok = value.elementMap[curIndex]; !ok {
 		element = newStructureElement()
 		value.Elements = append(value.Elements, element)
@@ -605,4 +611,15 @@ func (value *StructureValue) UInt64() (uint64, error) {
 // Float not used
 func (value *StructureValue) Float() (float64, error) {
 	return 0, errors.New("Cannot convert value to 64-bit float")
+}
+
+func (value *StructureValue) setPeriodIndex(index uint32) {
+	Central.Log.Debugf("Set %s structure period index = %d -> %d", value.Type().Name(), value.PeriodIndex(), index)
+	value.peIndex = index
+	for _, val := range value.Elements {
+		for _, v := range val.Values {
+			Central.Log.Debugf("Set %s period index in structure %d -> %d", v.Type().Name(), v.PeriodIndex(), index)
+			v.setPeriodIndex(1)
+		}
+	}
 }
