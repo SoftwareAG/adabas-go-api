@@ -1400,16 +1400,14 @@ func TestConnectionNotConnected(t *testing.T) {
 	assert.Equal(t, "ADAGE95000: System communication error (rsp=149,subrsp=0,dbid=111(adatcp://xxx:60001),file=0)", openErr.Error())
 }
 
-func TestConnectionSimpleStore(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping malloc count in short mode")
-	}
-	f := initTestLogWithFile(t, "connection.log")
+func ExampleConnection_EndTransaction() {
+	f := initLogWithFile("connection.log")
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
-	if !assert.NoError(t, err) {
+	if err!=nil {
+		fmt.Println("Error creating connection",err)
 		return
 	}
 	defer connection.Close()
@@ -1418,6 +1416,7 @@ func TestConnectionSimpleStore(t *testing.T) {
 	if rErr != nil {
 		return
 	}
+	// Define fields to be included in the request
 	sferr := storeRequest.StoreFields("AA,AB")
 	if sferr != nil {
 		fmt.Println("Error setting fields", sferr)
@@ -1429,19 +1428,57 @@ func TestConnectionSimpleStore(t *testing.T) {
 		return
 	}
 	err = record.SetValueWithIndex("AA", nil, "777777_0")
+	if err != nil {
+		fmt.Println("Error set value", err)
+		return
+	}
 	err = record.SetValueWithIndex("AC", nil, "WABER")
+	if err != nil {
+		fmt.Println("Error set value", err)
+		return
+	}
 	err = record.SetValueWithIndex("AD", nil, "EMIL")
+	if err != nil {
+		fmt.Println("Error set value", err)
+		return
+	}
 	err = record.SetValueWithIndex("AE", nil, "MERK")
-	err = storeRequest.Store(record)
-	if !assert.NoError(t, err) {
+	if err != nil {
+		fmt.Println("Error set value", err)
 		return
 	}
 
+	// Store the record in the database
+	err = storeRequest.Store(record)
+	if err != nil {
+		fmt.Println("Store record error", err)
+		return
+	}
+
+	// ET end of transaction final commit the transaction
 	err = storeRequest.EndTransaction()
 	if !assert.NoError(t, err) {
 		return
 	}
-	checkStoreByFile(t, adabasModDBIDs, 16, "777777")
+fmt.Println("Record stored, check content ...")
+readRequest, rrerr := connection.CreateReadRequest(16)
+if rrerr {
+	fmt.Println("Read request error",rrerr)
+	return
+}
+err = readRequest.QueryFields("AA,AB")
+if err!=nil {
+	fmt.Println("Query fields error",err)
+	return
+}
+result, rerr := readRequest.ReadLogicalWith("AA=[777777_:777777_Z]")
+if rerr !=nil {
+	fmt.Println("Read record error",rerr)
+	return
+}
+result.DumpValues()
+
+// Output: xx
 }
 
 func checkStoreByFile(t *testing.T, target string, file uint32, search string) error {
