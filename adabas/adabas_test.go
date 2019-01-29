@@ -210,7 +210,7 @@ func TestAdabasFdt(t *testing.T) {
 	fmt.Println("test done")
 }
 
-func ExampleAdabas_readFileDefinition11() {
+func ExampleAdabas_readFileDefinitionFile11() {
 	f, err := initLogWithFile("adabas.log")
 	if err != nil {
 		fmt.Println(err)

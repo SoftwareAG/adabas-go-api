@@ -201,7 +201,6 @@ func TestConnectionSimpleTypes(t *testing.T) {
 	assert.NotNil(t, request.definition)
 	request.Limit = 3
 	fmt.Println("Result data:")
-	err = request.ReadPhysicalSequenceWithParser(parseTestConnection, parseTestStructure)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -589,7 +588,7 @@ func TestConnectionAllMap(t *testing.T) {
 
 }
 
-func ExampleReadRequest_file() {
+func ExampleConnection_readLogicalWith() {
 	initLogWithFile("connection.log")
 	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
 	if cerr != nil {
@@ -606,9 +605,9 @@ func ExampleReadRequest_file() {
 	fmt.Println("Limit query data:")
 	request.QueryFields("AA,AB")
 	request.Limit = 2
-	result := &Response{}
+	var result *Response
 	fmt.Println("Read logical data:")
-	err = request.ReadLogicalWithWithParser("AA=[11100301:11100303]", nil, result)
+	result, err = request.ReadLogicalWith("AA=[11100301:11100303]")
 	if err != nil {
 		fmt.Println("Error reading", err)
 		return
@@ -634,7 +633,7 @@ func ExampleReadRequest_file() {
 	//    AD = > ELLEN                <
 }
 
-func ExampleConnection_PeriodGroup() {
+func ExampleConnection_periodGroup() {
 	initLogWithFile("connection.log")
 	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
 	if cerr != nil {
@@ -689,7 +688,7 @@ func ExampleConnection_PeriodGroup() {
 	//    AZ[02] = > TUR <
 }
 
-func ExampleReadRequest_wide_character() {
+func ExampleConnection_wideCharacter() {
 	initLogWithFile("connection.log")
 	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
 	if cerr != nil {
@@ -793,7 +792,7 @@ func ExampleReadRequest_wide_character() {
 	//   KA = > रीसेपसणिस्त                                  <
 }
 
-func ExampleReadRequest_MarhsalJSON() {
+func ExampleConnection_marhsalJSONComplete() {
 	initLogWithFile("connection.log")
 	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
 	if cerr != nil {
@@ -828,7 +827,7 @@ func ExampleReadRequest_MarhsalJSON() {
 	// {"Records":[{"A1":{"AI":["26 AVENUE RHIN ET DA"],"AJ":"JOIGNY","AK":"89300","AL":"F"},"A2":{"AM":"44864858","AN":"1033"},"A3":{"AU":19,"AV":5},"AA":"50005800","AB":{"AC":"SIMONE","AD":"","AE":"ADAM"},"AF":"M","AG":"F","AH":712981,"AO":"VENT59","AP":"CHEF DE SERVICE","AQ":[{"AR":"EUR","AS":963,"AT":[138]}],"AW":[{"AX":19990801,"AY":19990831}],"AZ":["FRE","ENG"],"ISN":1}]}
 }
 
-func ExampleConnection_MarhsalJSON_250() {
+func ExampleConnection_marhsalJSON() {
 	initLogWithFile("connection.log")
 	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
 	if cerr != nil {
@@ -950,7 +949,7 @@ func TestConnectionReadMap(t *testing.T) {
 
 }
 
-func ExampleReadRequest_blendMap() {
+func ExampleConnection_map() {
 	initLogWithFile("connection.log")
 	connection, cerr := NewConnection("acj;map;config=[24,4]")
 	if cerr != nil {
@@ -968,10 +967,9 @@ func ExampleReadRequest_blendMap() {
 	fmt.Println("Limit query data:")
 	request.QueryFields("NAME,PERSONNEL-ID")
 	request.Limit = 2
-	result := &Response{}
 	fmt.Println("Read logical data:")
-	err = request.ReadLogicalWithWithParser("PERSONNEL-ID=[11100301:11100303]", nil, result)
-	if err != nil {
+	result, rerr := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
+	if rerr != nil {
 		return
 	}
 	fmt.Println("Result data:")
@@ -992,7 +990,7 @@ func ExampleReadRequest_blendMap() {
 	//    NAME = > HAIBACH              <
 }
 
-func ExampleReadRequest_isn() {
+func ExampleConnection_readIsn() {
 	initLogWithFile("connection.log")
 	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
 	if cerr != nil {
@@ -1400,7 +1398,7 @@ func TestConnectionNotConnected(t *testing.T) {
 	assert.Equal(t, "ADAGE95000: System communication error (rsp=149,subrsp=0,dbid=111(adatcp://xxx:60001),file=0)", openErr.Error())
 }
 
-func ExampleConnection_EndTransaction() {
+func ExampleConnection_endTransaction() {
 	f, lerr := initLogWithFile("connection.log")
 	if lerr != nil {
 		return
@@ -1629,4 +1627,117 @@ func TestConnectionSimpleMultipleStore(t *testing.T) {
 	}
 	checkStoreByFile(t, adabasModDBIDs, 16, "16555")
 	checkStoreByFile(t, adabasModDBIDs, 19, "19555")
+}
+
+func ExampleConnection_multipleStore() {
+	f, err := initLogWithFile("connection.log")
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	if cErr := clearFile(16); cErr != nil {
+		return
+	}
+	if cErr := clearFile(19); cErr != nil {
+		return
+	}
+
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
+	if err != nil {
+		return
+	}
+	defer connection.Close()
+	connection.Open()
+	storeRequest16, rErr := connection.CreateStoreRequest(16)
+	if err != nil {
+		return
+	}
+	storeRequest16.StoreFields("AA,AB")
+	record, err := storeRequest16.CreateRecord()
+	err = record.SetValueWithIndex("AA", nil, "16555_0")
+	err = record.SetValueWithIndex("AC", nil, "WABER")
+	err = record.SetValueWithIndex("AD", nil, "EMIL")
+	err = record.SetValueWithIndex("AE", nil, "MERK")
+	err = storeRequest16.Store(record)
+	if err != nil {
+		return
+	}
+	storeRequest19, rErr := connection.CreateStoreRequest(19)
+	if rErr != nil {
+		return
+	}
+	storeRequest19.StoreFields("AA,CD")
+	record, err = storeRequest19.CreateRecord()
+	err = record.SetValueWithIndex("AA", nil, "19555_0")
+	err = record.SetValueWithIndex("AC", nil, "WABER")
+	err = record.SetValueWithIndex("AD", nil, "EMIL")
+	err = record.SetValueWithIndex("AE", nil, "MERK")
+	err = storeRequest19.Store(record)
+	if err != nil {
+		return
+	}
+
+	err = connection.EndTransaction()
+	if err != nil {
+		return
+	}
+	fmt.Println("Read file 16 ...")
+	dumpStoredData(adabasModDBIDs, 16, "16555")
+	fmt.Println("Read file 19 ...")
+	dumpStoredData(adabasModDBIDs, 19, "19555")
+
+	// Output: Read file 16 ...
+	// Dump all result values
+	// Record Isn: 0001
+	//   AA = > 16555_0  <
+	//   AB = [ 1 ]
+	//    AC = > WABER                <
+	//    AE = > MERK                 <
+	//    AD = > EMIL                 <
+	// Read file 19 ...
+	// Dump all result values
+	// Record Isn: 0001
+	//   AA = > 19555_0         <
+	//   CD = [ 1 ]
+	//    AD = > EMIL                 <
+	//    AE = > MERK                 <
+	//    AF = >            <
+
+}
+
+func dumpStoredData(target string, file uint32, search string) error {
+	connection, err := NewConnection("acj;target=" + target)
+	if err != nil {
+		return err
+	}
+	defer connection.Close()
+	readRequest, rrerr := connection.CreateReadRequest(file)
+	if rrerr != nil {
+		return rrerr
+	}
+	fields := "AA,AB"
+	searchField := "AA"
+
+	switch file {
+	case 18:
+		fields = "CA,EB"
+		searchField = "CA"
+	case 19:
+		fields = "AA,CD"
+		searchField = "AA"
+	}
+	err = readRequest.QueryFields(fields)
+	if err != nil {
+		return err
+	}
+	result, rerr := readRequest.ReadLogicalWith(searchField + "=[" + search + "_:" + search + "_Z]")
+	if rerr != nil {
+		return rerr
+	}
+	for i, record := range result.Values {
+		record.Isn = adatypes.Isn(i + 1)
+	}
+	result.DumpValues()
+	return nil
 }

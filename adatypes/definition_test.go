@@ -499,7 +499,7 @@ func createPeriodGroupMultiplerField() *Definition {
 	return testDefinition
 }
 
-func ExampleDefinition_DumpValues() {
+func ExampleDefinition_dumpValues() {
 	f, err := initLogWithFile("definition.log")
 	if err != nil {
 		return
@@ -532,7 +532,7 @@ func ExampleDefinition_DumpValues() {
 
 }
 
-func ExampleDefinition_Search() {
+func ExampleDefinition_search() {
 	f, err := initLogWithFile("definition.log")
 	if err != nil {
 		return

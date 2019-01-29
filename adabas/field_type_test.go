@@ -306,7 +306,7 @@ func dumpFieldTypeValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 	return adatypes.Continue, nil
 }
 
-func ExampleFieldType() {
+func ExampleFieldType_all() {
 	f, err := initLogWithFile("field_type.log")
 	if err != nil {
 		fmt.Println(err)

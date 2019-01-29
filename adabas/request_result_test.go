@@ -224,7 +224,7 @@ func generateResult() *Response {
 // 	assert.Equal(t, r, res)
 // }
 
-func ExampleRequestResult_JsonMarshal() {
+func ExampleResponse_jsonMarshal() {
 	result := generateResult()
 	res, err := json.Marshal(result)
 	if err != nil {
@@ -235,7 +235,7 @@ func ExampleRequestResult_JsonMarshal() {
 	// Output: {"Records":[{"AA":10,"B1":0,"GR":{"G1":"0","GX":"","PA":9},"I2":0,"I8":0,"ISN":10,"U8":0,"UB":0},{"AA":20,"B1":0,"GR":{"G1":"0","GX":"","PA":3},"I2":0,"I8":0,"ISN":11,"U8":0,"UB":0}]}
 }
 
-func ExampleRequestResult_XmlMarshal() {
+func ExampleResponse_xmlMarshal() {
 	f, ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
@@ -430,7 +430,7 @@ func TestRequestResultWithPEMUWithContent(t *testing.T) {
 	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>2</AA><PE><PP>1</PP><MU><MU>100</MU><MU>122</MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8><PP>2</PP><MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8><PP>3</PP><MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8></PE><U8>3</U8><P2></P2><I8>1</I8></Record></Response>", string(x))
 }
 
-func ExampleRecord_DumpValues2() {
+func ExampleRecord_dumpZeroValues() {
 	f, ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
@@ -456,7 +456,7 @@ func ExampleRecord_DumpValues2() {
 	//   I8 = > 0 <
 }
 
-func ExampleRecord_SetValueWithIndex() {
+func ExampleRecord_setValueWithIndex() {
 	f, ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
@@ -497,7 +497,7 @@ func ExampleRecord_SetValueWithIndex() {
 	//   I8 = > 0 <
 }
 
-func ExampleRecord_SetValue() {
+func ExampleRecord_setValue() {
 	f, ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return

@@ -23,7 +23,7 @@ import (
 	"os"
 )
 
-func ExampleReadRequest_fileMf() {
+func ExampleConnection_readMainframe() {
 	initLogWithFile("mainframe.log")
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
@@ -77,7 +77,7 @@ func ExampleReadRequest_fileMf() {
 
 }
 
-func ExampleReadRequest_fileMfBorder() {
+func ExampleConnection_readBorderMainframe() {
 	initLogWithFile("mainframe.log")
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
@@ -124,7 +124,7 @@ func ExampleReadRequest_fileMfBorder() {
 
 }
 
-func ExampleReadRequest_fileMfNoMinimum() {
+func ExampleConnection_readNoMinimumMainframe() {
 	initLogWithFile("mainframe.log")
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
@@ -178,7 +178,7 @@ func ExampleReadRequest_fileMfNoMinimum() {
 
 }
 
-func ExampleReadRequest_fileMfNoMaximum() {
+func ExampleConnection_readNoMaximumMainframe() {
 	initLogWithFile("mainframe.log")
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
