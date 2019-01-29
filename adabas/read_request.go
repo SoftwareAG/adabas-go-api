@@ -20,8 +20,6 @@
 package adabas
 
 import (
-	"strconv"
-
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
@@ -67,8 +65,8 @@ func NewMapRequest(mapName string, url string, fnr uint32) (*ReadRequest, error)
 		adabasMap: adabasMap, repository: adabasMap.dataRepository}}, nil
 }*/
 
-// NewMapNameRequestRepo create a new Request instance
-func NewMapNameRequestRepo(mapName string, adabas *Adabas, repository *Repository) (request *ReadRequest, err error) {
+// NewMapReadRequestRepo create a new Request instance
+func NewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Repository) (request *ReadRequest, err error) {
 	if repository == nil {
 		err = adatypes.NewGenericError(20)
 		return
@@ -90,8 +88,8 @@ func NewMapNameRequestRepo(mapName string, adabas *Adabas, repository *Repositor
 	return
 }
 
-// NewMapNameRequest create a new Request instance
-func NewMapNameRequest(adabas *Adabas, mapName string) (request *ReadRequest, err error) {
+// NewMapReadRequest create a new Request instance
+func NewMapReadRequest(adabas *Adabas, mapName string) (request *ReadRequest, err error) {
 	var adabasMap *Map
 	adabasMap, err = SearchMapRepository(adabas, mapName)
 	if err != nil {
@@ -112,8 +110,8 @@ func NewMapNameRequest(adabas *Adabas, mapName string) (request *ReadRequest, er
 	return
 }
 
-// NewAdabasMapNameRequest create a new Request instance
-func NewAdabasMapNameRequest(adabas *Adabas, adabasMap *Map) (request *ReadRequest, err error) {
+// NewMapReadRequestByMap create a new Request instance
+func NewMapReadRequestByMap(adabas *Adabas, adabasMap *Map) (request *ReadRequest, err error) {
 	if adabasMap == nil {
 		err = adatypes.NewGenericError(22, adabasMap.Name)
 		return
@@ -129,21 +127,21 @@ func NewAdabasMapNameRequest(adabas *Adabas, adabasMap *Map) (request *ReadReque
 	return
 }
 
-// NewRequest create a new Request instance
-func NewRequest(url string, fnr uint32) *ReadRequest {
-	var adabas *Adabas
-	if dbid, err := strconv.Atoi(url); err == nil {
-		adabas = NewAdabas(Dbid(dbid))
-	} else {
-		return nil
-	}
-	return &ReadRequest{Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
-		commonRequest: commonRequest{adabas: adabas,
-			repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}
-}
+// NewReadRequest create a new Request instance
+// func NewReadRequest(url string, fnr uint32) *ReadRequest {
+// 	var adabas *Adabas
+// 	if dbid, err := strconv.Atoi(url); err == nil {
+// 		adabas = NewAdabas(Dbid(dbid))
+// 	} else {
+// 		return nil
+// 	}
+// 	return &ReadRequest{Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
+// 		commonRequest: commonRequest{adabas: adabas,
+// 			repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}
+// }
 
-// NewRequestAdabas create a new Request instance
-func NewRequestAdabas(adabas *Adabas, fnr uint32) *ReadRequest {
+// NewReadRequestAdabas create a new Request instance
+func NewReadRequestAdabas(adabas *Adabas, fnr uint32) *ReadRequest {
 	clonedAdabas := NewClonedAdabas(adabas)
 
 	return &ReadRequest{Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,

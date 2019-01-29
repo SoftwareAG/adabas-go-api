@@ -240,7 +240,7 @@ func clearAdabasFile(t *testing.T, target string, fnr uint32) error {
 	}
 	deleteRequest := NewDeleteRequestAdabas(adabas, fnr)
 	defer deleteRequest.Close()
-	readRequest := NewRequestAdabas(adabas, fnr)
+	readRequest := NewReadRequestAdabas(adabas, fnr)
 	defer readRequest.Close()
 	// Need to call all and don't need to read the data for deleting all records
 	readRequest.Limit = 0
@@ -281,7 +281,7 @@ func clearMap(t *testing.T, adabas *Adabas, mapName string) error {
 	defer deleteRequest.Close()
 	fmt.Println("Query entries in map", mapName)
 	adatypes.Central.Log.Debugf("New map request after clear map")
-	readRequest, rErr := NewMapNameRequest(adabas, mapName)
+	readRequest, rErr := NewMapReadRequest(adabas, mapName)
 	if !assert.NoError(t, rErr) {
 		return rErr
 	}
@@ -443,7 +443,7 @@ func checkUpdateCorrectReadNumber(t *testing.T, value string, isns []adatypes.Is
 	if !assert.NoError(t, err) {
 		return
 	}
-	request := NewRequestAdabas(adabas, 16)
+	request := NewReadRequestAdabas(adabas, 16)
 	defer request.Close()
 	request.QueryFields("AA")
 	result := &Response{}
@@ -566,7 +566,7 @@ func TestStoreWithMapLobFile(t *testing.T) {
 func validateUsingAdabas(t *testing.T, isn adatypes.Isn) {
 	fmt.Println("Validate using Adabas")
 	adabas := NewAdabas(adabasModDBID)
-	request := NewRequestAdabas(adabas, 160)
+	request := NewReadRequestAdabas(adabas, 160)
 	defer request.Close()
 	openErr := request.Open()
 	if assert.NoError(t, openErr) {
@@ -604,7 +604,7 @@ func validateUsingMap(t *testing.T, isn adatypes.Isn) {
 	fmt.Println("Validate using Map")
 	adabas := NewAdabas(adabasModDBID)
 	mapRepository := NewMapRepository(adabas, 4)
-	request, err := NewMapNameRequestRepo("LOBEXAMPLE", adabas, mapRepository)
+	request, err := NewMapReadRequestRepo("LOBEXAMPLE", adabas, mapRepository)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -656,7 +656,7 @@ func TestStoreMapMissing(t *testing.T) {
 	defer adabas.Close()
 
 	mapRepository := NewMapRepository(adabas, 4)
-	request, err := NewMapNameRequestRepo("NONMAP", adabas, mapRepository)
+	request, err := NewMapReadRequestRepo("NONMAP", adabas, mapRepository)
 	if assert.Error(t, err) {
 		if assert.Nil(t, request) {
 			assert.Equal(t, "ADG0000014: Map NONMAP not found in repository", err.Error())
@@ -679,7 +679,7 @@ func TestStorePeriod(t *testing.T) {
 	mr := NewMapRepository(adabas, 250)
 	mapName := massLoadSystransStore
 
-	readRequest, rErr := NewMapNameRequestRepo(mapName, adabas, mr)
+	readRequest, rErr := NewMapReadRequestRepo(mapName, adabas, mr)
 	if !assert.NoError(t, rErr) {
 		return
 	}

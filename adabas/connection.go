@@ -242,7 +242,7 @@ func (connection *Connection) Release() error {
 
 // CreateReadRequest create a read request
 func (connection *Connection) CreateReadRequest(fnr uint32) (*ReadRequest, error) {
-	return NewRequestAdabas(connection.adabasToData, fnr), nil
+	return NewReadRequestAdabas(connection.adabasToData, fnr), nil
 }
 
 // CreateMapReadRequest create a read request using a given map
@@ -253,7 +253,7 @@ func (connection *Connection) CreateMapReadRequest(mapName string) (request *Rea
 	}
 	connection.fnr = int(connection.adabasMap.Data.Fnr)
 	adatypes.Central.Log.Debugf("Map referenced : %#v", connection.adabasMap)
-	request, err = NewAdabasMapNameRequest(connection.adabasToData, connection.adabasMap)
+	request, err = NewMapReadRequestByMap(connection.adabasToData, connection.adabasMap)
 	return
 }
 
