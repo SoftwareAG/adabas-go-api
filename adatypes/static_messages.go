@@ -812,4 +812,3 @@ var statisMessages = []struct {
 	{"ADG0000071", "en", "Invalid URL given, need to be like <dbid>(<protocol>://<host>:<port>)"},
 	{"ADG0000072", "en", "'{0}' is no valid port number"},
 }
-
