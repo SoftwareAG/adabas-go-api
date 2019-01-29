@@ -33,9 +33,8 @@ func BenchmarkConnection_noMultifetch(b *testing.B) {
 
 	qErr := readRequest.QueryFields("AA,AB")
 	assert.NoError(b, qErr)
-	result := &Response{}
-	err = readRequest.ReadPhysicalSequenceWithParser(nil, result)
-	assert.NoError(b, err)
+	result, rerr := readRequest.ReadPhysicalSequence()
+	assert.NoError(b, rerr)
 	assert.Equal(b, 1107, len(result.Values))
 }
 
