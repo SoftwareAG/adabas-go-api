@@ -1546,7 +1546,7 @@ func validateResult(t *testing.T, search string, result *Response) error {
 	fmt.Println(string(resultJSON))
 	rw := os.Getenv("REFERENCES")
 	doWrite := os.Getenv("REFERENCE_WRITE")
-	destinationFile := rw + "/" + search + ".json"
+	destinationFile := rw + string(os.PathSeparator) + search + ".json"
 	if _, err := os.Stat(destinationFile); os.IsNotExist(err) {
 		doWrite = "1"
 	}
