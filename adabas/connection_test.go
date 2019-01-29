@@ -1401,13 +1401,16 @@ func TestConnectionNotConnected(t *testing.T) {
 }
 
 func ExampleConnection_EndTransaction() {
-	f := initLogWithFile("connection.log")
+	f, lerr := initLogWithFile("connection.log")
+	if lerr != nil {
+		return
+	}
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	fmt.Println("Example for EndTransaction()")
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
-	if err!=nil {
-		fmt.Println("Error creating connection",err)
+	if err != nil {
+		fmt.Println("Error creating connection", err)
 		return
 	}
 	defer connection.Close()
@@ -1457,28 +1460,43 @@ func ExampleConnection_EndTransaction() {
 
 	// ET end of transaction final commit the transaction
 	err = storeRequest.EndTransaction()
-	if !assert.NoError(t, err) {
+	if err != nil {
+		fmt.Println("End transaction error", err)
 		return
 	}
-fmt.Println("Record stored, check content ...")
-readRequest, rrerr := connection.CreateReadRequest(16)
-if rrerr {
-	fmt.Println("Read request error",rrerr)
-	return
-}
-err = readRequest.QueryFields("AA,AB")
-if err!=nil {
-	fmt.Println("Query fields error",err)
-	return
-}
-result, rerr := readRequest.ReadLogicalWith("AA=[777777_:777777_Z]")
-if rerr !=nil {
-	fmt.Println("Read record error",rerr)
-	return
-}
-result.DumpValues()
+	fmt.Println("Record stored, check content ...")
+	readRequest, rrerr := connection.CreateReadRequest(16)
+	if rrerr != nil {
+		fmt.Println("Read request error", rrerr)
+		return
+	}
+	err = readRequest.QueryFields("AA,AB")
+	if err != nil {
+		fmt.Println("Query fields error", err)
+		return
+	}
+	result, rerr := readRequest.ReadLogicalWith("AA=[777777_:777777_Z]")
+	if rerr != nil {
+		fmt.Println("Read record error", rerr)
+		return
+	}
+	if len(result.Values) != 1 {
+		fmt.Println("Records received not correct", len(result.Values))
+		return
+	}
+	// To adapt output for example
+	result.Values[0].Isn = 0
+	result.DumpValues()
 
-// Output: xx
+	// Output: Example for EndTransaction()
+	// Record stored, check content ...
+	// Dump all result values
+	//   AA = > 777777_0 <
+	//   AB = [ 1 ]
+	//    AC = > WABER                <
+	//    AE = > MERK                 <
+	//    AD = > EMIL                 <
+
 }
 
 func checkStoreByFile(t *testing.T, target string, file uint32, search string) error {
