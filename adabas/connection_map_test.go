@@ -645,7 +645,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 
 }
 
-func ExampleConnection_multipleMapStore() {
+func ExampleConnection_mapStore() {
 	f, err := initLogWithFile("connection.log")
 	if err != nil {
 		return
