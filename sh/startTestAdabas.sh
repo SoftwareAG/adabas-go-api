@@ -14,7 +14,7 @@ DYLD_LIBRARY_PATH=:/Volumes/SAG-Q/testenv/adav67/AdabasClient/lib:/lib:/usr/lib
 export DYLD_LIBRARY_PATH
 ENABLE_DEBUG=${ENABLE_DEBUG:-0}
 ADAMFDBID=54712
-ADATCPHOST=emon:60177
+ADATCPHOST=${ADATCPHOST:-emon:60177}
 LOGPATH=`pwd`/logs
 TESTFILES=`pwd`/files
 REFERENCES=${TESTFILES}/references
