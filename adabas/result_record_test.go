@@ -27,11 +27,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestResultRecord(t *testing.T) {
-	f := initTestLogWithFile(t, "resultrecord.log")
+func TestRecord(t *testing.T) {
+	f := initTestLogWithFile(t, "Record.log")
 	defer f.Close()
 
-	resultNil, err := NewResultRecord(nil)
+	resultNil, err := NewRecord(nil)
 	assert.Error(t, err)
 	assert.Nil(t, resultNil)
 
@@ -46,7 +46,7 @@ func TestResultRecord(t *testing.T) {
 
 	testDefinition := adatypes.NewDefinitionWithTypes(layout)
 	testDefinition.CreateValues(false)
-	result, err := NewResultRecord(testDefinition)
+	result, err := NewRecord(testDefinition)
 	if assert.NoError(t, err) {
 		assert.NotNil(t, result)
 		assert.Equal(t, "ISN=0 quanity=0\n U4=\"0\"\n B1=\"0\"\n UB=\"0\"\n I2=\"0\"\n U8=\"0\"\n I8=\"0\"\n", result.String())

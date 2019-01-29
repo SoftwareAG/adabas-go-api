@@ -295,7 +295,7 @@ func TestConnectionMapPointingToRemote(t *testing.T) {
 }
 
 func copyRecordData(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
-	record := x.(*ResultRecord)
+	record := x.(*Record)
 	fmt.Println(adaValue.Type().Name(), "=", adaValue.String())
 	err := record.SetValueWithIndex(adaValue.Type().Name(), nil, adaValue.Value())
 	if err != nil {
@@ -309,7 +309,7 @@ func copyRecordData(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Traver
 
 func copyData(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
 	store := x.(*StoreRequest)
-	var record *ResultRecord
+	var record *Record
 	record, err = store.CreateRecord()
 	if err != nil {
 		fmt.Printf("Error creating record %v\n", err)

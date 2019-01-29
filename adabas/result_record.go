@@ -28,8 +28,8 @@ import (
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
-// ResultRecord one result record of the result
-type ResultRecord struct {
+// Record one result record of the result
+type Record struct {
 	Isn        adatypes.Isn `xml:"Isn,attr"`
 	quantity   uint64
 	Value      []adatypes.IAdaValue
@@ -38,7 +38,7 @@ type ResultRecord struct {
 }
 
 func hashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
-	record := x.(*ResultRecord)
+	record := x.(*Record)
 	if _, ok := record.HashFields[adaValue.Type().Name()]; !ok {
 		record.HashFields[adaValue.Type().Name()] = adaValue
 	}
@@ -46,8 +46,8 @@ func hashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseRe
 	return adatypes.Continue, nil
 }
 
-// NewResultRecord new result record
-func NewResultRecord(definition *adatypes.Definition) (*ResultRecord, error) {
+// NewRecord new result record
+func NewRecord(definition *adatypes.Definition) (*Record, error) {
 	if definition == nil {
 		adatypes.Central.Log.Debugf("Definition values empty")
 		return nil, fmt.Errorf("Field list empty")
@@ -58,7 +58,7 @@ func NewResultRecord(definition *adatypes.Definition) (*ResultRecord, error) {
 			return nil, err
 		}
 	}
-	record := &ResultRecord{Value: definition.Values, definition: definition}
+	record := &Record{Value: definition.Values, definition: definition}
 	definition.Values = nil
 	record.HashFields = make(map[string]adatypes.IAdaValue)
 	t := adatypes.TraverserValuesMethods{EnterFunction: hashValues}
@@ -66,9 +66,9 @@ func NewResultRecord(definition *adatypes.Definition) (*ResultRecord, error) {
 	return record, nil
 }
 
-// NewResultRecordIsn new result record with ISN or ISN quantity
-func NewResultRecordIsn(isn adatypes.Isn, isnQuantity uint64, definition *adatypes.Definition) (*ResultRecord, error) {
-	record, err := NewResultRecord(definition)
+// NewRecordIsn new result record with ISN or ISN quantity
+func NewRecordIsn(isn adatypes.Isn, isnQuantity uint64, definition *adatypes.Definition) (*Record, error) {
+	record, err := NewRecord(definition)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func recordValuesTraverser(adaValue adatypes.IAdaValue, x interface{}) (adatypes
 	return adatypes.Continue, nil
 }
 
-func (record *ResultRecord) String() string {
+func (record *Record) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString(fmt.Sprintf("ISN=%d quanity=%d\n", record.Isn, record.quantity))
 	t := adatypes.TraverserValuesMethods{EnterFunction: recordValuesTraverser}
@@ -94,7 +94,7 @@ func (record *ResultRecord) String() string {
 	return buffer.String()
 }
 
-func (record *ResultRecord) traverse(t adatypes.TraverserValuesMethods, x interface{}) (ret adatypes.TraverseResult, err error) {
+func (record *Record) traverse(t adatypes.TraverserValuesMethods, x interface{}) (ret adatypes.TraverseResult, err error) {
 	if record == nil {
 		return adatypes.EndTraverser, adatypes.NewGenericError(33)
 	}
@@ -128,14 +128,14 @@ func (record *ResultRecord) traverse(t adatypes.TraverserValuesMethods, x interf
 }
 
 // DumpValues traverse through the tree of values calling a callback method
-func (record *ResultRecord) DumpValues() {
+func (record *Record) DumpValues() {
 	fmt.Println("Dump all result values")
-	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareResultRecordDump,
-		EnterFunction: dumpResultRecord}
+	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump,
+		EnterFunction: dumpRecord}
 	record.traverse(t, nil)
 }
 
-func (record *ResultRecord) searchValue(field string) (adatypes.IAdaValue, bool) {
+func (record *Record) searchValue(field string) (adatypes.IAdaValue, bool) {
 	if adaValue, ok := record.HashFields[field]; ok {
 		return adaValue, true
 	}
@@ -143,7 +143,7 @@ func (record *ResultRecord) searchValue(field string) (adatypes.IAdaValue, bool)
 }
 
 // SetValue set the value for a specific field
-func (record *ResultRecord) SetValue(field string, value interface{}) (err error) {
+func (record *Record) SetValue(field string, value interface{}) (err error) {
 	if strings.ContainsRune(field, '[') {
 		i := strings.IndexRune(field, '[')
 		e := strings.IndexRune(field, ']')
@@ -176,7 +176,7 @@ func (record *ResultRecord) SetValue(field string, value interface{}) (err error
 }
 
 // SetValueWithIndex Add value to an node element
-func (record *ResultRecord) SetValueWithIndex(name string, index []uint32, x interface{}) error {
+func (record *Record) SetValueWithIndex(name string, index []uint32, x interface{}) error {
 	// TODO why specific?
 	record.definition.Values = record.Value
 	adatypes.Central.Log.Debugf("Record value : %#v", record.Value)
@@ -184,12 +184,12 @@ func (record *ResultRecord) SetValueWithIndex(name string, index []uint32, x int
 }
 
 // SearchValue search value in the tree
-func (record *ResultRecord) SearchValue(name string) (adatypes.IAdaValue, error) {
+func (record *Record) SearchValue(name string) (adatypes.IAdaValue, error) {
 	return record.SearchValueIndex(name, []uint32{0, 0})
 }
 
 // SearchValueIndex search value in the tree with a given index
-func (record *ResultRecord) SearchValueIndex(name string, index []uint32) (adatypes.IAdaValue, error) {
+func (record *Record) SearchValueIndex(name string, index []uint32) (adatypes.IAdaValue, error) {
 	record.definition.Values = record.Value
 	adatypes.Central.Log.Debugf("Record value : %#v", record.Value)
 	return record.definition.SearchByIndex(name, index, false)

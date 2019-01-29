@@ -102,14 +102,14 @@ func (request *StoreRequest) StoreFields(fields string) (err error) {
 }
 
 // CreateRecord create a record for a special store request
-func (request *StoreRequest) CreateRecord() (record *ResultRecord, err error) {
+func (request *StoreRequest) CreateRecord() (record *Record, err error) {
 	err = request.definition.CreateValues(true)
 	if err != nil {
 		adatypes.Central.Log.Debugf("Error creating values %v\n", err)
 		return
 	}
 	adatypes.Central.Log.Debugf("Create record Definitons %#v\n", request.definition)
-	record, xerr := NewResultRecord(request.definition)
+	record, xerr := NewRecord(request.definition)
 	if xerr != nil {
 		adatypes.Central.Log.Debugf("Error creating record %v\n", xerr)
 		err = adatypes.NewGenericError(27, xerr.Error())
@@ -118,7 +118,7 @@ func (request *StoreRequest) CreateRecord() (record *ResultRecord, err error) {
 }
 
 // Store store a record
-func (request *StoreRequest) Store(storeRecord *ResultRecord) error {
+func (request *StoreRequest) Store(storeRecord *Record) error {
 	request.definition.Values = storeRecord.Value
 	adabasRequest, prepareErr := request.prepareRequest()
 	if prepareErr != nil {
@@ -140,7 +140,7 @@ func (request *StoreRequest) Store(storeRecord *ResultRecord) error {
 }
 
 // Update update a record
-func (request *StoreRequest) Update(storeRecord *ResultRecord) error {
+func (request *StoreRequest) Update(storeRecord *Record) error {
 	request.definition.Values = storeRecord.Value
 	adabasRequest, prepareErr := request.prepareRequest()
 	if prepareErr != nil {
@@ -150,7 +150,7 @@ func (request *StoreRequest) Update(storeRecord *ResultRecord) error {
 }
 
 // Exchange exchange a record
-func (request *StoreRequest) Exchange(storeRecord *ResultRecord) error {
+func (request *StoreRequest) Exchange(storeRecord *Record) error {
 	request.definition.Values = storeRecord.Value
 	adabasRequest, prepareErr := request.prepareRequest()
 	if prepareErr != nil {
@@ -160,7 +160,7 @@ func (request *StoreRequest) Exchange(storeRecord *ResultRecord) error {
 }
 
 // update update a record
-func (request *StoreRequest) update(adabasRequest *adatypes.AdabasRequest, storeRecord *ResultRecord) error {
+func (request *StoreRequest) update(adabasRequest *adatypes.AdabasRequest, storeRecord *Record) error {
 	//	storeRecord
 	helper := adatypes.NewDynamicHelper(binary.LittleEndian)
 	err := storeRecord.createRecordBuffer(helper)

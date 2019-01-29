@@ -257,7 +257,7 @@ func TestFieldTypeRead(t *testing.T) {
 	}
 }
 
-func jsonOutput(r *ResultRecord) error {
+func jsonOutput(r *Record) error {
 	x, jsonErr := json.Marshal(r)
 	if jsonErr != nil {
 		fmt.Println("Error", jsonErr)
@@ -269,7 +269,7 @@ func jsonOutput(r *ResultRecord) error {
 }
 
 func dumpFieldTypeTestPrepare(x interface{}, b interface{}) (adatypes.TraverseResult, error) {
-	record := x.(*ResultRecord)
+	record := x.(*Record)
 	if record == nil {
 		return adatypes.EndTraverser, adatypes.NewGenericError(25)
 	}

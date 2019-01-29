@@ -31,14 +31,14 @@ import (
 )
 
 type fields struct {
-	values []*ResultRecord
+	values []*Record
 }
 
 func generateOneFields(t *testing.T) fields {
 	oneField := fields{}
 	v, err := adatypes.NewType(adatypes.FieldTypeByte, "AA").Value()
 	assert.NoError(t, err)
-	record := &ResultRecord{Value: []adatypes.IAdaValue{v}}
+	record := &Record{Value: []adatypes.IAdaValue{v}}
 	oneField.values = append(oneField.values, record)
 	return oneField
 }
@@ -180,7 +180,7 @@ func generatePEMUDefinitionTest() *adatypes.Definition {
 func generateResult() *RequestResult {
 	d := generateDefinitionTest()
 	result := &RequestResult{}
-	record, err := NewResultRecord(d)
+	record, err := NewRecord(d)
 	if err != nil {
 		fmt.Println("Error generating result record", err)
 		return nil
@@ -197,7 +197,7 @@ func generateResult() *RequestResult {
 		return nil
 	}
 	result.Values = append(result.Values, record)
-	record, err = NewResultRecord(d)
+	record, err = NewRecord(d)
 	if err != nil {
 		fmt.Println("Error generating result record", err)
 		return nil
@@ -280,7 +280,7 @@ func TestRequestResultWithMU(t *testing.T) {
 	defer f.Close()
 
 	d := generateMUDefinitionTest()
-	record, err := NewResultRecord(d)
+	record, err := NewRecord(d)
 	if !assert.NoError(t, err) {
 		fmt.Println("Result record generation error", err)
 		return
@@ -305,7 +305,7 @@ func TestRequestResultWithMUWithContent(t *testing.T) {
 	defer f.Close()
 
 	d := generateMUDefinitionTest()
-	record, err := NewResultRecord(d)
+	record, err := NewRecord(d)
 	if !assert.NoError(t, err) {
 		fmt.Println("Result record generation error", err)
 		return
@@ -354,7 +354,7 @@ func TestRequestResultWithPEMUWithoutContent(t *testing.T) {
 	defer f.Close()
 
 	d := generatePEMUDefinitionTest()
-	record, err := NewResultRecord(d)
+	record, err := NewRecord(d)
 	if !assert.NoError(t, err) {
 		fmt.Println("Result record generation error", err)
 		return
@@ -379,7 +379,7 @@ func TestRequestResultWithPEMUWithContent(t *testing.T) {
 	defer f.Close()
 
 	d := generatePEMUDefinitionTest()
-	record, err := NewResultRecord(d)
+	record, err := NewRecord(d)
 	if !assert.NoError(t, err) {
 		fmt.Println("Result record generation error", err)
 		return
@@ -430,7 +430,7 @@ func TestRequestResultWithPEMUWithContent(t *testing.T) {
 	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>2</AA><PE><PP>1</PP><MU><MU>100</MU><MU>122</MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8><PP>2</PP><MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8><PP>3</PP><MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8></PE><U8>3</U8><P2></P2><I8>1</I8></Record></Response>", string(x))
 }
 
-func ExampleResultRecord_DumpValues2() {
+func ExampleRecord_DumpValues2() {
 	f, ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
@@ -438,7 +438,7 @@ func ExampleResultRecord_DumpValues2() {
 	defer f.Close()
 
 	d := generatePEMUDefinitionTest()
-	record, err := NewResultRecord(d)
+	record, err := NewRecord(d)
 	if err != nil {
 		fmt.Println("Result record generation error", err)
 		return
@@ -456,7 +456,7 @@ func ExampleResultRecord_DumpValues2() {
 	//   I8 = > 0 <
 }
 
-func ExampleResultRecord_DumpValues3() {
+func ExampleRecord_SetValueWithIndex() {
 	f, ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
@@ -464,7 +464,7 @@ func ExampleResultRecord_DumpValues3() {
 	defer f.Close()
 
 	d := generatePEMUDefinitionTest()
-	record, err := NewResultRecord(d)
+	record, err := NewRecord(d)
 	if err != nil {
 		fmt.Println("Result record generation error", err)
 		return
@@ -497,7 +497,7 @@ func ExampleResultRecord_DumpValues3() {
 	//   I8 = > 0 <
 }
 
-func ExampleResultRecord_DumpValues() {
+func ExampleRecord_SetValue() {
 	f, ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
@@ -506,7 +506,7 @@ func ExampleResultRecord_DumpValues() {
 
 	d := generatePEMUDefinitionTest()
 
-	record, err := NewResultRecord(d)
+	record, err := NewRecord(d)
 	if err != nil {
 		fmt.Println("Result record generation error", err)
 		return

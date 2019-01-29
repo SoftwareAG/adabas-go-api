@@ -186,7 +186,7 @@ see documentation [here](.//QUERY.md)
 
 Similar to the listener in Adabas Client for Java, the result data can be processed during query and does not needed to be stored in an result list lowering the memory consumpion.
 
-By default using the ResultRecord instance, the query will be store in a list
+By default using the Record instance, the query will be store in a list
 
 ```go
 result, err := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")

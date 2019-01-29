@@ -180,11 +180,11 @@ func parseRead(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error)
 	isn := adabasRequest.Isn
 	isnQuantity := adabasRequest.IsnQuantity
 	adatypes.Central.Log.Debugf("Got ISN %d record", isn)
-	resultRecord, xerr := NewResultRecordIsn(isn, isnQuantity, adabasRequest.Definition)
+	Record, xerr := NewRecordIsn(isn, isnQuantity, adabasRequest.Definition)
 	if xerr != nil {
 		return xerr
 	}
-	result.Values = append(result.Values, resultRecord)
+	result.Values = append(result.Values, Record)
 	return
 }
 

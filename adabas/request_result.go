@@ -32,7 +32,7 @@ import (
 )
 
 type storeRecordTraverserStructure struct {
-	record *ResultRecord
+	record *Record
 	helper *adatypes.BufferHelper
 }
 
@@ -45,7 +45,7 @@ func createStoreRecordBuffer(adaValue adatypes.IAdaValue, x interface{}) (adatyp
 	return adatypes.Continue, err
 }
 
-func (record *ResultRecord) createRecordBuffer(helper *adatypes.BufferHelper) (err error) {
+func (record *Record) createRecordBuffer(helper *adatypes.BufferHelper) (err error) {
 	adatypes.Central.Log.Debugf("Create record buffer")
 	t := adatypes.TraverserValuesMethods{EnterFunction: createStoreRecordBuffer}
 	stRecTraverser := &storeRecordTraverserStructure{record: record, helper: helper}
@@ -56,8 +56,8 @@ func (record *ResultRecord) createRecordBuffer(helper *adatypes.BufferHelper) (e
 
 // RequestResult contains the result information of the request
 type RequestResult struct {
-	XMLName xml.Name        `xml:"Response" json:"-"`
-	Values  []*ResultRecord `xml:"Records" json:"Records"`
+	XMLName xml.Name  `xml:"Response" json:"-"`
+	Values  []*Record `xml:"Records" json:"Records"`
 }
 
 // NrRecords number of records in the result
@@ -65,8 +65,8 @@ func (requestResult *RequestResult) NrRecords() int {
 	return len(requestResult.Values)
 }
 
-func prepareResultRecordDump(x interface{}, b interface{}) (adatypes.TraverseResult, error) {
-	record := x.(*ResultRecord)
+func prepareRecordDump(x interface{}, b interface{}) (adatypes.TraverseResult, error) {
+	record := x.(*Record)
 	var buffer *bytes.Buffer
 	if b != nil {
 		buffer = b.(*bytes.Buffer)
@@ -91,7 +91,7 @@ func prepareResultRecordDump(x interface{}, b interface{}) (adatypes.TraverseRes
 	return adatypes.Continue, nil
 }
 
-func dumpResultRecord(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
+func dumpRecord(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	y := strings.Repeat(" ", int(adaValue.Type().Level()))
 
 	if x == nil {
@@ -122,7 +122,7 @@ func dumpResultRecord(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Trav
 // DumpValues traverse through the tree of values calling a callback method
 func (requestResult *RequestResult) DumpValues() (err error) {
 	fmt.Println("Dump all result values")
-	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareResultRecordDump, EnterFunction: dumpResultRecord}
+	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump, EnterFunction: dumpRecord}
 	_, err = requestResult.TraverseValues(t, nil)
 	return
 }
@@ -155,7 +155,7 @@ func (requestResult *RequestResult) TraverseValues(t adatypes.TraverserValuesMet
 
 func (requestResult *RequestResult) String() string {
 	var buffer bytes.Buffer
-	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareResultRecordDump, EnterFunction: dumpResultRecord}
+	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump, EnterFunction: dumpRecord}
 	requestResult.TraverseValues(t, &buffer)
 	return buffer.String()
 }
@@ -224,7 +224,7 @@ func traverseMarshalXMLEnd2(adaValue adatypes.IAdaValue, x interface{}) (adatype
 }
 
 // MarshalXML provide XML
-func (record *ResultRecord) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	x := xml.StartElement{Name: xml.Name{Local: "Response"}}
 	e.EncodeToken(x)
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalXML2, LeaveFunction: traverseMarshalXMLEnd2}
@@ -387,7 +387,7 @@ func (requestResult *RequestResult) MarshalJSON() ([]byte, error) {
 }
 
 // Isn Search for record with given ISN
-func (requestResult *RequestResult) Isn(isn adatypes.Isn) *ResultRecord {
+func (requestResult *RequestResult) Isn(isn adatypes.Isn) *Record {
 	for _, record := range requestResult.Values {
 		if record.Isn == isn {
 			return record
@@ -403,7 +403,7 @@ type rrecord struct {
 }
 
 // MarshalJSON provide JSON
-func (record *ResultRecord) MarshalJSON() ([]byte, error) {
+func (record *Record) MarshalJSON() ([]byte, error) {
 	adatypes.Central.Log.Debugf("Marshal JSON record: %d", record.Isn)
 	req := &request{}
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalJSON, LeaveFunction: traverseMarshalJSONEnd,
@@ -426,7 +426,7 @@ func (record *ResultRecord) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON parse JSON
-// func (record *ResultRecord) UnmarshalJSON(b []byte) error {
+// func (record *Record) UnmarshalJSON(b []byte) error {
 // 	var stuff map[string]interface{}
 // 	err := json.Unmarshal(b, &stuff)
 // 	if err != nil {
