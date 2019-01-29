@@ -808,6 +808,7 @@ var statisMessages = []struct {
 	{"ADG0000061", "en", "Multiple field not provided"},
 	{"ADG0000062", "en", "Multiple field index on an non-Multiple field"},
 	{"ADG0000063", "en", "Field {0} not found"},
+	{"ADG0000064", "en", "Adabas instance nil"},
 	{"ADG0000070", "en", "'{0}' is no valid database id"},
 	{"ADG0000071", "en", "Invalid URL given, need to be like <dbid>(<protocol>://<host>:<port>)"},
 	{"ADG0000072", "en", "'{0}' is no valid port number"},

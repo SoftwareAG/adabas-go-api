@@ -156,7 +156,7 @@ func initLogLevelWithFile(fileName string, level log.Level) (file *os.File, err 
 	if p == "" {
 		p = "."
 	}
-	name := p + "/" + fileName
+	name := p + string(os.PathSeparator) + fileName
 	file, err = os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return
@@ -214,7 +214,8 @@ func main() {
 	wg.Add(threadValue)
 	for i := uint32(0); i < uint32(threadValue); i++ {
 		fmt.Printf("Start thread %d/%d\n", i+1, threadValue)
-		adabas, err := adabas.NewAdabass(args[0])
+		id := adabas.NewAdabasID()
+		adabas, err := adabas.NewAdabasWithID(args[0], id)
 		if err != nil {
 			fmt.Println("Error createing Adabas link:", err)
 			return

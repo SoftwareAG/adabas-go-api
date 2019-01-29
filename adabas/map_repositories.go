@@ -173,10 +173,11 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 		return
 	}
 	if adabas == nil {
-		adabas, err = NewAdabass(repository.URL.String())
-		if err != nil {
-			return
-		}
+		// adabas, err = NewAdabass(repository.URL.String())
+		// if err != nil {
+		// 	return
+		// }
+		return nil, adatypes.NewGenericError(64)
 	}
 	adatypes.Central.Log.Debugf("Search map: %s", mapName)
 	request := NewRequestAdabas(adabas, repository.Fnr)
@@ -209,10 +210,11 @@ func (repository *Repository) LoadAllMaps(adabas *Adabas) (adabasMaps []*Map, er
 		}
 	}
 	if adabas == nil {
-		adabas, err = NewAdabass(repository.URL.String())
-		if err != nil {
-			return
-		}
+		// adabas, err = NewAdabass(repository.URL.String())
+		// if err != nil {
+		// 	return
+		// }
+		return nil, adatypes.NewGenericError(64)
 	}
 	adatypes.Central.Log.Debugf("Load all maps")
 	request := NewRequestAdabas(adabas, repository.Fnr)
@@ -314,15 +316,7 @@ func (repository *Repository) LoadRepositoryMapsWithAdabas(adabas *Adabas) (err 
 	return
 }
 
-// LoadMaps create a new repository
-func (repository *Repository) LoadMaps() error {
-	adabas, err := NewAdabass(repository.URL.String())
-	if err != nil {
-		return err
-	}
-	return repository.LoadRepositoryMapsWithAdabas(adabas)
-}
-
+// write Adabas Map into database repository
 func (repository *Repository) writeAdabasMapsWithAdabas(adabas *Adabas, adabasMap *Map) (err error) {
 	defer adabas.Close()
 	request := NewStoreRequestAdabas(adabas, repository.Fnr)

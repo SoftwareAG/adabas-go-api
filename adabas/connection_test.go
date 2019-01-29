@@ -79,7 +79,7 @@ func initLogLevelWithFile(fileName string, level log.Level) (file *os.File, err 
 	if p == "" {
 		p = "."
 	}
-	name := p + "/" + fileName
+	name := p + string(os.PathSeparator) + fileName
 	file, err = os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return

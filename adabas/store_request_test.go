@@ -106,7 +106,7 @@ func prepareCreateTestMap(mapName string, fileName string, dataRepository *Datab
 	if p == "" {
 		p = "."
 	}
-	name := p + "/" + fileName
+	name := p + string(os.PathSeparator) + fileName
 	m, merr := mr.ImportMapRepository(adabas, "*", name, dataRepository)
 	if merr != nil {
 		fmt.Println("Error importing map", merr)
@@ -233,7 +233,8 @@ func TestStoreMapFields(t *testing.T) {
 
 func clearAdabasFile(t *testing.T, target string, fnr uint32) error {
 	fmt.Println("Clear Adabas file", target, "/", fnr)
-	adabas, err := NewAdabass(target)
+	id := NewAdabasID()
+	adabas, err := NewAdabasWithID(target, id)
 	if err != nil {
 		return err
 	}
