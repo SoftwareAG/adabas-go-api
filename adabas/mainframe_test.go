@@ -46,7 +46,7 @@ func ExampleReadRequest_fileMf() {
 	fmt.Println("Limit query data:")
 	request.QueryFields("AA,AB")
 	request.Limit = 2
-	result := &RequestResult{}
+	result := &Response{}
 	fmt.Println("Read logical data:")
 	err = request.ReadLogicalWithWithParser("AA=[11100301:11100303]", nil, result)
 	if err != nil {
@@ -100,7 +100,7 @@ func ExampleReadRequest_fileMfBorder() {
 	fmt.Println("Limit query data:")
 	request.QueryFields("AA,AB")
 	request.Limit = 2
-	result := &RequestResult{}
+	result := &Response{}
 	fmt.Println("Read logical data:")
 	err = request.ReadLogicalWithWithParser("AA=(11100301:11100303)", nil, result)
 	if err != nil {
@@ -147,7 +147,7 @@ func ExampleReadRequest_fileMfNoMinimum() {
 	fmt.Println("Limit query data:")
 	request.QueryFields("AA,AB")
 	request.Limit = 2
-	result := &RequestResult{}
+	result := &Response{}
 	fmt.Println("Read logical data:")
 	err = request.ReadLogicalWithWithParser("AA=(11100301:11100303]", nil, result)
 	if err != nil {
@@ -201,7 +201,7 @@ func ExampleReadRequest_fileMfNoMaximum() {
 	fmt.Println("Limit query data:")
 	request.QueryFields("AA,AB")
 	request.Limit = 2
-	result := &RequestResult{}
+	result := &Response{}
 	fmt.Println("Read logical data:")
 	err = request.ReadLogicalWithWithParser("AA=[1100301:11100303)", nil, result)
 	if err != nil {

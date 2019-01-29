@@ -94,7 +94,7 @@ func TestRequestLogicalWithFields(t *testing.T) {
 	adabas := NewAdabas(adabasModDBID)
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
-	result := &RequestResult{}
+	result := &Response{}
 	err := request.ReadLogicalWithWithParser("AA=60010001", nil, result)
 	request.Close()
 	if err != nil {
@@ -114,7 +114,7 @@ func TestReadRequestLogicalBy(t *testing.T) {
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.QueryFields("AA,AC,AD")
-	result := &RequestResult{}
+	result := &Response{}
 	err := request.ReadLogicalByWithParser("AA", nil, result)
 	fmt.Println("Dump result received ...")
 	assert.NoError(t, err)
@@ -133,7 +133,7 @@ func TestReadRequestLogicalByAll(t *testing.T) {
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.Limit = 2
-	result := &RequestResult{}
+	result := &Response{}
 	err := request.ReadLogicalByWithParser("AA", nil, result)
 	if !assert.NoError(t, err) {
 		return
@@ -172,7 +172,7 @@ func TestRequestRemoteLogicalByAll(t *testing.T) {
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.Limit = 2
-	result := &RequestResult{}
+	result := &Response{}
 	err := request.ReadLogicalByWithParser("AA", nil, result)
 	fmt.Println("Dump result received ...")
 	assert.Error(t, err)
@@ -207,7 +207,7 @@ func ExampleReadRequest_ReadLogicalBy() {
 	defer request.Close()
 	request.Limit = 2
 	request.QueryFields("AA,AC,AD")
-	result := &RequestResult{}
+	result := &Response{}
 	err = request.ReadLogicalByWithParser("AA", nil, result)
 	fmt.Println("Dump result received ...")
 	if result != nil {
@@ -238,7 +238,7 @@ func TestReadRequestLogicalBySuperDescriptor(t *testing.T) {
 	request := NewRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.QueryFields("AA,AC,AD")
-	result := &RequestResult{}
+	result := &Response{}
 	err := request.ReadLogicalByWithParser("S1", nil, result)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
@@ -358,7 +358,7 @@ func TestReadRequestReadMap(t *testing.T) {
 	adabas := NewAdabas(24)
 	request := NewRequestAdabas(adabas, 4)
 	defer request.Close()
-	result := &RequestResult{}
+	result := &Response{}
 	err := request.ReadLogicalWithWithParser("RN='EMPLOYEES-NAT-DDM'", nil, result)
 	fmt.Println("Read done ...")
 	if !assert.NoError(t, err) {
@@ -382,7 +382,7 @@ func TestReadRequestMissingFile(t *testing.T) {
 	adabas := NewAdabas(24)
 	request := NewRequestAdabas(adabas, 123)
 	defer request.Close()
-	result := &RequestResult{}
+	result := &Response{}
 	err := request.ReadLogicalWithWithParser("RN='EMPLOYEES-NAT-DDM'", nil, result)
 	fmt.Println("Read done ...")
 	assert.Error(t, err)
@@ -402,7 +402,7 @@ func BenchmarkReadRequest_Small(b *testing.B) {
 	request.Limit = 0
 	request.QueryFields("AA,AC,AD")
 
-	result := &RequestResult{}
+	result := &Response{}
 	err = request.ReadLogicalByWithParser("AA", nil, result)
 	//fmt.Println("Dump result received ...")
 	if result != nil {
@@ -420,7 +420,7 @@ func BenchmarkReadRequest(b *testing.B) {
 	request := NewRequestAdabas(adabas, 11)
 	request.Limit = 0
 	defer request.Close()
-	result := &RequestResult{}
+	result := &Response{}
 	err = request.ReadLogicalByWithParser("AA", nil, result)
 	assert.NoError(b, err)
 	assert.NotNil(b, result)
@@ -460,7 +460,7 @@ func TestRequestWithMapLogicalBy(t *testing.T) {
 		assert.True(t, request.IsOpen())
 
 		fmt.Println("After query fields")
-		result := &RequestResult{}
+		result := &Response{}
 		err = request.ReadLogicalByWithParser("PERSONNEL-ID", nil, result)
 		if assert.NoError(t, err) {
 			fmt.Println("Dump result received ...")
@@ -491,7 +491,7 @@ func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
 			return
 		}
 		fmt.Println("After query fields")
-		result := &RequestResult{}
+		result := &Response{}
 		err := request.ReadLogicalByWithParser("PERSONNEL-ID", nil, result)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -523,7 +523,7 @@ func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
 			return
 		}
 		fmt.Println("After query fields")
-		result := &RequestResult{}
+		result := &Response{}
 		err := request.ReadLogicalByWithParser("PERSONNEL-ID", nil, result)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)

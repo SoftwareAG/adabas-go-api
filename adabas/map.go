@@ -232,7 +232,7 @@ func extractMapField(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Trave
 }
 
 // parseMap Adabas read parser of one Map definition used during read
-func parseMap(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func parseMap(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	adabasMap := x.(*Map)
 	isn := adabasRequest.Isn
 	adabasMap.Isn = isn

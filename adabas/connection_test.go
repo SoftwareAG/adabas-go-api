@@ -105,7 +105,7 @@ type parseTestStructure struct {
 	t            *testing.T
 }
 
-func parseTestConnection(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func parseTestConnection(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	fmt.Println("Parse Test connection")
 	parseTestStructure := x.(parseTestStructure)
 	if parseTestStructure.t == nil {
@@ -147,7 +147,7 @@ func parseTestConnection(adabasRequest *adatypes.AdabasRequest, x interface{}) (
 	return
 }
 
-func deleteRecords(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func deleteRecords(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	deleteRequest := x.(*DeleteRequest)
 	// fmt.Printf("Delete ISN: %d on %s/%d\n", adabasRequest.Isn, deleteRequest.repository.URL.String(), deleteRequest.repository.Fnr)
 	err = deleteRequest.Delete(adabasRequest.Isn)
@@ -366,7 +366,7 @@ func TestConnectionMultifetch(t *testing.T) {
 	qErr := readRequest.QueryFields("AA,AB")
 	assert.NoError(t, qErr)
 	fmt.Println("Result data:")
-	result := &RequestResult{}
+	result := &Response{}
 	err = readRequest.ReadPhysicalSequenceWithParser(nil, result)
 	assert.NoError(t, err)
 	// result.DumpValues()
@@ -399,7 +399,7 @@ func TestConnectionNoMultifetch(t *testing.T) {
 	qErr := readRequest.QueryFields("AA,AB")
 	assert.NoError(t, qErr)
 	fmt.Println("Result data:")
-	result := &RequestResult{}
+	result := &Response{}
 	err = readRequest.ReadPhysicalSequenceWithParser(nil, result)
 	assert.NoError(t, err)
 	// result.DumpValues()
@@ -462,7 +462,7 @@ func TestConnectionRemote(t *testing.T) {
 
 	// 	request.QueryFields("AA,AC,AD,AE,AH,AV")
 	// 	request.Limit = 0
-	// 	result := &RequestResult{}
+	// 	result := &Response{}
 	// 	err = request.ReadLogicalWithWithParser("AA=[11100301:11100303]", nil, result)
 	// 	assert.NoError(t, err)
 	// 	fmt.Println("Result data:")
@@ -534,7 +534,7 @@ func TestConnectionWithMap(t *testing.T) {
 		fmt.Println("Limit query data:")
 		request.QueryFields("NAME,PERSONNEL-ID")
 		request.Limit = 0
-		result := &RequestResult{}
+		result := &Response{}
 		fmt.Println("Read logigcal data:")
 		err = request.ReadLogicalWithWithParser("PERSONNEL-ID=[11100301:11100303]", nil, result)
 		assert.NoError(t, err)
@@ -570,7 +570,7 @@ func TestConnectionAllMap(t *testing.T) {
 		fmt.Println("Limit query data:")
 		request.QueryFields("NAME,PERSONNEL-ID")
 		request.Limit = 0
-		result := &RequestResult{}
+		result := &Response{}
 		fmt.Println("Read logigcal data:")
 		err := request.ReadPhysicalSequenceWithParser(nil, result)
 		assert.NoError(t, err)
@@ -606,7 +606,7 @@ func ExampleReadRequest_file() {
 	fmt.Println("Limit query data:")
 	request.QueryFields("AA,AB")
 	request.Limit = 2
-	result := &RequestResult{}
+	result := &Response{}
 	fmt.Println("Read logical data:")
 	err = request.ReadLogicalWithWithParser("AA=[11100301:11100303]", nil, result)
 	if err != nil {
@@ -923,7 +923,7 @@ func TestConnectionReadMap(t *testing.T) {
 
 	request.QueryFields("RN,MA")
 	request.Limit = 2
-	result := &RequestResult{}
+	result := &Response{}
 	// Read only 'EMPLOYEES-NAT-DDM' map
 	err = request.ReadLogicalWithWithParser("RN=EMPLOYEES-NAT-DDM", nil, result)
 	if !assert.NoError(t, err) {
@@ -968,7 +968,7 @@ func ExampleReadRequest_blendMap() {
 	fmt.Println("Limit query data:")
 	request.QueryFields("NAME,PERSONNEL-ID")
 	request.Limit = 2
-	result := &RequestResult{}
+	result := &Response{}
 	fmt.Println("Read logical data:")
 	err = request.ReadLogicalWithWithParser("PERSONNEL-ID=[11100301:11100303]", nil, result)
 	if err != nil {
@@ -1006,7 +1006,7 @@ func ExampleReadRequest_isn() {
 	}
 	fmt.Println("Connection : ", connection)
 
-	result := &RequestResult{}
+	result := &Response{}
 	fmt.Println("Read ISN 250:")
 	err = request.ReadISNWithParser(250, nil, result)
 	if err != nil {
@@ -1117,7 +1117,7 @@ func TestConnectionReadOneLocal(t *testing.T) {
 		return
 	}
 	request.Limit = 0
-	result := &RequestResult{}
+	result := &Response{}
 	err = request.ReadISNWithParser(1, nil, result)
 	if !assert.NoError(t, err) {
 		return
@@ -1152,7 +1152,7 @@ func TestConnectionReadAllLocal(t *testing.T) {
 		return
 	}
 	request.Limit = 0
-	result := &RequestResult{}
+	result := &Response{}
 	err = request.ReadPhysicalSequenceWithParser(nil, result)
 	// err = request.ReadISNWithParser(202, nil, result)
 	if !assert.NoError(t, err) {
@@ -1188,7 +1188,7 @@ func TestConnectionReadSpecialLocal(t *testing.T) {
 		return
 	}
 	request.Limit = 0
-	result := &RequestResult{}
+	result := &Response{}
 	// err = request.ReadPhysicalSequenceWithParser(nil, result)
 	err = request.ReadISNWithParser(380, nil, result)
 	if !assert.NoError(t, err) {
@@ -1224,7 +1224,7 @@ func TestConnectionADATCPReadRemote(t *testing.T) {
 		return
 	}
 	request.Limit = 0
-	result := &RequestResult{}
+	result := &Response{}
 	err = request.ReadPhysicalSequenceWithParser(nil, result)
 	if !assert.NoError(t, err) {
 		return
@@ -1260,7 +1260,7 @@ func TestConnectionReadUnicode(t *testing.T) {
 	}
 	request.QueryFields("B0,JA,KA")
 	request.Limit = 0
-	result := &RequestResult{}
+	result := &Response{}
 	err = request.ReadLogicalWithWithParser("AA=[40003001:40005001]", nil, result)
 	if !assert.NoError(t, err) {
 		return
@@ -1308,7 +1308,7 @@ func TestConnectionReadDeepPEFields(t *testing.T) {
 	}
 	request.QueryFields("AA,F0")
 	request.Limit = 0
-	result := &RequestResult{}
+	result := &Response{}
 	err = request.ReadLogicalWithWithParser("AA=[40003001:40005001]", nil, result)
 	if !assert.NoError(t, err) {
 		return
@@ -1352,7 +1352,7 @@ func TestConnectionReadAllFields9(t *testing.T) {
 		return
 	}
 	request.Limit = 0
-	result := &RequestResult{}
+	result := &Response{}
 	err = request.ReadLogicalWithWithParser("AA=[40003001:40005001]", nil, result)
 	if !assert.NoError(t, err) {
 		return
@@ -1476,7 +1476,7 @@ func checkStoreByFile(t *testing.T, target string, file uint32, search string) e
 	return validateResult(t, search, result)
 }
 
-func validateResult(t *testing.T, search string, result *RequestResult) error {
+func validateResult(t *testing.T, search string, result *Response) error {
 	if !assert.NotNil(t, result) {
 		return fmt.Errorf("Result empty")
 	}

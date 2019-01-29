@@ -105,7 +105,7 @@ connection.Open()
 readRequest, rErr := connection.CreateReadRequest(11)
 readRequest.QueryFields("AA,AB")
 readRequest.Limit = 0
-result := &RequestResult{}
+result := &Response{}
 err := request.ReadLogicalWith("AA=60010001", nil, result)
 ```
 
@@ -123,7 +123,7 @@ if err != nil {
 }
 request.QueryFields("NAME,PERSONNEL-ID")
 request.Limit = 2
-result := &RequestResult{}
+result := &Response{}
 err = request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]", nil, result)
 if err != nil {
   return
@@ -195,7 +195,7 @@ result, err := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
 But you can work with a function to pass structures and methods to just work the result received by the database. Here the result can be traversered field by field.
 
 ```go
-func parseTestConnection(adabasRequest *parser.AdabasRequest, x interface{}) (err error) {
+func parseTestConnection(adabasRequest *parser.Request, x interface{}) (err error) {
   parseTestStructure := x.(parseTestStructure)
   tm := parser.TraverserValuesMethods{EnterFunction: extractMapField}
   adabasRequest.Definition.TraverseValues(tm, adabasMap)

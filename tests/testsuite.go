@@ -160,7 +160,7 @@ func callAdabas(c caller) {
 				i, c.name, diff)
 			//			last = newTime
 		}
-		var result *adabas.RequestResult
+		var result *adabas.Response
 		result, err = readRequest.ReadLogicalWith("AE=" + c.name)
 		if err != nil {
 			fmt.Printf("Error reading thread %d with %d loops: %v\n", c.threadNr, i, err)

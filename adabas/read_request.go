@@ -158,7 +158,7 @@ func (request *ReadRequest) Open() (err error) {
 }
 
 // Prepare read request for special parts in read
-func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.AdabasRequest, err error) {
+func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, err error) {
 	if request.definition == nil {
 		err = request.loadDefinition()
 		if err != nil {
@@ -174,8 +174,8 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.AdabasRequ
 	return
 }
 
-func parseRead(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
-	result := x.(*RequestResult)
+func parseRead(adabasRequest *adatypes.Request, x interface{}) (err error) {
+	result := x.(*Response)
 
 	isn := adabasRequest.Isn
 	isnQuantity := adabasRequest.IsnQuantity
@@ -189,8 +189,8 @@ func parseRead(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error)
 }
 
 // ReadPhysicalSequence read records in physical order
-func (request *ReadRequest) ReadPhysicalSequence() (result *RequestResult, err error) {
-	result = &RequestResult{}
+func (request *ReadRequest) ReadPhysicalSequence() (result *Response, err error) {
+	result = &Response{}
 	err = request.ReadPhysicalSequenceWithParser(nil, result)
 	if err != nil {
 		return nil, err
@@ -231,8 +231,8 @@ func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes
 }
 
 // ReadISN read records defined by a given ISN
-func (request *ReadRequest) ReadISN(isn adatypes.Isn) (result *RequestResult, err error) {
-	result = &RequestResult{}
+func (request *ReadRequest) ReadISN(isn adatypes.Isn) (result *Response, err error) {
+	result = &Response{}
 	err = request.ReadISNWithParser(isn, nil, result)
 	if err != nil {
 		return nil, err
@@ -263,8 +263,8 @@ func (request *ReadRequest) ReadISNWithParser(isn adatypes.Isn, resultParser ada
 }
 
 // ReadLogicalWith read records with a logical order given by a search string
-func (request *ReadRequest) ReadLogicalWith(search string) (result *RequestResult, err error) {
-	result = &RequestResult{}
+func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, err error) {
+	result = &Response{}
 	err = request.ReadLogicalWithWithParser(search, nil, result)
 	if err != nil {
 		return nil, err
@@ -336,8 +336,8 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 }
 
 // ReadLogicalBy read in logical order given by the descriptor argument
-func (request *ReadRequest) ReadLogicalBy(descriptors string) (result *RequestResult, err error) {
-	result = &RequestResult{}
+func (request *ReadRequest) ReadLogicalBy(descriptors string) (result *Response, err error) {
+	result = &Response{}
 	err = request.ReadLogicalByWithParser(descriptors, nil, result)
 	if err != nil {
 		return nil, err
@@ -352,7 +352,7 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 		return
 	}
 	if x == nil {
-		// x = &RequestResult{}
+		// x = &Response{}
 		err = adatypes.NewGenericError(23)
 		return
 	}
@@ -383,7 +383,7 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 }
 
 // HistogramBy read a descriptor in a descriptor order
-func (request *ReadRequest) HistogramBy(descriptor string) (result *RequestResult, err error) {
+func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, err error) {
 	err = request.Open()
 	if err != nil {
 		return
@@ -401,17 +401,17 @@ func (request *ReadRequest) HistogramBy(descriptor string) (result *RequestResul
 	adabasRequest.Limit = request.Limit
 	adabasRequest.Descriptors = []string{descriptor}
 
-	requestResult := &RequestResult{}
+	Response := &Response{}
 
-	err = request.adabas.Histogram(request.repository.Fnr, adabasRequest, requestResult)
+	err = request.adabas.Histogram(request.repository.Fnr, adabasRequest, Response)
 	if err == nil {
-		result = requestResult
+		result = Response
 	}
 	return
 }
 
 // HistogramWith read a descriptor given by a search criteria
-func (request *ReadRequest) HistogramWith(search string) (result *RequestResult, err error) {
+func (request *ReadRequest) HistogramWith(search string) (result *Response, err error) {
 	err = request.Open()
 	if err != nil {
 		return
@@ -443,11 +443,11 @@ func (request *ReadRequest) HistogramWith(search string) (result *RequestResult,
 	adabasRequest.Parser = parseRead
 	adabasRequest.Limit = request.Limit
 
-	requestResult := &RequestResult{}
+	Response := &Response{}
 
-	err = request.adabas.Histogram(request.repository.Fnr, adabasRequest, requestResult)
+	err = request.adabas.Histogram(request.repository.Fnr, adabasRequest, Response)
 	if err == nil {
-		result = requestResult
+		result = Response
 	}
 	return
 }

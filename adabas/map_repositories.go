@@ -258,7 +258,7 @@ func (repository *Repository) LoadMapRepository(adabas *Adabas) (err error) {
 }
 
 // parseMap Adabas read parser of the Map names used during read
-func parseMapNames(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func parseMapNames(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	repository := x.(*Repository)
 	v := adabasRequest.Definition.Search(mapFieldName.fieldName())
 	name := v.String()
@@ -267,7 +267,7 @@ func parseMapNames(adabasRequest *adatypes.AdabasRequest, x interface{}) (err er
 }
 
 // parseMap Adabas read parser of the Map definition used during read
-func parseMaps(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func parseMaps(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	repository := x.(*Repository)
 	adabasMap := &Map{Repository: &repository.DatabaseURL, Data: &DatabaseURL{}}
 	err = parseMap(adabasRequest, adabasMap)

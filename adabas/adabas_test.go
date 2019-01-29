@@ -627,7 +627,7 @@ func simpleDefinition() *adatypes.Definition {
 	return testDefinition
 }
 
-func testParser(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func testParser(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	switch x.(type) {
 	case *uint32:
 		counter := x.(*uint32)
@@ -663,7 +663,7 @@ func TestAdabasReadPhysical(t *testing.T) {
 	defer adabas.Close()
 	var fb bytes.Buffer
 	fb.WriteString("AA.")
-	req := &adatypes.AdabasRequest{Option: &adatypes.BufferOption{}, Definition: simpleDefinition(),
+	req := &adatypes.Request{Option: &adatypes.BufferOption{}, Definition: simpleDefinition(),
 		FormatBuffer: fb, Multifetch: 1, RecordBufferLength: 200, Parser: testParser, Limit: 5}
 	counter := uint32(0)
 	//, RecordBuffer: adatypes.NewHelper(make([]byte, 199), 200, binary.LittleEndian)}
@@ -691,7 +691,7 @@ func TestAdabasReadLogical(t *testing.T) {
 	defer adabas.Close()
 	var fb bytes.Buffer
 	fb.WriteString("AA.")
-	req := &adatypes.AdabasRequest{Option: &adatypes.BufferOption{}, Definition: simpleDefinition(),
+	req := &adatypes.Request{Option: &adatypes.BufferOption{}, Definition: simpleDefinition(),
 		Descriptors: []string{"AA"}, FormatBuffer: fb, Multifetch: 1,
 		RecordBufferLength: 200, Parser: testParser, Limit: 5}
 	counter := uint32(0)
@@ -719,7 +719,7 @@ func TestAdabasReadIsn(t *testing.T) {
 	defer adabas.Close()
 	var fb bytes.Buffer
 	fb.WriteString("AA.")
-	req := &adatypes.AdabasRequest{Option: &adatypes.BufferOption{}, Definition: simpleDefinition(),
+	req := &adatypes.Request{Option: &adatypes.BufferOption{}, Definition: simpleDefinition(),
 		FormatBuffer: fb, Isn: 100, Multifetch: 1, RecordBufferLength: 200}
 	counter := []adatypes.Isn{11}
 	rerr := adabas.readISN(11, req, &counter)
@@ -754,7 +754,7 @@ func TestAdabasSearchLogical(t *testing.T) {
 		return
 	}
 
-	req := &adatypes.AdabasRequest{Option: &adatypes.BufferOption{}, Definition: simpleDefinition(),
+	req := &adatypes.Request{Option: &adatypes.BufferOption{}, Definition: simpleDefinition(),
 		Descriptors: []string{"AA"}, FormatBuffer: fb, Multifetch: 1, SearchTree: tree,
 		RecordBufferLength: 200, Parser: testParser, Limit: 5}
 	counter := uint32(0)

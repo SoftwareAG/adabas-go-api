@@ -66,7 +66,7 @@ func (request *StoreRequest) Open() (err error) {
 	return
 }
 
-func (request *StoreRequest) prepareRequest() (adabasRequest *adatypes.AdabasRequest, err error) {
+func (request *StoreRequest) prepareRequest() (adabasRequest *adatypes.Request, err error) {
 	adabasRequest, err = request.definition.CreateAdabasRequest(true, false)
 	if err != nil {
 		return
@@ -160,7 +160,7 @@ func (request *StoreRequest) Exchange(storeRecord *Record) error {
 }
 
 // update update a record
-func (request *StoreRequest) update(adabasRequest *adatypes.AdabasRequest, storeRecord *Record) error {
+func (request *StoreRequest) update(adabasRequest *adatypes.Request, storeRecord *Record) error {
 	//	storeRecord
 	helper := adatypes.NewDynamicHelper(binary.LittleEndian)
 	err := storeRecord.createRecordBuffer(helper)

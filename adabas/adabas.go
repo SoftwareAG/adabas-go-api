@@ -387,7 +387,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr uint32) (definition *adatypes.De
 }
 
 // Prepare Adabas buffer ABD and buffer content for the Adabas request
-func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.AdabasRequest) {
+func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.Request) {
 	bufferCount := 2
 	if adabasRequest.SearchTree != nil {
 		bufferCount = 4
@@ -431,7 +431,7 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.AdabasRequest) {
 }
 
 // ReadPhysical read data in physical order
-func (adabas *Adabas) ReadPhysical(fileNr uint32, adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func (adabas *Adabas) ReadPhysical(fileNr uint32, adabasRequest *adatypes.Request, x interface{}) (err error) {
 	adatypes.Central.Log.Debugf("Open flag %p %v readpp", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	err = adabas.Open()
 	if err != nil {
@@ -478,7 +478,7 @@ func (adabas *Adabas) ReadPhysical(fileNr uint32, adabasRequest *adatypes.Adabas
 }
 
 // read a specific ISN out of Adabas file
-func (adabas *Adabas) readISN(fileNr uint32, adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func (adabas *Adabas) readISN(fileNr uint32, adabasRequest *adatypes.Request, x interface{}) (err error) {
 	adatypes.Central.Log.Debugf("Open flag %p %v readisnp", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	err = adabas.Open()
 	if err != nil {
@@ -503,7 +503,7 @@ func (adabas *Adabas) readISN(fileNr uint32, adabasRequest *adatypes.AdabasReque
 }
 
 // ReadLogicalWith Read logical using a descriptor
-func (adabas *Adabas) ReadLogicalWith(fileNr uint32, adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func (adabas *Adabas) ReadLogicalWith(fileNr uint32, adabasRequest *adatypes.Request, x interface{}) (err error) {
 	err = adabas.Open()
 	if err != nil {
 		return
@@ -544,7 +544,7 @@ func (adabas *Adabas) ReadLogicalWith(fileNr uint32, adabasRequest *adatypes.Ada
 }
 
 // SearchLogicalWith Search logical using a descriptor
-func (adabas *Adabas) SearchLogicalWith(fileNr uint32, adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func (adabas *Adabas) SearchLogicalWith(fileNr uint32, adabasRequest *adatypes.Request, x interface{}) (err error) {
 	err = adabas.Open()
 	if err != nil {
 		return
@@ -601,7 +601,7 @@ func (adabas *Adabas) SearchLogicalWith(fileNr uint32, adabasRequest *adatypes.A
 }
 
 // Loop call used to read a sequence of records
-func (adabas *Adabas) loopCall(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (err error) {
 
 	count := uint64(0)
 	var responseCode uint32
@@ -720,7 +720,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.AdabasRequest, x interfac
 	return
 }
 
-func (adabas *Adabas) secondCall(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func (adabas *Adabas) secondCall(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	adatypes.Central.Log.Debugf("Check second call .... values avail.=%v", (adabasRequest.Definition.Values == nil))
 	if adabasRequest.Option.NeedSecondCall {
 		adatypes.Central.Log.Debugf("Need second call %v", adabasRequest.Option.NeedSecondCall)
@@ -757,7 +757,7 @@ func (adabas *Adabas) secondCall(adabasRequest *adatypes.AdabasRequest, x interf
 }
 
 // Histogram histogram of a specific descriptor
-func (adabas *Adabas) Histogram(fileNr uint32, adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func (adabas *Adabas) Histogram(fileNr uint32, adabasRequest *adatypes.Request, x interface{}) (err error) {
 	err = adabas.Open()
 	if err != nil {
 		return
@@ -787,7 +787,7 @@ func (adabas *Adabas) Histogram(fileNr uint32, adabasRequest *adatypes.AdabasReq
 }
 
 // Store store a record into database
-func (adabas *Adabas) Store(fileNr uint32, adabasRequest *adatypes.AdabasRequest) (err error) {
+func (adabas *Adabas) Store(fileNr uint32, adabasRequest *adatypes.Request) (err error) {
 	adatypes.Central.Log.Debugf("Prepare Store transactions=%d adabas=%p open=%v", adabas.transactions.openTransactions,
 		adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	err = adabas.Open()
@@ -840,7 +840,7 @@ func (adabas *Adabas) Store(fileNr uint32, adabasRequest *adatypes.AdabasRequest
 }
 
 // Update update a record in database
-func (adabas *Adabas) Update(fileNr uint32, adabasRequest *adatypes.AdabasRequest) (err error) {
+func (adabas *Adabas) Update(fileNr uint32, adabasRequest *adatypes.Request) (err error) {
 	adatypes.Central.Log.Debugf("Prepare Update transactions=%d adabas=%p open=%v", adabas.transactions.openTransactions,
 		adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	err = adabas.Open()

@@ -790,10 +790,10 @@ func (def *Definition) CreateValues(forStoring bool) (err error) {
 }
 
 // RequestParser function callback used to go through the list of received buffer
-type RequestParser func(adabasRequest *AdabasRequest, x interface{}) error
+type RequestParser func(adabasRequest *Request, x interface{}) error
 
-// AdabasRequest contains all relevant buffer and parameters for a Adabas call
-type AdabasRequest struct {
+// Request contains all relevant buffer and parameters for a Adabas call
+type Request struct {
 	FormatBuffer       bytes.Buffer
 	RecordBuffer       *BufferHelper
 	RecordBufferLength uint32
@@ -810,7 +810,7 @@ type AdabasRequest struct {
 	Option             *BufferOption
 }
 
-func (adabasRequest *AdabasRequest) reset() {
+func (adabasRequest *Request) reset() {
 	adabasRequest.SearchTree = nil
 	adabasRequest.Definition = nil
 }
@@ -830,7 +830,7 @@ func searchRequestValue(adaValue IAdaValue, x interface{}) (TraverseResult, erro
 }
 
 // GetValue get the value for string with name
-func (adabasRequest *AdabasRequest) GetValue(name string) (IAdaValue, error) {
+func (adabasRequest *Request) GetValue(name string) (IAdaValue, error) {
 	vs := &valueSearch{name: name}
 	tm := TraverserValuesMethods{EnterFunction: searchRequestValue}
 	if adabasRequest.Definition == nil {
@@ -845,7 +845,7 @@ func (adabasRequest *AdabasRequest) GetValue(name string) (IAdaValue, error) {
 
 // Traverser callback to create format buffer per field type
 func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
-	adabasRequest := x.(*AdabasRequest)
+	adabasRequest := x.(*Request)
 	Central.Log.Debugf("Add format buffer for %s", adaValue.Type().Name())
 	if adaValue.Type().IsStructure() {
 		// Reset if period group starts
@@ -870,7 +870,7 @@ func formatBufferTraverserLeave(adaValue IAdaValue, x interface{}) (TraverseResu
 	if adaValue.Type().IsStructure() {
 		// Reset if period group starts
 		if adaValue.Type().Level() == 1 && adaValue.Type().Type() == FieldTypePeriodGroup {
-			fb := x.(*AdabasRequest)
+			fb := x.(*Request)
 			if fb.PeriodLength == 0 {
 				fb.PeriodLength += 10
 			}
@@ -885,7 +885,7 @@ func formatBufferTraverserLeave(adaValue IAdaValue, x interface{}) (TraverseResu
 
 func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
 	Central.Log.Debugf("Format Buffer Read traverser: %s level=%d/%d", adaType.Name(), adaType.Level(), level)
-	adabasRequest := x.(*AdabasRequest)
+	adabasRequest := x.(*Request)
 	Central.Log.Debugf("Curent Record Buffer length : %d", adabasRequest.RecordBufferLength)
 	buffer := &(adabasRequest.FormatBuffer)
 	switch adaType.Type() {
@@ -966,8 +966,8 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 }
 
 // CreateAdabasRequest creates format buffer out of defined metadata tree
-func (def *Definition) CreateAdabasRequest(store bool, secondCall bool) (adabasRequest *AdabasRequest, err error) {
-	adabasRequest = &AdabasRequest{FormatBuffer: bytes.Buffer{}, Option: NewBufferOption(store, secondCall)}
+func (def *Definition) CreateAdabasRequest(store bool, secondCall bool) (adabasRequest *Request, err error) {
+	adabasRequest = &Request{FormatBuffer: bytes.Buffer{}, Option: NewBufferOption(store, secondCall)}
 
 	Central.Log.Debugf("Create format buffer. Init Buffer: %s", adabasRequest.FormatBuffer.String())
 	if store || secondCall {

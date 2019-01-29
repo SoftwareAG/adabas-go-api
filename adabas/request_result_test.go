@@ -56,11 +56,11 @@ func TestRequestResult_NrRecords(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			requestResult := &RequestResult{
+			Response := &Response{
 				Values: tt.fields.values,
 			}
-			if got := requestResult.NrRecords(); got != tt.want {
-				t.Errorf("RequestResult.NrRecords() = %v, want %v", got, tt.want)
+			if got := Response.NrRecords(); got != tt.want {
+				t.Errorf("Response.NrRecords() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -79,11 +79,11 @@ func TestRequestResult_String(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			requestResult := &RequestResult{
+			Response := &Response{
 				Values: tt.fields.values,
 			}
-			if got := requestResult.String(); got != tt.want {
-				t.Errorf("RequestResult.String() = %v, want %v", got, tt.want)
+			if got := Response.String(); got != tt.want {
+				t.Errorf("Response.String() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -177,9 +177,9 @@ func generatePEMUDefinitionTest() *adatypes.Definition {
 	return testDefinition
 }
 
-func generateResult() *RequestResult {
+func generateResult() *Response {
 	d := generateDefinitionTest()
-	result := &RequestResult{}
+	result := &Response{}
 	record, err := NewRecord(d)
 	if err != nil {
 		fmt.Println("Error generating result record", err)
@@ -211,7 +211,7 @@ func generateResult() *RequestResult {
 
 // func TestJson(t *testing.T) {
 // 	r := []byte("{\"Record\":[{\"AA\":\"11100301\",\"AB\":{\"AC\":\"HANS                \",\"AD\":\"WILHELM             \",\"AE\":\"BERGMANN            \"},\"ISN\":251},{\"AA\":\"11100302\",\"AB\":{\"AC\":\"ROSWITHA            \",\"AD\":\"ELLEN               \",\"AE\":\"HAIBACH             \"},\"ISN\":383}]}")
-// 	result := &RequestResult{}
+// 	result := &Response{}
 // 	err := json.Unmarshal(r, result)
 // 	if !assert.NoError(t, err) {
 // 		return

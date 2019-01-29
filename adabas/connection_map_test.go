@@ -89,7 +89,7 @@ func BenchmarkConnection_noreconnect(b *testing.B) {
 			return
 		}
 		request.Limit = 0
-		result := &RequestResult{}
+		result := &Response{}
 		err = request.ReadLogicalByWithParser("NAME", nil, result)
 		if !assert.NoError(b, err) {
 			return
@@ -153,7 +153,7 @@ func TestConnectionRemoteMap(t *testing.T) {
 			return
 		}
 		request.Limit = 0
-		result := &RequestResult{}
+		result := &Response{}
 		err = request.ReadLogicalByWithParser("NAME", nil, result)
 		if !assert.NoError(t, err) {
 			return
@@ -193,7 +193,7 @@ func BenchmarkConnection_noreconnectremote(b *testing.B) {
 			return
 		}
 		request.Limit = 0
-		result := &RequestResult{}
+		result := &Response{}
 		err = request.ReadLogicalByWithParser("NAME", nil, result)
 		if !assert.NoError(b, err) {
 			return
@@ -223,7 +223,7 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 		fmt.Println("Limit query data:")
 		request.QueryFields("NAME,PERSONNEL-ID")
 		request.Limit = 0
-		result := &RequestResult{}
+		result := &Response{}
 		fmt.Println("Read logigcal data:")
 		err := request.ReadLogicalWithWithParser("PERSONNEL-ID=[11100301:11100303]", nil, result)
 		assert.NoError(t, err)
@@ -242,7 +242,7 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 		fmt.Println("Limit query data:")
 		request.QueryFields("Vendor,Model")
 		request.Limit = 0
-		result := &RequestResult{}
+		result := &Response{}
 		fmt.Println("Read logigcal data:")
 		err := request.ReadLogicalWithWithParser("Vendor=RENAULT", nil, result)
 		assert.NoError(t, err)
@@ -278,7 +278,7 @@ func TestConnectionMapPointingToRemote(t *testing.T) {
 		fmt.Println("Limit query data:")
 		request.QueryFields("NAME,PERSONNEL-ID")
 		request.Limit = 0
-		result := &RequestResult{}
+		result := &Response{}
 		fmt.Println("Read logigcal data:")
 		err := request.ReadLogicalWithWithParser("PERSONNEL-ID=[11100301:11100303]", nil, result)
 		assert.NoError(t, err)
@@ -307,7 +307,7 @@ func copyRecordData(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Traver
 	return adatypes.Continue, nil
 }
 
-func copyData(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func copyData(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	store := x.(*StoreRequest)
 	var record *Record
 	record, err = store.CreateRecord()
@@ -358,7 +358,7 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 		fmt.Println("Limit query data:")
 		request.QueryFields("NAME,PERSONNEL-ID")
 		request.Limit = 0
-		result := &RequestResult{}
+		result := &Response{}
 		fmt.Println("Read logigcal data:")
 		err = request.ReadLogicalWithWithParser("PERSONNEL-ID=[11100000:11101000]", copyData, store)
 		assert.NoError(t, err)
@@ -398,7 +398,7 @@ func ExampleAdabas_readFileDefinitionMap() {
 		return
 	}
 	request.Limit = 0
-	result := &RequestResult{}
+	result := &Response{}
 	fmt.Println("Read logigcal data:")
 	err = request.ReadLogicalWithWithParser("PERSONNEL-ID=[11100314:11100317]", nil, result)
 	result.DumpValues()
@@ -450,7 +450,7 @@ func ExampleAdabas_readFileDefinitionMapGroup() {
 		return
 	}
 	request.Limit = 0
-	result := &RequestResult{}
+	result := &Response{}
 	fmt.Println("Read logigcal data:")
 	err = request.ReadLogicalWithWithParser("PERSONNEL-ID=[11100315:11100316]", nil, result)
 	if err != nil {

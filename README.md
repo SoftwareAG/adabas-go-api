@@ -85,7 +85,7 @@ if err != nil {
 }
 request.QueryFields("NAME,PERSONNEL-ID")
 request.Limit = 2
-result := &RequestResult{}
+result := &Response{}
 err = request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]", nil, result)
 if err != nil {
   return

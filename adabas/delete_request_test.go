@@ -28,7 +28,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testCallback(adabasRequest *adatypes.AdabasRequest, x interface{}) (err error) {
+func testCallback(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	deleteRequest := x.(*DeleteRequest)
 	isn := adabasRequest.Isn
 	fmt.Printf("Delete ISN: %d on %s/%d\n", adabasRequest.Isn, deleteRequest.repository.URL.String(), deleteRequest.repository.Fnr)
