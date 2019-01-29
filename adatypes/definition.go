@@ -1257,7 +1257,7 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 		Central.Log.Debugf("Search name ....%s", name)
 		val = def.Search(name)
 		if val == nil {
-			return errors.New("Error searching value " + name + " (internal error)")
+			return NewGenericError(63, name)
 		}
 	} else {
 		Central.Log.Debugf("Search indexed period group ....")
@@ -1266,7 +1266,7 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 			return err
 		}
 		if val == nil {
-			return errors.New("Error searching value " + name + " (internal error)")
+			return errors.New("Error searching period group value " + name + " (internal error)")
 		}
 	}
 	Central.Log.Debugf("Found value to add to %s type=%v [%d,%d] %T %T", val.Type().Name(), val.Type().Type(),

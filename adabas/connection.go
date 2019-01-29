@@ -187,6 +187,9 @@ func (connection *Connection) String() string {
 
 // Open open Adabas session
 func (connection *Connection) Open() error {
+	if connection.adabasToData == nil {
+		return nil
+	}
 	err := connection.adabasToData.Open()
 	return err
 }

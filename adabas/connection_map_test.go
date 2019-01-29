@@ -372,7 +372,7 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func ExampleAdabas_readFileDefinitionMap() {
+func ExampleConnection_readWithMap() {
 	f, err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
@@ -426,7 +426,7 @@ func ExampleAdabas_readFileDefinitionMap() {
 	//    NAME = > DORSCH               <
 }
 
-func ExampleAdabas_readFileDefinitionMapGroup() {
+func ExampleConnection_readFileDefinitionMapGroup() {
 	f, err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
@@ -643,4 +643,164 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	checkStoreByFile(t, adabasModDBIDs, 16, multipleTransactionRefName)
 	checkStoreByFile(t, adabasModDBIDs, 19, multipleTransactionRefName2)
 
+}
+
+func ExampleConnection_multipleMapStore() {
+	f, err := initLogWithFile("connection.log")
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	if cErr := clearFile(16); cErr != nil {
+		return
+	}
+	if cErr := clearFile(19); cErr != nil {
+		return
+	}
+
+	// dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
+	// perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
+	// if perr != nil {
+	// 	return
+	// }
+	// dataRepository = &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 19}
+	vehicleMapName := mapVehicles + "Go"
+	// perr = prepareCreateTestMap(t, vehicleMapName, vehicleSystransStore, dataRepository)
+	// if perr != nil {
+	// 	return
+	// }
+
+	log.Infof("Create connection...")
+	connection, err := NewConnection("acj;map;config=[" + adabasModDBIDs + ",250]")
+	if err != nil {
+		return
+	}
+	defer connection.Close()
+	connection.Open()
+	storeRequest16, rErr := connection.CreateMapStoreRequest(massLoadSystransStore)
+	if err != nil {
+		return
+	}
+	storeRequest16.StoreFields("PERSONNEL-ID,NAME")
+	record, err := storeRequest16.CreateRecord()
+	err = record.SetValueWithIndex("PERSONNEL-ID", nil, "26555_0")
+	err = record.SetValueWithIndex("NAME", nil, "WABER")
+	err = record.SetValueWithIndex("FIRST-NAME", nil, "EMIL")
+	err = record.SetValueWithIndex("MIDDLE-I", nil, "MERK")
+	err = storeRequest16.Store(record)
+	if err != nil {
+		fmt.Println("Error", err)
+		return
+	}
+	storeRequest19, rErr := connection.CreateMapStoreRequest(vehicleMapName)
+	if rErr != nil {
+		fmt.Println("Error", err)
+		return
+	}
+	err = storeRequest19.StoreFields("REG-NUM,PERSONNEL-ID,CAR-DETAILS")
+	if err != nil {
+		fmt.Println("Error", err)
+		return
+	}
+
+	record, err = storeRequest19.CreateRecord()
+	err = record.SetValueWithIndex("REG-NUM", nil, "29555_0")
+	if err != nil {
+		fmt.Println("Error", err)
+		return
+	}
+	err = record.SetValueWithIndex("PERSONNEL-ID", nil, "WABER")
+	if err != nil {
+		fmt.Println("Error search in "+vehicleMapName, err)
+		return
+	}
+	err = record.SetValueWithIndex("MAKE", nil, "EMIL")
+	if err != nil {
+		fmt.Println("Error", err)
+		return
+	}
+	err = record.SetValueWithIndex("MODEL", nil, "MERK")
+	if err != nil {
+		fmt.Println("Error", err)
+		return
+	}
+	err = storeRequest19.Store(record)
+	if err != nil {
+		fmt.Println("Error", err)
+		return
+	}
+
+	err = connection.EndTransaction()
+	if err != nil {
+		fmt.Println("Error", err)
+		return
+	}
+	fmt.Println("Read file ..." + massLoadSystransStore)
+	err = dumpMapStoredData(adabasModDBIDs, massLoadSystransStore, "26555")
+	if err != nil {
+		fmt.Println("Error reading "+massLoadSystransStore, err)
+		return
+	}
+	fmt.Println("Read file ..." + vehicleMapName)
+	err = dumpMapStoredData(adabasModDBIDs, vehicleMapName, "29555")
+	if err != nil {
+		fmt.Println("Error reading "+vehicleMapName, err)
+		return
+	}
+
+	// Output: Read file ...EMPLDDM-GOLOAD-STORE
+	// Dump all result values
+	// Record Isn: 0001
+	//   PERSONNEL-ID = > 26555_0  <
+	//   FULL-NAME = [ 1 ]
+	//    FIRST-NAME = >                      <
+	//    NAME = > WABER                <
+	//    MIDDLE-I = >            <
+	// Read file ...VEHICLESGo
+	// Dump all result values
+	// Record Isn: 0001
+	//   REG-NUM = > 29555_0         <
+	//   PERSONNEL-ID = > WABER    <
+	//   CAR-DETAILS = [ 1 ]
+	//    MAKE = > EMIL                 <
+	//    MODEL = > MERK                 <
+	//    COLOR = >            <
+
+}
+
+func dumpMapStoredData(target string, mapName string, search string) error {
+	connection, err := NewConnection("acj;map;config=[" + adabasModDBIDs + ",250]")
+	if err != nil {
+		return err
+	}
+	defer connection.Close()
+	readRequest, rrerr := connection.CreateMapReadRequest(mapName)
+	if rrerr != nil {
+		return rrerr
+	}
+	fields := "PERSONNEL-ID,FULL-NAME"
+	searchField := "PERSONNEL-ID"
+
+	switch mapName {
+	case mapVehicles:
+		fields = "AA,CD"
+		searchField = "AA"
+	case mapVehicles + "Go":
+		fields = "REG-NUM,PERSONNEL-ID,CAR-DETAILS"
+		searchField = "REG-NUM"
+	}
+	err = readRequest.QueryFields(fields)
+	if err != nil {
+		return err
+	}
+	result, rerr := readRequest.ReadLogicalWith(searchField + "=[" + search + "_:" + search + "_Z]")
+	if rerr != nil {
+		return rerr
+	}
+	for i, record := range result.Values {
+		record.Isn = adatypes.Isn(i + 1)
+	}
+	result.DumpValues()
+	return nil
 }

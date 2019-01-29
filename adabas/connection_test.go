@@ -1629,7 +1629,7 @@ func TestConnectionSimpleMultipleStore(t *testing.T) {
 	checkStoreByFile(t, adabasModDBIDs, 19, "19555")
 }
 
-func ExampleConnection_multipleStore() {
+func ExampleConnection_store() {
 	f, err := initLogWithFile("connection.log")
 	if err != nil {
 		return
