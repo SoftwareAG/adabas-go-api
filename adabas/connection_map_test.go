@@ -341,6 +341,17 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 	if !assert.NoError(t, cErr) {
 		return
 	}
+	maps, err := loadJSONMap("COPYEMPL.json")
+	if !assert.NoError(t, err) {
+		return
+	}
+	fmt.Println("Number of maps", len(maps))
+	assert.Equal(t, 1, len(maps))
+	maps[0].Repository = &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 4}
+	err = maps[0].Store()
+	if !assert.NoError(t, err) {
+		return
+	}
 
 	DumpGlobalMapRepositories()
 	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
