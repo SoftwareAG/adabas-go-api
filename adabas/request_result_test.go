@@ -448,7 +448,7 @@ func ExampleRecord_dumpZeroValues() {
 	record.DumpValues()
 
 	// Output: Dump request result:
-	// Dump all result values
+	// Dump all record values
 	//   AA = > 0 <
 	//   PE = [ 0 ]
 	//   U8 = > 0 <
@@ -487,7 +487,7 @@ func ExampleRecord_setValueWithIndex() {
 
 	// Output: Correct error: ADG0000062: Multiple field index on an non-Multiple field
 	// Dump request result:
-	// Dump all result values
+	// Dump all record values
 	//   AA = > 0 <
 	//   PE = [ 0 ]
 	//   U8 = > 0 <
@@ -553,7 +553,7 @@ func ExampleRecord_setValue() {
 	record.DumpValues()
 
 	// Output: Dump request result:
-	// Dump all result values
+	// Dump all record values
 	//   AA = > 2 <
 	//   PE = [ 3 ]
 	//    PP[01] = > 1 <

@@ -23,7 +23,8 @@ import (
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
-// Cursoring cursor instance handling cursoring
+// Cursoring the structure support cursor instance handling reading record list in
+// chunks defined by a search or descriptor
 type Cursoring struct {
 	offset        uint32
 	search        string
@@ -33,7 +34,7 @@ type Cursoring struct {
 	err           error
 }
 
-// ReadLogicalWithCursoring read records using cursoring
+// ReadLogicalWithCursoring initialize the read records using cursoring
 func (request *ReadRequest) ReadLogicalWithCursoring(search string) (cursor *Cursoring, err error) {
 	request.cursoring = &Cursoring{}
 	if request.Limit == 0 {
@@ -53,7 +54,7 @@ func (request *ReadRequest) ReadLogicalWithCursoring(search string) (cursor *Cur
 	return request.cursoring, nil
 }
 
-// HasNextRecord check cursoring if next record available
+// HasNextRecord check cursoring if a next record exist in the query
 func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 	if cursor.offset+1 > uint32(len(cursor.result.Values)) {
 		if cursor.adabasRequest.Response != AdaNormal {
@@ -71,7 +72,8 @@ func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 	return
 }
 
-// NextRecord cursoring to next record
+// NextRecord cursoring to next record, if current chunk contains record, no call is send. If
+// the chunk is not in memory, the next chunk is read in memory
 func (cursor *Cursoring) NextRecord() (record *Record, err error) {
 	if cursor.err != nil {
 		return nil, cursor.err
