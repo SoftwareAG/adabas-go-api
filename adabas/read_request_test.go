@@ -475,8 +475,8 @@ func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 	ada := NewAdabas(24)
-	AddMapRepository(ada, 4)
-	defer DelMapRepository(ada, 4)
+	AddGlobalMapRepository(ada, 4)
+	defer DelGlobalMapRepository(ada, 4)
 
 	request, err := NewMapNameRequest(ada, "EMPLOYEES-NAT-DDM")
 	if !assert.NoError(t, err) {

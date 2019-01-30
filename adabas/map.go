@@ -286,6 +286,9 @@ func (adabasMap *Map) adaptFieldType(definition *adatypes.Definition) (err error
 // Store stores the Adabas map in the given repository
 func (adabasMap *Map) Store() error {
 	ID := NewAdabasID()
+	if adabasMap.Repository == nil {
+		return adatypes.NewGenericError(65)
+	}
 	adabas := NewAdabasWithURL(&adabasMap.Repository.URL, ID)
 	repository := NewMapRepository(adabas, adabasMap.Repository.Fnr)
 	return repository.writeAdabasMapsWithAdabas(adabas, adabasMap)

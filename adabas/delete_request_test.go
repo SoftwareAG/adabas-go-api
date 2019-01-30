@@ -107,8 +107,8 @@ func TestDeleteRequestByMapNameCommonRepo(t *testing.T) {
 
 	adabas := NewAdabas(adabasModDBID)
 	fmt.Println("Delete record with map name:", mapName)
-	AddMapRepository(adabas, 250)
-	defer DelMapRepository(adabas, 250)
+	AddGlobalMapRepository(adabas, 250)
+	defer DelGlobalMapRepository(adabas, 250)
 
 	deleteRequest, err := NewMapNameDeleteRequest(adabas, mapName)
 	if !assert.NoError(t, err) {

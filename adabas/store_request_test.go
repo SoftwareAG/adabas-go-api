@@ -134,8 +134,8 @@ func TestStoreFailMapFieldsCheck(t *testing.T) {
 		return
 	}
 	ada := NewAdabas(adabasModDBID)
-	AddMapRepository(ada, 250)
-	defer DelMapRepository(ada, 250)
+	AddGlobalMapRepository(ada, 250)
+	defer DelGlobalMapRepository(ada, 250)
 	adabasMap, serr := SearchMapRepository(ada, massLoadEmployees)
 	if !assert.NoError(t, serr) {
 		return
@@ -176,8 +176,8 @@ func TestStoreMapFields(t *testing.T) {
 	}
 
 	ada := NewAdabas(adabasModDBID)
-	AddMapRepository(ada, 250)
-	defer DelMapRepository(ada, 250)
+	AddGlobalMapRepository(ada, 250)
+	defer DelGlobalMapRepository(ada, 250)
 
 	fmt.Println("Prepare clear test map")
 	clearErr := clearMap(t, ada, massLoadSystransStore)
@@ -309,8 +309,8 @@ func TestStoreMapFieldsPeriods(t *testing.T) {
 		return
 	}
 	ada := NewAdabas(adabasModDBID)
-	AddMapRepository(ada, 250)
-	defer DelMapRepository(ada, 250)
+	AddGlobalMapRepository(ada, 250)
+	defer DelGlobalMapRepository(ada, 250)
 
 	clearErr := clearMap(t, ada, massLoadSystransStore)
 	if !assert.NoError(t, clearErr) {
@@ -372,8 +372,8 @@ func TestStoreUpdateMapField(t *testing.T) {
 	ada := NewAdabas(adabasModDBID)
 	defer ada.Close()
 
-	AddMapRepository(ada, 250)
-	defer DelMapRepository(ada, 250)
+	AddGlobalMapRepository(ada, 250)
+	defer DelGlobalMapRepository(ada, 250)
 
 	clearErr := clearMap(t, ada, massLoadSystransStore)
 	if !assert.NoError(t, clearErr) {
@@ -503,8 +503,9 @@ func TestStoreWithMapLobFile(t *testing.T) {
 	fmt.Printf("SHA ALL: %x\n", h.Sum(nil))
 
 	ada := NewAdabas(adabasModDBID)
-	AddMapRepository(ada, 4)
-	defer DelMapRepository(ada, 4)
+	AddGlobalMapRepository(ada, 4)
+	defer DelGlobalMapRepository(ada, 4)
+	DumpGlobalMapRepositories()
 
 	adabasMap, serr := SearchMapRepository(ada, "LOBEXAMPLE")
 	if !assert.NoError(t, serr) {
@@ -561,9 +562,9 @@ func TestStoreWithMapLobFile(t *testing.T) {
 }
 
 func validateUsingAdabas(t *testing.T, isn adatypes.Isn) {
-	fmt.Println("Validate using Adabas")
+	fmt.Println("Validate using Adabas and ISN=", isn)
 	adabas := NewAdabas(adabasModDBID)
-	request := NewRequestAdabas(adabas, 160)
+	request := NewRequestAdabas(adabas, 202)
 	defer request.Close()
 	openErr := request.Open()
 	if assert.NoError(t, openErr) {
@@ -571,7 +572,7 @@ func validateUsingAdabas(t *testing.T, isn adatypes.Isn) {
 		if !assert.NoError(t, openErr) {
 			return
 		}
-		fmt.Println("After query fields")
+		fmt.Println("Query fields defined, send read ...")
 		result := &Response{}
 		err = request.ReadISNWithParser(isn, nil, result)
 		if assert.NoError(t, err) {
@@ -593,12 +594,15 @@ func validateUsingAdabas(t *testing.T, isn adatypes.Isn) {
 			fmt.Printf("SHA ALL: %x\n", h.Sum(nil))
 			assert.Equal(t, "b79169e9c696cff3005ca49fce8e91c7f8b8ecc61fecb0a58b644bc4b68d7689",
 				hex.EncodeToString(h.Sum(nil)))
+			fmt.Println("Data validated with classic methods")
+		} else {
+			fmt.Println("Error validating data with classic methods")
 		}
 	}
 }
 
 func validateUsingMap(t *testing.T, isn adatypes.Isn) {
-	fmt.Println("Validate using Map")
+	fmt.Println("Validate using Map and ISN=", isn)
 	adabas := NewAdabas(adabasModDBID)
 	mapRepository := NewMapRepository(adabas, 4)
 	request, err := NewMapNameRequestRepo("LOBEXAMPLE", adabas, mapRepository)
@@ -615,7 +619,7 @@ func validateUsingMap(t *testing.T, isn adatypes.Isn) {
 		if !assert.NoError(t, err) {
 			return
 		}
-		fmt.Println("After query fields")
+		fmt.Println("Query defined, read record ...")
 		result := &Response{}
 		err = request.ReadISNWithParser(isn, nil, result)
 		if assert.NoError(t, err) {
@@ -640,6 +644,7 @@ func validateUsingMap(t *testing.T, isn adatypes.Isn) {
 				hex.EncodeToString(h.Sum(nil)))
 		}
 	}
+	fmt.Println("Data validated with map methods")
 }
 
 func TestStoreMapMissing(t *testing.T) {
@@ -755,8 +760,8 @@ func TestStoreEndTransaction(t *testing.T) {
 	ada := NewAdabas(adabasModDBID)
 	defer ada.Close()
 
-	AddMapRepository(ada, 250)
-	defer DelMapRepository(ada, 250)
+	AddGlobalMapRepository(ada, 250)
+	defer DelGlobalMapRepository(ada, 250)
 
 	clearErr := clearMap(t, ada, massLoadSystransStore)
 	if !assert.NoError(t, clearErr) {
@@ -823,8 +828,8 @@ func TestStoreCloseWithBackout(t *testing.T) {
 	ada := NewAdabas(adabasModDBID)
 	defer ada.Close()
 
-	AddMapRepository(ada, 250)
-	defer DelMapRepository(ada, 250)
+	AddGlobalMapRepository(ada, 250)
+	defer DelGlobalMapRepository(ada, 250)
 
 	clearErr := clearMap(t, ada, massLoadSystransStore)
 	if !assert.NoError(t, clearErr) {
@@ -891,8 +896,8 @@ func TestStoreBackout(t *testing.T) {
 	ada := NewAdabas(adabasModDBID)
 	defer ada.Close()
 
-	AddMapRepository(ada, 250)
-	defer DelMapRepository(ada, 250)
+	AddGlobalMapRepository(ada, 250)
+	defer DelGlobalMapRepository(ada, 250)
 
 	clearErr := clearMap(t, ada, massLoadSystransStore)
 	if !assert.NoError(t, clearErr) {

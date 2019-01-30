@@ -55,8 +55,8 @@ func NewMapRepository(adabas *Adabas, fnr uint32) *Repository {
 	return mr
 }
 
-// AddMapRepository add global map repository
-func AddMapRepository(adabas *Adabas, fnr uint32) {
+// AddGlobalMapRepository add global map repository
+func AddGlobalMapRepository(adabas *Adabas, fnr uint32) {
 	if repositories == nil {
 		repositories = make(map[string]*Repository)
 	}
@@ -66,13 +66,29 @@ func AddMapRepository(adabas *Adabas, fnr uint32) {
 	repositories[reference] = rep
 }
 
-// DelMapRepository delete global map repository
-func DelMapRepository(adabas *Adabas, fnr uint32) {
+// DelGlobalMapRepository delete global map repository
+func DelGlobalMapRepository(adabas *Adabas, fnr uint32) {
 	if repositories != nil {
 		reference := fmt.Sprintf("%s/%03d", adabas.URL.String(), fnr)
 		adatypes.Central.Log.Debugf("Remove global repository: %s", reference)
 		delete(repositories, reference)
 	}
+}
+
+// DumpGlobalMapRepositories dump global map repositories
+func DumpGlobalMapRepositories() {
+	fmt.Println("Dump global registered map repositories:")
+	for _, r := range repositories {
+		fmt.Printf("Repository at %s map file=%d:\n", r.URL, r.Fnr)
+		if r.MapNames == nil || len(r.MapNames) == 0 {
+			fmt.Println("    Map repository is empty or not initiated already")
+		} else {
+			for m := range r.MapNames {
+				fmt.Printf("    %s\n", m)
+			}
+		}
+	}
+	fmt.Println("Dump global registered map repositories done")
 }
 
 // SearchMapInRepository search map name in specific map repository
@@ -106,7 +122,7 @@ func (repository *Repository) SearchMapInRepository(adabas *Adabas, mapName stri
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("Found map in repository of %s/%d", repository.URL.String(), repository.Fnr)
+	adatypes.Central.Log.Debugf("Found map <%s> in repository of %s/%d", adabasMap.Name, repository.URL.String(), repository.Fnr)
 	repository.CachedMaps[mapName] = adabasMap
 	return
 }
@@ -131,6 +147,9 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 	err = request.ReadLogicalWithWithParser(mapFieldName.fieldName()+"="+name, parseMap, adabasMap)
 	if err != nil {
 		return nil, err
+	}
+	if adabasMap.Name == "" {
+		return nil, adatypes.NewGenericError(64)
 	}
 	adabasMap.createFieldMap()
 	repository.CachedMaps[name] = adabasMap
