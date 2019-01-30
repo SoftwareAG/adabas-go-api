@@ -354,7 +354,7 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 		return
 	}
 	err = store.StoreFields("NAME,PERSONNEL-ID")
-	if !assert.NoError(t, rerr) {
+	if !assert.NoError(t, err) {
 		return
 	}
 	request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
