@@ -173,7 +173,7 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 
 // readAdabasMap read Adabas map defined by repository and name
 func (repository *Repository) readAdabasMap(adabas *Adabas, name string) (adabasMap *Map, err error) {
-	request := NewRequestAdabas(adabas, repository.Fnr)
+	request := NewReadRequestAdabas(adabas, repository.Fnr)
 	adatypes.Central.Log.Debugf("Repository %#v\n", *repository)
 	adabasMap, err = repository.readAdabasMapWithRequest(&request.commonRequest, name)
 	return
@@ -192,13 +192,14 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 		return
 	}
 	if adabas == nil {
-		adabas, err = NewAdabass(repository.URL.String())
-		if err != nil {
-			return
-		}
+		// adabas, err = NewAdabass(repository.URL.String())
+		// if err != nil {
+		// 	return
+		// }
+		return nil, adatypes.NewGenericError(64)
 	}
 	adatypes.Central.Log.Debugf("Search map: %s", mapName)
-	request := NewRequestAdabas(adabas, repository.Fnr)
+	request := NewReadRequestAdabas(adabas, repository.Fnr)
 	err = request.ReadLogicalWithWithParser(mapFieldName.fieldName()+"="+mapName, parseMaps, repository)
 	if err != nil {
 		return
@@ -228,13 +229,14 @@ func (repository *Repository) LoadAllMaps(adabas *Adabas) (adabasMaps []*Map, er
 		}
 	}
 	if adabas == nil {
-		adabas, err = NewAdabass(repository.URL.String())
-		if err != nil {
-			return
-		}
+		// adabas, err = NewAdabass(repository.URL.String())
+		// if err != nil {
+		// 	return
+		// }
+		return nil, adatypes.NewGenericError(64)
 	}
 	adatypes.Central.Log.Debugf("Load all maps")
-	request := NewRequestAdabas(adabas, repository.Fnr)
+	request := NewReadRequestAdabas(adabas, repository.Fnr)
 	err = request.ReadPhysicalSequenceWithParser(parseMaps, repository)
 	if err != nil {
 		return
@@ -321,7 +323,7 @@ func (repository *Repository) LoadRepositoryMapsWithAdabas(adabas *Adabas) (err 
 	repository.MapNames = make(map[string]adatypes.Isn)
 
 	adabas.Acbx.Acbxdbid = repository.DatabaseURL.URL.Dbid
-	request := NewRequestAdabas(adabas, repository.Fnr)
+	request := NewReadRequestAdabas(adabas, repository.Fnr)
 	request.QueryFields(mapFieldName.fieldName())
 	err = request.ReadLogicalByWithParser(mapFieldName.fieldName(), parseMapNames, repository)
 	if err != nil {
@@ -333,15 +335,7 @@ func (repository *Repository) LoadRepositoryMapsWithAdabas(adabas *Adabas) (err 
 	return
 }
 
-// LoadMaps create a new repository
-func (repository *Repository) LoadMaps() error {
-	adabas, err := NewAdabass(repository.URL.String())
-	if err != nil {
-		return err
-	}
-	return repository.LoadRepositoryMapsWithAdabas(adabas)
-}
-
+// write Adabas Map into database repository
 func (repository *Repository) writeAdabasMapsWithAdabas(adabas *Adabas, adabasMap *Map) (err error) {
 	defer adabas.Close()
 	request := NewStoreRequestAdabas(adabas, repository.Fnr)

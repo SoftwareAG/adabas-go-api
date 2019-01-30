@@ -39,7 +39,7 @@ func testCallback(adabasRequest *adatypes.Request, x interface{}) (err error) {
 func prepareCall(t *testing.T, mapName string) {
 	adabas := NewAdabas(adabasModDBID)
 	mr := NewMapRepository(adabas, 250)
-	readRequest, rErr := NewMapNameRequestRepo(mapName, adabas, mr)
+	readRequest, rErr := NewMapReadRequestRepo(mapName, adabas, mr)
 	if !assert.NoError(t, rErr) {
 		return
 	}
@@ -98,8 +98,8 @@ func TestDeleteRequestByMapNameCommonRepo(t *testing.T) {
 
 	mapName := storeEmployeesMap
 	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
-	perr := prepareCreateTestMap(t, storeEmployeesMap, massLoadSystrans, dataRepository)
-	if perr != nil {
+	perr := prepareCreateTestMap(storeEmployeesMap, massLoadSystrans, dataRepository)
+	if !assert.NoError(t, perr) {
 		return
 	}
 
@@ -123,7 +123,7 @@ func TestDeleteRequestByMapNameCommonRepo(t *testing.T) {
 	defer deleteRequest.Close()
 	fmt.Println("Query entries in map", mapName)
 	adatypes.Central.Log.Debugf("New map request after clear map")
-	readRequest, rErr := NewMapNameRequest(adabas, mapName)
+	readRequest, rErr := NewMapReadRequest(adabas, mapName)
 	if !assert.NoError(t, rErr) {
 		return
 	}
@@ -177,7 +177,7 @@ func TestDeleteRequestByMapNameRepository(t *testing.T) {
 	defer deleteRequest.Close()
 	fmt.Println("Query entries in map", mapName)
 	adatypes.Central.Log.Debugf("New map request after clear map")
-	readRequest, rErr := NewMapNameRequestRepo(mapName, adabas, mr)
+	readRequest, rErr := NewMapReadRequestRepo(mapName, adabas, mr)
 	if !assert.NoError(t, rErr) {
 		return
 	}

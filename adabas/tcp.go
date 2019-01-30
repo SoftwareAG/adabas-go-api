@@ -105,8 +105,8 @@ type adatcpDisconnectPayload struct {
 	Dummy uint64
 }
 
-// ADATCP TCP connection handle
-type ADATCP struct {
+// adatcp TCP connection handle (for internal use only)
+type adatcp struct {
 	connection          net.Conn
 	url                 string
 	order               binary.ByteOrder
@@ -150,7 +150,7 @@ func adatcpTCPClientHTON4(l uint32) uint32 {
 		((uint32(l) >> 24) & uint32(0x000000ff)) | ((uint32(l) >> 8) & uint32(0x0000ff00)) | ((uint32(l) << 8) & uint32(0x00ff0000)) | ((uint32(l) << 24) & uint32(0xff000000)))
 }
 
-// NewAdatcpHeader new ADATCP header
+// NewAdatcpHeader new Adabas TCP header
 func NewAdatcpHeader(bufferType BufferType) AdaTCPHeader {
 	header := AdaTCPHeader{BufferType: BufferType(uint32(bufferType))}
 	copy(header.Eyecatcher[:], adatcpHeaderEyecatcher)
@@ -183,9 +183,9 @@ func Endian() binary.ByteOrder {
 }
 
 // Connect connect to remote TCP/IP Adabas nucleus
-func Connect(url string, order binary.ByteOrder, user [8]byte, node [8]byte,
-	pid uint32, timestamp uint64) (connection *ADATCP, err error) {
-	connection = &ADATCP{url: url, order: order}
+func connect(url string, order binary.ByteOrder, user [8]byte, node [8]byte,
+	pid uint32, timestamp uint64) (connection *adatcp, err error) {
+	connection = &adatcp{url: url, order: order}
 	adatypes.Central.Log.Debugf("Open TCP connection to %s", connection.url)
 	addr, _ := net.ResolveTCPAddr("tcp", connection.url)
 	tcpConn, tcpErr := net.DialTCP("tcp", nil, addr)
@@ -263,7 +263,7 @@ func Connect(url string, order binary.ByteOrder, user [8]byte, node [8]byte,
 }
 
 // Disconnect disconnect remote TCP/IP Adabas nucleus
-func (connection *ADATCP) Disconnect() (err error) {
+func (connection *adatcp) Disconnect() (err error) {
 	adatypes.Central.Log.Debugf("Disconnect connection to %s", connection.url)
 	var buffer bytes.Buffer
 	header := NewAdatcpHeader(DisconnectRequest)
@@ -310,7 +310,7 @@ func (connection *ADATCP) Disconnect() (err error) {
 }
 
 // SendData send data to remote TCP/IP Adabas nucleus
-func (connection *ADATCP) SendData(buffer bytes.Buffer, nrAbdBuffers uint32) (err error) {
+func (connection *adatcp) SendData(buffer bytes.Buffer, nrAbdBuffers uint32) (err error) {
 	header := NewAdatcpHeader(DataRequest)
 	dataHeader := newAdatcpDataHeader(adabasRequest)
 	dataHeader.NumberOfBuffers = nrAbdBuffers
@@ -350,7 +350,7 @@ func generateError(errorCode uint32) error {
 }
 
 // ReceiveData receive data from remote TCP/IP Adabas nucleus
-func (connection *ADATCP) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32, err error) {
+func (connection *adatcp) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32, err error) {
 	adatypes.Central.Log.Debugf("Receive data .... size=%d", buffer.Len())
 
 	header := NewAdatcpHeader(DataReply)

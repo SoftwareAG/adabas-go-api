@@ -52,7 +52,7 @@ func initEmployees(t *testing.T) error {
 	if p == "" {
 		p = "."
 	}
-	name := p + "/" + "Employees.json"
+	name := p + string(os.PathSeparator) + "Employees.json"
 	fmt.Println("Loading ...." + name)
 	file, err := os.Open(name)
 	if !assert.NoError(t, err) {

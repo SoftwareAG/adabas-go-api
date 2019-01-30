@@ -22,6 +22,7 @@ package adabas
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -88,34 +89,35 @@ func TestStoreAdabasFields(t *testing.T) {
 	storeRequest.EndTransaction()
 }
 
-func prepareCreateTestMap(t *testing.T, mapName string, fileName string, dataRepository *DatabaseURL) error {
+func prepareCreateTestMap(mapName string, fileName string, dataRepository *DatabaseURL) error {
 	adabas := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 
 	mr := NewMapRepository(adabas, 250)
 	sm, err := mr.SearchMap(adabas, mapName)
 	if err == nil {
-		assert.NotNil(t, sm)
-		return nil
+		if sm != nil {
+			return nil
+		}
+		return errors.New("Empty search result of map")
 	}
 
 	p := os.Getenv("TESTFILES")
 	if p == "" {
 		p = "."
 	}
-	name := p + "/" + fileName
+	name := p + string(os.PathSeparator) + fileName
 	m, merr := mr.ImportMapRepository(adabas, "*", name, dataRepository)
-	if !assert.NoError(t, merr) {
+	if merr != nil {
+		fmt.Println("Error importing map", merr)
 		return merr
 	}
 	//	fmt.Printf("Successfull importing map: %s\n", mapName)
-	if assert.Equal(t, 1, len(m)) {
+	if len(m) == 1 {
 		m[0].Name = mapName
 		err = m[0].Store()
-		//		fmt.Printf("Storing map returned: %v\n", err)
-		if assert.NoError(t, err) {
-			//			fmt.Println("Map imported in repository")
-		} else {
+		if err != nil {
+			fmt.Printf("Error storing map %s %v\n", mapName, err)
 			return err
 		}
 	}
@@ -129,8 +131,8 @@ func TestStoreFailMapFieldsCheck(t *testing.T) {
 	fmt.Println("Start : TestStoreFailMapFieldsCheck")
 
 	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 11}
-	perr := prepareCreateTestMap(t, massLoadEmployees, massLoadSystrans, dataRepository)
-	if perr != nil {
+	perr := prepareCreateTestMap(massLoadEmployees, massLoadSystrans, dataRepository)
+	if !assert.NoError(t, perr) {
 		return
 	}
 	ada := NewAdabas(adabasModDBID)
@@ -170,8 +172,8 @@ func TestStoreMapFields(t *testing.T) {
 
 	fmt.Println("Prepare create test map")
 	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
-	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
-	if perr != nil {
+	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
+	if !assert.NoError(t, perr) {
 		return
 	}
 
@@ -231,13 +233,14 @@ func TestStoreMapFields(t *testing.T) {
 
 func clearAdabasFile(t *testing.T, target string, fnr uint32) error {
 	fmt.Println("Clear Adabas file", target, "/", fnr)
-	adabas, err := NewAdabass(target)
+	id := NewAdabasID()
+	adabas, err := NewAdabasWithID(target, id)
 	if err != nil {
 		return err
 	}
 	deleteRequest := NewDeleteRequestAdabas(adabas, fnr)
 	defer deleteRequest.Close()
-	readRequest := NewRequestAdabas(adabas, fnr)
+	readRequest := NewReadRequestAdabas(adabas, fnr)
 	defer readRequest.Close()
 	// Need to call all and don't need to read the data for deleting all records
 	readRequest.Limit = 0
@@ -278,7 +281,7 @@ func clearMap(t *testing.T, adabas *Adabas, mapName string) error {
 	defer deleteRequest.Close()
 	fmt.Println("Query entries in map", mapName)
 	adatypes.Central.Log.Debugf("New map request after clear map")
-	readRequest, rErr := NewMapNameRequest(adabas, mapName)
+	readRequest, rErr := NewMapReadRequest(adabas, mapName)
 	if !assert.NoError(t, rErr) {
 		return rErr
 	}
@@ -304,8 +307,8 @@ func TestStoreMapFieldsPeriods(t *testing.T) {
 	log.Infof("TEST: %s", t.Name())
 
 	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
-	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
-	if perr != nil {
+	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
+	if !assert.NoError(t, perr) {
 		return
 	}
 	ada := NewAdabas(adabasModDBID)
@@ -365,8 +368,8 @@ func TestStoreUpdateMapField(t *testing.T) {
 	log.Infof("TEST: %s", t.Name())
 
 	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
-	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
-	if perr != nil {
+	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
+	if !assert.NoError(t, perr) {
 		return
 	}
 	ada := NewAdabas(adabasModDBID)
@@ -440,7 +443,7 @@ func checkUpdateCorrectReadNumber(t *testing.T, value string, isns []adatypes.Is
 	if !assert.NoError(t, err) {
 		return
 	}
-	request := NewRequestAdabas(adabas, 16)
+	request := NewReadRequestAdabas(adabas, 16)
 	defer request.Close()
 	request.QueryFields("AA")
 	result := &Response{}
@@ -564,7 +567,7 @@ func TestStoreWithMapLobFile(t *testing.T) {
 func validateUsingAdabas(t *testing.T, isn adatypes.Isn) {
 	fmt.Println("Validate using Adabas and ISN=", isn)
 	adabas := NewAdabas(adabasModDBID)
-	request := NewRequestAdabas(adabas, 202)
+	request := NewReadRequestAdabas(adabas, 202)
 	defer request.Close()
 	openErr := request.Open()
 	if assert.NoError(t, openErr) {
@@ -605,7 +608,7 @@ func validateUsingMap(t *testing.T, isn adatypes.Isn) {
 	fmt.Println("Validate using Map and ISN=", isn)
 	adabas := NewAdabas(adabasModDBID)
 	mapRepository := NewMapRepository(adabas, 4)
-	request, err := NewMapNameRequestRepo("LOBEXAMPLE", adabas, mapRepository)
+	request, err := NewMapReadRequestRepo("LOBEXAMPLE", adabas, mapRepository)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -658,7 +661,7 @@ func TestStoreMapMissing(t *testing.T) {
 	defer adabas.Close()
 
 	mapRepository := NewMapRepository(adabas, 4)
-	request, err := NewMapNameRequestRepo("NONMAP", adabas, mapRepository)
+	request, err := NewMapReadRequestRepo("NONMAP", adabas, mapRepository)
 	if assert.Error(t, err) {
 		if assert.Nil(t, request) {
 			assert.Equal(t, "ADG0000014: Map NONMAP not found in repository", err.Error())
@@ -681,7 +684,7 @@ func TestStorePeriod(t *testing.T) {
 	mr := NewMapRepository(adabas, 250)
 	mapName := massLoadSystransStore
 
-	readRequest, rErr := NewMapNameRequestRepo(mapName, adabas, mr)
+	readRequest, rErr := NewMapReadRequestRepo(mapName, adabas, mr)
 	if !assert.NoError(t, rErr) {
 		return
 	}
@@ -753,8 +756,8 @@ func TestStoreEndTransaction(t *testing.T) {
 	log.Infof("TEST: %s", t.Name())
 
 	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
-	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
-	if perr != nil {
+	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
+	if !assert.NoError(t, perr) {
 		return
 	}
 	ada := NewAdabas(adabasModDBID)
@@ -821,8 +824,8 @@ func TestStoreCloseWithBackout(t *testing.T) {
 	log.Infof("TEST: %s", t.Name())
 
 	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
-	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
-	if perr != nil {
+	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
+	if !assert.NoError(t, perr) {
 		return
 	}
 	ada := NewAdabas(adabasModDBID)
@@ -889,8 +892,8 @@ func TestStoreBackout(t *testing.T) {
 	log.Infof("TEST: %s", t.Name())
 
 	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
-	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
-	if perr != nil {
+	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
+	if !assert.NoError(t, perr) {
 		return
 	}
 	ada := NewAdabas(adabasModDBID)

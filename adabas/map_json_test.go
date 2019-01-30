@@ -20,7 +20,7 @@ func ExampleParseJSONFileForFields() {
 	if p == "" {
 		p = "."
 	}
-	name := p + "/" + "Maps.json"
+	name := p + string(os.PathSeparator) + "Maps.json"
 	fmt.Println("Loading ....Maps.json")
 	file, err := os.Open(name)
 	if err != nil {

@@ -79,7 +79,7 @@ func initLogLevelWithFile(fileName string, level log.Level) (file *os.File, err 
 	if p == "" {
 		p = "."
 	}
-	name := p + "/" + fileName
+	name := p + string(os.PathSeparator) + fileName
 	file, err = os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return
@@ -1546,7 +1546,7 @@ func validateResult(t *testing.T, search string, result *Response) error {
 	fmt.Println(string(resultJSON))
 	rw := os.Getenv("REFERENCES")
 	doWrite := os.Getenv("REFERENCE_WRITE")
-	destinationFile := rw + "/" + search + ".json"
+	destinationFile := rw + string(os.PathSeparator) + search + ".json"
 	if _, err := os.Stat(destinationFile); os.IsNotExist(err) {
 		doWrite = "1"
 	}

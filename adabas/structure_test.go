@@ -55,7 +55,7 @@ func TestAcbxReset(t *testing.T) {
 	assert.Equal(t, [2]byte{acbxEyecatcher, acbxVersion}, acbx.Acbxver)
 }
 
-func ExampleAdabas_ResetAcbx() {
+func ExampleAdabas_resetAcbx() {
 	var acbx Acbx
 	acbx.resetAcbx()
 	acbx.Acbxcmd = et.code()

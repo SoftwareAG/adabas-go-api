@@ -581,14 +581,14 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 
 	log.Infof("Prepare create test map")
 	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
-	perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
-	if perr != nil {
+	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
+	if !assert.NoError(t, perr) {
 		return
 	}
 	dataRepository = &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 19}
 	vehicleMapName := mapVehicles + "Go"
-	perr = prepareCreateTestMap(t, vehicleMapName, vehicleSystransStore, dataRepository)
-	if perr != nil {
+	perr = prepareCreateTestMap(vehicleMapName, vehicleSystransStore, dataRepository)
+	if !assert.NoError(t, perr) {
 		return
 	}
 
@@ -659,17 +659,16 @@ func ExampleConnection_mapStore() {
 		return
 	}
 
-	// dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
-	// perr := prepareCreateTestMap(t, massLoadSystransStore, massLoadSystrans, dataRepository)
-	// if perr != nil {
-	// 	return
-	// }
-	// dataRepository = &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 19}
+	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
+	if perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository); perr != nil {
+		fmt.Println("Error creating map", massLoadSystransStore, perr)
+		return
+	}
+	dataRepository = &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 19}
 	vehicleMapName := mapVehicles + "Go"
-	// perr = prepareCreateTestMap(t, vehicleMapName, vehicleSystransStore, dataRepository)
-	// if perr != nil {
-	// 	return
-	// }
+	if perr := prepareCreateTestMap(vehicleMapName, vehicleSystransStore, dataRepository); perr != nil {
+		return
+	}
 
 	log.Infof("Create connection...")
 	connection, err := NewConnection("acj;map;config=[" + adabasModDBIDs + ",250]")
@@ -690,17 +689,17 @@ func ExampleConnection_mapStore() {
 	err = record.SetValueWithIndex("MIDDLE-I", nil, "MERK")
 	err = storeRequest16.Store(record)
 	if err != nil {
-		fmt.Println("Error", err)
+		fmt.Println("Error store record", err)
 		return
 	}
 	storeRequest19, rErr := connection.CreateMapStoreRequest(vehicleMapName)
 	if rErr != nil {
-		fmt.Println("Error", err)
+		fmt.Println("Error create store request vehicle", rErr)
 		return
 	}
 	err = storeRequest19.StoreFields("REG-NUM,PERSONNEL-ID,CAR-DETAILS")
 	if err != nil {
-		fmt.Println("Error", err)
+		fmt.Println("Error store fields", err)
 		return
 	}
 
