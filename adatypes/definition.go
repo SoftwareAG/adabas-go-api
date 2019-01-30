@@ -805,6 +805,7 @@ type Request struct {
 	Multifetch         uint32
 	Descriptors        []string
 	Definition         *Definition
+	Response           uint16
 	Isn                Isn
 	IsnQuantity        uint64
 	Option             *BufferOption

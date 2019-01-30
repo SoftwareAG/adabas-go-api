@@ -34,6 +34,7 @@ type ReadRequest struct {
 	Limit             uint64
 	Multifetch        uint32
 	RecordBufferShift uint32
+	cursoring         *Cursoring
 }
 
 // NewReadRequestCommon create a request defined by another request (not even ReadRequest required)
@@ -272,62 +273,70 @@ func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, er
 
 // ReadLogicalWithWithParser read records with a logical order given by a search string
 func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParser adatypes.RequestParser, x interface{}) (err error) {
-	err = request.Open()
-	if err != nil {
-		return
-	}
-	adatypes.Central.Log.Debugf("Read logical, open done ...%#v", request.adabas.ID.platform)
-	searchInfo := adatypes.NewSearchInfo(request.adabas.ID.platform(request.adabas.URL.String()), search)
-	adatypes.Central.Log.Debugf("New search info ... %#v", searchInfo)
-	var tree *adatypes.SearchTree
-	if request.definition == nil {
-		adatypes.Central.Log.Debugf("Load Definition ...")
-		err = request.loadDefinition()
-		if err != nil {
-			return
-		}
-		searchInfo.Definition = request.definition
-		tree, err = searchInfo.GenerateTree()
-		if err != nil {
-			return
-		}
-		// fields := tree.SearchFields()
-		// if len(fields) != 1 {
-		// 	err = fmt.Errorf("Please use histogram with single fields only. Nr of fields given is %d", len(fields))
-		// 	return
-		// }
-		// request.definition.ShouldRestrictToFieldSlice(fields)
-	} else {
-		adatypes.Central.Log.Debugf("Use Definition ...")
-		searchInfo.Definition = request.definition
-		tree, err = searchInfo.GenerateTree()
-		if err != nil {
-			return
-		}
-	}
-	adatypes.Central.Log.Debugf("Definition generated ...")
-	adabasRequest, prepareErr := request.prepareRequest()
-	if prepareErr != nil {
-		err = prepareErr
-		return
-	}
-	adatypes.Central.Log.Debugf("Prepare done ...")
-	if resultParser == nil {
-		adabasRequest.Parser = parseRead
-	} else {
-		adabasRequest.Parser = resultParser
-	}
-	adabasRequest.Limit = request.Limit
-	searchInfo.Definition = adabasRequest.Definition
-	adabasRequest.SearchTree = tree
-	adabasRequest.Descriptors = tree.OrderBy()
 
-	if searchInfo.NeedSearch {
-		adatypes.Central.Log.Debugf("search logical with ...%#v", adabasRequest.Descriptors)
-		err = request.adabas.SearchLogicalWith(request.repository.Fnr, adabasRequest, x)
+	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
+		err = request.Open()
+		if err != nil {
+			return
+		}
+		adatypes.Central.Log.Debugf("Read logical, open done ...%#v", request.adabas.ID.platform)
+		searchInfo := adatypes.NewSearchInfo(request.adabas.ID.platform(request.adabas.URL.String()), search)
+		adatypes.Central.Log.Debugf("New search info ... %#v", searchInfo)
+		var tree *adatypes.SearchTree
+		if request.definition == nil {
+			adatypes.Central.Log.Debugf("Load Definition ...")
+			err = request.loadDefinition()
+			if err != nil {
+				return
+			}
+			searchInfo.Definition = request.definition
+			tree, err = searchInfo.GenerateTree()
+			if err != nil {
+				return
+			}
+			// fields := tree.SearchFields()
+			// if len(fields) != 1 {
+			// 	err = fmt.Errorf("Please use histogram with single fields only. Nr of fields given is %d", len(fields))
+			// 	return
+			// }
+			// request.definition.ShouldRestrictToFieldSlice(fields)
+		} else {
+			adatypes.Central.Log.Debugf("Use Definition ...")
+			searchInfo.Definition = request.definition
+			tree, err = searchInfo.GenerateTree()
+			if err != nil {
+				return
+			}
+		}
+		adatypes.Central.Log.Debugf("Definition generated ...")
+		adabasRequest, prepareErr := request.prepareRequest()
+		if prepareErr != nil {
+			err = prepareErr
+			return
+		}
+		adatypes.Central.Log.Debugf("Prepare done ...")
+		if resultParser == nil {
+			adabasRequest.Parser = parseRead
+		} else {
+			adabasRequest.Parser = resultParser
+		}
+		adabasRequest.Limit = request.Limit
+		searchInfo.Definition = adabasRequest.Definition
+		adabasRequest.SearchTree = tree
+		adabasRequest.Descriptors = tree.OrderBy()
+		if request.cursoring != nil {
+			request.cursoring.adabasRequest = adabasRequest
+		}
+
+		if searchInfo.NeedSearch {
+			adatypes.Central.Log.Debugf("search logical with ...%#v", adabasRequest.Descriptors)
+			err = request.adabas.SearchLogicalWith(request.repository.Fnr, adabasRequest, x)
+		} else {
+			adatypes.Central.Log.Debugf("read logical with ...%#v", adabasRequest.Descriptors)
+			err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, x)
+		}
 	} else {
-		adatypes.Central.Log.Debugf("read logical with ...%#v", adabasRequest.Descriptors)
-		err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, x)
+		request.adabas.loopCall(request.cursoring.adabasRequest, x)
 	}
 
 	return

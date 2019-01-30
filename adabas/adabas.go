@@ -617,6 +617,8 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			return
 		}
 
+		adabasRequest.Response = adabas.Acbx.Acbxrsp
+
 		// End of file reached
 		if adabas.Acbx.Acbxrsp == AdaEOF {
 			return
@@ -665,6 +667,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 						return
 					}
 					if responseCode != AdaNormal {
+						adabasRequest.Response = adabas.Acbx.Acbxrsp
 						break
 					}
 					adatypes.Central.Log.Debugf("Response code %d", responseCode)
@@ -714,7 +717,6 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 		if (adabasRequest.Limit > 0) && (count >= adabasRequest.Limit) {
 			break
 		}
-
 	}
 
 	return
