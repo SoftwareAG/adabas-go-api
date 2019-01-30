@@ -530,14 +530,14 @@ func loadJSONMap(file string) (maps []*Map, err error) {
 	}
 	name := p + "/" + file
 	fmt.Println("Loading ...." + file)
-	file, err := os.Open(name)
-	if err != nil {
-		return nil, err
+	f, ferr := os.Open(name)
+	if ferr != nil {
+		return nil, ferr
 	}
-	defer file.Close()
+	defer f.Close()
 
-	maps, err := ParseJSONFileForFields(file)
-	if !assert.NoError(t, err) {
+	maps, err = ParseJSONFileForFields(f)
+	if err != nil {
 		fmt.Println("Error parsing file", err)
 		return nil, err
 	}
