@@ -162,6 +162,47 @@ func ada_get_record_byte_array_value(hdl C.uint64_t, index C.int, field, value *
 	return C.int(0)
 }
 
+//export ada_get_fieldnames
+func ada_get_fieldnames(hdl C.uint64_t) **C.char {
+	cConn := connections[uint64(hdl)]
+
+	fieldnames := cConn.result.Definition.Fieldnames()
+	cArray := C.malloc(C.size_t(len(fieldnames)+1) * C.size_t(unsafe.Sizeof(uintptr(0))))
+
+	// convert the C array to a Go Array so we can index it
+	a := (*[1<<30 - 1]*C.char)(cArray)
+
+	for idx, substring := range fieldnames {
+		a[idx] = C.CString(substring)
+	}
+	a[len(fieldnames)] = (*C.char)(C.NULL)
+
+	return (**C.char)(cArray)
+}
+
+//export ada_get_record_int64_value
+func ada_get_record_int64_value(hdl C.uint64_t, index C.int, field *C.char, value *C.int64_t) C.int {
+	cConn := connections[uint64(hdl)]
+	valueIndex := int(index) - 1
+	v := cConn.result.Values[valueIndex].HashFields[C.GoString(field)]
+	vi, err := v.Int64()
+	if err != nil {
+		return C.int(1)
+	}
+	*value = C.int64_t(vi)
+	return C.int(0)
+}
+
+//export ada_get_record_byte_array_value
+func ada_get_record_byte_array_value(hdl C.uint64_t, index C.int, field, value *C.char, blen C.int) C.int {
+	cConn := connections[uint64(hdl)]
+	valueIndex := int(index) - 1
+	v := cConn.result.Values[valueIndex].HashFields[C.GoString(field)]
+	vi := v.Bytes()
+	C.memcpy(unsafe.Pointer(value), unsafe.Pointer(&vi[0]), C.ulong(len(vi)))
+	return C.int(0)
+}
+
 //export ada_send_msearch
 func ada_send_msearch(hdl C.uint64_t, mapName *C.char, fields, search *C.char) C.int {
 	cConn := connections[uint64(hdl)]

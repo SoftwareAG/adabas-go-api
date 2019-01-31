@@ -23,7 +23,6 @@ int main (int argc,char **argv){
         strcpy(query, DEFAULT_QUERY);
     }
     hdl = ada_new_connection("acj;map;config=[23,4]");
-
     nr_records = ada_send_msearch(hdl, "EMPLOYEES-NAT-DDM", "PERSONNEL-ID,FULL-NAME,BIRTH", query);
     fprintf(stdout, "Got return %d\n", nr_records);
 
