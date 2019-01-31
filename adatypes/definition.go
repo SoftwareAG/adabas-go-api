@@ -619,6 +619,18 @@ func dumpType(adaType IAdaType, parentType IAdaType, level int, x interface{}) e
 	return nil
 }
 
+// Fieldnames list of fields part of the query
+func (def *Definition) Fieldnames() []string {
+	typeList := make([]string, 0)
+	t := TraverserMethods{EnterFunction: func(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+		typeList = append(typeList, adaType.Name())
+		return nil
+	}}
+
+	def.TraverseTypes(t, true, typeList)
+	return typeList
+}
+
 // DumpTypes traverse through the tree of definition calling a callback method
 func (def *Definition) DumpTypes(doLog bool, activeTree bool) {
 	var buffer bytes.Buffer
