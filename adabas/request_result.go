@@ -56,8 +56,9 @@ func (record *Record) createRecordBuffer(helper *adatypes.BufferHelper) (err err
 
 // Response contains the result information of the request
 type Response struct {
-	XMLName xml.Name  `xml:"Response" json:"-"`
-	Values  []*Record `xml:"Records" json:"Records"`
+	XMLName    xml.Name  `xml:"Response" json:"-"`
+	Values     []*Record `xml:"Records" json:"Records"`
+	Definition *adatypes.Definition
 }
 
 // NrRecords number of records in the result
