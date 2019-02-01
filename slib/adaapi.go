@@ -4,7 +4,7 @@ package main
 // #include <stdint.h>
 // #include <string.h>
 // #ifndef NULL
-// #define NULL (0L)
+// #define NULL (void*)(0)
 // #endif
 import "C"
 
@@ -107,7 +107,7 @@ func ada_get_fieldnames(hdl C.uint64_t) **C.char {
 	for idx, substring := range fieldnames {
 		a[idx] = C.CString(substring)
 	}
-	a[len(fieldnames)] = (*C.char)(NULL)
+	a[len(fieldnames)] = (*C.char)(C.NULL)
 
 	return (**C.char)(cArray)
 }
