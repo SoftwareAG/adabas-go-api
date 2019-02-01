@@ -55,6 +55,13 @@ func NewMapRepository(adabas *Adabas, fnr uint32) *Repository {
 	return mr
 }
 
+// NewMapRepositoryWithURL new map repository created
+func NewMapRepositoryWithURL(url DatabaseURL) *Repository {
+	mr := &Repository{DatabaseURL: url}
+	mr.CachedMaps = make(map[string]*Map)
+	return mr
+}
+
 // AddGlobalMapRepository add global map repository
 func AddGlobalMapRepository(adabas *Adabas, fnr uint32) {
 	if repositories == nil {
