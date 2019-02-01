@@ -407,7 +407,7 @@ func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, er
 	adabasRequest.Limit = request.Limit
 	adabasRequest.Descriptors = []string{descriptor}
 
-	Response :=  &Response{Definition: request.definition}
+	Response := &Response{Definition: request.definition}
 
 	err = request.adabas.Histogram(request.repository.Fnr, adabasRequest, Response)
 	if err == nil {

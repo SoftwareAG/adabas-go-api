@@ -68,7 +68,7 @@ CFLAGS      = -I$(CURDIR)/bin/$(GOOS)/slib
 LDFLAGS     = $(CURDIR)/bin/$(GOOS)/slib/adaapi.so
 
 .PHONY: all
-all: prepare generate fmt lint vendor $(EXECS) test-build $(LIBS)
+all: prepare generate fmt lint vendor lib $(EXECS) test-build
 
 lib: $(LIBS) $(CEXEC)
 
