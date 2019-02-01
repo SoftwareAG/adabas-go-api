@@ -150,7 +150,7 @@ func ada_get_record_byte_array_value(hdl C.uint64_t, index C.int, field, value *
 	valueIndex := int(index) - 1
 	v := cConn.result.Values[valueIndex].HashFields[C.GoString(field)]
 	vi := v.Bytes()
-	C.memcpy(unsafe.Pointer(value), unsafe.Pointer(&vi[0]), C.ulong(len(vi)))
+	C.memcpy(unsafe.Pointer(value), unsafe.Pointer(&vi[0]), C.size_t(len(vi)))
 	return C.int(0)
 }
 
