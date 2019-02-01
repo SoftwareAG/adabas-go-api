@@ -27,6 +27,7 @@ tmp_gopath/
 # Ignore system specific objects (obsolete)
 *.syso
 *.swo
+*.o
 
 # Ignore Apple Mac cacheing
 .DS_Store
@@ -35,3 +36,5 @@ tmp_gopath/
 gostyle.xml
 
 test/
+src/c_query
+src/c_mquery
