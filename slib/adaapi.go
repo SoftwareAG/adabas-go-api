@@ -1,3 +1,22 @@
+/*
+* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+*
+* SPDX-License-Identifier: Apache-2.0
+*
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+ */
+
 package main
 
 // #include <stdlib.h>
@@ -90,7 +109,7 @@ func ada_get_record_string_value(hdl C.uint64_t, index C.int, field, value *C.ch
 		return C.int(1)
 	}
 	vs := []byte(v.String())
-	C.memcpy(unsafe.Pointer(value), unsafe.Pointer(&vs[0]), C.ulong(len(vs)))
+	C.memcpy(unsafe.Pointer(value), unsafe.Pointer(&vs[0]), C.size_t(len(vs)))
 	return C.int(0)
 }
 
@@ -107,7 +126,7 @@ func ada_get_fieldnames(hdl C.uint64_t) **C.char {
 	for idx, substring := range fieldnames {
 		a[idx] = C.CString(substring)
 	}
-	a[len(fieldnames)] = (*C.char)(C.NULL)
+	a[len(fieldnames)] = nil
 
 	return (**C.char)(cArray)
 }
@@ -131,7 +150,7 @@ func ada_get_record_byte_array_value(hdl C.uint64_t, index C.int, field, value *
 	valueIndex := int(index) - 1
 	v := cConn.result.Values[valueIndex].HashFields[C.GoString(field)]
 	vi := v.Bytes()
-	C.memcpy(unsafe.Pointer(value), unsafe.Pointer(&vi[0]), C.ulong(len(vi)))
+	C.memcpy(unsafe.Pointer(value), unsafe.Pointer(&vi[0]), C.size_t(len(vi)))
 	return C.int(0)
 }
 
