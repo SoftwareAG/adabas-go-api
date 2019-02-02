@@ -36,8 +36,11 @@ import (
 )
 
 type cConnection struct {
-	connection *adabas.Connection
-	result     *adabas.Response
+	connection   *adabas.Connection
+	result       *adabas.Response
+	storeRequest *adabas.StoreRequest
+	recordIndex  uint64
+	storeRecords map[uint64]*adabas.Record
 }
 
 var connections map[uint64]*cConnection
@@ -45,6 +48,11 @@ var idindex uint64
 
 func init() {
 	connections = make(map[uint64]*cConnection)
+}
+
+func newcConnection(ac *adabas.Connection) *cConnection {
+	return &cConnection{connection: ac,
+		storeRecords: make(map[uint64]*adabas.Record)}
 }
 
 //export ada_free
@@ -62,7 +70,7 @@ func ada_new_connection(conn *C.char) C.uint64_t {
 		return C.uint64_t(0)
 	}
 	id := atomic.AddUint64(&idindex, 1)
-	connections[id] = &cConnection{connection: ac}
+	connections[id] = newcConnection(ac)
 	fmt.Println("New handle", id)
 	return C.uint64_t(id)
 }
@@ -174,6 +182,83 @@ func ada_send_msearch(hdl C.uint64_t, mapName *C.char, fields, search *C.char) C
 	}
 	cConn.result = result
 	return C.int(len(result.Values))
+}
+
+//export ada_prepare_store
+func ada_prepare_store(hdl C.uint64_t, file C.int, fields *C.char) C.int {
+	cConn := connections[uint64(hdl)]
+	var err error
+	cConn.storeRequest, err = cConn.connection.CreateStoreRequest(uint32(file))
+	if err != nil {
+		return -1
+	}
+	err = cConn.storeRequest.StoreFields(C.GoString(fields))
+	if err != nil {
+		return -1
+	}
+
+	storeRecord, rErr := cConn.storeRequest.CreateRecord()
+	if rErr != nil {
+		fmt.Println("Store record error ...", err)
+		return -1
+	}
+	cConn.recordIndex++
+	cConn.storeRecords[cConn.recordIndex] = storeRecord
+	return C.int(cConn.recordIndex)
+}
+
+//export ada_prepare_mstore
+func ada_prepare_mstore(hdl C.uint64_t, mapName, fields *C.char) C.int {
+	cConn := connections[uint64(hdl)]
+	var err error
+	cConn.storeRequest, err = cConn.connection.CreateMapStoreRequest(C.GoString(mapName))
+	if err != nil {
+		return -1
+	}
+	err = cConn.storeRequest.StoreFields(C.GoString(fields))
+	if err != nil {
+		return -1
+	}
+
+	storeRecord, rErr := cConn.storeRequest.CreateRecord()
+	if rErr != nil {
+		fmt.Println("Store record error ...", err)
+		return -1
+	}
+	cConn.recordIndex++
+	cConn.storeRecords[cConn.recordIndex] = storeRecord
+	return C.int(cConn.recordIndex)
+}
+
+//export ada_record_set_string
+func ada_record_set_string(hdl C.uint64_t, index C.int, field, value *C.char) C.int {
+	cConn := connections[uint64(hdl)]
+	storeRecord := cConn.storeRecords[uint64(index)]
+	err := storeRecord.SetValue(C.GoString(field), C.GoString(value))
+	if err != nil {
+		fmt.Println("Error setting field "+C.GoString(field), err)
+		return -1
+	}
+	return 0
+}
+
+//export ada_store_record
+func ada_store_record(hdl C.uint64_t, index C.int) C.int {
+	cConn := connections[uint64(hdl)]
+	i := uint64(index)
+	storeRecord := cConn.storeRecords[i]
+	cConn.storeRequest.Store(storeRecord)
+	return 0
+}
+
+//export ada_end_transaction
+func ada_end_transaction(hdl C.uint64_t) C.int {
+	cConn := connections[uint64(hdl)]
+	err := cConn.connection.EndTransaction()
+	if err != nil {
+		return C.int(-1)
+	}
+	return C.int(0)
 }
 
 func main() {}

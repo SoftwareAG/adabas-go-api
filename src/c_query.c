@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     {
         strcpy(query, DEFAULT_QUERY);
     }
-    hdl = ada_new_connection("acj;target=24;config=[24,4]");
+    hdl = ada_new_connection("acj;target=23");
 
     nr_records = ada_send_search(hdl, 11, "AA,AB,AH", query);
     fprintf(stdout, "Got return %d\n", nr_records);
@@ -53,5 +53,9 @@ int main(int argc, char **argv)
         ada_get_record_int64_value(hdl, i + 1, "AH", &i8);
         fprintf(stdout, " Data AH -> %lld\n", i8);
     }
+    i=ada_prepare_store(hdl,16,"AA,AB");
+    ada_record_set_string(hdl,i,"AA","ABCDEF");
+    ada_store_record(hdl,i);
+    ada_end_transaction(hdl);
     ada_close_connection(hdl);
 }

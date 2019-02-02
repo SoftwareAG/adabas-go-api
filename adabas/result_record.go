@@ -170,7 +170,7 @@ func (record *Record) SetValue(field string, value interface{}) (err error) {
 		adatypes.Central.Log.Debugf("Set %s [%T] value err=%v", field, adaValue, err)
 	} else {
 		err = adatypes.NewGenericError(28, field)
-		adatypes.Central.Log.Debugf("Field %s not found err=%v", field, adaValue, err)
+		adatypes.Central.Log.Debugf("Field %s not found %v err=%v", field, adaValue, err)
 	}
 	return
 }

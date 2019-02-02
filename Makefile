@@ -38,7 +38,7 @@ TESTOUTPUT ?= $(CURDIR)/test
 ENABLE_DEBUG ?= 0
 
 # Executables
-EXECS       = tests/employee_client tests/testsuite tests/simple_read
+EXECS       = tests/employee_client tests/testsuite tests/simple_read tests/query tests/lobload
 LIBS        = slib/adaapi
 BASE        = $(GOPATH)/src/$(PACKAGE)
 BASESRC     = $(CURDIR)
