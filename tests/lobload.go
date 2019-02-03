@@ -61,7 +61,7 @@ func initLogLevelWithFile(fileName string, level log.Level) (file *os.File, err 
 	return
 }
 
-func loadFile(fileName string, dbid adabas.Dbid) error {
+func loadFile(fileName string, ada *adabas.Adabas) error {
 	fmt.Println("Load file", fileName)
 	f, err := os.Open(fileName)
 	if err != nil {
@@ -93,8 +93,6 @@ func loadFile(fileName string, dbid adabas.Dbid) error {
 	}
 	thumbnail := buf.Bytes()
 	fmt.Println("Thumbnail data size", len(thumbnail))
-
-	ada := adabas.NewAdabas(dbid)
 
 	adabasMap, serr := adabas.SearchMapRepository(ada, "LOBEXAMPLE")
 	if serr != nil {
@@ -140,13 +138,12 @@ func loadFile(fileName string, dbid adabas.Dbid) error {
 	}
 	fmt.Println("Store record into ISN=", storeRecord.Isn)
 	storeRequest.EndTransaction()
-	validateUsingMap(dbid, storeRecord.Isn)
+	validateUsingMap(ada, storeRecord.Isn)
 	return nil
 }
 
-func validateUsingMap(dbid adabas.Dbid, isn adatypes.Isn) {
+func validateUsingMap(a *adabas.Adabas, isn adatypes.Isn) {
 	fmt.Println("Validate using Map and ISN=", isn)
-	a := adabas.NewAdabas(dbid)
 	mapRepository := adabas.NewMapRepository(a, 4)
 	request, err := adabas.NewMapReadRequestRepo("LOBEXAMPLE", a, mapRepository)
 	if err != nil {
@@ -174,9 +171,11 @@ func validateUsingMap(dbid adabas.Dbid, isn adatypes.Isn) {
 
 func main() {
 	var fileName string
-	var dbidParameter int
-	flag.StringVar(&fileName, "f", "", "File name of picture to be imported")
-	flag.IntVar(&dbidParameter, "d", 23, "Database id")
+	var dbidParameter string
+	var mapFnrParameter int
+	flag.StringVar(&fileName, "p", "", "File name of picture to be imported")
+	flag.StringVar(&dbidParameter, "d", "23", "Map repository Database id")
+	flag.IntVar(&mapFnrParameter, "f", 4, "Map repository file number")
 	flag.Parse()
 
 	if fileName == "" {
@@ -184,20 +183,24 @@ func main() {
 		return
 	}
 
-	dbid := adabas.Dbid(dbidParameter)
-	a := adabas.NewAdabas(dbid)
-	adabas.AddGlobalMapRepository(a, 4)
-	defer adabas.DelGlobalMapRepository(a, 4)
+	id := adabas.NewAdabasID()
+	a, err := adabas.NewAdabasWithID(dbidParameter, id)
+	if err != nil {
+		fmt.Println("Adabas target generation error", err)
+		return
+	}
+	adabas.AddGlobalMapRepository(a, uint32(mapFnrParameter))
+	defer adabas.DelGlobalMapRepository(a, uint32(mapFnrParameter))
 	adabas.DumpGlobalMapRepositories()
 
-	err := filepath.Walk(fileName, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(fileName, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
 		}
 		fmt.Println("Check", path)
 		if strings.HasSuffix(strings.ToLower(path), ".jpg") {
 			fmt.Println("Load", path)
-			return loadFile(path, dbid)
+			return loadFile(path, a)
 		}
 		return nil
 	})
