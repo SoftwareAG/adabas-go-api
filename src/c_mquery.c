@@ -22,7 +22,7 @@ int main (int argc,char **argv){
     {
         strcpy(query, DEFAULT_QUERY);
     }
-    hdl = ada_new_connection("acj;map;config=[24,4]");
+    hdl = ada_new_connection("acj;map;config=[23,4]");
 
     nr_records = ada_send_msearch(hdl, "EMPLOYEES-NAT-DDM", "PERSONNEL-ID,FULL-NAME,BIRTH", query);
     fprintf(stdout, "Got return %d\n", nr_records);
@@ -51,5 +51,9 @@ int main (int argc,char **argv){
         ada_get_record_int64_value(hdl, i + 1, "BIRTH", &i8);
         fprintf(stdout, " Data BIRTH -> %lld\n", i8);
     }
+    i=ada_prepare_store(hdl,16,"PERSONNEL-ID,FULL-NAME");
+    ada_record_set_string(hdl,i,"PERSONNEL-ID","MAPABCDEF");
+    ada_store_record(hdl,i);
+    ada_end_transaction(hdl);
     ada_close_connection(hdl);
 }

@@ -772,7 +772,7 @@ var statisMessages = []struct {
 	{"ADG0000025", "en", "Error empty record given"},
 	{"ADG0000026", "en", "Request definition empty"},
 	{"ADG0000027", "en", "Error creating result record: {0} "},
-	{"ADG0000028", "en", "Error setting value for {0}"},
+	{"ADG0000028", "en", "Field '{0}' not found"},
 	{"ADG0000029", "en", "Adabas id is not set"},
 	{"ADG0000030", "en", "Unknown XTS protocol error"},
 	{"ADG0000031", "en", "No A2 header received"},
