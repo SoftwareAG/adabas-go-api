@@ -39,7 +39,7 @@ ENABLE_DEBUG ?= 0
 
 # Executables
 EXECS       = tests/employee_client tests/testsuite tests/simple_read tests/query tests/lobload
-LIBS        = slib/adaapi
+LIBS        = 
 BASE        = $(GOPATH)/src/$(PACKAGE)
 BASESRC     = $(CURDIR)
 PKGS        = $(or $(PKG),$(shell cd $(BASE) && env GOPATH=$(GOPATH) $(GO) list ./... | grep -v "^vendor/"))
@@ -62,24 +62,10 @@ V = 0
 Q = $(if $(filter 1,$V),,@)
 M = $(shell printf "\033[34;1m▶\033[0m")
 
-# C interface
-CEXEC       = c_query c_mquery
-CFLAGS      = -I$(CURDIR)/bin/$(GOOS)/slib
-LDFLAGS     = $(CURDIR)/bin/$(GOOS)/slib/adaapi.so
-
 .PHONY: all
 all: prepare generate fmt lint vendor lib $(EXECS) test-build
 
 lib: $(LIBS) $(CEXEC)
-
-%.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
-
-c_query: $(CURDIR)/src/c_query.o #$(BIN)/$(GOOS)/slib/c_query.o
-	$(CC) -o $(CURDIR)/bin/$(GOOS)/slib/$@ $< $(LDFLAGS)
-
-c_mquery: $(CURDIR)/src/c_mquery.o #$(BIN)/$(GOOS)/slib/c_query.o
-	$(CC) -o $(CURDIR)/bin/$(GOOS)/slib/$@ $< $(LDFLAGS)
 
 prepare: $(LOGPATH) $(CURLOGPATH) $(BIN) $(BASE)
 	@echo "Build architecture ${GOARCH} ${GOOS} network=${WCPHOST} GOFLAGS=$(GO_FLAGS)"
