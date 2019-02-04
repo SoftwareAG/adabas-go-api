@@ -62,10 +62,24 @@ V = 0
 Q = $(if $(filter 1,$V),,@)
 M = $(shell printf "\033[34;1m▶\033[0m")
 
-.PHONY: all
-all: prepare generate fmt lint vendor $(EXECS) test-build
+# C interface
+CEXEC       = c_query c_mquery
+CFLAGS      = -I$(CURDIR)/bin/$(GOOS)/slib
+LDFLAGS     = $(CURDIR)/bin/$(GOOS)/slib/adaapi.so
 
-lib: all $(LIBS)
+.PHONY: all
+all: prepare generate fmt lint vendor lib $(EXECS) test-build
+
+lib: $(LIBS) $(CEXEC)
+
+%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+c_query: $(CURDIR)/src/c_query.o #$(BIN)/$(GOOS)/slib/c_query.o
+	$(CC) -o $(CURDIR)/bin/$(GOOS)/slib/$@ $< $(LDFLAGS)
+
+c_mquery: $(CURDIR)/src/c_mquery.o #$(BIN)/$(GOOS)/slib/c_query.o
+	$(CC) -o $(CURDIR)/bin/$(GOOS)/slib/$@ $< $(LDFLAGS)
 
 prepare: $(LOGPATH) $(CURLOGPATH) $(BIN) $(BASE)
 	@echo "Build architecture ${GOARCH} ${GOOS} network=${WCPHOST} GOFLAGS=$(GO_FLAGS)"
@@ -75,7 +89,7 @@ $(LIBS): | $(BASE) ; $(info $(M) building libraries…) @ ## Build program binar
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" $(GO) build $(GO_FLAGS) \
 		-buildmode=c-shared \
 		-ldflags '-X $(PACKAGE)/cmd.Version=$(VERSION) -X $(PACKAGE)/cmd.BuildDate=$(DATE)' \
-		-o $(BIN)/$@ $@.go
+		-o $(BIN)/$(GOOS)/$@.so $@.go
 
 $(EXECS): | $(BASE) ; $(info $(M) building executable…) @ ## Build program binary
 	$Q cd $(BASE) && \
