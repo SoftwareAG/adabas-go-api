@@ -32,7 +32,7 @@ type StoreRequest struct {
 }
 
 // NewStoreRequest create a new store Request instance
-func NewStoreRequest(url string, fnr uint32) *StoreRequest {
+func NewStoreRequest(url string, fnr Fnr) *StoreRequest {
 	var adabas *Adabas
 	if dbid, err := strconv.Atoi(url); err == nil {
 		adabas = NewAdabas(Dbid(dbid))
@@ -44,7 +44,7 @@ func NewStoreRequest(url string, fnr uint32) *StoreRequest {
 }
 
 // NewStoreRequestAdabas create a new Request instance
-func NewStoreRequestAdabas(adabas *Adabas, fnr uint32) *StoreRequest {
+func NewStoreRequestAdabas(adabas *Adabas, fnr Fnr) *StoreRequest {
 	clonedAdabas := NewClonedAdabas(adabas)
 	return &StoreRequest{commonRequest: commonRequest{adabas: clonedAdabas,
 		repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}

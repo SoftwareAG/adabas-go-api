@@ -31,7 +31,7 @@ type DeleteRequest struct {
 }
 
 // NewDeleteRequest create a new store Request instance
-func NewDeleteRequest(url string, fnr uint32) *DeleteRequest {
+func NewDeleteRequest(url string, fnr Fnr) *DeleteRequest {
 	var adabas *Adabas
 	if dbid, err := strconv.Atoi(url); err == nil {
 		adabas = NewAdabas(Dbid(dbid))
@@ -43,7 +43,7 @@ func NewDeleteRequest(url string, fnr uint32) *DeleteRequest {
 }
 
 // NewDeleteRequestAdabas create a new Request instance
-func NewDeleteRequestAdabas(adabas *Adabas, fnr uint32) *DeleteRequest {
+func NewDeleteRequestAdabas(adabas *Adabas, fnr Fnr) *DeleteRequest {
 	clonedAdabas := NewClonedAdabas(adabas)
 
 	return &DeleteRequest{commonRequest: commonRequest{adabas: clonedAdabas,

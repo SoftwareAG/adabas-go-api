@@ -37,6 +37,9 @@ const acbxLength = 192
 // Dbid Adabas database identifier
 type Dbid uint32
 
+// Fnr Adabas file number identifier
+type Fnr uint32
+
 // Acbx Adabas Control block extended version
 type Acbx struct {
 	Acbxtyp  byte         /* +00  ADALNK function code        */
@@ -48,7 +51,7 @@ type Acbx struct {
 	Acbxrsp  uint16       /* +0A  Response code               */
 	Acbxcid  [4]byte      /* +0C  Command ID                  */
 	Acbxdbid Dbid         /* +10  Database ID                 */
-	Acbxfnr  uint32       /* +14  File number                 */
+	Acbxfnr  Fnr          /* +14  File number                 */
 	Acbxisn  adatypes.Isn /* +18  ISN                         */
 	Acbxisl  uint64       /* +20  ISN Lower Limit             */
 	Acbxisq  uint64       /* +28  ISN Quantity                */

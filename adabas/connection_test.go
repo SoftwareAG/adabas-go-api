@@ -1497,7 +1497,7 @@ func ExampleConnection_endTransaction() {
 
 }
 
-func checkStoreByFile(t *testing.T, target string, file uint32, search string) error {
+func checkStoreByFile(t *testing.T, target string, file Fnr, search string) error {
 	connection, err := NewConnection("acj;target=" + target)
 	if !assert.NoError(t, err) {
 		return err
@@ -1706,7 +1706,7 @@ func ExampleConnection_store() {
 
 }
 
-func dumpStoredData(target string, file uint32, search string) error {
+func dumpStoredData(target string, file Fnr, search string) error {
 	connection, err := NewConnection("acj;target=" + target)
 	if err != nil {
 		return err

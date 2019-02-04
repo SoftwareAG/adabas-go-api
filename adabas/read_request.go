@@ -129,7 +129,7 @@ func NewMapReadRequestByMap(adabas *Adabas, adabasMap *Map) (request *ReadReques
 }
 
 // NewReadRequest create a new Request instance
-// func NewReadRequest(url string, fnr uint32) *ReadRequest {
+// func NewReadRequest(url string, fnr Fnr) *ReadRequest {
 // 	var adabas *Adabas
 // 	if dbid, err := strconv.Atoi(url); err == nil {
 // 		adabas = NewAdabas(Dbid(dbid))
@@ -142,7 +142,7 @@ func NewMapReadRequestByMap(adabas *Adabas, adabasMap *Map) (request *ReadReques
 // }
 
 // NewReadRequestAdabas create a new Request instance
-func NewReadRequestAdabas(adabas *Adabas, fnr uint32) *ReadRequest {
+func NewReadRequestAdabas(adabas *Adabas, fnr Fnr) *ReadRequest {
 	clonedAdabas := NewClonedAdabas(adabas)
 
 	return &ReadRequest{Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,

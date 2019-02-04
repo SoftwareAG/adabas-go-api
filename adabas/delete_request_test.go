@@ -206,7 +206,7 @@ func TestDeleteRequestByMapNameRepository(t *testing.T) {
 	}
 }
 
-func clearFile(file uint32) error {
+func clearFile(file Fnr) error {
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if err != nil {
 		return err

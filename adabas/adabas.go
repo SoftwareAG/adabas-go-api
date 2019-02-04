@@ -332,7 +332,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 }
 
 // ReadFileDefinition Read file definition out of Adabas file
-func (adabas *Adabas) ReadFileDefinition(fileNr uint32) (definition *adatypes.Definition, err error) {
+func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Definition, err error) {
 	cacheName := adabas.URL.String() + "_" + strconv.Itoa(int(fileNr))
 	definition = adatypes.CreateDefinitionByCache(cacheName)
 	if definition != nil {
@@ -431,7 +431,7 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.Request) {
 }
 
 // ReadPhysical read data in physical order
-func (adabas *Adabas) ReadPhysical(fileNr uint32, adabasRequest *adatypes.Request, x interface{}) (err error) {
+func (adabas *Adabas) ReadPhysical(fileNr Fnr, adabasRequest *adatypes.Request, x interface{}) (err error) {
 	adatypes.Central.Log.Debugf("Open flag %p %v readpp", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	err = adabas.Open()
 	if err != nil {
@@ -478,7 +478,7 @@ func (adabas *Adabas) ReadPhysical(fileNr uint32, adabasRequest *adatypes.Reques
 }
 
 // read a specific ISN out of Adabas file
-func (adabas *Adabas) readISN(fileNr uint32, adabasRequest *adatypes.Request, x interface{}) (err error) {
+func (adabas *Adabas) readISN(fileNr Fnr, adabasRequest *adatypes.Request, x interface{}) (err error) {
 	adatypes.Central.Log.Debugf("Open flag %p %v readisnp", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	err = adabas.Open()
 	if err != nil {
@@ -503,7 +503,7 @@ func (adabas *Adabas) readISN(fileNr uint32, adabasRequest *adatypes.Request, x 
 }
 
 // ReadLogicalWith Read logical using a descriptor
-func (adabas *Adabas) ReadLogicalWith(fileNr uint32, adabasRequest *adatypes.Request, x interface{}) (err error) {
+func (adabas *Adabas) ReadLogicalWith(fileNr Fnr, adabasRequest *adatypes.Request, x interface{}) (err error) {
 	err = adabas.Open()
 	if err != nil {
 		return
@@ -544,7 +544,7 @@ func (adabas *Adabas) ReadLogicalWith(fileNr uint32, adabasRequest *adatypes.Req
 }
 
 // SearchLogicalWith Search logical using a descriptor
-func (adabas *Adabas) SearchLogicalWith(fileNr uint32, adabasRequest *adatypes.Request, x interface{}) (err error) {
+func (adabas *Adabas) SearchLogicalWith(fileNr Fnr, adabasRequest *adatypes.Request, x interface{}) (err error) {
 	err = adabas.Open()
 	if err != nil {
 		return
@@ -759,7 +759,7 @@ func (adabas *Adabas) secondCall(adabasRequest *adatypes.Request, x interface{})
 }
 
 // Histogram histogram of a specific descriptor
-func (adabas *Adabas) Histogram(fileNr uint32, adabasRequest *adatypes.Request, x interface{}) (err error) {
+func (adabas *Adabas) Histogram(fileNr Fnr, adabasRequest *adatypes.Request, x interface{}) (err error) {
 	err = adabas.Open()
 	if err != nil {
 		return
@@ -789,7 +789,7 @@ func (adabas *Adabas) Histogram(fileNr uint32, adabasRequest *adatypes.Request, 
 }
 
 // Store store a record into database
-func (adabas *Adabas) Store(fileNr uint32, adabasRequest *adatypes.Request) (err error) {
+func (adabas *Adabas) Store(fileNr Fnr, adabasRequest *adatypes.Request) (err error) {
 	adatypes.Central.Log.Debugf("Prepare Store transactions=%d adabas=%p open=%v", adabas.transactions.openTransactions,
 		adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	err = adabas.Open()
@@ -842,7 +842,7 @@ func (adabas *Adabas) Store(fileNr uint32, adabasRequest *adatypes.Request) (err
 }
 
 // Update update a record in database
-func (adabas *Adabas) Update(fileNr uint32, adabasRequest *adatypes.Request) (err error) {
+func (adabas *Adabas) Update(fileNr Fnr, adabasRequest *adatypes.Request) (err error) {
 	adatypes.Central.Log.Debugf("Prepare Update transactions=%d adabas=%p open=%v", adabas.transactions.openTransactions,
 		adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	err = adabas.Open()
@@ -904,7 +904,7 @@ func (adabas *Adabas) SetDbid(dbid Dbid) {
 }
 
 // DeleteIsn delete a single isn
-func (adabas *Adabas) DeleteIsn(fileNr uint32, isn adatypes.Isn) (err error) {
+func (adabas *Adabas) DeleteIsn(fileNr Fnr, isn adatypes.Isn) (err error) {
 	adatypes.Central.Log.Debugf("Open flag %p %v delete", adabas, adabas.transactions.flags&adabasOptionOP.Bit())
 	adatypes.Central.Log.Debugf("Delete ISN transactions=%d adabas=%p open=%v", adabas.transactions.openTransactions,
 		adabas, adabas.transactions.flags&adabasOptionOP.Bit())

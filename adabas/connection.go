@@ -34,7 +34,7 @@ type Connection struct {
 	adabasToData *Adabas
 	adabasMap    *Map
 	adabasToMap  *Adabas
-	fnr          int
+	fnr          Fnr
 	repository   *Repository
 }
 
@@ -123,7 +123,7 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 			return nil, err
 		}
 		adatypes.Central.Log.Debugf("Created adabas reference")
-		repository = NewMapRepository(adabasToMap, uint32(fnr))
+		repository = NewMapRepository(adabasToMap, Fnr(fnr))
 		adatypes.Central.Log.Debugf("Created repository")
 		// repository.LoadMapRepository()
 	}
@@ -241,7 +241,7 @@ func (connection *Connection) Release() error {
 }
 
 // CreateReadRequest create a read request
-func (connection *Connection) CreateReadRequest(fnr uint32) (*ReadRequest, error) {
+func (connection *Connection) CreateReadRequest(fnr Fnr) (*ReadRequest, error) {
 	return NewReadRequestAdabas(connection.adabasToData, fnr), nil
 }
 
@@ -251,14 +251,14 @@ func (connection *Connection) CreateMapReadRequest(mapName string) (request *Rea
 	if err != nil {
 		return
 	}
-	connection.fnr = int(connection.adabasMap.Data.Fnr)
+	connection.fnr = connection.adabasMap.Data.Fnr
 	adatypes.Central.Log.Debugf("Map referenced : %#v", connection.adabasMap)
 	request, err = NewMapReadRequestByMap(connection.adabasToData, connection.adabasMap)
 	return
 }
 
 // CreateStoreRequest create a store request
-func (connection *Connection) CreateStoreRequest(fnr uint32) (*StoreRequest, error) {
+func (connection *Connection) CreateStoreRequest(fnr Fnr) (*StoreRequest, error) {
 	return NewStoreRequestAdabas(connection.adabasToData, fnr), nil
 }
 
@@ -305,7 +305,7 @@ func (connection *Connection) CreateMapStoreRequest(mapName string) (request *St
 }
 
 // CreateDeleteRequest create a delete request
-func (connection *Connection) CreateDeleteRequest(fnr uint32) (*DeleteRequest, error) {
+func (connection *Connection) CreateDeleteRequest(fnr Fnr) (*DeleteRequest, error) {
 	return NewDeleteRequestAdabas(connection.adabasToData, fnr), nil
 }
 
@@ -325,7 +325,7 @@ func (connection *Connection) CreateMapDeleteRequest(mapName string) (request *D
 		err = adatypes.NewGenericError(10)
 		return
 	}
-	connection.fnr = int(connection.adabasMap.Data.Fnr)
+	connection.fnr = connection.adabasMap.Data.Fnr
 	adatypes.Central.Log.Debugf("Connection FNR=%d, Map referenced : %#v", connection.fnr, connection.adabasMap)
 	request, err = NewMapDeleteRequest(connection.adabasToData, connection.adabasMap)
 	return

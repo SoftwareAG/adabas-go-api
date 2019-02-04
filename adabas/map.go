@@ -213,7 +213,7 @@ func extractMapField(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Trave
 				adabasMap.Data.URL = *URL
 			}
 		case mapFieldDataFnr.fieldName():
-			adabasMap.Data.Fnr = adaValue.Value().(uint32)
+			adabasMap.Data.Fnr = Fnr(adaValue.Value().(uint32))
 			adatypes.Central.Log.Debugf("Got data FNR=%d", adabasMap.Data.Fnr)
 		case mapFieldModifyTime.fieldName():
 			if adaValue.Type().Type() != adatypes.FieldTypeMultiplefield {

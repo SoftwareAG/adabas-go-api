@@ -231,7 +231,7 @@ func TestStoreMapFields(t *testing.T) {
 	storeRequest.EndTransaction()
 }
 
-func clearAdabasFile(t *testing.T, target string, fnr uint32) error {
+func clearAdabasFile(t *testing.T, target string, fnr Fnr) error {
 	fmt.Println("Clear Adabas file", target, "/", fnr)
 	id := NewAdabasID()
 	adabas, err := NewAdabasWithID(target, id)

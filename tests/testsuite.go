@@ -138,7 +138,7 @@ func callAdabas(c caller) {
 				return
 			}
 		}
-		readRequest, rerr := connection.CreateReadRequest(c.file)
+		readRequest, rerr := connection.CreateReadRequest(adabas.Fnr(c.file))
 		if rerr != nil {
 			fmt.Println("Error creating read reference of database:", rerr)
 			return

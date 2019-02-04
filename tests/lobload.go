@@ -189,8 +189,8 @@ func main() {
 		fmt.Println("Adabas target generation error", err)
 		return
 	}
-	adabas.AddGlobalMapRepository(a, uint32(mapFnrParameter))
-	defer adabas.DelGlobalMapRepository(a, uint32(mapFnrParameter))
+	adabas.AddGlobalMapRepository(a, adabas.Fnr(mapFnrParameter))
+	defer adabas.DelGlobalMapRepository(a, adabas.Fnr(mapFnrParameter))
 	adabas.DumpGlobalMapRepositories()
 
 	err = filepath.Walk(fileName, func(path string, info os.FileInfo, err error) error {

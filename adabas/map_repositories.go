@@ -29,8 +29,8 @@ import (
 
 // DatabaseURL defines the target URL of a database file. Might be a database data file or a map repository
 type DatabaseURL struct {
-	URL URL    `json:"Target"`
-	Fnr uint32 `json:"File"`
+	URL URL `json:"Target"`
+	Fnr Fnr `json:"File"`
 }
 
 func (repURL *DatabaseURL) dbid() (dbid Dbid, err error) {
@@ -49,7 +49,7 @@ type Repository struct {
 var repositories map[string]*Repository
 
 // NewMapRepository new map repository created
-func NewMapRepository(adabas *Adabas, fnr uint32) *Repository {
+func NewMapRepository(adabas *Adabas, fnr Fnr) *Repository {
 	mr := &Repository{DatabaseURL: DatabaseURL{URL: *adabas.URL, Fnr: fnr}}
 	mr.CachedMaps = make(map[string]*Map)
 	return mr
@@ -63,7 +63,7 @@ func NewMapRepositoryWithURL(url DatabaseURL) *Repository {
 }
 
 // AddGlobalMapRepository add global map repository
-func AddGlobalMapRepository(adabas *Adabas, fnr uint32) {
+func AddGlobalMapRepository(adabas *Adabas, fnr Fnr) {
 	if repositories == nil {
 		repositories = make(map[string]*Repository)
 	}
@@ -74,7 +74,7 @@ func AddGlobalMapRepository(adabas *Adabas, fnr uint32) {
 }
 
 // DelGlobalMapRepository delete global map repository
-func DelGlobalMapRepository(adabas *Adabas, fnr uint32) {
+func DelGlobalMapRepository(adabas *Adabas, fnr Fnr) {
 	if repositories != nil {
 		reference := fmt.Sprintf("%s/%03d", adabas.URL.String(), fnr)
 		adatypes.Central.Log.Debugf("Remove global repository: %s", reference)

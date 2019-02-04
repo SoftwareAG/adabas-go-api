@@ -87,7 +87,7 @@ func ada_close_connection(hdl C.uint64_t) {
 //export ada_send_search
 func ada_send_search(hdl C.uint64_t, file C.int, fields, search *C.char) C.int {
 	cConn := connections[uint64(hdl)]
-	readRequest, rrerr := cConn.connection.CreateReadRequest(uint32(file))
+	readRequest, rrerr := cConn.connection.CreateReadRequest(adabas.Fnr(file))
 	if rrerr != nil {
 		fmt.Println("Error creating request", rrerr)
 		return 1
@@ -188,7 +188,7 @@ func ada_send_msearch(hdl C.uint64_t, mapName *C.char, fields, search *C.char) C
 func ada_prepare_store(hdl C.uint64_t, file C.int, fields *C.char) C.int {
 	cConn := connections[uint64(hdl)]
 	var err error
-	cConn.storeRequest, err = cConn.connection.CreateStoreRequest(uint32(file))
+	cConn.storeRequest, err = cConn.connection.CreateStoreRequest(adabas.Fnr(file))
 	if err != nil {
 		return -1
 	}
