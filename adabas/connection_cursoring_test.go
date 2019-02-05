@@ -29,7 +29,9 @@ func TestConnectionCursing(t *testing.T) {
 		request.Limit = 0
 		fmt.Println("Init cursor data...")
 		col, cerr := request.ReadLogicalWithCursoring("PERSONNEL-ID=[11100110:11100304]")
-		assert.NoError(t, cerr)
+		if !assert.NoError(t, cerr) {
+			return
+		}
 		fmt.Println("Read next cursor record...")
 		for col.HasNextRecord() {
 			record, rerr := col.NextRecord()
