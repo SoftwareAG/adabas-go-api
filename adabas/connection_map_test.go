@@ -204,6 +204,30 @@ func BenchmarkConnection_noreconnectremote(b *testing.B) {
 	}
 }
 
+func checkVehicleMap() error {
+	databaseURL := &DatabaseURL{URL: *newURLWithDbid(adabasStatDBID), Fnr: 4}
+	mr := NewMapRepositoryWithURL(*databaseURL)
+	a := NewAdabas(adabasStatDBID)
+	defer a.Close()
+	_, err := mr.SearchMap(a, "VehicleMap")
+	if err != nil {
+		maps, err := loadJSONMap("VehicleMap.json")
+		if err != nil {
+			return err
+		}
+		fmt.Println("Number of maps", len(maps))
+		for _, m := range maps {
+			m.Repository = databaseURL
+			fmt.Println("MAP", m.Name)
+			err = m.Store()
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func TestConnectionWithMultipleMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
@@ -211,11 +235,16 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 	f := initTestLogWithFile(t, "connection_map.log")
 	defer f.Close()
 
+	cerr := checkVehicleMap()
+	if !assert.NoError(t, cerr) {
+		return
+	}
 	log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;map;config=[24,4]")
 	if !assert.NoError(t, cerr) {
 		return
 	}
+
 	defer connection.Close()
 	fmt.Println("Connection : ", connection)
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")

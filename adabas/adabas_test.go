@@ -32,8 +32,10 @@ import (
 )
 
 const (
-	adabasModDBID  = 23
-	adabasModDBIDs = "23"
+	adabasModDBID   = 23
+	adabasModDBIDs  = "23"
+	adabasStatDBID  = 24
+	adabasStatDBIDs = "24"
 )
 
 func TestAdabasFailure(t *testing.T) {
