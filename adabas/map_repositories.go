@@ -375,7 +375,7 @@ func (repository *Repository) writeAdabasMapsWithAdabas(adabas *Adabas, adabasMa
 		return
 	}
 
-	record.SetValue("RF", adabasMap.Data.Fnr)
+	record.SetValue("RF", uint32(adabasMap.Data.Fnr))
 	if adabasMap.Data.URL.String() != adabasMap.Repository.URL.String() {
 		record.SetValue("RD", adabasMap.Data.URL.String())
 	}
