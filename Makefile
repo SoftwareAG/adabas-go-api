@@ -101,7 +101,8 @@ $(BIN):
 	@mkdir -p $@
 $(BIN)/%: $(BIN) | $(BASE) ; $(info $(M) building $(REPOSITORY)…)
 	$Q tmp=$$(mktemp -d); \
-		(GOPATH=$$tmp go get $(REPOSITORY) && cp $$tmp/bin/* $(BIN)/.) || ret=$$?; \
+		(GOPATH=$$tmp CGO_CFLAGS= CGO_LDFLAGS= \
+		go get $(REPOSITORY) && cp $$tmp/bin/* $(BIN)/.) || ret=$$?; \
 		rm -rf $$tmp ; exit $$ret
 
 GODEP = $(BIN)/dep

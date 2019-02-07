@@ -42,6 +42,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// MaxDatabasesID maximum valid database id
+const MaxDatabasesID = 255
+
 const adaEmptOpt = ' '
 const adaFdtXOpt = 'X'
 
@@ -104,6 +107,10 @@ func NewClonedAdabas(clone *Adabas) *Adabas {
 func NewAdabas(dbid Dbid) *Adabas {
 	ID := NewAdabasID()
 	adatypes.Central.Log.Debugf("Implicit created Adabas instance dbid with ID: %s", ID.String())
+	if (dbid < 1) || (dbid > MaxDatabasesID) {
+		//		err = fmt.Errorf("Adabas database id %d is not in range of [%d:%d]", dbid, 1, MaxDatabasesID)
+		return nil
+	}
 	acbx := newAcbx(dbid)
 	URL := newURLWithDbid(dbid)
 	return &Adabas{
@@ -145,6 +152,11 @@ func NewAdabasWithID(target string, ID *ID) (*Adabas, error) {
 	if err != nil {
 		return nil, err
 	}
+	if (URL.Dbid < 1) || (URL.Dbid > MaxDatabasesID) {
+		err = fmt.Errorf("Adabas database id %d is not in range of [%d:%d]", URL.Dbid, 1, MaxDatabasesID)
+		return nil, err
+	}
+
 	acbx := newAcbx(URL.Dbid)
 	return &Adabas{
 		ID:           ID,
@@ -158,6 +170,10 @@ func NewAdabasWithID(target string, ID *ID) (*Adabas, error) {
 // NewAdabasWithURL create a new Adabas struct instance
 func NewAdabasWithURL(URL *URL, ID *ID) *Adabas {
 	adatypes.Central.Log.Debugf("Use new Adabas instance with Adabas ID: %s", ID.String())
+	if (URL.Dbid < 1) || (URL.Dbid > MaxDatabasesID) {
+		// err = fmt.Errorf("Adabas database id %d is not in range of [%d:%d]", dbid, 1, MaxDatabasesID)
+		return nil
+	}
 	acbx := newAcbx(URL.Dbid)
 	return &Adabas{
 		URL:          URL,
