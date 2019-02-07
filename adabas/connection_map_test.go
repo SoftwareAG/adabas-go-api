@@ -543,7 +543,7 @@ func BenchmarkConnection_simple(b *testing.B) {
 	}
 	defer f.Close()
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 100; i++ {
 		// fmt.Print(".")
 		// if (i+1)%100 == 0 {
 		// 	fmt.Printf("%d/1000\n", i)
