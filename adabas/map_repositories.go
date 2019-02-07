@@ -198,11 +198,8 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 		err = adatypes.NewGenericError(14, mapName)
 		return
 	}
+	// Need a Adabas instance to work with corresponding ID, else return error
 	if adabas == nil {
-		// adabas, err = NewAdabass(repository.URL.String())
-		// if err != nil {
-		// 	return
-		// }
 		return nil, adatypes.NewGenericError(64)
 	}
 	adatypes.Central.Log.Debugf("Search map: %s", mapName)
