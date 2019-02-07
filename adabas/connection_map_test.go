@@ -204,15 +204,15 @@ func BenchmarkConnection_noreconnectremote(b *testing.B) {
 	}
 }
 
-func checkVehicleMap() error {
+func checkVehicleMap(mapName string, jsonImport string) error {
 	databaseURL := &DatabaseURL{URL: *newURLWithDbid(adabasStatDBID), Fnr: 4}
 	mr := NewMapRepositoryWithURL(*databaseURL)
 	a := NewAdabas(adabasStatDBID)
 	defer a.Close()
-	_, err := mr.SearchMap(a, "VehicleMap")
+	_, err := mr.SearchMap(a, mapName)
 	if err != nil {
 		fmt.Println("Search map, try loading map ...", err)
-		maps, err := loadJSONMap("VehicleMap.json")
+		maps, err := loadJSONMap(jsonImport)
 		if err != nil {
 			return err
 		}
@@ -237,7 +237,7 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 	f := initTestLogWithFile(t, "connection_map.log")
 	defer f.Close()
 
-	cerr := checkVehicleMap()
+	cerr := checkVehicleMap("VehicleMap", "VehicleMap.json")
 	if !assert.NoError(t, cerr) {
 		return
 	}
@@ -297,6 +297,11 @@ func TestConnectionMapPointingToRemote(t *testing.T) {
 	f := initTestLogWithFile(t, "connection_map.log")
 	defer f.Close()
 
+	cerr := checkVehicleMap("REMPL11", "rempl11.json")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+
 	log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;map;config=[24,4];auth=NONE,user=TCMapPoin,id=4,host=REMOTE")
 	if !assert.NoError(t, cerr) {
@@ -304,7 +309,7 @@ func TestConnectionMapPointingToRemote(t *testing.T) {
 	}
 	defer connection.Close()
 	fmt.Println("Connection : ", connection)
-	request, err := connection.CreateMapReadRequest("REMOTEEMPL")
+	request, err := connection.CreateMapReadRequest("REMPL11")
 	if assert.NoError(t, err) {
 		fmt.Println("Limit query data:")
 		request.QueryFields("NAME,PERSONNEL-ID")
