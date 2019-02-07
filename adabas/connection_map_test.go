@@ -211,6 +211,7 @@ func checkVehicleMap() error {
 	defer a.Close()
 	_, err := mr.SearchMap(a, "VehicleMap")
 	if err != nil {
+		fmt.Println("Search map, try loading map ...", err)
 		maps, err := loadJSONMap("VehicleMap.json")
 		if err != nil {
 			return err
@@ -218,9 +219,10 @@ func checkVehicleMap() error {
 		fmt.Println("Number of maps", len(maps))
 		for _, m := range maps {
 			m.Repository = databaseURL
-			fmt.Println("MAP", m.Name)
+			fmt.Println("Load map ...", m.Name)
 			err = m.Store()
 			if err != nil {
+				fmt.Println("Error loading map ...", err)
 				return err
 			}
 		}

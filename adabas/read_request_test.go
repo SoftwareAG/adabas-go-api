@@ -533,3 +533,16 @@ func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
 		}
 	}
 }
+
+func TestReadLogical(t *testing.T) {
+	ada := NewAdabas(24)
+	request := NewReadRequestAdabas(ada, 4)
+	request.Limit = 0
+	defer ada.Close()
+	request.QueryFields(mapFieldName.fieldName())
+	result, err := request.ReadLogicalBy(mapFieldName.fieldName())
+	if err != nil {
+		return
+	}
+	result.DumpValues()
+}

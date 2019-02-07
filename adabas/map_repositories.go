@@ -207,6 +207,7 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 	}
 	adatypes.Central.Log.Debugf("Search map: %s", mapName)
 	request := NewReadRequestAdabas(adabas, repository.Fnr)
+	request.Limit = 0
 	err = request.ReadLogicalWithWithParser(mapFieldName.fieldName()+"="+mapName, parseMaps, repository)
 	if err != nil {
 		return
@@ -244,6 +245,7 @@ func (repository *Repository) LoadAllMaps(adabas *Adabas) (adabasMaps []*Map, er
 	}
 	adatypes.Central.Log.Debugf("Load all maps")
 	request := NewReadRequestAdabas(adabas, repository.Fnr)
+	request.Limit = 0
 	err = request.ReadPhysicalSequenceWithParser(parseMaps, repository)
 	if err != nil {
 		return
@@ -331,6 +333,7 @@ func (repository *Repository) LoadRepositoryMapsWithAdabas(adabas *Adabas) (err 
 
 	adabas.Acbx.Acbxdbid = repository.DatabaseURL.URL.Dbid
 	request := NewReadRequestAdabas(adabas, repository.Fnr)
+	request.Limit = 0
 	request.QueryFields(mapFieldName.fieldName())
 	err = request.ReadLogicalByWithParser(mapFieldName.fieldName(), parseMapNames, repository)
 	if err != nil {

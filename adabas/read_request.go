@@ -46,26 +46,6 @@ func NewReadRequestCommon(commonRequest *commonRequest) *ReadRequest {
 	return request
 }
 
-/*
-// NewMapRequest create a new Request instance based on the map name and the url and file number
-// should not be used in the code because the new Adabas instance need to be created
-func NewMapRequest(mapName string, url string, fnr uint32) (*ReadRequest, error) {
-	adatypes.Central.Log.Debugf("Create new request using map name %s and reference to file %s/%d", mapName, url, fnr)
-	var adabas *Adabas
-	if dbid, err := strconv.Atoi(url); err == nil {
-		adabas = NewAdabas(Dbid(dbid))
-	} else {
-		return nil, err
-	}
-	mapRepository := NewMapRepository(adabas, fnr)
-	adabasMap, err := mapRepository.SearchMap(mapName)
-	if err != nil {
-		return nil, err
-	}
-	return &ReadRequest{Limit: maxReadRecordLimit, commonRequest: commonRequest{mapName: mapName, adabas: adabas,
-		adabasMap: adabasMap, repository: adabasMap.dataRepository}}, nil
-}*/
-
 // NewMapReadRequestRepo create a new Request instance
 func NewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Repository) (request *ReadRequest, err error) {
 	if repository == nil {
@@ -127,19 +107,6 @@ func NewMapReadRequestByMap(adabas *Adabas, adabasMap *Map) (request *ReadReques
 			repository: dataRepository}}
 	return
 }
-
-// NewReadRequest create a new Request instance
-// func NewReadRequest(url string, fnr Fnr) *ReadRequest {
-// 	var adabas *Adabas
-// 	if dbid, err := strconv.Atoi(url); err == nil {
-// 		adabas = NewAdabas(Dbid(dbid))
-// 	} else {
-// 		return nil
-// 	}
-// 	return &ReadRequest{Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
-// 		commonRequest: commonRequest{adabas: adabas,
-// 			repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}
-// }
 
 // NewReadRequestAdabas create a new Request instance
 func NewReadRequestAdabas(adabas *Adabas, fnr Fnr) *ReadRequest {
