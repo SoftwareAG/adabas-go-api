@@ -82,11 +82,11 @@ func prepareRecordDump(x interface{}, b interface{}) (adatypes.TraverseResult, e
 			buffer.WriteString(fmt.Sprintf("Record Isn: %04d\n", record.Isn))
 		}
 	}
-	if record.quantity > 0 {
+	if record.Quantity > 0 {
 		if buffer == nil {
-			fmt.Printf("Record Quantity: %04d\n", record.quantity)
+			fmt.Printf("Record Quantity: %04d\n", record.Quantity)
 		} else {
-			buffer.WriteString(fmt.Sprintf("Record Quantity: %04d\n", record.quantity))
+			buffer.WriteString(fmt.Sprintf("Record Quantity: %04d\n", record.Quantity))
 		}
 	}
 	return adatypes.Continue, nil

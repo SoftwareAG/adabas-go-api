@@ -384,12 +384,12 @@ func TestReadRequestMissingFile(t *testing.T) {
 func dumpStream(record *Record, x interface{}) error {
 	i := x.(*uint32)
 	a, _ := record.SearchValue("AE")
-	fmt.Printf("Read %d -> %s\n", record.Isn, a)
+	fmt.Printf("Read %d -> %s = %d\n", record.Isn, a, record.Quantity)
 	(*i)++
 	return nil
 }
 
-func TestReadRequestStream(t *testing.T) {
+func TestReadRequestWithStream(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
@@ -402,6 +402,43 @@ func TestReadRequestStream(t *testing.T) {
 	fmt.Println("Read done ...")
 	assert.NoError(t, err)
 	assert.Equal(t, uint32(19), i)
+	if assert.NotNil(t, result) {
+		result.DumpValues()
+	}
+}
+
+func TestReadRequestHistogramStream(t *testing.T) {
+	f := initTestLogWithFile(t, "request.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	adabas, _ := NewAdabas(24)
+	request := NewReadRequestAdabas(adabas, 11)
+	defer request.Close()
+	i := uint32(0)
+	result, err := request.HistogramWithStream("AE='SMITH'", dumpStream, &i)
+	fmt.Println("Read done ...")
+	assert.NoError(t, err)
+	assert.Equal(t, uint32(1), i)
+	if assert.NotNil(t, result) {
+		result.DumpValues()
+	}
+}
+
+func TestReadRequestPhysicalStream(t *testing.T) {
+	f := initTestLogWithFile(t, "request.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	adabas, _ := NewAdabas(24)
+	request := NewReadRequestAdabas(adabas, 11)
+	defer request.Close()
+	//request.QueryFields("AE")
+	i := uint32(0)
+	result, err := request.ReadPhysicalSequenceStream(dumpStream, &i)
+	fmt.Println("Read done ...")
+	assert.NoError(t, err)
+	assert.Equal(t, uint32(20), i)
 	if assert.NotNil(t, result) {
 		result.DumpValues()
 	}

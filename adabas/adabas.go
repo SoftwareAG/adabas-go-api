@@ -477,6 +477,7 @@ func (adabas *Adabas) ReadPhysical(fileNr Fnr, adabasRequest *adatypes.Request, 
 	if multifetch < 1 {
 		multifetch = 1
 	}
+
 	adabas.AdabasBuffers = make([]*Buffer, nrMultifetch)
 	adabas.AdabasBuffers[0] = NewBuffer(AbdAQFb)
 	adabas.AdabasBuffers[0].buffer = adabasRequest.FormatBuffer.Bytes()
@@ -487,6 +488,7 @@ func (adabas *Adabas) ReadPhysical(fileNr Fnr, adabasRequest *adatypes.Request, 
 	if multifetch > 1 {
 		adabas.AdabasBuffers[2] = NewBuffer(AbdAQMb)
 		adabas.AdabasBuffers[2].Allocate(multifetch * 32)
+		adabas.Acbx.Acbxisl = uint64(multifetch)
 	}
 
 	adabas.Acbx.Acbxfnr = fileNr
@@ -537,6 +539,7 @@ func (adabas *Adabas) ReadLogicalWith(fileNr Fnr, adabasRequest *adatypes.Reques
 	adabas.Acbx.Acbxcop[1] = 'A'
 	if adabasRequest.Multifetch > 1 {
 		adabas.Acbx.Acbxcop[0] = 'M'
+		adabas.Acbx.Acbxisl = uint64(adabasRequest.Multifetch)
 	}
 
 	adabas.Acbx.Acbxisn = 0
@@ -697,7 +700,9 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 					}
 					adatypes.Central.Log.Debugf("ISN %d", isn)
 					adabasRequest.Isn = adatypes.Isn(isn)
-					adabas.Acbx.Acbxisn = adatypes.Isn(isn)
+					if adabas.Acbx.Acbxcmd != l2.code() {
+						adabas.Acbx.Acbxisn = adatypes.Isn(isn)
+					}
 					_, err = multifetchHelper.ReceiveUInt32()
 					if err != nil {
 						return
@@ -797,6 +802,11 @@ func (adabas *Adabas) Histogram(fileNr Fnr, adabasRequest *adatypes.Request, x i
 	adabas.Acbx.Acbxisl = 0
 	adabas.Acbx.Acbxisq = 0
 	adabas.Acbx.Acbxcid = [4]uint8{0xff, 0xff, 0xff, 0xff}
+
+	if adabasRequest.Multifetch > 1 {
+		adabas.Acbx.Acbxcop[0] = 'M'
+		adabas.Acbx.Acbxisl = uint64(adabasRequest.Multifetch)
+	}
 
 	adabas.prepareBuffers(adabasRequest)
 

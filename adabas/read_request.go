@@ -167,6 +167,18 @@ func (request *ReadRequest) ReadPhysicalSequence() (result *Response, err error)
 	return
 }
 
+// ReadPhysicalSequenceStream read records in physical order
+func (request *ReadRequest) ReadPhysicalSequenceStream(streamFunction StreamFunction,
+	x interface{}) (result *Response, err error) {
+	s := &stream{streamFunction: streamFunction, result: &Response{Definition: request.definition}, x: x}
+	err = request.ReadPhysicalSequenceWithParser(streamRecord, s)
+	if err != nil {
+		return nil, err
+	}
+	result = s.result
+	return result, nil
+}
+
 // ReadPhysicalSequenceWithParser read records in physical order
 func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes.RequestParser, x interface{}) (err error) {
 	err = request.Open()
@@ -418,8 +430,31 @@ func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, er
 	return
 }
 
+// HistogramWithStream read a descriptor given by a search criteria
+func (request *ReadRequest) HistogramWithStream(search string, streamFunction StreamFunction,
+	x interface{}) (result *Response, err error) {
+	s := &stream{streamFunction: streamFunction, result: &Response{Definition: request.definition}, x: x}
+	err = request.histogramWithWithParser(search, streamRecord, s)
+	if err != nil {
+		return nil, err
+	}
+	result = s.result
+	return result, nil
+}
+
 // HistogramWith read a descriptor given by a search criteria
 func (request *ReadRequest) HistogramWith(search string) (result *Response, err error) {
+	response := &Response{Definition: request.definition}
+	err = request.histogramWithWithParser(search, parseRead, response)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+// histogramWithWithParser read a descriptor given by a search criteria
+func (request *ReadRequest) histogramWithWithParser(search string, resultParser adatypes.RequestParser,
+	x interface{}) (err error) {
 	err = request.Open()
 	if err != nil {
 		return
@@ -448,15 +483,10 @@ func (request *ReadRequest) HistogramWith(search string) (result *Response, err 
 		err = prepareErr
 		return
 	}
-	adabasRequest.Parser = parseRead
+	adabasRequest.Parser = resultParser
 	adabasRequest.Limit = request.Limit
 
-	Response := &Response{Definition: request.definition}
-
-	err = request.adabas.Histogram(request.repository.Fnr, adabasRequest, Response)
-	if err == nil {
-		result = Response
-	}
+	err = request.adabas.Histogram(request.repository.Fnr, adabasRequest, x)
 	return
 }
 

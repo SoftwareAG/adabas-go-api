@@ -31,7 +31,7 @@ import (
 // Record one result record of the result
 type Record struct {
 	Isn        adatypes.Isn `xml:"Isn,attr"`
-	quantity   uint64
+	Quantity   uint64
 	Value      []adatypes.IAdaValue
 	HashFields map[string]adatypes.IAdaValue `xml:"-" json:"-"`
 	definition *adatypes.Definition          `xml:"-" json:"-"`
@@ -73,7 +73,7 @@ func NewRecordIsn(isn adatypes.Isn, isnQuantity uint64, definition *adatypes.Def
 		return nil, err
 	}
 	record.Isn = isn
-	record.quantity = isnQuantity
+	record.Quantity = isnQuantity
 	return record, nil
 }
 
@@ -85,7 +85,7 @@ func recordValuesTraverser(adaValue adatypes.IAdaValue, x interface{}) (adatypes
 
 func (record *Record) String() string {
 	var buffer bytes.Buffer
-	buffer.WriteString(fmt.Sprintf("ISN=%d quanity=%d\n", record.Isn, record.quantity))
+	buffer.WriteString(fmt.Sprintf("ISN=%d quanity=%d\n", record.Isn, record.Quantity))
 	t := adatypes.TraverserValuesMethods{EnterFunction: recordValuesTraverser}
 	record.traverse(t, &buffer)
 	// for _, v := range record.Value {
