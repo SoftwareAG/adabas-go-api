@@ -401,7 +401,7 @@ func TestReadRequestStream(t *testing.T) {
 	result, err := request.ReadLogicalWithStream("AE='SMITH'", dumpStream, &i)
 	fmt.Println("Read done ...")
 	assert.NoError(t, err)
-	assert.Equal(t, 19, i)
+	assert.Equal(t, uint32(19), i)
 	if assert.NotNil(t, result) {
 		result.DumpValues()
 	}
