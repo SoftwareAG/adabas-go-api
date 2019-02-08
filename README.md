@@ -51,15 +51,19 @@ go build -tags adalnk application.go
 A quick example to read data from a database file 11 of Adabas database with database id 23 is here
 
 ```go
+// Create new connection handler to database
 connection, err := adabas.NewConnection("acj;target=23")
 if err!=nil {
   return
 }
 defer connection.Close()
 connection.Open()
+// To work on file 11 create corresponding read request
 request, rErr := connection.CreateReadRequest(11)
+// Define the result records content
 request.QueryFields("AA,AB")
 request.Limit = 0
+// Read in the database using search query
 result,err := request.ReadLogicalWith("AA=60010001")
 ```
 
@@ -74,22 +78,19 @@ For creating Adabas maps the infrastructure of the Java API for Adabas (Adabas C
 In the next example a logical read on the database file  is using Adabas maps
 
 ```go
+// Create new connection handler
 connection, cerr := NewConnection("acj;map;config=[24,4]")
 if cerr != nil {
   return
 }
 defer connection.Close()
+// Create a read request using the Map definition
 request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
-if err != nil {
-  return
-}
+// Define the result records content
 request.QueryFields("NAME,PERSONNEL-ID")
 request.Limit = 2
-result := &Response{}
-err = request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]", nil, result)
-if err != nil {
-  return
-}
+// Read logical using a range search query
+result,rerr := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
 result.DumpValues()
 ```
 

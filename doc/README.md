@@ -112,20 +112,22 @@ err := request.ReadLogicalWith("AA=60010001", nil, result)
 Using the Adabas Map EMPLOYEES for this query it would look like the next example. Here the Range including values for the PERSONNEL-ID from 11100301 to 11100303 including both values are searched for:
 
 ```go
+// Create an connection handler containing map search locations
 connection, cerr := NewConnection("acj;map;config=[24,4]")
 if cerr != nil {
   return
 }
 defer connection.Close()
+// create a read request using a Map
 request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
 if err != nil {
   return
 }
+// Define the result record content
 request.QueryFields("NAME,PERSONNEL-ID")
 request.Limit = 2
-result := &Response{}
-err = request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]", nil, result)
-if err != nil {
+ressult, rerr = request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
+if rerr != nil {
   return
 }
 result.DumpValues()
@@ -192,14 +194,16 @@ By default using the Record instance, the query will be store in a list
 result, err := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
 ```
 
-But you can work with a function to pass structures and methods to just work the result received by the database. Here the result can be traversered field by field.
+But you can work with a function to pass structures and methods to process the result received by the database. Here the result can be traversered field by field.
 
 ```go
+// example parser function to extract value from current data streamm
 func parseTestConnection(adabasRequest *parser.Request, x interface{}) (err error) {
   parseTestStructure := x.(parseTestStructure)
   tm := parser.TraverserValuesMethods{EnterFunction: extractMapField}
   adabasRequest.Definition.TraverseValues(tm, adabasMap)
 }
+// Call using the function
 err = request.ReadLogicalWith("AA=[11100301:11100305]", parseTestConnection, parseTestStructure)
 
 ```
