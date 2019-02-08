@@ -200,3 +200,14 @@ func ValueAdabasBuffer(tree *adatypes.SearchTree) *Buffer {
 	adabasBuffer.abd.Abdsend = adabasBuffer.abd.Abdsize
 	return adabasBuffer
 }
+
+func (adabasBuffer *Buffer) resetSendSize() {
+	switch adabasBuffer.abd.Abdid {
+	case AbdAQFb:
+		adabasBuffer.abd.Abdrecv = 0
+	case AbdAQRb:
+		adabasBuffer.abd.Abdrecv = adabasBuffer.abd.Abdsize
+		adabasBuffer.abd.Abdsend = 0
+	default:
+	}
+}

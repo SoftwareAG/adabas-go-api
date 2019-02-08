@@ -421,6 +421,7 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.Request) {
 	adabas.AdabasBuffers[0].buffer = adabasRequest.FormatBuffer.Bytes()
 	adabas.AdabasBuffers[0].abd.Abdsize = uint64(adabasRequest.FormatBuffer.Len())
 	adabas.AdabasBuffers[0].abd.Abdsend = adabas.AdabasBuffers[0].abd.Abdsize
+	adabas.AdabasBuffers[0].abd.Abdrecv = 0
 	if adabas.AdabasBuffers[0].abd.Abdver[0] != 'G' {
 		adatypes.Central.Log.Infof("ABD init 0 error %p\n", adabas.AdabasBuffers[0])
 		os.Exit(100)
@@ -430,6 +431,8 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.Request) {
 	// Create record buffer for the call
 	adabas.AdabasBuffers[1] = NewBufferWithSize(AbdAQRb,
 		multifetch*(adabasRequest.RecordBufferLength+adabasRequest.RecordBufferShift))
+	adabas.AdabasBuffers[1].abd.Abdsend = 0
+	adabas.AdabasBuffers[1].abd.Abdrecv = adabas.AdabasBuffers[0].abd.Abdsize
 	adatypes.Central.Log.Debugf("ABD init 1 %p\n", adabas.AdabasBuffers[1])
 
 	// Define search and value buffer to search
@@ -623,9 +626,9 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 	var responseCode uint32
 	for responseCode == 0 {
 		if !adabasRequest.Option.SecondCall {
-			//adabasRequest.Definition.Values = nil
 			adabasRequest.Definition.CreateValues(false)
 		}
+		adabas.resetSendSize()
 		// Call Adabas
 		err = adabas.CallAdabas()
 		adatypes.Central.Log.Debugf("Received call response ret=%v", err)
@@ -736,6 +739,12 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 	}
 
 	return
+}
+
+func (adabas *Adabas) resetSendSize() {
+	for _, abd := range adabas.AdabasBuffers {
+		abd.resetSendSize()
+	}
 }
 
 func (adabas *Adabas) secondCall(adabasRequest *adatypes.Request, x interface{}) (err error) {
@@ -1036,6 +1045,7 @@ func (adabas *Adabas) WriteBuffer(buffer *bytes.Buffer, order binary.ByteOrder, 
 		buffer.Write(b)
 		adatypes.Central.Log.Debugf("Add ADABAS ABD: %d to len buffer=%d", index, buffer.Len())
 	}
+	adatypes.Central.Log.Debugf("Index of end ABD: %d/%X", buffer.Len(), buffer.Len())
 	for index, abd := range adabas.AdabasBuffers {
 		var transferSize uint64
 		if serverMode {

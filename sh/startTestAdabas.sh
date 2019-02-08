@@ -24,4 +24,4 @@ export ENABLE_DEBUG LOGPATH TESTFILES GO_ADA_MESSAGES REFERENCES REFERENCE_WRITE
 export ADATCPHOST
 rm -f ./logs/*.log
 CGO_CFLAGS="-DCE_T${SAGTARGET} -I${ADABAS_ACCESS_HOME}/c/SAGENV -I${ADABAS_ACCESS_HOME}/c -I${ACLDIR}/inc" CGO_LDFLAGS="-L${ACLDIR}/lib -ladalnkx" GOPATH=/tmp/tmp_adabas-go-api.$(id -u):$GOPATH go test ${TESTS_RUN} -count=1 -v -tags "release adalnk" github.com/SoftwareAG/adabas-go-api/adabas
-
+exit $?
