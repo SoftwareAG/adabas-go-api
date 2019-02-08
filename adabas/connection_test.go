@@ -365,8 +365,8 @@ func TestConnectionMultifetch(t *testing.T) {
 	qErr := readRequest.QueryFields("AA,AB")
 	assert.NoError(t, qErr)
 	fmt.Println("Result data:")
-	result := &Response{}
-	err = readRequest.ReadPhysicalSequenceWithParser(nil, result)
+	var result *Response
+	result, err = readRequest.ReadPhysicalSequence()
 	assert.NoError(t, err)
 	// result.DumpValues()
 	assert.Equal(t, 1107, len(result.Values))
@@ -398,10 +398,9 @@ func TestConnectionNoMultifetch(t *testing.T) {
 	qErr := readRequest.QueryFields("AA,AB")
 	assert.NoError(t, qErr)
 	fmt.Println("Result data:")
-	result := &Response{}
-	err = readRequest.ReadPhysicalSequenceWithParser(nil, result)
+	var result *Response
+	result, err = readRequest.ReadPhysicalSequence()
 	assert.NoError(t, err)
-	// result.DumpValues()
 	assert.Equal(t, 1107, len(result.Values))
 }
 
@@ -455,61 +454,6 @@ func TestConnectionRemote(t *testing.T) {
 	openErr := connection.Open()
 	assert.Error(t, openErr)
 	assert.Equal(t, "Entire Network client not supported, use port 0 and Entire Network native access", openErr.Error())
-	// if assert.NoError(t, openErr) {
-	// 	request, err := connection.CreateReadRequest(11)
-	// 	assert.NoError(t, err)
-
-	// 	request.QueryFields("AA,AC,AD,AE,AH,AV")
-	// 	request.Limit = 0
-	// 	result := &Response{}
-	// 	err = request.ReadLogicalWithWithParser("AA=[11100301:11100303]", nil, result)
-	// 	assert.NoError(t, err)
-	// 	fmt.Println("Result data:")
-	// 	//result.DumpValues()
-	// 	assert.Equal(t, 3, len(result.Values))
-	// 	ae := result.Values[1].HashFields["AE"]
-	// 	assert.Equal(t, "HAIBACH", strings.TrimSpace(ae.String()))
-	// 	ei64, xErr := ae.Int64()
-	// 	assert.Error(t, xErr, "Error should be send if value is string")
-	// 	assert.Equal(t, int64(0), ei64)
-	// 	ah := result.Values[1].HashFields["AH"]
-	// 	assert.Equal(t, "713196", strings.TrimSpace(ah.String()))
-	// 	var i64 int64
-	// 	var ui64 uint64
-	// 	var i32 int32
-	// 	var ui32 uint32
-	// 	i64, err = ah.Int64()
-	// 	assert.NoError(t, err)
-	// 	assert.Equal(t, int64(713196), i64)
-	// 	ui64, err = ah.UInt64()
-	// 	assert.NoError(t, err)
-	// 	assert.Equal(t, uint64(713196), ui64)
-	// 	i32, err = ah.Int32()
-	// 	assert.NoError(t, err)
-	// 	assert.Equal(t, int32(713196), i32)
-	// 	ui32, err = ah.UInt32()
-	// 	assert.NoError(t, err)
-	// 	assert.Equal(t, uint32(713196), ui32)
-	// 	raw := ah.Bytes()
-	// 	assert.Equal(t, []byte{0x7, 0x13, 0x19, 0x6c}, raw)
-
-	// 	av := result.Values[2].HashFields["AV"]
-	// 	assert.Equal(t, "3", strings.TrimSpace(av.String()))
-	// 	i64, err = av.Int64()
-	// 	assert.NoError(t, err)
-	// 	assert.Equal(t, int64(3), i64)
-	// 	ui64, err = av.UInt64()
-	// 	assert.NoError(t, err)
-	// 	assert.Equal(t, uint64(3), ui64)
-	// 	i32, err = av.Int32()
-	// 	assert.NoError(t, err)
-	// 	assert.Equal(t, int32(3), i32)
-	// 	ui32, err = av.UInt32()
-	// 	assert.NoError(t, err)
-	// 	assert.Equal(t, uint32(3), ui32)
-	// 	raw = av.Bytes()
-	// 	assert.Equal(t, []byte{0x30, 0x33}, raw)
-	// }
 
 }
 
@@ -533,9 +477,9 @@ func TestConnectionWithMap(t *testing.T) {
 		fmt.Println("Limit query data:")
 		request.QueryFields("NAME,PERSONNEL-ID")
 		request.Limit = 0
-		result := &Response{}
 		fmt.Println("Read logigcal data:")
-		err = request.ReadLogicalWithWithParser("PERSONNEL-ID=[11100301:11100303]", nil, result)
+		var result *Response
+		result, err = request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
 		assert.NoError(t, err)
 		fmt.Println("Result data:")
 		result.DumpValues()
@@ -569,9 +513,8 @@ func TestConnectionAllMap(t *testing.T) {
 		fmt.Println("Limit query data:")
 		request.QueryFields("NAME,PERSONNEL-ID")
 		request.Limit = 0
-		result := &Response{}
 		fmt.Println("Read logigcal data:")
-		err := request.ReadPhysicalSequenceWithParser(nil, result)
+		result, err := request.ReadPhysicalSequence()
 		assert.NoError(t, err)
 		fmt.Println("Result data:")
 		result.DumpValues()
@@ -922,9 +865,9 @@ func TestConnectionReadMap(t *testing.T) {
 
 	request.QueryFields("RN,MA")
 	request.Limit = 2
-	result := &Response{}
 	// Read only 'EMPLOYEES-NAT-DDM' map
-	err = request.ReadLogicalWithWithParser("RN=EMPLOYEES-NAT-DDM", nil, result)
+	var result *Response
+	result, err = request.ReadLogicalWith("RN=EMPLOYEES-NAT-DDM")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1004,9 +947,9 @@ func ExampleConnection_readIsn() {
 	}
 	fmt.Println("Connection : ", connection)
 
-	result := &Response{}
 	fmt.Println("Read ISN 250:")
-	err = request.ReadISNWithParser(250, nil, result)
+	var result *Response
+	result, err = request.ReadISN(250)
 	if err != nil {
 		return
 	}
@@ -1115,8 +1058,8 @@ func TestConnectionReadOneLocal(t *testing.T) {
 		return
 	}
 	request.Limit = 0
-	result := &Response{}
-	err = request.ReadISNWithParser(1, nil, result)
+	var result *Response
+	result, err = request.ReadISN(1)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1150,9 +1093,8 @@ func TestConnectionReadAllLocal(t *testing.T) {
 		return
 	}
 	request.Limit = 0
-	result := &Response{}
-	err = request.ReadPhysicalSequenceWithParser(nil, result)
-	// err = request.ReadISNWithParser(202, nil, result)
+	var result *Response
+	result, err = request.ReadPhysicalSequence()
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1186,9 +1128,8 @@ func TestConnectionReadSpecialLocal(t *testing.T) {
 		return
 	}
 	request.Limit = 0
-	result := &Response{}
-	// err = request.ReadPhysicalSequenceWithParser(nil, result)
-	err = request.ReadISNWithParser(380, nil, result)
+	var result *Response
+	result, err = request.ReadISN(380)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1222,8 +1163,8 @@ func TestConnectionADATCPReadRemote(t *testing.T) {
 		return
 	}
 	request.Limit = 0
-	result := &Response{}
-	err = request.ReadPhysicalSequenceWithParser(nil, result)
+	var result *Response
+	result, err = request.ReadPhysicalSequence()
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1258,8 +1199,8 @@ func TestConnectionReadUnicode(t *testing.T) {
 	}
 	request.QueryFields("B0,JA,KA")
 	request.Limit = 0
-	result := &Response{}
-	err = request.ReadLogicalWithWithParser("AA=[40003001:40005001]", nil, result)
+	var result *Response
+	result, err = request.ReadLogicalWith("AA=[40003001:40005001]")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1306,8 +1247,8 @@ func TestConnectionReadDeepPEFields(t *testing.T) {
 	}
 	request.QueryFields("AA,F0")
 	request.Limit = 0
-	result := &Response{}
-	err = request.ReadLogicalWithWithParser("AA=[40003001:40005001]", nil, result)
+	var result *Response
+	result, err = request.ReadLogicalWith("AA=[40003001:40005001]")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1350,8 +1291,8 @@ func TestConnectionReadAllFields9(t *testing.T) {
 		return
 	}
 	request.Limit = 0
-	result := &Response{}
-	err = request.ReadLogicalWithWithParser("AA=[40003001:40005001]", nil, result)
+	var result *Response
+	result, err = request.ReadLogicalWith("AA=[40003001:40005001]")
 	if !assert.NoError(t, err) {
 		return
 	}

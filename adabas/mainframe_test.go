@@ -46,9 +46,9 @@ func ExampleConnection_readMainframe() {
 	fmt.Println("Limit query data:")
 	request.QueryFields("AA,AB")
 	request.Limit = 2
-	result := &Response{}
 	fmt.Println("Read logical data:")
-	err = request.ReadLogicalWithWithParser("AA=[11100301:11100303]", nil, result)
+	var result *Response
+	result, err = request.ReadLogicalWith("AA=[11100301:11100303]")
 	if err != nil {
 		fmt.Println("Error reading", err)
 		return
@@ -100,9 +100,9 @@ func ExampleConnection_readBorderMainframe() {
 	fmt.Println("Limit query data:")
 	request.QueryFields("AA,AB")
 	request.Limit = 2
-	result := &Response{}
 	fmt.Println("Read logical data:")
-	err = request.ReadLogicalWithWithParser("AA=(11100301:11100303)", nil, result)
+	var result *Response
+	result, err = request.ReadLogicalWith("AA=(11100301:11100303)")
 	if err != nil {
 		fmt.Println("Error reading", err)
 		return
@@ -147,9 +147,9 @@ func ExampleConnection_readNoMinimumMainframe() {
 	fmt.Println("Limit query data:")
 	request.QueryFields("AA,AB")
 	request.Limit = 2
-	result := &Response{}
 	fmt.Println("Read logical data:")
-	err = request.ReadLogicalWithWithParser("AA=(11100301:11100303]", nil, result)
+	var result *Response
+	result, err = request.ReadLogicalWith("AA=(11100301:11100303]")
 	if err != nil {
 		fmt.Println("Error reading", err)
 		return
@@ -201,9 +201,9 @@ func ExampleConnection_readNoMaximumMainframe() {
 	fmt.Println("Limit query data:")
 	request.QueryFields("AA,AB")
 	request.Limit = 2
-	result := &Response{}
 	fmt.Println("Read logical data:")
-	err = request.ReadLogicalWithWithParser("AA=[1100301:11100303)", nil, result)
+	var result *Response
+	result, err = request.ReadLogicalWith("AA=[1100301:11100303)")
 	if err != nil {
 		fmt.Println("Error reading", err)
 		return

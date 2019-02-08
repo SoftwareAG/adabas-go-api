@@ -89,8 +89,8 @@ func BenchmarkConnection_noreconnect(b *testing.B) {
 			return
 		}
 		request.Limit = 0
-		result := &Response{}
-		err = request.ReadLogicalByWithParser("NAME", nil, result)
+		var result *Response
+		result, err = request.ReadLogicalBy("NAME")
 		if !assert.NoError(b, err) {
 			return
 		}
@@ -153,8 +153,8 @@ func TestConnectionRemoteMap(t *testing.T) {
 			return
 		}
 		request.Limit = 0
-		result := &Response{}
-		err = request.ReadLogicalByWithParser("NAME", nil, result)
+		var result *Response
+		result, err = request.ReadLogicalBy("NAME")
 		if !assert.NoError(t, err) {
 			return
 		}
@@ -193,8 +193,8 @@ func BenchmarkConnection_noreconnectremote(b *testing.B) {
 			return
 		}
 		request.Limit = 0
-		result := &Response{}
-		err = request.ReadLogicalByWithParser("NAME", nil, result)
+		var result *Response
+		result, err = request.ReadLogicalBy("NAME")
 		if !assert.NoError(b, err) {
 			return
 		}
@@ -254,9 +254,8 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 		fmt.Println("Limit query data:")
 		request.QueryFields("NAME,PERSONNEL-ID")
 		request.Limit = 0
-		result := &Response{}
 		fmt.Println("Read logigcal data:")
-		err := request.ReadLogicalWithWithParser("PERSONNEL-ID=[11100301:11100303]", nil, result)
+		result, err := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
 		assert.NoError(t, err)
 		fmt.Println("Result data:")
 		result.DumpValues()
@@ -273,9 +272,8 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 		fmt.Println("Limit query data:")
 		request.QueryFields("Vendor,Model")
 		request.Limit = 0
-		result := &Response{}
 		fmt.Println("Read logigcal data:")
-		err := request.ReadLogicalWithWithParser("Vendor=RENAULT", nil, result)
+		result, err := request.ReadLogicalWith("Vendor=RENAULT")
 		assert.NoError(t, err)
 		fmt.Println("Result data:")
 		result.DumpValues()
@@ -314,9 +312,8 @@ func TestConnectionMapPointingToRemote(t *testing.T) {
 		fmt.Println("Limit query data:")
 		request.QueryFields("NAME,PERSONNEL-ID")
 		request.Limit = 0
-		result := &Response{}
 		fmt.Println("Read logigcal data:")
-		err := request.ReadLogicalWithWithParser("PERSONNEL-ID=[11100301:11100303]", nil, result)
+		result, err := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
 		assert.NoError(t, err)
 		fmt.Println("Result data:")
 		result.DumpValues()
@@ -455,9 +452,9 @@ func ExampleConnection_readWithMap() {
 		return
 	}
 	request.Limit = 0
-	result := &Response{}
+	var result *Response
 	fmt.Println("Read logigcal data:")
-	err = request.ReadLogicalWithWithParser("PERSONNEL-ID=[11100314:11100317]", nil, result)
+	result, err = request.ReadLogicalWith("PERSONNEL-ID=[11100314:11100317]")
 	result.DumpValues()
 	// Output:Read logigcal data:
 	// Dump all result values
@@ -507,9 +504,9 @@ func ExampleConnection_readFileDefinitionMapGroup() {
 		return
 	}
 	request.Limit = 0
-	result := &Response{}
 	fmt.Println("Read logigcal data:")
-	err = request.ReadLogicalWithWithParser("PERSONNEL-ID=[11100315:11100316]", nil, result)
+	var result *Response
+	result, err = request.ReadLogicalWith("PERSONNEL-ID=[11100315:11100316]")
 	if err != nil {
 		fmt.Println("Error read logical data", err)
 		return

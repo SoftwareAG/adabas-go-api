@@ -446,8 +446,8 @@ func checkUpdateCorrectReadNumber(t *testing.T, value string, isns []adatypes.Is
 	request := NewReadRequestAdabas(adabas, 16)
 	defer request.Close()
 	request.QueryFields("AA")
-	result := &Response{}
-	err = request.ReadLogicalWithWithParser("AA=["+value+":"+value+"a]", nil, result)
+	var result *Response
+	result, err = request.ReadLogicalWith("AA=[" + value + ":" + value + "a]")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -572,8 +572,8 @@ func validateUsingAdabas(t *testing.T, isn adatypes.Isn) {
 			return
 		}
 		fmt.Println("Query fields defined, send read ...")
-		result := &Response{}
-		err = request.ReadISNWithParser(isn, nil, result)
+		var result *Response
+		result, err = request.ReadISN(isn)
 		if assert.NoError(t, err) {
 			picValue := result.Values[0].HashFields["DC"]
 			//			fmt.Println("Dump result received ...")
@@ -619,8 +619,8 @@ func validateUsingMap(t *testing.T, isn adatypes.Isn) {
 			return
 		}
 		fmt.Println("Query defined, read record ...")
-		result := &Response{}
-		err = request.ReadISNWithParser(isn, nil, result)
+		var result *Response
+		result, err = request.ReadISN(isn)
 		if assert.NoError(t, err) {
 			if !assert.NotNil(t, result) && !assert.NotNil(t, result.Values) {
 				return
