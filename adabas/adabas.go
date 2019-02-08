@@ -43,7 +43,7 @@ import (
 )
 
 // MaxDatabasesID maximum valid database id
-const MaxDatabasesID = 255
+const MaxDatabasesID = 65536
 
 const adaEmptOpt = ' '
 const adaFdtXOpt = 'X'
