@@ -379,7 +379,6 @@ func TestReadRequestMissingFile(t *testing.T) {
 	result, err := request.ReadLogicalWith("RN='EMPLOYEES-NAT-DDM'")
 	fmt.Println("Read done ...")
 	assert.Error(t, err)
-	result.DumpValues()
 }
 
 func dumpStream(record *Record, x interface{}) error {
