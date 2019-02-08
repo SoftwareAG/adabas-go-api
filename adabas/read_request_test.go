@@ -382,6 +382,32 @@ func TestReadRequestMissingFile(t *testing.T) {
 	result.DumpValues()
 }
 
+func dumpStream(record *Record, x interface{}) error {
+	i := x.(*uint32)
+	a, _ := record.SearchValue("AE")
+	fmt.Printf("Read %d -> %s\n", record.Isn, a)
+	(*i)++
+	return nil
+}
+
+func TestReadRequestStream(t *testing.T) {
+	f := initTestLogWithFile(t, "request.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	adabas, _ := NewAdabas(24)
+	request := NewReadRequestAdabas(adabas, 11)
+	defer request.Close()
+	i := uint32(0)
+	result, err := request.ReadLogicalWithStream("AE='SMITH'", dumpStream, &i)
+	fmt.Println("Read done ...")
+	assert.NoError(t, err)
+	assert.Equal(t, 19, i)
+	if assert.NotNil(t, result) {
+		result.DumpValues()
+	}
+}
+
 func BenchmarkReadRequest_Small(b *testing.B) {
 	f, err := initLogLevelWithFile("request-bench.log", log.ErrorLevel)
 	defer f.Close()

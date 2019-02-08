@@ -32,6 +32,9 @@ type commonRequest struct {
 	isOpen     bool
 }
 
+// StreamFunction function callback used to go through the list of received records
+type StreamFunction func(record *Record, x interface{}) error
+
 func (request *commonRequest) loadDefinition() (err error) {
 	if request.definition == nil {
 		adatypes.Central.Log.Debugf("Load file definition ....")

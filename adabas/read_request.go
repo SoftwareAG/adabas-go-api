@@ -231,10 +231,42 @@ func (request *ReadRequest) ReadISNWithParser(isn adatypes.Isn, resultParser ada
 	return
 }
 
+type stream struct {
+	streamFunction StreamFunction
+	result         *Response
+	x              interface{}
+}
+
+func streamRecord(adabasRequest *adatypes.Request, x interface{}) (err error) {
+	stream := x.(*stream)
+
+	isn := adabasRequest.Isn
+	isnQuantity := adabasRequest.IsnQuantity
+	adatypes.Central.Log.Debugf("Got ISN %d record", isn)
+	record, xerr := NewRecordIsn(isn, isnQuantity, adabasRequest.Definition)
+	if xerr != nil {
+		return xerr
+	}
+	err = stream.streamFunction(record, stream.x)
+	return
+}
+
+// ReadLogicalWithStream read records with a logical order given by a search string and calls stream function
+func (request *ReadRequest) ReadLogicalWithStream(search string, streamFunction StreamFunction,
+	x interface{}) (result *Response, err error) {
+	s := &stream{streamFunction: streamFunction, result: &Response{Definition: request.definition}, x: x}
+	err = request.ReadLogicalWithWithParser(search, streamRecord, s)
+	if err != nil {
+		return nil, err
+	}
+	result = s.result
+	return
+}
+
 // ReadLogicalWith read records with a logical order given by a search string
 func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, err error) {
 	result = &Response{Definition: request.definition}
-	err = request.ReadLogicalWithWithParser(search, nil, result)
+	err = request.ReadLogicalWithWithParser(search, parseRead, result)
 	if err != nil {
 		return nil, err
 	}
