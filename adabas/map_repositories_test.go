@@ -32,9 +32,11 @@ func TestMapRepository(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	AddGlobalMapRepository(NewAdabas(24), 4)
-	defer DelGlobalMapRepository(NewAdabas(24), 4)
-	adabas := NewAdabas(0)
+	ada, _ := NewAdabas(24)
+	defer ada.Close()
+	AddGlobalMapRepository(ada, 4)
+	defer DelGlobalMapRepository(ada, 4)
+	adabas, _ := NewAdabas(1)
 	defer adabas.Close()
 	adabasMap, err := SearchMapRepository(adabas, "EMPLOYEES-NAT-DDM")
 	assert.NoError(t, err)
@@ -47,7 +49,7 @@ func TestMapRepositoryReadAll(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(24)
+	adabas, _ := NewAdabas(24)
 	defer adabas.Close()
 	mr := NewMapRepository(adabas, 4)
 	adabasMaps, err := mr.LoadAllMaps(adabas)

@@ -42,7 +42,7 @@ func TestFieldTypeStore(t *testing.T) {
 		return
 	}
 
-	storeRequest := NewStoreRequest(adabasModDBIDs, 270)
+	storeRequest, _ := NewStoreRequest(adabasModDBIDs, 270)
 	defer storeRequest.Close()
 	//err := storeRequest.StoreFields("S1,U1,S2,U2,S4,U4,S8,U8,AF,BR,B1,F4,F8,A1,AS,A2,AB,AF,WU,WL,W4,WF,PA,PF,UP,UF,UE")
 	//	err := storeRequest.StoreFields("S1,U1,S2,U2,S4,U4,S8,U8,BR,B1,F4,F8,A1,AS,A2,AB,AF,WU,WL,W4,WF,PA,PF,UP")

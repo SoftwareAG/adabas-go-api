@@ -37,7 +37,7 @@ func testCallback(adabasRequest *adatypes.Request, x interface{}) (err error) {
 }
 
 func prepareCall(t *testing.T, mapName string) {
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	mr := NewMapRepository(adabas, 250)
 	readRequest, rErr := NewMapReadRequestRepo(mapName, adabas, mr)
 	if !assert.NoError(t, rErr) {
@@ -105,7 +105,7 @@ func TestDeleteRequestByMapNameCommonRepo(t *testing.T) {
 
 	prepareCall(t, mapName)
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	fmt.Println("Delete record with map name:", mapName)
 	AddGlobalMapRepository(adabas, 250)
 	defer DelGlobalMapRepository(adabas, 250)
@@ -160,7 +160,7 @@ func TestDeleteRequestByMapNameRepository(t *testing.T) {
 	defer f.Close()
 
 	mapName := storeEmployeesMap
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	fmt.Println("Delete record with map name:", mapName)
 	mr := NewMapRepository(adabas, 250)
 

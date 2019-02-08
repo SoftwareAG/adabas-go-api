@@ -37,7 +37,7 @@ type Employees struct {
 }
 
 func initEmployees(t *testing.T) error {
-	ada := NewAdabas(adabasModDBID)
+	ada, _ := NewAdabas(adabasModDBID)
 	defer ada.Close()
 	mr := NewMapRepository(ada, 249)
 

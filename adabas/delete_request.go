@@ -31,15 +31,18 @@ type DeleteRequest struct {
 }
 
 // NewDeleteRequest create a new store Request instance
-func NewDeleteRequest(url string, fnr Fnr) *DeleteRequest {
+func NewDeleteRequest(url string, fnr Fnr) (*DeleteRequest, error) {
 	var adabas *Adabas
 	if dbid, err := strconv.Atoi(url); err == nil {
-		adabas = NewAdabas(Dbid(dbid))
+		adabas, err = NewAdabas(Dbid(dbid))
+		if err != nil {
+			return nil, err
+		}
 	} else {
-		return nil
+		return nil, err
 	}
 	return &DeleteRequest{commonRequest: commonRequest{adabas: adabas,
-		repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}
+		repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}, nil
 }
 
 // NewDeleteRequestAdabas create a new Request instance
@@ -58,7 +61,10 @@ func NewMapDeleteRequest(adabas *Adabas, adabasMap *Map) (request *DeleteRequest
 	if adabas.URL.String() == adabasMap.Data.URL.String() {
 		dataAdabas = NewClonedAdabas(adabas)
 	} else {
-		dataAdabas = NewAdabasWithURL(&adabasMap.Data.URL, adabas.ID)
+		dataAdabas, err = NewAdabasWithURL(&adabasMap.Data.URL, adabas.ID)
+		if err != nil {
+			return nil, err
+		}
 	}
 	dataAdabas.Acbx.Acbxfnr = adabasMap.Data.Fnr
 	dataRepository := NewMapRepository(adabas, adabasMap.Data.Fnr)

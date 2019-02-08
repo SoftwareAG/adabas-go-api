@@ -207,7 +207,7 @@ func BenchmarkConnection_noreconnectremote(b *testing.B) {
 func checkVehicleMap(mapName string, jsonImport string) error {
 	databaseURL := &DatabaseURL{URL: *newURLWithDbid(adabasStatDBID), Fnr: 4}
 	mr := NewMapRepositoryWithURL(*databaseURL)
-	a := NewAdabas(adabasStatDBID)
+	a, _ := NewAdabas(adabasStatDBID)
 	defer a.Close()
 	_, err := mr.SearchMap(a, mapName)
 	if err != nil {
@@ -379,7 +379,8 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 	}
 	databaseURL := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 4}
 	mr := NewMapRepositoryWithURL(*databaseURL)
-	_, err := mr.SearchMap(NewAdabas(adabasModDBID), "COPYEMPL")
+	ada, _ := NewAdabas(adabasModDBID)
+	_, err := mr.SearchMap(ada, "COPYEMPL")
 	if err != nil {
 		maps, merr := loadJSONMap("COPYEMPL.json")
 		if !assert.NoError(t, merr) {

@@ -61,7 +61,10 @@ func NewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Repositor
 		// err = adatypes.NewGenericError(21, mapName)
 		return nil, serr
 	}
-	dataAdabas := NewAdabasWithURL(&adabasMap.Data.URL, adabas.ID)
+	dataAdabas, nerr := NewAdabasWithURL(&adabasMap.Data.URL, adabas.ID)
+	if nerr != nil {
+		return nil, nerr
+	}
 	dataRepository := NewMapRepository(adabas, adabasMap.Data.Fnr)
 	request = &ReadRequest{Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
 		commonRequest: commonRequest{mapName: mapName, adabas: dataAdabas, adabasMap: adabasMap,

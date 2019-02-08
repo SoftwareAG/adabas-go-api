@@ -131,7 +131,10 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 	if mapName != "" {
 		adatypes.Central.Log.Debugf("Create map for %s\n", mapName)
 		adabasMap = NewAdabasMap(mapName, &repository.DatabaseURL)
-		adabasToMap = NewAdabasWithURL(adabasMap.URL(), adabasID)
+		adabasToMap, err = NewAdabasWithURL(adabasMap.URL(), adabasID)
+		if err != nil {
+			return nil, err
+		}
 	}
 	adatypes.Central.Log.Debugf("Ready creating connection handle")
 
@@ -287,7 +290,10 @@ func (connection *Connection) prepareMapUsage(mapName string) (err error) {
 	adatypes.Central.Log.Debugf("Data Repository : %s", connection.adabasMap.Data.URL.String())
 	if connection.adabasToData == nil || connection.adabasToData.URL.String() != connection.adabasMap.Data.URL.String() {
 		adatypes.Central.Log.Debugf("Create new Adabas")
-		connection.adabasToData = NewAdabasWithURL(connection.adabasMap.URL(), &connection.ID)
+		connection.adabasToData, err = NewAdabasWithURL(connection.adabasMap.URL(), &connection.ID)
+		if err != nil {
+			return err
+		}
 	}
 	adatypes.Central.Log.Debugf("Platform Map : %#v", connection.adabasToMap.ID.platform)
 	adatypes.Central.Log.Debugf("Platform Adabas : %#v", connection.adabasToData.ID.platform)
@@ -320,9 +326,9 @@ func (connection *Connection) CreateMapDeleteRequest(mapName string) (request *D
 		err = adatypes.NewGenericError(8, mapName)
 		return
 	}
-	connection.adabasToData = NewAdabasWithURL(connection.adabasMap.URL(), &connection.ID)
+	connection.adabasToData, err = NewAdabasWithURL(connection.adabasMap.URL(), &connection.ID)
 	if err != nil {
-		err = adatypes.NewGenericError(10)
+		//err = adatypes.NewGenericError(10)
 		return
 	}
 	connection.fnr = connection.adabasMap.Data.Fnr

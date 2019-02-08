@@ -289,7 +289,10 @@ func (adabasMap *Map) Store() error {
 	if adabasMap.Repository == nil {
 		return adatypes.NewGenericError(65)
 	}
-	adabas := NewAdabasWithURL(&adabasMap.Repository.URL, ID)
+	adabas, err := NewAdabasWithURL(&adabasMap.Repository.URL, ID)
+	if err != nil {
+		return err
+	}
 	repository := NewMapRepository(adabas, adabasMap.Repository.Fnr)
 	return repository.writeAdabasMapsWithAdabas(adabas, adabasMap)
 }

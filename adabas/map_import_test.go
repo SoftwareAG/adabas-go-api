@@ -34,10 +34,10 @@ func TestMapImportPrepare(t *testing.T) {
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 
-	deleteRequest := NewDeleteRequest(adabasModDBIDs, 250)
+	deleteRequest, _ := NewDeleteRequest(adabasModDBIDs, 250)
 	defer deleteRequest.Close()
 
 	request := NewReadRequestAdabas(adabas, 250)
@@ -62,7 +62,7 @@ func TestMapImport(t *testing.T) {
 	f := initTestLogWithFile(t, "mapimport.log")
 	defer f.Close()
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 
 	mr := NewMapRepository(adabas, 250)
@@ -94,7 +94,7 @@ func TestMapImportMassLoad(t *testing.T) {
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 	mr := NewMapRepository(adabas, 250)
 	p := os.Getenv("TESTFILES")

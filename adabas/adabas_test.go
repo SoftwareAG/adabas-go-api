@@ -43,7 +43,12 @@ func TestAdabasFailure(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(0)
+	adabas, err := NewAdabas(0)
+	assert.Nil(t, adabas)
+	assert.Error(t, err)
+	adabas, err = NewAdabas(1)
+	assert.NotNil(t, adabas)
+	assert.NoError(t, err)
 
 	var abds []*Buffer
 	abds = append(abds, NewBuffer(AbdAQFb))
@@ -92,7 +97,7 @@ func TestAdabasOk(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 
 	var abds []*Buffer
 	abds = append(abds, NewBuffer(AbdAQFb))
@@ -148,7 +153,7 @@ func TestAdabasOpen(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 
 	var abds []*Buffer
 	abds = append(abds, NewBuffer(AbdAQFb))
@@ -187,7 +192,7 @@ func TestAdabasFdt(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
@@ -220,7 +225,7 @@ func ExampleAdabas_readFileDefinitionFile11() {
 	}
 	defer f.Close()
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
@@ -292,7 +297,7 @@ func ExampleAdabas_readFileDefinition9() {
 	}
 	defer f.Close()
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
@@ -398,7 +403,7 @@ func ExampleAdabas_readFileDefinition9RestrictF0() {
 	}
 	defer f.Close()
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
@@ -448,7 +453,7 @@ func ExampleAdabas_readFileDefinition9Restricted() {
 	}
 	defer f.Close()
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
 
 	fmt.Println("Open database")
@@ -495,7 +500,7 @@ func TestAdabasFdtNewEmployee(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("newempl")
 
 	fmt.Println("Open database")
@@ -528,7 +533,7 @@ func TestAdabasFdtHyperexit(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("hyper")
 	defer adabas.Close()
 
@@ -657,7 +662,7 @@ func TestAdabasReadPhysical(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	err := adabas.Open()
 	if !assert.NoError(t, err) {
 		return
@@ -685,7 +690,7 @@ func TestAdabasReadLogical(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	err := adabas.Open()
 	if !assert.NoError(t, err) {
 		return
@@ -713,7 +718,7 @@ func TestAdabasReadIsn(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	err := adabas.Open()
 	if !assert.NoError(t, err) {
 		return
@@ -739,7 +744,7 @@ func TestAdabasSearchLogical(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	err := adabas.Open()
 	if !assert.NoError(t, err) {
 		return
@@ -776,7 +781,7 @@ func TestAdabasCloned(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	clonedAdabas := NewClonedAdabas(adabas)
 
 	assert.Equal(t, adabas.ID, clonedAdabas.ID)

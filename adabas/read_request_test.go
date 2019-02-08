@@ -35,7 +35,7 @@ func TestRequestPhysicalSimpleTypes(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.QueryFields("AA,AC,AD")
@@ -50,7 +50,7 @@ func TestRequestPhysicalMultipleField(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 11)
 	defer request.Close()
 	err := request.QueryFields("AA,AC,AD,AZ")
@@ -72,7 +72,7 @@ func TestRequestLogicalWithQueryFields(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.QueryFields("AA,AC,AD")
@@ -91,7 +91,7 @@ func TestRequestLogicalWithFields(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 11)
 	defer request.Close()
 	result := &Response{}
@@ -110,7 +110,7 @@ func TestReadRequestLogicalBy(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.QueryFields("AA,AC,AD")
@@ -129,7 +129,7 @@ func TestReadRequestLogicalByAll(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.Limit = 2
@@ -202,7 +202,7 @@ func ExampleReadRequest_ReadLogicalBy() {
 	}
 	defer f.Close()
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.Limit = 2
@@ -234,7 +234,7 @@ func TestReadRequestLogicalBySuperDescriptor(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.QueryFields("AA,AC,AD")
@@ -253,7 +253,7 @@ func TestReadRequestAllJson(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 16)
 	defer request.Close()
 	request.QueryFields("*")
@@ -276,7 +276,7 @@ func TestReadRequestHistogramDescriptorField(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 11)
 	request.Limit = 10
 	defer request.Close()
@@ -299,7 +299,7 @@ func TestReadRequestHistogramSuperDescriptor(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.Limit = 10
@@ -331,7 +331,7 @@ func ExampleReadRequest_histogramWith() {
 	}
 	defer f.Close()
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 11)
 	defer request.Close()
 	result, err := request.HistogramWith("AA=20010100")
@@ -355,7 +355,7 @@ func TestReadRequestReadMap(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(24)
+	adabas, _ := NewAdabas(24)
 	request := NewReadRequestAdabas(adabas, 4)
 	defer request.Close()
 	result := &Response{}
@@ -379,7 +379,7 @@ func TestReadRequestMissingFile(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(24)
+	adabas, _ := NewAdabas(24)
 	request := NewReadRequestAdabas(adabas, 123)
 	defer request.Close()
 	result := &Response{}
@@ -396,7 +396,7 @@ func BenchmarkReadRequest_Small(b *testing.B) {
 		return
 	}
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 11)
 	defer request.Close()
 	request.Limit = 0
@@ -416,7 +416,7 @@ func BenchmarkReadRequest(b *testing.B) {
 
 	assert.NoError(b, err)
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 11)
 	request.Limit = 0
 	defer request.Close()
@@ -441,7 +441,7 @@ func TestRequestWithMapLogicalBy(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(24)
+	adabas, _ := NewAdabas(24)
 	mapRepository := NewMapRepository(adabas, 4)
 	request, err := NewMapReadRequestRepo("EMPLOYEES-NAT-DDM", adabas, mapRepository)
 	if !assert.NoError(t, err) {
@@ -474,7 +474,7 @@ func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	ada := NewAdabas(24)
+	ada, _ := NewAdabas(24)
 	AddGlobalMapRepository(ada, 4)
 	defer DelGlobalMapRepository(ada, 4)
 
@@ -508,7 +508,7 @@ func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 
-	adabas := NewAdabas(24)
+	adabas, _ := NewAdabas(24)
 	request, err := NewMapReadRequestRepo("EMPLOYEES-NAT-DDM", adabas,
 		NewMapRepository(adabas, 4))
 	if !assert.NoError(t, err) {
@@ -535,7 +535,7 @@ func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
 }
 
 func TestReadLogical(t *testing.T) {
-	ada := NewAdabas(24)
+	ada, _ := NewAdabas(24)
 	request := NewReadRequestAdabas(ada, 4)
 	request.Limit = 0
 	defer ada.Close()

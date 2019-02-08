@@ -58,7 +58,7 @@ func TestMapFields(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(24)
+	adabas, _ := NewAdabas(24)
 	defer adabas.Close()
 
 	mr := NewMapRepository(adabas, 4)
@@ -100,7 +100,7 @@ func TestMaps(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 
 	mr := NewMapRepository(adabas, 250)
@@ -126,7 +126,7 @@ func TestMapCreate(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 
 	repository := NewMapRepository(adabas, 250)

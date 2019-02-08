@@ -54,7 +54,8 @@ func TestAdabasMessageError(t *testing.T) {
 	f := initTestLogWithFile(t, "messages.log")
 	defer f.Close()
 
-	ada := NewAdabas(21)
+	ada, err := NewAdabas(21)
+	assert.NoError(t, err)
 
 	// Return: Hello, i18n
 	assert.Equal(t, "ADAGE94000: Adabas is not active or accessible (rsp=148,subrsp=0,dbid=21,file=0)", NewError(ada).Error())

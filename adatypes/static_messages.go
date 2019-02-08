@@ -811,6 +811,7 @@ var statisMessages = []struct {
 	{"ADG0000064", "en", "Adabas instance nil"},
 	{"ADG0000065", "en", "Map repository not defined"},
 	{"ADG0000066", "en", "{0} not found in Map repository"},
+	{"ADG0000067", "en", "Adabas database id {0} is not in range of [{1}:{2}]"},
 	{"ADG0000070", "en", "'{0}' is no valid database id"},
 	{"ADG0000071", "en", "Invalid URL given, need to be like <dbid>(<protocol>://<host>:<port>)"},
 	{"ADG0000072", "en", "'{0}' is no valid port number"},

@@ -104,12 +104,12 @@ func NewClonedAdabas(clone *Adabas) *Adabas {
 }
 
 // NewAdabas create a new Adabas struct instance
-func NewAdabas(dbid Dbid) *Adabas {
+func NewAdabas(dbid Dbid) (*Adabas, error) {
 	ID := NewAdabasID()
 	adatypes.Central.Log.Debugf("Implicit created Adabas instance dbid with ID: %s", ID.String())
 	if (dbid < 1) || (dbid > MaxDatabasesID) {
-		//		err = fmt.Errorf("Adabas database id %d is not in range of [%d:%d]", dbid, 1, MaxDatabasesID)
-		return nil
+		err := adatypes.NewGenericError(67, dbid, 1, MaxDatabasesID)
+		return nil, err
 	}
 	acbx := newAcbx(dbid)
 	URL := newURLWithDbid(dbid)
@@ -119,7 +119,7 @@ func NewAdabas(dbid Dbid) *Adabas {
 		URL:          URL,
 		Acbx:         acbx,
 		transactions: &transactions{},
-	}
+	}, nil
 }
 
 // NewAdabass create a new Adabas struct instance using string parameter
@@ -153,7 +153,7 @@ func NewAdabasWithID(target string, ID *ID) (*Adabas, error) {
 		return nil, err
 	}
 	if (URL.Dbid < 1) || (URL.Dbid > MaxDatabasesID) {
-		err = fmt.Errorf("Adabas database id %d is not in range of [%d:%d]", URL.Dbid, 1, MaxDatabasesID)
+		err = adatypes.NewGenericError(67, URL.Dbid, 1, MaxDatabasesID)
 		return nil, err
 	}
 
@@ -168,11 +168,11 @@ func NewAdabasWithID(target string, ID *ID) (*Adabas, error) {
 }
 
 // NewAdabasWithURL create a new Adabas struct instance
-func NewAdabasWithURL(URL *URL, ID *ID) *Adabas {
+func NewAdabasWithURL(URL *URL, ID *ID) (*Adabas, error) {
 	adatypes.Central.Log.Debugf("Use new Adabas instance with Adabas ID: %s", ID.String())
 	if (URL.Dbid < 1) || (URL.Dbid > MaxDatabasesID) {
-		// err = fmt.Errorf("Adabas database id %d is not in range of [%d:%d]", dbid, 1, MaxDatabasesID)
-		return nil
+		err := adatypes.NewGenericError(67, URL.Dbid, 1, MaxDatabasesID)
+		return nil, err
 	}
 	acbx := newAcbx(URL.Dbid)
 	return &Adabas{
@@ -181,7 +181,7 @@ func NewAdabasWithURL(URL *URL, ID *ID) *Adabas {
 		status:       ID.status(URL.String()),
 		Acbx:         acbx,
 		transactions: &transactions{},
-	}
+	}, nil
 }
 
 // Open opens a session to the database

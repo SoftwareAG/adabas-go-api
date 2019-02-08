@@ -54,7 +54,7 @@ func TestStoreAdabasFields(t *testing.T) {
 		return
 	}
 
-	storeRequest := NewStoreRequest("23", 16)
+	storeRequest, _ := NewStoreRequest("23", 16)
 	defer storeRequest.Close()
 	err := storeRequest.StoreFields("AA,AC,AD,AE")
 	if !assert.NoError(t, err) {
@@ -90,7 +90,7 @@ func TestStoreAdabasFields(t *testing.T) {
 }
 
 func prepareCreateTestMap(mapName string, fileName string, dataRepository *DatabaseURL) error {
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 
 	mr := NewMapRepository(adabas, 250)
@@ -135,7 +135,7 @@ func TestStoreFailMapFieldsCheck(t *testing.T) {
 	if !assert.NoError(t, perr) {
 		return
 	}
-	ada := NewAdabas(adabasModDBID)
+	ada, _ := NewAdabas(adabasModDBID)
 	AddGlobalMapRepository(ada, 250)
 	defer DelGlobalMapRepository(ada, 250)
 	adabasMap, serr := SearchMapRepository(ada, massLoadEmployees)
@@ -177,7 +177,7 @@ func TestStoreMapFields(t *testing.T) {
 		return
 	}
 
-	ada := NewAdabas(adabasModDBID)
+	ada, _ := NewAdabas(adabasModDBID)
 	AddGlobalMapRepository(ada, 250)
 	defer DelGlobalMapRepository(ada, 250)
 
@@ -311,7 +311,7 @@ func TestStoreMapFieldsPeriods(t *testing.T) {
 	if !assert.NoError(t, perr) {
 		return
 	}
-	ada := NewAdabas(adabasModDBID)
+	ada, _ := NewAdabas(adabasModDBID)
 	AddGlobalMapRepository(ada, 250)
 	defer DelGlobalMapRepository(ada, 250)
 
@@ -372,7 +372,7 @@ func TestStoreUpdateMapField(t *testing.T) {
 	if !assert.NoError(t, perr) {
 		return
 	}
-	ada := NewAdabas(adabasModDBID)
+	ada, _ := NewAdabas(adabasModDBID)
 	defer ada.Close()
 
 	AddGlobalMapRepository(ada, 250)
@@ -467,10 +467,6 @@ func TestStoreWithMapLobFile(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 
-	// dataRepository := &DatabaseURL{Adabas: NewAdabas(adabasModDBID), Fnr: 11}
-	// prepareCreateTestMap(t, "LOBPUCTURE", "Lobpicture.systrans", dataRepository)
-
-	//	clearAdabasFile(t, "24", 4)
 	p := os.Getenv("LOGPATH")
 	if p == "" {
 		p = "."
@@ -505,7 +501,7 @@ func TestStoreWithMapLobFile(t *testing.T) {
 	h.Write(data)
 	fmt.Printf("SHA ALL: %x\n", h.Sum(nil))
 
-	ada := NewAdabas(adabasModDBID)
+	ada, _ := NewAdabas(adabasModDBID)
 	AddGlobalMapRepository(ada, 4)
 	defer DelGlobalMapRepository(ada, 4)
 	DumpGlobalMapRepositories()
@@ -566,7 +562,7 @@ func TestStoreWithMapLobFile(t *testing.T) {
 
 func validateUsingAdabas(t *testing.T, isn adatypes.Isn) {
 	fmt.Println("Validate using Adabas and ISN=", isn)
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	request := NewReadRequestAdabas(adabas, 202)
 	defer request.Close()
 	openErr := request.Open()
@@ -606,7 +602,7 @@ func validateUsingAdabas(t *testing.T, isn adatypes.Isn) {
 
 func validateUsingMap(t *testing.T, isn adatypes.Isn) {
 	fmt.Println("Validate using Map and ISN=", isn)
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	mapRepository := NewMapRepository(adabas, 4)
 	request, err := NewMapReadRequestRepo("LOBEXAMPLE", adabas, mapRepository)
 	if !assert.NoError(t, err) {
@@ -657,7 +653,7 @@ func TestStoreMapMissing(t *testing.T) {
 	log.Infof("TEST: %s", t.Name())
 
 	fmt.Println("Validate using Map invalid")
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 
 	mapRepository := NewMapRepository(adabas, 4)
@@ -680,7 +676,7 @@ func TestStorePeriod(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 
-	adabas := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasModDBID)
 	mr := NewMapRepository(adabas, 250)
 	mapName := massLoadSystransStore
 
@@ -760,7 +756,7 @@ func TestStoreEndTransaction(t *testing.T) {
 	if !assert.NoError(t, perr) {
 		return
 	}
-	ada := NewAdabas(adabasModDBID)
+	ada, _ := NewAdabas(adabasModDBID)
 	defer ada.Close()
 
 	AddGlobalMapRepository(ada, 250)
@@ -828,7 +824,7 @@ func TestStoreCloseWithBackout(t *testing.T) {
 	if !assert.NoError(t, perr) {
 		return
 	}
-	ada := NewAdabas(adabasModDBID)
+	ada, _ := NewAdabas(adabasModDBID)
 	defer ada.Close()
 
 	AddGlobalMapRepository(ada, 250)
@@ -896,7 +892,7 @@ func TestStoreBackout(t *testing.T) {
 	if !assert.NoError(t, perr) {
 		return
 	}
-	ada := NewAdabas(adabasModDBID)
+	ada, _ := NewAdabas(adabasModDBID)
 	defer ada.Close()
 
 	AddGlobalMapRepository(ada, 250)
