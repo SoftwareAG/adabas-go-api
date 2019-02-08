@@ -379,6 +379,7 @@ func TestReadRequestMissingFile(t *testing.T) {
 	result, err := request.ReadLogicalWith("RN='EMPLOYEES-NAT-DDM'")
 	fmt.Println("Read done ...")
 	assert.Error(t, err)
+	result.DumpValues()
 }
 
 func BenchmarkReadRequest_Small(b *testing.B) {
@@ -454,7 +455,7 @@ func TestRequestWithMapLogicalBy(t *testing.T) {
 
 		fmt.Println("After query fields")
 		var result *Response
-		err = request.ReadLogicalBy("PERSONNEL-ID")
+		result, err = request.ReadLogicalBy("PERSONNEL-ID")
 		if assert.NoError(t, err) {
 			fmt.Println("Dump result received ...")
 			result.DumpValues()
