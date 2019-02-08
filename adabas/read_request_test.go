@@ -376,7 +376,7 @@ func TestReadRequestMissingFile(t *testing.T) {
 	adabas, _ := NewAdabas(24)
 	request := NewReadRequestAdabas(adabas, 123)
 	defer request.Close()
-	result, err := request.ReadLogicalWith("RN='EMPLOYEES-NAT-DDM'")
+	_, err := request.ReadLogicalWith("RN='EMPLOYEES-NAT-DDM'")
 	fmt.Println("Read done ...")
 	assert.Error(t, err)
 }
