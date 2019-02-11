@@ -88,7 +88,7 @@ func (value *byteArrayValue) SetValue(v interface{}) error {
 		value.value = []byte(v.(string))
 		return nil
 	}
-	return fmt.Errorf("Value interface not supported %T", v)
+	return NewGenericError(100, fmt.Sprintf("%T", v), value.Type().Name(), fmt.Sprintf("%T", value))
 }
 
 func (value *byteArrayValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {

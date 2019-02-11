@@ -308,12 +308,6 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 			if err != nil {
 				return
 			}
-			// fields := tree.SearchFields()
-			// if len(fields) != 1 {
-			// 	err = fmt.Errorf("Please use histogram with single fields only. Nr of fields given is %d", len(fields))
-			// 	return
-			// }
-			// request.definition.ShouldRestrictToFieldSlice(fields)
 		} else {
 			adatypes.Central.Log.Debugf("Use Definition ...")
 			searchInfo.Definition = request.definition

@@ -22,7 +22,6 @@ package adabas
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"io"
 	"net"
 	"unsafe"
@@ -346,7 +345,7 @@ func (connection *adatcp) SendData(buffer bytes.Buffer, nrAbdBuffers uint32) (er
 
 // Generate error code specific error
 func generateError(errorCode uint32) error {
-	return fmt.Errorf("Unknown error code %03d", errorCode)
+	return adatypes.NewGenericError(91, errorCode)
 }
 
 // ReceiveData receive data from remote TCP/IP Adabas nucleus
@@ -372,9 +371,7 @@ func (connection *adatcp) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32
 		adatypes.LogMultiLineString(adatypes.FormatBytesWithLength("RCV Header BUFFER:", rcvHeaderBuffer, len(rcvHeaderBuffer), 8, true))
 	}
 	if n < hl {
-		return 0, fmt.Errorf("Header not received")
-		//	return 0, adatypes.NewGenericError( 36)
-
+		return 0, adatypes.NewGenericError(92)
 	}
 	headerBuffer := bytes.NewBuffer(rcvHeaderBuffer)
 	err = binary.Read(headerBuffer, binary.BigEndian, &header)
@@ -394,8 +391,7 @@ func (connection *adatcp) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32
 		return 0, generateError(header.ErrorCode)
 	}
 	if header.Length < headerLength+dataHeaderLength {
-		return 0, fmt.Errorf("Received data length incorrect: %d", header.Length)
-		//		return 0, adatypes.NewGenericError( 35, header.Length)
+		return 0, adatypes.NewGenericError(90, header.Length)
 	}
 	adatypes.Central.Log.Debugf("Current size of buffer=%d", buffer.Len())
 	adatypes.Central.Log.Debugf("Receive %d number of bytes of %d", n, header.Length)

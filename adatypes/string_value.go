@@ -124,7 +124,7 @@ func (value *stringValue) SetValue(v interface{}) error {
 		vv := v.(reflect.Value)
 		value.setStringWithSize(vv.String())
 	default:
-		return fmt.Errorf("Input value %T not valid", v)
+		return NewGenericError(103, fmt.Sprintf("%T", v), value.Type().Name())
 	}
 	return nil
 }

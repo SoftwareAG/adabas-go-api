@@ -66,7 +66,7 @@ func structParser(adabasRequest *adatypes.Request, x interface{}) error {
 			case string:
 				s.Field(i).SetString(v.String())
 			default:
-				return fmt.Errorf("Type %v for %s not supported", s.Field(i).Type(), fieldName)
+				return adatypes.NewGenericError(80, s.Field(i).Type(), fieldName)
 			}
 		}
 	}

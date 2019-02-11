@@ -273,8 +273,7 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 		adaValue = newReferentialValue(adaType)
 	default:
 		Central.Log.Debugf("Return nil value %v %s", adaType.fieldType, adaType.String())
-		err = fmt.Errorf("Error creating type value for: %v [%s]", adaType.fieldType, adaType.Name())
-		//err = NewGenericError( 39, adaType.fieldType, adaType.Name())
+		return nil, NewGenericError(102, adaType.fieldType.name(), adaType.Name())
 	}
 	return
 }

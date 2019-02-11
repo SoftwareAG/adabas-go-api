@@ -279,7 +279,7 @@ func (adabas *Adabas) callRemoteAdabas() (err error) {
 	adatypes.Central.Log.Debugf("Call remote via driver url: %s", adabas.URL)
 	switch adabas.URL.Driver {
 	case "tcpip":
-		return fmt.Errorf("Entire Network client not supported, use port 0 and Entire Network native access")
+		return adatypes.NewGenericError(68)
 	case "adatcp":
 		return adabas.sendTCP()
 	case "":

@@ -84,7 +84,7 @@ func (value *byteValue) SetValue(v interface{}) error {
 		value.value = convertByteToInt8(v.([]byte)[0])
 		return nil
 	}
-	return fmt.Errorf("Value interface not supported %T", v)
+	return NewGenericError(103, fmt.Sprintf("%T", v), value.Type().Name())
 }
 
 func (value *byteValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {

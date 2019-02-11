@@ -210,13 +210,13 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 	case int64:
 		v := x.(int64)
 		if v < 0 {
-			return 0, fmt.Errorf("Error converting negative value of %T", x)
+			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
 		val = uint64(v)
 	case int:
 		v := x.(int)
 		if v < 0 {
-			return 0, fmt.Errorf("Error converting negative value of %T", x)
+			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
 		val = uint64(v)
 	case uint32:
@@ -224,7 +224,7 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 	case int32:
 		v := x.(int32)
 		if v < 0 {
-			return 0, fmt.Errorf("Error converting negative value of %T", x)
+			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
 		val = uint64(v)
 	case uint16:
@@ -232,7 +232,7 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 	case int16:
 		v := x.(int16)
 		if v < 0 {
-			return 0, fmt.Errorf("Error converting negative value of %T", x)
+			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
 		val = uint64(v)
 	case uint8:
@@ -240,7 +240,7 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 	case int8:
 		v := x.(int8)
 		if v < 0 {
-			return 0, fmt.Errorf("Error converting negative value of %T", x)
+			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
 		val = uint64(v)
 	case []byte:
@@ -283,7 +283,7 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 		Central.Log.Debugf("Error converting to byte slice: %v", x)
 		return 0, errors.New("Cannot convert value to byte slice")
 	default:
-		return 0, fmt.Errorf("Error converting %T", x)
+		return 0, NewGenericError(103, fmt.Sprintf("%T", x), adavalue.Type().Name())
 	}
 	return val, nil
 }
@@ -366,7 +366,7 @@ func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 		return 0, errors.New("Cannot convert value to byte slice")
 	default:
 		Central.Log.Debugf("Error converting %v", x)
-		return 0, fmt.Errorf("Cannot convert value type %T to int64", x)
+		return 0, NewGenericError(103, fmt.Sprintf("%T", x), adavalue.Type().Name())
 	}
 	Central.Log.Debugf("Converted value %v from %T", val, x)
 	return val, nil
