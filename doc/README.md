@@ -197,14 +197,16 @@ result, err := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
 But you can work with a function to pass structures and methods to process the result received by the database. Here the result can be traversered field by field.
 
 ```go
-// example parser function to extract value from current data streamm
-func parseTestConnection(adabasRequest *parser.Request, x interface{}) (err error) {
-  parseTestStructure := x.(parseTestStructure)
-  tm := parser.TraverserValuesMethods{EnterFunction: extractMapField}
-  adabasRequest.Definition.TraverseValues(tm, adabasMap)
+// Work on all records without storing the records memory space in any list
+func dumpStream(record *Record, x interface{}) error {
+  i := x.(*uint32)
+  a, _ := record.SearchValue("AE")
+  fmt.Printf("Read %d -> %s = %d\n", record.Isn, a, record.Quantity)
+  (*i)++
+  return nil
 }
 // Call using the function
-err = request.ReadLogicalWith("AA=[11100301:11100305]", parseTestConnection, parseTestStructure)
+result, err := request.ReadLogicalWithStream("AE='SMITH'", dumpStream, &i)
 
 ```
 
