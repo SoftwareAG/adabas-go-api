@@ -172,22 +172,7 @@ func TestRequestRemoteLogicalByAll(t *testing.T) {
 	_, err := request.ReadLogicalBy("AA")
 	fmt.Println("Dump result received ...")
 	assert.Error(t, err)
-	assert.Equal(t, "Entire Network client not supported, use port 0 and Entire Network native access", err.Error())
-	// if !assert.NoError(t, err) {
-	// 	return
-	// }
-	// assert.NotNil(t, result)
-	// if result != nil {
-	// 	result.DumpValues()
-	// }
-	// if assert.Equal(t, 2, len(result.Values)) {
-	// 	v := result.Values[0].HashFields["AJ"]
-	// 	assert.Equal(t, "HEPPENHEIM          ", v.String())
-	// 	v = result.Values[1].HashFields["AJ"]
-	// 	assert.Equal(t, "DARMSTADT           ", v.String())
-	// 	v = result.Values[1].HashFields["AZ"]
-	// 	assert.Equal(t, adatypes.FieldTypeMultiplefield, v.Type().Type())
-	// }
+	assert.Equal(t, "ADG0000068: Entire Network client not supported, use port 0 and Entire Network native access", err.Error())
 }
 
 func ExampleReadRequest_ReadLogicalBy() {

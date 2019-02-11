@@ -453,7 +453,7 @@ func TestConnectionRemote(t *testing.T) {
 	fmt.Println(connection)
 	openErr := connection.Open()
 	assert.Error(t, openErr)
-	assert.Equal(t, "Entire Network client not supported, use port 0 and Entire Network native access", openErr.Error())
+	assert.Equal(t, "ADG0000068: Entire Network client not supported, use port 0 and Entire Network native access", openErr.Error())
 
 }
 

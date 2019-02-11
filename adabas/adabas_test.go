@@ -581,7 +581,7 @@ func TestAdabasFdtNewEmployeeRemote(t *testing.T) {
 	fmt.Println("Open database")
 	err := adabas.Open()
 	assert.Error(t, err)
-	assert.Equal(t, "Entire Network client not supported, use port 0 and Entire Network native access", err.Error())
+	assert.Equal(t, "ADG0000068: Entire Network client not supported, use port 0 and Entire Network native access", err.Error())
 	// if assert.NoError(t, err) {
 	// 	if adabas.Acbx.Acbxrsp != 0 {
 	// 		t.Fatal(adabas.getAdabasMessage(), adabas.Acbx.Acbxrsp)
