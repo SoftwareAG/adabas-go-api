@@ -21,7 +21,6 @@ package adatypes
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"strconv"
 )
@@ -158,7 +157,7 @@ func (value *ubyteValue) SetValue(v interface{}) error {
 			s := v.(string)
 			sb := []byte(s)
 			if len(sb) > 1 {
-				return errors.New("String not valid")
+				return NewGenericError(108)
 			}
 			value.value = sb[0]
 			return nil

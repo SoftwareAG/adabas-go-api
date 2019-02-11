@@ -23,7 +23,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -139,18 +138,18 @@ func (value *byteArrayValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 }
 
 func (value *byteArrayValue) Int32() (int32, error) {
-	return 0, errors.New("Cannot convert value to signed 32-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
 }
 
 func (value *byteArrayValue) UInt32() (uint32, error) {
-	return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 32-bit integer")
 }
 func (value *byteArrayValue) Int64() (int64, error) {
-	return 0, errors.New("Cannot convert value to signed 64-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "signed 64-bit integer")
 }
 func (value *byteArrayValue) UInt64() (uint64, error) {
-	return 0, errors.New("Cannot convert value to unsigned 64-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 64-bit integer")
 }
 func (value *byteArrayValue) Float() (float64, error) {
-	return 0, errors.New("Cannot convert value to 64-bit float")
+	return 0, NewGenericError(105, value.Type().Name(), "64-bit float")
 }

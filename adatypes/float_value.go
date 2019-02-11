@@ -22,7 +22,6 @@ package adatypes
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"math"
 	"strconv"
@@ -99,7 +98,7 @@ func (value *floatValue) SetValue(v interface{}) error {
 	case []byte:
 		bv := v.([]byte)
 		if uint32(len(bv)) > value.Type().Length() {
-			return errors.New("Cannot set byte array, length to small")
+			return NewGenericError(104, len(bv), value.Type().Name())
 		}
 		copy(value.value[:len(bv)], bv[:])
 		// value.value = bv
@@ -133,8 +132,7 @@ func (value *floatValue) Int32() (int32, error) {
 	if fl == float32(math.Floor(float64(fl))) {
 		return int32(fl), nil
 	}
-	return 0, errors.New("Cannot convert value to signed 32-bit integer")
-	//	return int32(byteToFLoat32(value.value)), nil
+	return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
 }
 
 func (value *floatValue) UInt32() (uint32, error) {
@@ -142,8 +140,7 @@ func (value *floatValue) UInt32() (uint32, error) {
 	if fl >= 0 && fl == float32(math.Floor(float64(fl))) {
 		return uint32(fl), nil
 	}
-	return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
-	//	return uint32(byteToFLoat32(value.value)), nil
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 32-bit integer")
 }
 
 func (value *floatValue) Int64() (int64, error) {
@@ -151,8 +148,7 @@ func (value *floatValue) Int64() (int64, error) {
 	if fl == float32(math.Floor(float64(fl))) {
 		return int64(fl), nil
 	}
-	return 0, errors.New("Cannot convert value to signed 64-bit integer")
-	//	return int64(byteToFLoat32(value.value)), nil
+	return 0, NewGenericError(105, value.Type().Name(), "signed 64-bit integer")
 }
 
 func (value *floatValue) UInt64() (uint64, error) {
@@ -160,8 +156,7 @@ func (value *floatValue) UInt64() (uint64, error) {
 	if fl >= 0 && fl == float32(math.Floor(float64(fl))) {
 		return uint64(fl), nil
 	}
-	return 0, errors.New("Cannot convert value to unsigned 64-bit integer")
-	//	return uint64(byteToFLoat32(value.value)), nil
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 64-bit integer")
 }
 
 func (value *floatValue) Float() (float64, error) {

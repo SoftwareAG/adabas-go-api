@@ -22,7 +22,6 @@ package adatypes
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"math"
 	"strings"
@@ -256,7 +255,7 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 		case (8):
 			adaValue = newDoubleValue(adaType)
 		default:
-			err = errors.New("Error creating type value for: " + adaType.String())
+			err = NewGenericError(110, adaType.length, adaType.String())
 		}
 	case FieldTypeFiller:
 		Central.Log.Debugf("Return filler value")
@@ -513,7 +512,7 @@ func (adaType *StructureType) Value() (adaValue IAdaValue, err error) {
 		return
 	}
 	Central.Log.Debugf("Return nil structure", adaType.String())
-	err = errors.New("Error creating structure value for: " + adaType.String())
+	err = NewGenericError(104, adaType.String())
 	return
 }
 

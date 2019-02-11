@@ -21,7 +21,6 @@ package adatypes
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -282,18 +281,18 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 }
 
 func (value *stringValue) Int32() (int32, error) {
-	return 0, errors.New("Cannot convert value to signed 32-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
 }
 
 func (value *stringValue) UInt32() (uint32, error) {
-	return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 32-bit integer")
 }
 func (value *stringValue) Int64() (int64, error) {
-	return 0, errors.New("Cannot convert value to signed 64-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "signed 64-bit integer")
 }
 func (value *stringValue) UInt64() (uint64, error) {
-	return 0, errors.New("Cannot convert value to unsigned 64-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 64-bit integer")
 }
 func (value *stringValue) Float() (float64, error) {
-	return 0, errors.New("Cannot convert value to 64-bit float")
+	return 0, NewGenericError(105, value.Type().Name(), "64-bit float")
 }

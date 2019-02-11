@@ -21,7 +21,6 @@ package adatypes
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"math"
 
@@ -590,27 +589,27 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 
 // Int32 not used
 func (value *StructureValue) Int32() (int32, error) {
-	return 0, errors.New("Cannot convert value to signed 32-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
 }
 
 // UInt32 not used
 func (value *StructureValue) UInt32() (uint32, error) {
-	return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 32-bit integer")
 }
 
 // Int64 not used
 func (value *StructureValue) Int64() (int64, error) {
-	return 0, errors.New("Cannot convert value to signed 64-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "signed 64-bit integer")
 }
 
 // UInt64 not used
 func (value *StructureValue) UInt64() (uint64, error) {
-	return 0, errors.New("Cannot convert value to unsigned 64-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 64-bit integer")
 }
 
 // Float not used
 func (value *StructureValue) Float() (float64, error) {
-	return 0, errors.New("Cannot convert value to 64-bit float")
+	return 0, NewGenericError(105, value.Type().Name(), "64-bit float")
 }
 
 func (value *StructureValue) setPeriodIndex(index uint32) {

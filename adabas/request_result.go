@@ -23,7 +23,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -132,7 +131,7 @@ func (Response *Response) DumpValues() (err error) {
 func (Response *Response) TraverseValues(t adatypes.TraverserValuesMethods, x interface{}) (ret adatypes.TraverseResult, err error) {
 	adatypes.Central.Log.Debugf("Traverse result values")
 	if Response.Values == nil {
-		err = errors.New("no values")
+		err = adatypes.NewGenericError(81)
 		return
 	}
 	adatypes.Central.Log.Debugf("Go through records -> %d", len(Response.Values))

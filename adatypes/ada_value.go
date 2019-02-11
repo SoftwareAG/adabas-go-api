@@ -22,7 +22,6 @@ package adatypes
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -281,7 +280,7 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 		default:
 		}
 		Central.Log.Debugf("Error converting to byte slice: %v", x)
-		return 0, errors.New("Cannot convert value to byte slice")
+		return 0, NewGenericError(104, len(v), adavalue.Type().Name())
 	default:
 		return 0, NewGenericError(103, fmt.Sprintf("%T", x), adavalue.Type().Name())
 	}
@@ -363,7 +362,7 @@ func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 		default:
 		}
 		Central.Log.Debugf("Error converting to byte slice: %v", x)
-		return 0, errors.New("Cannot convert value to byte slice")
+		return 0, NewGenericError(104, len(v), adavalue.Type().Name())
 	default:
 		Central.Log.Debugf("Error converting %v", x)
 		return 0, NewGenericError(103, fmt.Sprintf("%T", x), adavalue.Type().Name())
@@ -447,18 +446,18 @@ func (value *fillerValue) parseBuffer(helper *BufferHelper, option *BufferOption
 }
 
 func (value *fillerValue) Int32() (int32, error) {
-	return 0, errors.New("Cannot convert value to signed 32-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
 }
 
 func (value *fillerValue) UInt32() (uint32, error) {
-	return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 32-bit integer")
 }
 func (value *fillerValue) Int64() (int64, error) {
-	return 0, errors.New("Cannot convert value to signed 64-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "signed 64-bit integer")
 }
 func (value *fillerValue) UInt64() (uint64, error) {
-	return 0, errors.New("Cannot convert value to unsigned 64-bit integer")
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 64-bit integer")
 }
 func (value *fillerValue) Float() (float64, error) {
-	return 0, errors.New("Cannot convert value to 64-bit float")
+	return 0, NewGenericError(105, value.Type().Name(), "64-bit float")
 }

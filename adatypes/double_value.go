@@ -22,7 +22,6 @@ package adatypes
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"math"
 	"strconv"
@@ -95,7 +94,7 @@ func (value *doubleValue) SetValue(v interface{}) error {
 	case []byte:
 		bv := v.([]byte)
 		if uint32(len(bv)) > value.Type().Length() {
-			return errors.New("Cannot set byte array, length to small")
+			return NewGenericError(109)
 		}
 		copy(value.value[:len(bv)], bv[:])
 		// value.value = bv
@@ -127,7 +126,7 @@ func (value *doubleValue) parseBuffer(helper *BufferHelper, option *BufferOption
 func (value *doubleValue) Int32() (int32, error) {
 	fl := byteToFLoat64(value.value)
 	if fl != math.Trunc(fl) {
-		return 0, errors.New("Cannot convert value to signed 32-bit integer")
+		return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
 	}
 	return int32(fl), nil
 }

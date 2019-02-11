@@ -22,7 +22,6 @@ package adatypes
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"math"
 	"strconv"
 )
@@ -87,7 +86,7 @@ func (value *uint32Value) parseBuffer(helper *BufferHelper, option *BufferOption
 
 func (value *uint32Value) Int32() (int32, error) {
 	if value.value > uint32(math.MaxInt32) {
-		return 0, errors.New("Cannot convert value to signed 32-bit integer")
+		return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
 	}
 	return int32(value.value), nil
 }
@@ -169,7 +168,7 @@ func (value *int32Value) Int32() (int32, error) {
 
 func (value *int32Value) UInt32() (uint32, error) {
 	if value.value < 0 {
-		return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+		return 0, NewGenericError(105, value.Type().Name(), "unsigned 32-bit integer")
 	}
 	return uint32(value.value), nil
 }
@@ -180,7 +179,7 @@ func (value *int32Value) Int64() (int64, error) {
 
 func (value *int32Value) UInt64() (uint64, error) {
 	if value.value < 0 {
-		return 0, errors.New("Cannot convert value to unsigned 32-bit integer")
+		return 0, NewGenericError(105, value.Type().Name(), "unsigned 32-bit integer")
 	}
 	return uint64(value.value), nil
 }

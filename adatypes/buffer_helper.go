@@ -22,7 +22,6 @@ package adatypes
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -95,7 +94,7 @@ func (helper *BufferHelper) ReceiveString(length uint32) (res string, err error)
 		res = b
 		return
 	}
-	err = errors.New("Buffer overflow")
+	err = NewGenericError(106)
 	return
 }
 
@@ -108,7 +107,7 @@ func (helper *BufferHelper) ReceiveBytes(length uint32) (res []byte, err error) 
 		helper.offset += length
 		return
 	}
-	err = errors.New("Buffer overflow")
+	err = NewGenericError(106)
 	return
 }
 
@@ -139,7 +138,7 @@ func (helper *BufferHelper) ReceiveBytesOcc(occ int) (res []byte, err error) {
 		length = uint32(occ)
 		break
 	default:
-		err = errors.New("Occurence not defined")
+		err = NewGenericError(107)
 		return
 	}
 	return helper.ReceiveBytes(length)
@@ -153,7 +152,7 @@ func (helper *BufferHelper) ReceiveInt8() (res int8, err error) {
 		res = convertByteToInt8(b)
 		return
 	}
-	err = errors.New("Buffer overflow")
+	err = NewGenericError(106)
 	return
 }
 
@@ -175,7 +174,7 @@ func (helper *BufferHelper) ReceiveUInt8() (res uint8, err error) {
 		res = b
 		return
 	}
-	err = errors.New("Buffer overflow")
+	err = NewGenericError(106)
 	return
 }
 
@@ -195,7 +194,7 @@ func (helper *BufferHelper) ReceiveUInt16() (res uint16, err error) {
 		helper.offset += 2
 		return
 	}
-	err = errors.New("Buffer overflow")
+	err = NewGenericError(106)
 	return
 }
 
@@ -215,7 +214,7 @@ func (helper *BufferHelper) ReceiveInt16() (res int16, err error) {
 		helper.offset += 2
 		return
 	}
-	err = errors.New("Buffer overflow")
+	err = NewGenericError(106)
 	return
 }
 
@@ -239,7 +238,7 @@ func (helper *BufferHelper) ReceiveUInt32() (res uint32, err error) {
 		helper.offset += 4
 		return
 	}
-	err = errors.New("Buffer overflow")
+	err = NewGenericError(106)
 	return
 }
 
@@ -259,7 +258,7 @@ func (helper *BufferHelper) ReceiveInt32() (res int32, err error) {
 		helper.offset += 4
 		return
 	}
-	err = errors.New("Buffer overflow")
+	err = NewGenericError(106)
 	return
 }
 
@@ -284,7 +283,7 @@ func (helper *BufferHelper) ReceiveUInt64() (res uint64, err error) {
 		helper.offset += 8
 		return
 	}
-	err = errors.New("Buffer overflow")
+	err = NewGenericError(106)
 	return
 }
 
@@ -304,7 +303,7 @@ func (helper *BufferHelper) ReceiveInt64() (res int64, err error) {
 		helper.offset += 8
 		return
 	}
-	err = errors.New("Buffer overflow")
+	err = NewGenericError(106)
 	return
 }
 

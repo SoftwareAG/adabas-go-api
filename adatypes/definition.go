@@ -21,7 +21,6 @@ package adatypes
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -176,7 +175,7 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 					Central.Log.Debugf("Allthough refernce value given, condition matrix missing offset=%d refField=%v",
 						helper.offset, parent.condition.refField, parent)
 				}
-				err = errors.New("Allthough refernce value given, condition matrix missing")
+				err = NewGenericError(120)
 				return
 			}
 		}
@@ -407,7 +406,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 		}
 		strv := v.(*StructureValue)
 		if index == nil || len(index) == 0 {
-			err = errors.New("Period group index missing")
+			err = NewGenericError(121)
 			return
 		}
 		Central.Log.Debugf("Use index for field %v", index[0])
@@ -418,7 +417,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 				strv.initSubValues(index[0]-1, index[0], true)
 				element = strv.elementMap[index[0]-1]
 			} else {
-				err = errors.New("Entry not available")
+				err = NewGenericError(122)
 				return
 			}
 		}
@@ -446,7 +445,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 						strv := x.found.(*StructureValue)
 						element := strv.elementMap[index[1]]
 						if element == nil {
-							err = errors.New("Index out of range")
+							err = NewGenericError(123)
 							return
 						}
 					}
@@ -483,7 +482,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 		Central.Log.Debugf("Search index for structure %s %v", fieldName, len(index))
 		v := def.Search(fieldName)
 		if v == nil {
-			err = errors.New("Field not found")
+			err = NewGenericError(124)
 			return
 		}
 		if v.Type().IsStructure() {
@@ -491,7 +490,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 			element := strv.elementMap[index[0]]
 			if element == nil {
 				Central.Log.Debugf("Index on %s no element on index %v", v.Type().Name(), index[0])
-				err = errors.New("Index out of range")
+				err = NewGenericError(123)
 				return
 			}
 			Central.Log.Debugf("Index on %s found element on index %v", v.Type().Name(), index[0])
@@ -503,7 +502,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 		return
 	}
 
-	err = errors.New("Element not found")
+	err = NewGenericError(125)
 	return
 }
 
@@ -1224,7 +1223,7 @@ func findType(adaType IAdaType, parentType IAdaType, level int, x interface{}) e
 	if adaType.Name() == search.name {
 		search.adaType = adaType
 		Central.Log.Debugf("Found type ...")
-		return errors.New("Found") // NewGenericError(40, search.name)
+		return NewGenericError(126, search.name)
 	}
 	return nil
 }
@@ -1279,7 +1278,7 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 			return err
 		}
 		if val == nil {
-			return errors.New("Error searching period group value " + name + " (internal error)")
+			return NewGenericError(127, name)
 		}
 	}
 	Central.Log.Debugf("Found value to add to %s type=%v [%d,%d] %T %T", val.Type().Name(), val.Type().Type(),
