@@ -27,7 +27,15 @@ import (
 
 func TestRange(t *testing.T) {
 	r := NewRange(1, 2)
+	assert.Equal(t, "1-2", r.FormatBuffer())
+	r = NewRange(1, lastEntry)
 	assert.Equal(t, "1-N", r.FormatBuffer())
+	r = NewRange(2, 3)
+	assert.Equal(t, "2-3", r.FormatBuffer())
+	r = NewRange(3, 3)
+	assert.Equal(t, "3", r.FormatBuffer())
+	r = NewRange(3, 2)
+	assert.Nil(t, r)
 	r = NewSingleRange(2)
 	assert.Equal(t, "2", r.FormatBuffer())
 	r = NewSingleRange(lastEntry)

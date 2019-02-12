@@ -105,6 +105,7 @@ type StructureType struct {
 	occ       int
 	condition FieldCondition
 	SubTypes  []IAdaType
+	Range     AdaRange
 }
 
 // NewType Define new type with length equal 1
@@ -329,6 +330,7 @@ func NewStructureList(fType FieldType, name string, occByteShort int16, subField
 			lengthFieldIndex: -1,
 			refField:         NoReferenceField,
 		},
+		Range:    *NewRange(1, lastEntry),
 		SubTypes: subFields,
 	}
 	st.adaptSubFields()
@@ -488,6 +490,11 @@ func (adaType *StructureType) RemoveField(fieldType *CommonType) {
 	}
 	adaType.SubTypes = newTypes
 	// }
+}
+
+// SetRange set Adabas range
+func (adaType *StructureType) SetRange(r *AdaRange) {
+	adaType.Range = *r
 }
 
 // Option return structure option as a string

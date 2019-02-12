@@ -47,6 +47,11 @@ func NewSingleRange(index int) *AdaRange {
 
 // NewRange new range from a dimension to a dimension
 func NewRange(from, to int) *AdaRange {
+	if from > to {
+		if to != lastEntry {
+			return nil
+		}
+	}
 	return &AdaRange{from: from, to: to}
 }
 
@@ -63,11 +68,11 @@ func (adaRange *AdaRange) FormatBuffer() string {
 	} else if adaRange.from > 0 {
 		buffer.WriteString(fmt.Sprintf("%d", adaRange.from))
 	}
-	if adaRange.to > 0 && adaRange.from != adaRange.to {
-		if adaRange.from > 0 {
+	if adaRange.to != 0 && adaRange.from != adaRange.to {
+		if adaRange.to == lastEntry {
 			buffer.WriteString("-N")
 		} else {
-			buffer.WriteString(fmt.Sprintf("-%d", adaRange.from))
+			buffer.WriteString(fmt.Sprintf("-%d", adaRange.to))
 		}
 	}
 	return buffer.String()

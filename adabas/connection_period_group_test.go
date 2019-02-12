@@ -56,7 +56,7 @@ func ExampleConnection_PeriodGroup() {
 	//     ADDRESS-LINE[02] = > WIESENGRUND 10       <
 	//     ADDRESS-LINE[03] = > 6100 DARMSTADT       <
 	//    CITY = > DARMSTADT            <
-	//    POST-CODE = > 6100       <
+	//    ZIP = > 6100       <
 	//    COUNTRY = > D   <
 	//   TELEPHONE = [ 1 ]
 	//    AREA-CODE = > 06151  <
@@ -86,10 +86,10 @@ func ExampleConnection_PeriodGroup() {
 	//   LANG = [ 1 ]
 	//    LANG[01] = > GER <
 	//   PH = >  <
-	//   H1 = > 3003 <
-	//   S1 = > FINA <
-	//   S2 = > FINA21FALTER               <
-	//   S3 = >  <
+	//   LEAVE-LEFT = > 3003 <
+	//   DEPARTMENT = > FINA <
+	//   DEPT-PERSON = > FINA21FALTER               <
+	//   CURRENCY-SALARY = >  <
 	// Record Isn: 0253
 	//   PERSONNEL-ID = > 11100304 <
 	//   FULL-NAME = [ 1 ]
@@ -105,7 +105,7 @@ func ExampleConnection_PeriodGroup() {
 	//     ADDRESS-LINE[02] = > MANDELA-WEG 8        <
 	//     ADDRESS-LINE[03] = > 6000 FRANKFURT       <
 	//    CITY = > FRANKFURT            <
-	//    POST-CODE = > 6000       <
+	//    ZIP = > 6000       <
 	//    COUNTRY = > D   <
 	//   TELEPHONE = [ 1 ]
 	//    AREA-CODE = > 069    <
@@ -130,10 +130,10 @@ func ExampleConnection_PeriodGroup() {
 	//    LANG[01] = > GER <
 	//    LANG[02] = > ENG <
 	//   PH = >  <
-	//   H1 = > 3000 <
-	//   S1 = > FINA <
-	//   S2 = > FINA21SCHMIDT              <
-	//   S3 = >  <
+	//   LEAVE-LEFT = > 3000 <
+	//   DEPARTMENT = > FINA <
+	//   DEPT-PERSON = > FINA21SCHMIDT              <
+	//   CURRENCY-SALARY = >  <
 
 }
 

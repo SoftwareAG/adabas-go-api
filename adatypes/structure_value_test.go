@@ -225,3 +225,61 @@ func TestStructureValuePeriodMU(t *testing.T) {
 	_, err = vsl.Float()
 	assert.Error(t, err)
 }
+
+func TestStructureValuePeriodLast(t *testing.T) {
+	f, err := initLogWithFile("structure_value.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	groupLayout := []IAdaType{
+		NewTypeWithLength(FieldTypeCharacter, "GC", 1),
+		NewType(FieldTypeString, "GS"),
+		NewType(FieldTypePacked, "GP"),
+	}
+	sl := NewStructureList(FieldTypePeriodGroup, "PE", OccByte, groupLayout)
+	sl.SetRange(NewRange(1, 2))
+	assert.Equal(t, "PE", sl.Name())
+	assert.Equal(t, " 1, PE ,PE ; PE  PE=true MU=false REMOVE=true", sl.String())
+	v, err := sl.Value()
+	assert.NoError(t, err)
+	vsl := v.(*StructureValue)
+	b := make([]byte, 100)
+	b[0] = 2
+	b[4] = 'X'
+	b[5] = 0x1c
+	helper := NewHelper(b, 100, endian())
+
+	option := &BufferOption{}
+	_, err = vsl.parseBuffer(helper, option)
+	assert.NoError(t, err)
+	assert.Equal(t, "", vsl.String())
+	vpm := vsl.search("GS")
+	assert.NotNil(t, vpm)
+	assert.Equal(t, 2, vsl.NrElements())
+	assert.NotNil(t, vsl.Value())
+	eui32, errui32 := vsl.UInt32()
+	assert.Equal(t, uint32(0), eui32)
+	assert.Error(t, errui32)
+	eui64, errui64 := vsl.UInt64()
+	assert.Equal(t, uint64(0), eui64)
+	assert.Error(t, errui64)
+
+	var buffer bytes.Buffer
+	vsl.FormatBuffer(&buffer, option)
+	assert.Equal(t, "PEC,4,PE1-2", buffer.String())
+
+	gc1a := vsl.Get("GC", 1)
+	assert.NotNil(t, gc1a)
+	assert.Equal(t, uint8(0x0), gc1a.Value())
+	gc1b := vsl.Get("GC", 1)
+	assert.NotNil(t, gc1b)
+	assert.Equal(t, uint8(0x0), gc1b.Value())
+	assert.Equal(t, gc1a, gc1b)
+	gc2 := vsl.Get("GC", 2)
+	assert.NotNil(t, gc2)
+	assert.Equal(t, uint8(0x0), gc2.Value())
+	assert.NotEqual(t, gc1a, gc2)
+
+}

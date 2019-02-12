@@ -485,13 +485,15 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 				if buffer.Len() > 0 {
 					buffer.WriteString(",")
 				}
+				p := "1-N"
+				//r := structureType.Range.FormatBuffer()
 				if value.Type().HasFlagSet(FlagOptionPE) {
-					buffer.WriteString(value.Type().ShortName() + "1-N(C),4")
+					buffer.WriteString(value.Type().ShortName() + p + "(C),4")
 				} else {
 					buffer.WriteString(value.Type().ShortName() + "C,4")
 					muType := structureType.SubTypes[0]
-					buffer.WriteString(fmt.Sprintf(",%s1-N,%d,%s",
-						value.Type().ShortName(), muType.Length(), muType.Type().FormatCharacter()))
+					buffer.WriteString(fmt.Sprintf(",%s%s,%d,%s",
+						value.Type().ShortName(), p, muType.Length(), muType.Type().FormatCharacter()))
 				}
 
 				Central.Log.Debugf("Current MU field %s, search in %d nodes", value.Type().Name(), len(value.Elements))
@@ -506,7 +508,8 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 				}
 				buffer.WriteString(value.Type().ShortName() + "C,4")
 				if !value.Type().HasFlagSet(FlagOptionMU) {
-					buffer.WriteString("," + value.Type().ShortName() + "1-N")
+					r := structureType.Range.FormatBuffer()
+					buffer.WriteString("," + value.Type().ShortName() + r)
 				}
 				recordBufferLength += option.multipleSize
 			}

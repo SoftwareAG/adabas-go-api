@@ -150,6 +150,7 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 	Central.Log.Debugf("PE flag set=%v Type is MU %v[%v] MU ghost=%v[%v]", adavalue.adatype.HasFlagSet(FlagOptionPE),
 		(adavalue.adatype.Type() == FieldTypeMultiplefield), adavalue.adatype.Type(),
 		adavalue.adatype.HasFlagSet(FlagOptionMUGhost), adavalue.adatype.HasFlagSet(FlagOptionMU))
+	// Skip PE fields with MU fields
 	if adavalue.adatype.HasFlagSet(FlagOptionPE) && adavalue.Type().HasFlagSet(FlagOptionMUGhost) {
 		Central.Log.Debugf("Skip ... because PE and MU ghost")
 		return 0
