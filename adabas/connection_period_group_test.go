@@ -224,7 +224,11 @@ func ExampleConnection_PeriodGroupLastEntry() {
 		fmt.Println("Error create request", err)
 		return
 	}
-	request.QueryFields("PERSONNEL-ID,INCOME[N]")
+	err = request.QueryFields("PERSONNEL-ID,INCOME[N]")
+	if err != nil {
+		fmt.Println("Query fields error", err)
+		return
+	}
 	request.Limit = 0
 	var result *Response
 	result, err = request.ReadLogicalWith("PERSONNEL-ID=[11100303:11100304]")

@@ -95,3 +95,4 @@ ADG0000125=Period element not found
 ADG0000126=Field type for field {0} not part of the definition
 ADG0000127=Error searching period group value {0} (internal error)
 ADG0000128=Error creating structure value for: {0}
+ADG0000129=Invalid range used: {0}
