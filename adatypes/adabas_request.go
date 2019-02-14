@@ -119,7 +119,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")
 			}
-			buffer.WriteString(fmt.Sprintf("%s1-N", adaType.ShortName()))
+			buffer.WriteString(fmt.Sprintf("%s%s", adaType.ShortName(), r))
 			adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
 		}
 	case FieldTypeMultiplefield:
