@@ -905,6 +905,9 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 		if buffer.Len() > 0 {
 			buffer.WriteString(",")
 		}
+		structureType := adaType.(*StructureType)
+		r := structureType.Range.FormatBuffer()
+		Central.Log.Debugf("------->>>>>> Range %s=%s", structureType.name, r)
 		buffer.WriteString(adaType.ShortName() + "C,4")
 		adabasRequest.RecordBufferLength += 4
 		if !adaType.HasFlagSet(FlagOptionMU) {
@@ -1004,9 +1007,14 @@ func (def *Definition) CreateAdabasRequest(store bool, secondCall bool) (adabasR
 	return
 }
 
+type fieldQuery struct {
+	name       string
+	fieldRange *AdaRange
+}
+
 // field map containing structure and definition
 type fieldMap struct {
-	set             map[string]bool
+	set             map[string]*fieldQuery
 	strCount        map[string]*StructureType
 	definition      *Definition
 	parentStructure *StructureType
@@ -1131,33 +1139,45 @@ func (def *Definition) ShouldRestrictToFields(fields string) (err error) {
 	return def.ShouldRestrictToFieldSlice(field)
 }
 
-func (def *Definition) newFieldMap(field []string) *fieldMap {
+func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 	// BUG(tkn) Check if fields are valid!!!!
 	fieldMap := &fieldMap{definition: def}
-	fieldMap.set = make(map[string]bool)
+	fieldMap.set = make(map[string]*fieldQuery)
 	fieldMap.strCount = make(map[string]*StructureType)
 	fieldMap.stackStructure = NewStack()
 	if field != nil {
 		for _, f := range field {
 			b := strings.Index(f, "[")
 			fl := f
+			var r *AdaRange
 			if b > 0 {
 				fl = f[:b]
+				e := strings.Index(f, "]")
+				r = NewRangeParser(f[b+1 : e])
+				if r == nil {
+					return nil, NewGenericError(129, f)
+				}
+			} else {
+				r = NewEmptyRange()
 			}
-			Central.Log.Debugf("Add to map: %s", fl)
-			fieldMap.set[fl] = true
+			Central.Log.Debugf("Add to map: %s -> %s", fl, r.FormatBuffer())
+			fieldMap.set[fl] = &fieldQuery{name: fl, fieldRange: r}
 		}
 	}
 	fieldMap.parentStructure = NewStructure()
 	fieldMap.lastStructure = fieldMap.parentStructure
-	return fieldMap
+	return fieldMap, nil
 }
 
 // ShouldRestrictToFieldSlice Restrict the tree to contain only the given nodes
 func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	Central.Log.Debugf("Restrict fields to %#v", field)
 	def.Values = nil
-	fieldMap := def.newFieldMap(field)
+	fieldMap, ferr := def.newFieldMap(field)
+	if ferr != nil {
+		err = ferr
+		return
+	}
 	t := TraverserMethods{EnterFunction: removeFieldTraverser}
 	err = def.TraverseTypes(t, true, fieldMap)
 	if err != nil {

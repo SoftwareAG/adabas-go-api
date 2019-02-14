@@ -296,6 +296,13 @@ func NewStructure() *StructureType {
 func NewStructureEmpty(fType FieldType, name string, occByteShort int16,
 	level uint8) *StructureType {
 	Central.Log.Debugf("Create empty structure list %s with type %d ", name, fType)
+	var r *AdaRange
+	switch fType {
+	case FieldTypePeriodGroup, FieldTypeMultiplefield:
+		r = NewRange(1, lastEntry)
+	default:
+		r = NewEmptyRange()
+	}
 	st := &StructureType{
 		CommonType: CommonType{
 			fieldType: fType,
@@ -305,7 +312,8 @@ func NewStructureEmpty(fType FieldType, name string, occByteShort int16,
 			length:    0,
 			level:     level,
 		},
-		occ: int(occByteShort),
+		occ:   int(occByteShort),
+		Range: *r,
 		condition: FieldCondition{
 			lengthFieldIndex: -1,
 			refField:         NoReferenceField,

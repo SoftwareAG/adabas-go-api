@@ -22,6 +22,8 @@ package adatypes
 import (
 	"bytes"
 	"fmt"
+	"regexp"
+	"strconv"
 )
 
 const (
@@ -38,6 +40,53 @@ type AdaRange struct {
 // NewEmptyRange create an empty range
 func NewEmptyRange() *AdaRange {
 	return &AdaRange{from: noEntry, to: noEntry}
+}
+
+// NewRangeParser new range using string parser
+func NewRangeParser(r string) *AdaRange {
+	var re = regexp.MustCompile(`(?m)^(N|[0-9]*)-?(N|[0-9]*)?$`)
+
+	match := re.FindStringSubmatch(r)
+	if match == nil {
+		Central.Log.Debugf("Does not match: %s", r)
+		return nil
+	}
+
+	Central.Log.Debugf("Got matches %s->%s,%s", r, match[1], match[1])
+	from := 0
+	to := 0
+	var err error
+	if len(match) > 1 {
+		if match[1] == "N" {
+			from = lastEntry
+			to = lastEntry
+		} else {
+			from, err = strconv.Atoi(match[1])
+			if err != nil {
+				return nil
+			}
+			to = from
+		}
+	}
+	if len(match) > 2 && match[2] != "" {
+		if match[2] == "N" {
+			to = lastEntry
+		} else {
+			if from == lastEntry {
+				return nil
+			}
+			to, err = strconv.Atoi(match[2])
+			if err != nil {
+				return nil
+			}
+		}
+	}
+	if to < from {
+		if to != lastEntry {
+			return nil
+		}
+	}
+	return &AdaRange{from: from, to: to}
 }
 
 // NewSingleRange new single dimensioned range

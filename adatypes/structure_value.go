@@ -461,6 +461,7 @@ func (value *StructureValue) SetValue(v interface{}) error {
 func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
 	Central.Log.Debugf("Write FormatBuffer for structure of %s store=%v ", value.Type().Name(), option.StoreCall)
 	if option.SecondCall {
+		Central.Log.Debugf("Skip because second call")
 		return 0
 	}
 	structureType := value.Type().(*StructureType)

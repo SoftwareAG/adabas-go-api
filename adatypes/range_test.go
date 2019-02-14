@@ -25,7 +25,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRange(t *testing.T) {
+func TestRangeInt(t *testing.T) {
+	f := initTestLogWithFile(t, "range.log")
+	defer f.Close()
 	r := NewRange(1, 2)
 	assert.Equal(t, "1-2", r.FormatBuffer())
 	r = NewRange(1, lastEntry)
@@ -44,5 +46,31 @@ func TestRange(t *testing.T) {
 	assert.Equal(t, "N", r.FormatBuffer())
 	r = NewEmptyRange()
 	assert.Equal(t, "", r.FormatBuffer())
+}
+
+func TestRangeParser(t *testing.T) {
+	f := initTestLogWithFile(t, "range.log")
+	defer f.Close()
+	r := NewRangeParser("1-N")
+	assert.Equal(t, "1-N", r.FormatBuffer())
+	r = NewRangeParser("N")
+	if !assert.NotNil(t, r) {
+		return
+	}
+	assert.Equal(t, lastEntry, r.from)
+	assert.Equal(t, lastEntry, r.to)
+	assert.Equal(t, "N", r.FormatBuffer())
+	r = NewRangeParser("1")
+	assert.Equal(t, "1", r.FormatBuffer())
+	r = NewRangeParser("X")
+	assert.Nil(t, r)
+	r = NewRangeParser("1-1N")
+	assert.Nil(t, r)
+
+	r = NewRangeParser("3-2")
+	assert.Nil(t, r)
+
+	r = NewRangeParser("N-2")
+	assert.Nil(t, r)
 
 }
