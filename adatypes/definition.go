@@ -666,7 +666,7 @@ func removeFieldTraverser(adaType IAdaType, parentType IAdaType, level int, x in
 	Central.Log.Debugf("Check remove field on type %s with parent %s(parent remove=%v)", adaType.Name(), parentType.Name(),
 		parentType.HasFlagSet(FlagOptionToBeRemoved))
 	// Check if field is in request
-	_, ok := fieldMap.set[adaType.Name()]
+	fq, ok := fieldMap.set[adaType.Name()]
 	if ok {
 		delete(fieldMap.set, adaType.Name())
 	}
@@ -679,6 +679,10 @@ func removeFieldTraverser(adaType IAdaType, parentType IAdaType, level int, x in
 		oldStructure := adaType.(*StructureType)
 		newStructure := NewStructure()
 		*newStructure = *oldStructure
+		if fq != nil {
+			newStructure.Range = *fq.fieldRange
+			Central.Log.Debugf("-------<<<< Range %s=%s", adaType.Name(), fq.fieldRange.FormatBuffer())
+		}
 		Central.Log.Debugf("%s current structure parent is %s (%v)", adaType.Name(),
 			fieldMap.lastStructure.Name(), fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved))
 		Central.Log.Debugf("Structure=%p -> %s", newStructure, newStructure.Name())
