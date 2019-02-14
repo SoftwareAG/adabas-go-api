@@ -832,7 +832,7 @@ type valueSearch struct {
 	adaValue IAdaValue
 }
 
-func searchRequestValue(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
+func searchRequestValueEnterTrav(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
 	vs := x.(*valueSearch)
 	if adaValue.Type().Name() == vs.name {
 		vs.adaValue = adaValue
@@ -844,7 +844,7 @@ func searchRequestValue(adaValue IAdaValue, x interface{}) (TraverseResult, erro
 // GetValue get the value for string with name
 func (adabasRequest *Request) GetValue(name string) (IAdaValue, error) {
 	vs := &valueSearch{name: name}
-	tm := TraverserValuesMethods{EnterFunction: searchRequestValue}
+	tm := TraverserValuesMethods{EnterFunction: searchRequestValueEnterTrav}
 	if adabasRequest.Definition == nil {
 		return nil, NewGenericError(26)
 	}
@@ -856,7 +856,7 @@ func (adabasRequest *Request) GetValue(name string) (IAdaValue, error) {
 }
 
 // Traverser callback to create format buffer per field type
-func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
+func formatBufferEnterTrav(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
 	adabasRequest := x.(*Request)
 	Central.Log.Debugf("Add format buffer for %s", adaValue.Type().Name())
 	if adaValue.Type().IsStructure() {
@@ -877,7 +877,7 @@ func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResu
 }
 
 // Traverse callback function to create format buffer and record buffer length
-func formatBufferTraverserLeave(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
+func formatBufferLeaveTrav(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
 	Central.Log.Debugf("Leave structure %s", adaValue.Type().Name())
 	if adaValue.Type().IsStructure() {
 		// Reset if period group starts
@@ -983,7 +983,7 @@ func (def *Definition) CreateAdabasRequest(store bool, secondCall bool) (adabasR
 
 	Central.Log.Debugf("Create format buffer. Init Buffer: %s", adabasRequest.FormatBuffer.String())
 	if store || secondCall {
-		t := TraverserValuesMethods{EnterFunction: formatBufferTraverserEnter, LeaveFunction: formatBufferTraverserLeave}
+		t := TraverserValuesMethods{EnterFunction: formatBufferEnterTrav, LeaveFunction: formatBufferLeaveTrav}
 		_, err = def.TraverseValues(t, adabasRequest)
 		if err != nil {
 			return
