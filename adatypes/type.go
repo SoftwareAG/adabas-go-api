@@ -126,6 +126,7 @@ func NewType(fType FieldType, name string) *AdaType {
 		name:      name,
 		flags:     uint8(1 << FlagOptionToBeRemoved),
 		shortName: name,
+		Range:     *NewEmptyRange(),
 		length:    length,
 	}}
 }

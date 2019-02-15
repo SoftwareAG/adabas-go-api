@@ -101,7 +101,8 @@ func formatBufferTraverserLeave(adaValue IAdaValue, x interface{}) (TraverseResu
 }
 
 func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
-	Central.Log.Debugf("Format Buffer Read traverser: %s level=%d/%d", adaType.Name(), adaType.Level(), level)
+	Central.Log.Debugf("Format Buffer Read traverser: %s-%s level=%d/%d", adaType.Name(), adaType.ShortName(),
+		adaType.Level(), level)
 	adabasRequest := x.(*Request)
 	Central.Log.Debugf("Curent Record Buffer length : %d", adabasRequest.RecordBufferLength)
 	buffer := &(adabasRequest.FormatBuffer)
@@ -165,7 +166,9 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 					adabasRequest.RecordBufferLength += (4 + PartialLobSize)
 				} else {
 					if adaType.HasFlagSet(FlagOptionPE) {
-						fieldIndex = "1-N"
+						t := adaType.(*AdaType)
+						// fieldIndex = "1-N"
+						fieldIndex = t.Range.FormatBuffer()
 						adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
 					} else {
 						if adaType.Length() == uint32(0) {

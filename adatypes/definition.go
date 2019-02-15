@@ -661,7 +661,7 @@ func (fieldMap *fieldMap) evaluateTopLevelStructure(level uint8) {
 
 }
 
-func removeFieldTraverser(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
 	fieldMap := x.(*fieldMap)
 	Central.Log.Debugf("Check remove field on type %s with parent %s(parent remove=%v)", adaType.Name(), parentType.Name(),
 		parentType.HasFlagSet(FlagOptionToBeRemoved))
@@ -682,6 +682,9 @@ func removeFieldTraverser(adaType IAdaType, parentType IAdaType, level int, x in
 		if fq != nil {
 			newStructure.Range = *fq.fieldRange
 			Central.Log.Debugf("-------<<<< Range %s=%s", adaType.Name(), fq.fieldRange.FormatBuffer())
+		} else {
+			newStructure.Range = fieldMap.lastStructure.Range
+			Central.Log.Debugf("-------<<<< Range %s=%s", adaType.Name(), newStructure.Range.FormatBuffer())
 		}
 		Central.Log.Debugf("%s current structure parent is %s (%v)", adaType.Name(),
 			fieldMap.lastStructure.Name(), fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved))
@@ -733,6 +736,7 @@ func removeFieldTraverser(adaType IAdaType, parentType IAdaType, level int, x in
 				oldType := adaType.(*AdaSuperType)
 				*newType = *oldType
 				newType.SetParent(fieldMap.lastStructure)
+				newType.Range = fieldMap.lastStructure.Range
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
 				newType.RemoveFlag(FlagOptionToBeRemoved)
 			case FieldTypeHyperDesc:
@@ -742,6 +746,7 @@ func removeFieldTraverser(adaType IAdaType, parentType IAdaType, level int, x in
 				oldType := adaType.(*AdaType)
 				*newType = *oldType
 				newType.SetParent(fieldMap.lastStructure)
+				newType.Range = fieldMap.lastStructure.Range
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
 				Central.Log.Debugf("Add type to %s value=%p count=%d %p", fieldMap.lastStructure.Name(), fieldMap.lastStructure, fieldMap.lastStructure.NrFields(), fieldMap.lastStructure.parentType)
 				Central.Log.Debugf("Add type entry in structure %s", newType.Name())
@@ -804,7 +809,7 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 		err = ferr
 		return
 	}
-	t := TraverserMethods{EnterFunction: removeFieldTraverser}
+	t := TraverserMethods{EnterFunction: removeFieldEnterTrav}
 	err = def.TraverseTypes(t, true, fieldMap)
 	if err != nil {
 		return

@@ -152,6 +152,7 @@ type CommonType struct {
 	parentType IAdaType
 	options    uint32
 	endian     binary.ByteOrder
+	Range      AdaRange
 }
 
 // Type returns field type of the field
