@@ -679,7 +679,7 @@ func removeFieldTraverser(adaType IAdaType, parentType IAdaType, level int, x in
 		oldStructure := adaType.(*StructureType)
 		newStructure := NewStructure()
 		*newStructure = *oldStructure
-		if fq != nil {
+		if fq != nil && fq.fieldRange != nil {
 			newStructure.Range = *fq.fieldRange
 			Central.Log.Debugf("-------<<<< Range %s=%s", adaType.Name(), fq.fieldRange.FormatBuffer())
 		}
@@ -783,10 +783,8 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 				if r == nil {
 					return nil, NewGenericError(129, f)
 				}
-			} else {
-				r = NewEmptyRange()
+				Central.Log.Debugf("Add to map: %s -> %s", fl, r.FormatBuffer())
 			}
-			Central.Log.Debugf("Add to map: %s -> %s", fl, r.FormatBuffer())
 			fieldMap.set[fl] = &fieldQuery{name: fl, fieldRange: r}
 		}
 	}
