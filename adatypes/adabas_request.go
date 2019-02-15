@@ -128,7 +128,10 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			buffer.WriteString(",")
 		}
 		if adaType.HasFlagSet(FlagOptionPE) {
-			buffer.WriteString(adaType.ShortName() + "1-NC,4")
+			structureType := adaType.(*StructureType)
+			r := structureType.Range.FormatBuffer()
+
+			buffer.WriteString(adaType.ShortName() + r + "C,4")
 		} else {
 			buffer.WriteString(adaType.ShortName() + "C,4")
 		}

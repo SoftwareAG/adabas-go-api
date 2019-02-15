@@ -27,8 +27,9 @@ import (
 )
 
 const (
-	lastEntry = -2
-	noEntry   = -1
+	lastEntry  = -2
+	noEntry    = -1
+	allEntries = -124
 )
 
 // AdaRange Adabas range definition
@@ -125,4 +126,24 @@ func (adaRange *AdaRange) FormatBuffer() string {
 		}
 	}
 	return buffer.String()
+}
+
+func (adaRange *AdaRange) multiplier() int {
+	if adaRange.to == adaRange.from {
+		return 1
+	}
+	if adaRange.to != lastEntry && adaRange.from != lastEntry {
+		return adaRange.to - adaRange.from + 1
+	}
+	return allEntries
+}
+
+func (adaRange *AdaRange) index(pos uint32, max uint32) uint32 {
+	if adaRange.from == lastEntry {
+		return max
+	}
+	if adaRange.from > 0 {
+		return uint32(adaRange.from) + pos - 1
+	}
+	return pos
 }

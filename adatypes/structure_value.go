@@ -157,12 +157,19 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 	var occNumber int
 	occNumber, err = value.evaluateOccurence(helper)
 	Central.Log.Debugf("%s has %d entries", value.Type().Name(), occNumber)
+	lastNumber := uint32(occNumber)
+	if adaType.Range.multiplier() != allEntries {
+		occNumber = adaType.Range.multiplier()
+	}
+	Central.Log.Debugf("%s read %d entries", value.Type().Name(), occNumber)
 	if occNumber > 10000 {
 		Central.Log.Debugf("Too many occurences")
 		panic("Too many occurence entries")
 	}
 	for i := uint32(0); i < uint32(occNumber); i++ {
-		value.initSubValues(i, i+1, true)
+		peIndex := adaType.Range.index(i+1, lastNumber)
+		Central.Log.Debugf("Work on %d/%d", peIndex, lastNumber)
+		value.initSubValues(i, peIndex, true)
 	}
 	if occNumber == 0 {
 		Central.Log.Debugf("Skip parsing, evaluate MU for empty counter")
@@ -180,14 +187,14 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 			for i := 0; i < occNumber; i++ {
 				Central.Log.Debugf("Get occurence : %d", (i + 1))
 				v := value.Get(n, i+1)
-				v.setPeriodIndex(uint32(i + 1))
+				//v.setPeriodIndex(uint32(i + 1))
 				if v.Type().IsStructure() {
 					nrMu, nrMerr := helper.ReceiveUInt32()
 					if nrMerr != nil {
 						err = nrMerr
 						return
 					}
-					Central.Log.Debugf("Got Nr of Multiple Fields = %d creating them ...", nrMu)
+					Central.Log.Debugf("Got Nr of Multiple Fields = %d creating them ... for %d", nrMu, v.PeriodIndex())
 					/* Initialize MU elements dependent on the counter result */
 					for muIndex := uint32(0); muIndex < nrMu; muIndex++ {
 						muStructureType := v.Type().(*StructureType)
@@ -200,7 +207,8 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 						muStructure := v.(*StructureValue)
 						sv.Type().AddFlag(FlagOptionSecondCall)
 						sv.setMultipleIndex(muIndex + 1)
-						sv.setPeriodIndex(uint32(i + 1))
+						//sv.setPeriodIndex(uint32(i + 1))
+						sv.setPeriodIndex(v.PeriodIndex())
 						muStructure.addValue(sv, muIndex)
 						Central.Log.Debugf("MU index %d,%d -> %d", sv.PeriodIndex(), sv.MultipleIndex(), i)
 						Central.Log.Debugf("Due to Period and MU field, need second call call (PE/MU) for %s", value.Type().Name())
@@ -574,10 +582,10 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 			subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex(), subValue)
 		if value.Type().Type() == FieldTypePeriodGroup {
 			Central.Log.Debugf("%s: Set given Period index %d", value.Type().Name(), (curIndex + 1))
-			subValue.setPeriodIndex(curIndex + 1)
+			//subValue.setPeriodIndex(curIndex + 1)
 		} else {
 			Central.Log.Debugf("%s: Set upper Period index %d", value.Type().Name(), value.PeriodIndex())
-			subValue.setPeriodIndex(value.PeriodIndex())
+			//subValue.setPeriodIndex(value.PeriodIndex())
 		}
 		if value.Type().Type() == FieldTypeMultiplefield {
 			subValue.setMultipleIndex(curIndex + 1)
