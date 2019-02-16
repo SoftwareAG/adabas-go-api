@@ -67,7 +67,7 @@ func NewConnection(connectionString string) (*Connection, error) {
 //     acj;map;config=[<dbid>,<file>]
 func NewConnectionID(connectionString string, adabasID *ID) (connection *Connection, err error) {
 	parts := strings.Split(connectionString, ";")
-	if parts[0] != "acj" || parts[0] != "ada" {
+	if parts[0] != "acj" && parts[0] != "ada" {
 		return nil, adatypes.NewGenericError(51)
 	}
 	var adabasToData *Adabas

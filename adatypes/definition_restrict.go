@@ -19,7 +19,10 @@
 
 package adatypes
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type fieldQuery struct {
 	name       string
@@ -66,6 +69,7 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 				Central.Log.Debugf("-------<<<< Range %s=[%s,%s]", adaType.Name(),
 					fq.fieldRange[0].FormatBuffer(), fq.fieldRange[1].FormatBuffer())
 			} else {
+				fmt.Println("XXXX: ", len(fq.fieldRange), fq.fieldRange[0])
 				newStructure.MuRange = *fq.fieldRange[0]
 				Central.Log.Debugf("-------<<<< Range %s=%s", adaType.Name(), fq.fieldRange[0].FormatBuffer())
 			}
@@ -203,8 +207,10 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 					return nil, NewGenericError(129, f)
 				}
 				Central.Log.Debugf("Add to map: %s -> %s", fl, r.FormatBuffer())
+				fieldMap.set[fl] = &fieldQuery{name: fl, fieldRange: []*AdaRange{r}}
+			} else {
+				fieldMap.set[fl] = &fieldQuery{name: fl}
 			}
-			fieldMap.set[fl] = &fieldQuery{name: fl, fieldRange: []*AdaRange{r}}
 		}
 	}
 	fieldMap.parentStructure = NewStructure()
