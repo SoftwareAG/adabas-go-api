@@ -603,13 +603,13 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 		}
 		Central.Log.Debugf("Add sub value new %s[%d:%d] %T",
 			subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex(), subValue)
-		if value.Type().Type() == FieldTypePeriodGroup {
-			Central.Log.Debugf("%s: Set given Period index %d", value.Type().Name(), (curIndex + 1))
-			//subValue.setPeriodIndex(curIndex + 1)
-		} else {
-			Central.Log.Debugf("%s: Set upper Period index %d", value.Type().Name(), value.PeriodIndex())
-			//subValue.setPeriodIndex(value.PeriodIndex())
-		}
+		// if value.Type().Type() == FieldTypePeriodGroup {
+		// 	Central.Log.Debugf("%s: Set given Period index %d", value.Type().Name(), (curIndex + 1))
+		// 	//subValue.setPeriodIndex(curIndex + 1)
+		// } else {
+		// 	Central.Log.Debugf("%s: Set upper Period index %d", value.Type().Name(), value.PeriodIndex())
+		// 	//subValue.setPeriodIndex(value.PeriodIndex())
+		// }
 		// if value.Type().Type() == FieldTypeMultiplefield {
 		// 	subValue.setMultipleIndex(curIndex + 1)
 		// }
