@@ -330,6 +330,7 @@ func NewStructureEmpty(fType FieldType, name string, occByteShort int16,
 		},
 	}
 	st.adaptSubFields()
+	Central.Log.Debugf("Got structure list Range [%s,%s]", st.PeRange.FormatBuffer(), st.MuRange.FormatBuffer())
 	return st
 }
 
@@ -358,6 +359,7 @@ func NewStructureList(fType FieldType, name string, occByteShort int16, subField
 	default:
 	}
 	st.adaptSubFields()
+	// Central.Log.Debugf("Got structure list Range %s %s", st.PeRange.FormatBuffer(), st.MuRange.FormatBuffer())
 
 	return st
 }
