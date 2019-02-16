@@ -162,7 +162,7 @@ func TestConnectionSimpleTypes(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
+	connection, err := NewConnection("ada;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
 	}

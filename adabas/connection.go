@@ -67,7 +67,7 @@ func NewConnection(connectionString string) (*Connection, error) {
 //     acj;map;config=[<dbid>,<file>]
 func NewConnectionID(connectionString string, adabasID *ID) (connection *Connection, err error) {
 	parts := strings.Split(connectionString, ";")
-	if parts[0] != "acj" {
+	if parts[0] != "acj" || parts[0] != "ada" {
 		return nil, adatypes.NewGenericError(51)
 	}
 	var adabasToData *Adabas
@@ -81,7 +81,7 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 	for _, p := range parts {
 		adatypes.Central.Log.Debugf("Work on %s", p)
 		switch {
-		case p == "acj":
+		case p == "acj" || p == "ada":
 		case strings.HasPrefix(p, "target="):
 			target := strings.Split(parts[1], "=")
 			adatypes.Central.Log.Debugf("Connection to target : %s", target[1])

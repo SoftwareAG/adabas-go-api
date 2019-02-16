@@ -35,7 +35,7 @@ func TestConnectionComplexSearch(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	connection, err := NewConnection("acj;target=" + adabasModDBIDs + ";auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
+	connection, err := NewConnection("ada;target=" + adabasModDBIDs + ";auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
 	if !assert.NoError(t, err) {
 		return
 	}
