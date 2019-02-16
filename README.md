@@ -16,6 +16,8 @@
 
 This is the Adabas API for the programming language Go. It supports data access to the Software AG Adabas database. You can find detailed overview about the design and technical implementation [here](.//doc//Overview.md)
 
+For details have a look at the API documentation. It can be referenced here: https://godoc.org/github.com/SoftwareAG/adabas-go-api/adabas
+
 ## Usage
 
 Adabas Go API can be downloaded using the `go get` command:
