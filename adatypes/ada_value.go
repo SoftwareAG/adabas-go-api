@@ -395,6 +395,7 @@ func (adavalue adaValue) MultipleIndex() uint32 {
 }
 
 func (adavalue *adaValue) setMultipleIndex(index uint32) {
+	Central.Log.Debugf("Set %s multiple index = %d -> %d", adavalue.Type().Name(), adavalue.MultipleIndex(), index)
 	adavalue.muIndex = index
 }
 

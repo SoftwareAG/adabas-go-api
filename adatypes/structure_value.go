@@ -68,16 +68,16 @@ func (value *StructureValue) initSubValues(index uint32, peIndex uint32, initMuF
  */
 func (value *StructureValue) initMultipleSubValues(index uint32, peIndex uint32, muIndex uint32, initMuFields bool) {
 	subType := value.adatype.(*StructureType)
-	Central.Log.Debugf("Init sub values for %s[%d,%d] -> %d,%d", value.adatype.Name(), value.PeriodIndex(),
-		value.MultipleIndex(), peIndex, index)
+	Central.Log.Debugf("Init sub values for %s[%d,%d] -> |%d,%d| - %d", value.adatype.Name(), value.PeriodIndex(),
+		value.MultipleIndex(), peIndex, muIndex, index)
 
 	if value.Type().Type() != FieldTypeMultiplefield || initMuFields {
 		for _, st := range subType.SubTypes {
 			if st.HasFlagSet(FlagOptionMUGhost) && !initMuFields {
 				continue
 			}
-			Central.Log.Debugf("Init sub structure %s(%s) for structure %s period index=%d", st.Name(), st.Type().name(),
-				value.Type().Name(), peIndex)
+			Central.Log.Debugf("Init sub structure %s(%s) for structure %s period index=%d multiple index=%d",
+				st.Name(), st.Type().name(), value.Type().Name(), peIndex, muIndex)
 			stv, err := st.Value()
 			if err != nil {
 				Central.Log.Debugf("Error %v", err)
@@ -308,9 +308,10 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 		if adaType.MuRange.multiplier() != allEntries {
 			occNumber = adaType.MuRange.multiplier()
 		}
+		Central.Log.Debugf("Defined range for values: %s", adaType.MuRange.FormatBuffer())
 		for i := uint32(0); i < uint32(occNumber); i++ {
 			muIndex := adaType.MuRange.index(i+1, lastNumber)
-			Central.Log.Debugf("Work on MU index = %d/%d", muIndex, lastNumber)
+			Central.Log.Debugf("%d. Work on MU index = %d/%d", i, muIndex, lastNumber)
 			value.initMultipleSubValues(i, value.peIndex, muIndex, true)
 		}
 		Central.Log.Debugf("Init multiple fields sub values finished")
@@ -609,9 +610,9 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 			Central.Log.Debugf("%s: Set upper Period index %d", value.Type().Name(), value.PeriodIndex())
 			//subValue.setPeriodIndex(value.PeriodIndex())
 		}
-		if value.Type().Type() == FieldTypeMultiplefield {
-			subValue.setMultipleIndex(curIndex + 1)
-		}
+		// if value.Type().Type() == FieldTypeMultiplefield {
+		// 	subValue.setMultipleIndex(curIndex + 1)
+		// }
 		element.valueMap[fmt.Sprintf("%s-%d-%d", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())] = subValue
 	}
 	if Central.IsDebugLevel() {
