@@ -105,7 +105,8 @@ type StructureType struct {
 	occ       int
 	condition FieldCondition
 	SubTypes  []IAdaType
-	Range     AdaRange
+	PeRange   AdaRange
+	MuRange   AdaRange
 }
 
 // NewType Define new type with length equal 1
@@ -126,7 +127,8 @@ func NewType(fType FieldType, name string) *AdaType {
 		name:      name,
 		flags:     uint8(1 << FlagOptionToBeRemoved),
 		shortName: name,
-		Range:     *NewEmptyRange(),
+		peRange:   *NewEmptyRange(),
+		muRange:   *NewEmptyRange(),
 		length:    length,
 	}}
 }
@@ -297,12 +299,18 @@ func NewStructure() *StructureType {
 func NewStructureEmpty(fType FieldType, name string, occByteShort int16,
 	level uint8) *StructureType {
 	Central.Log.Debugf("Create empty structure list %s with type %d ", name, fType)
-	var r *AdaRange
+	var pr *AdaRange
+	var mr *AdaRange
 	switch fType {
-	case FieldTypePeriodGroup, FieldTypeMultiplefield:
-		r = NewRange(1, lastEntry)
+	case FieldTypePeriodGroup:
+		pr = NewRange(1, lastEntry)
+		mr = NewEmptyRange()
+	case FieldTypeMultiplefield:
+		pr = NewEmptyRange()
+		mr = NewRange(1, lastEntry)
 	default:
-		r = NewEmptyRange()
+		pr = NewEmptyRange()
+		mr = NewEmptyRange()
 	}
 	st := &StructureType{
 		CommonType: CommonType{
@@ -313,8 +321,9 @@ func NewStructureEmpty(fType FieldType, name string, occByteShort int16,
 			length:    0,
 			level:     level,
 		},
-		occ:   int(occByteShort),
-		Range: *r,
+		occ:     int(occByteShort),
+		PeRange: *pr,
+		MuRange: *mr,
 		condition: FieldCondition{
 			lengthFieldIndex: -1,
 			refField:         NoReferenceField,
@@ -326,7 +335,7 @@ func NewStructureEmpty(fType FieldType, name string, occByteShort int16,
 
 // NewStructureList Creates a new object of structured list types
 func NewStructureList(fType FieldType, name string, occByteShort int16, subFields []IAdaType) *StructureType {
-	Central.Log.Debugf("Create new structure list %s types=%d type=%d", name, len(subFields), fType)
+	Central.Log.Debugf("Create new structure list %s types=%d type=%s", name, len(subFields), fType.name())
 	st := &StructureType{
 		CommonType: CommonType{fieldType: fType,
 			name:      name,
@@ -339,8 +348,14 @@ func NewStructureList(fType FieldType, name string, occByteShort int16, subField
 			lengthFieldIndex: -1,
 			refField:         NoReferenceField,
 		},
-		Range:    *NewRange(1, lastEntry),
 		SubTypes: subFields,
+	}
+	switch fType {
+	case FieldTypePeriodGroup:
+		st.PeRange = *NewRange(1, lastEntry)
+	case FieldTypeMultiplefield:
+		st.MuRange = *NewRange(1, lastEntry)
+	default:
 	}
 	st.adaptSubFields()
 
@@ -503,7 +518,7 @@ func (adaType *StructureType) RemoveField(fieldType *CommonType) {
 
 // SetRange set Adabas range
 func (adaType *StructureType) SetRange(r *AdaRange) {
-	adaType.Range = *r
+	adaType.PeRange = *r
 }
 
 // Option return structure option as a string

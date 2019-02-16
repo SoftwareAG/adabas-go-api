@@ -377,7 +377,7 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 		return
 	}
 	adabasRequest.Multifetch = request.Multifetch
-	if request.Limit < uint64(request.Multifetch) {
+	if request.Limit != 0 && request.Limit < uint64(request.Multifetch) {
 		adabasRequest.Multifetch = uint32(request.Limit)
 	}
 	if resultParser == nil {

@@ -258,3 +258,55 @@ func ExampleConnection_PeriodGroupLastEntry() {
 	//     BONUS[02,01] = > 1948 <
 
 }
+
+func ExampleConnection_MultiplefieldIndex() {
+	f, _ := initLogWithFile("connection.log")
+	defer f.Close()
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if cerr != nil {
+		fmt.Println("Error new connection", cerr)
+		return
+	}
+	defer connection.Close()
+	openErr := connection.Open()
+	if openErr != nil {
+		fmt.Println("Error open connection", cerr)
+		return
+	}
+
+	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if err != nil {
+		fmt.Println("Error create request", err)
+		return
+	}
+	err = request.QueryFields("PERSONNEL-ID,ADDRESS-LINE[2]")
+	if err != nil {
+		fmt.Println("Query fields error", err)
+		return
+	}
+	request.Limit = 0
+	var result *Response
+	result, err = request.ReadLogicalWith("PERSONNEL-ID=[11100303:11100304]")
+	if err != nil {
+		fmt.Println("Error create request", err)
+		return
+	}
+	err = result.DumpValues()
+	if err != nil {
+		fmt.Println("Error dump values", err)
+	}
+
+	// Output: Dump all result values
+	// Record Isn: 0252
+	//   PERSONNEL-ID = > 11100303 <
+	//   FULL-ADDRESS = [ 1 ]
+	//    ADDRESS-LINE = [ 1 ]
+	//     ADDRESS-LINE[02] = > WIESENGRUND 10       <
+	// Record Isn: 0253
+	//   PERSONNEL-ID = > 11100304 <
+	//   FULL-ADDRESS = [ 1 ]
+	//    ADDRESS-LINE = [ 1 ]
+	//     ADDRESS-LINE[02] = > MANDELA-WEG 8        <
+
+}

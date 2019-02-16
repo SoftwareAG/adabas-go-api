@@ -60,6 +60,13 @@ func newStructure(initType IAdaType) *StructureValue {
  * Init sub structures with empty value fields
  */
 func (value *StructureValue) initSubValues(index uint32, peIndex uint32, initMuFields bool) {
+	value.initMultipleSubValues(index, peIndex, 0, initMuFields)
+}
+
+/*
+ * Init sub structures with empty value fields
+ */
+func (value *StructureValue) initMultipleSubValues(index uint32, peIndex uint32, muIndex uint32, initMuFields bool) {
 	subType := value.adatype.(*StructureType)
 	Central.Log.Debugf("Init sub values for %s[%d,%d] -> %d,%d", value.adatype.Name(), value.PeriodIndex(),
 		value.MultipleIndex(), peIndex, index)
@@ -77,6 +84,7 @@ func (value *StructureValue) initSubValues(index uint32, peIndex uint32, initMuF
 				return
 			}
 			stv.setPeriodIndex(peIndex)
+			stv.setMultipleIndex(muIndex)
 			Central.Log.Debugf("Add to %s[%d,%d] element %s[%d,%d] --> index=%d", value.Type().Name(), value.PeriodIndex(),
 				value.MultipleIndex(), stv.Type().Name(),
 				stv.PeriodIndex(), stv.MultipleIndex(), peIndex)
@@ -158,8 +166,8 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 	occNumber, err = value.evaluateOccurence(helper)
 	Central.Log.Debugf("%s has %d entries", value.Type().Name(), occNumber)
 	lastNumber := uint32(occNumber)
-	if adaType.Range.multiplier() != allEntries {
-		occNumber = adaType.Range.multiplier()
+	if adaType.PeRange.multiplier() != allEntries {
+		occNumber = adaType.PeRange.multiplier()
 	}
 	Central.Log.Debugf("%s read %d entries", value.Type().Name(), occNumber)
 	if occNumber > 10000 {
@@ -167,7 +175,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		panic("Too many occurence entries")
 	}
 	for i := uint32(0); i < uint32(occNumber); i++ {
-		peIndex := adaType.Range.index(i+1, lastNumber)
+		peIndex := adaType.PeRange.index(i+1, lastNumber)
 		Central.Log.Debugf("Work on %d/%d", peIndex, lastNumber)
 		value.initSubValues(i, peIndex, true)
 	}
@@ -286,12 +294,26 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 	}
 	Central.Log.Debugf("Occurence %d period index=%d", occNumber, value.peIndex)
 	switch value.Type().Type() {
-	case FieldTypePeriodGroup, FieldTypeMultiplefield:
-		Central.Log.Debugf("Init values")
+	case FieldTypePeriodGroup:
+		Central.Log.Debugf("Init period group values")
 		for i := uint32(0); i < uint32(occNumber); i++ {
 			value.initSubValues(i, i+1, true)
 		}
-		Central.Log.Debugf("Init values finished")
+		Central.Log.Debugf("Init period group sub values finished")
+		return
+	case FieldTypeMultiplefield:
+		Central.Log.Debugf("Init multiple field sub values")
+		lastNumber := uint32(occNumber)
+		adaType := value.Type().(*StructureType)
+		if adaType.MuRange.multiplier() != allEntries {
+			occNumber = adaType.MuRange.multiplier()
+		}
+		for i := uint32(0); i < uint32(occNumber); i++ {
+			muIndex := adaType.MuRange.index(i+1, lastNumber)
+			Central.Log.Debugf("Work on MU index = %d/%d", muIndex, lastNumber)
+			value.initMultipleSubValues(i, value.peIndex, muIndex, true)
+		}
+		Central.Log.Debugf("Init multiple fields sub values finished")
 		return
 	case FieldTypeStructure:
 	default:
@@ -517,7 +539,7 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 				}
 				buffer.WriteString(value.Type().ShortName() + "C,4")
 				if !value.Type().HasFlagSet(FlagOptionMU) {
-					r := structureType.Range.FormatBuffer()
+					r := structureType.PeRange.FormatBuffer()
 					buffer.WriteString("," + value.Type().ShortName() + r)
 				}
 				recordBufferLength += option.multipleSize

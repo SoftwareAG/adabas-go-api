@@ -112,7 +112,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			buffer.WriteString(",")
 		}
 		structureType := adaType.(*StructureType)
-		r := structureType.Range.FormatBuffer()
+		r := structureType.PeRange.FormatBuffer()
 		Central.Log.Debugf("------->>>>>> Range %s=%s%s", structureType.name, structureType.shortName, r)
 		buffer.WriteString(adaType.ShortName() + "C,4")
 		adabasRequest.RecordBufferLength += 4
@@ -129,7 +129,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 		}
 		if adaType.HasFlagSet(FlagOptionPE) {
 			structureType := adaType.(*StructureType)
-			r := structureType.Range.FormatBuffer()
+			r := structureType.PeRange.FormatBuffer()
 
 			buffer.WriteString(adaType.ShortName() + r + "C,4")
 		} else {
@@ -142,7 +142,9 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			}
 			strType := adaType.(*StructureType)
 			subType := strType.SubTypes[0]
-			buffer.WriteString(fmt.Sprintf("%s1-N,%d,%s", adaType.ShortName(), subType.Length(), subType.Type().FormatCharacter()))
+			r := strType.MuRange.FormatBuffer()
+			Central.Log.Debugf("Multiple range: %s", r)
+			buffer.WriteString(fmt.Sprintf("%s%s,%d,%s", adaType.ShortName(), r, subType.Length(), subType.Type().FormatCharacter()))
 			adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
 		}
 	case FieldTypeSuperDesc, FieldTypeHyperDesc:
@@ -171,7 +173,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 					if adaType.HasFlagSet(FlagOptionPE) {
 						t := adaType.(*AdaType)
 						// fieldIndex = "1-N"
-						fieldIndex = t.Range.FormatBuffer()
+						fieldIndex = t.peRange.FormatBuffer()
 						adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
 					} else {
 						if adaType.Length() == uint32(0) {

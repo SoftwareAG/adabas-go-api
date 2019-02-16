@@ -46,6 +46,7 @@ func TestRangeInt(t *testing.T) {
 	r = NewRange(3, 3)
 	assert.Equal(t, "3", r.FormatBuffer())
 	assert.Equal(t, 1, r.multiplier())
+	assert.Equal(t, uint32(3), r.index(1, 10))
 	r = NewRange(3, 2)
 	assert.Nil(t, r)
 	r = NewSingleRange(2)

@@ -1,0 +1,217 @@
+package adatypes
+
+type search struct {
+	name    string
+	adaType IAdaType
+}
+
+type searchByName struct {
+	name    string
+	peIndex uint32
+	muIndex uint32
+	found   IAdaValue
+	grFound IAdaValue
+}
+
+func searchValueByName(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
+	search := x.(*searchByName)
+	Central.Log.Debugf("Search value by name %s and index %d:%d, found %s %d/%d", search.name, search.peIndex,
+		search.muIndex, adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex())
+	if adaValue.Type().Name() == search.name {
+		if search.peIndex == adaValue.PeriodIndex() &&
+			search.muIndex == adaValue.MultipleIndex() {
+			search.found = adaValue
+			return EndTraverser, nil
+		}
+		if adaValue.Type().IsStructure() {
+			search.grFound = adaValue
+		}
+	}
+	return Continue, nil
+}
+
+func searchValueByNameEnd(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
+	search := x.(*searchByName)
+	Central.Log.Debugf("Search end value by name %s and index %d:%d, found %s %d/%d", search.name, search.peIndex,
+		search.muIndex, adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex())
+	if adaValue.Type().Name() == search.name {
+		if search.peIndex == adaValue.PeriodIndex() && adaValue.Type().IsStructure() {
+			search.grFound = adaValue
+			return EndTraverser, nil
+		}
+	}
+	return Continue, nil
+}
+
+// Search search for a specific field structure in the tree
+func (def *Definition) Search(fieldName string) IAdaValue {
+	x := searchByName{name: fieldName}
+	t := TraverserValuesMethods{EnterFunction: searchValueByName}
+	_, err := def.TraverseValues(t, &x)
+	if err == nil {
+		return x.found
+	}
+
+	return nil
+}
+
+// SearchByIndex search for a specific field structure in the tree of an period group or multiple field
+func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bool) (value IAdaValue, err error) {
+	var t IAdaType
+	t, err = def.SearchType(fieldName)
+	if err != nil {
+		return
+	}
+
+	// Receive main parent
+	c := t
+	for c.GetParent() != nil && c.GetParent().Name() != "" {
+		c = c.GetParent()
+	}
+
+	// Main group name if period group use other
+	Central.Log.Debugf("Main group parent name : %s", c.Name())
+	if c.Type() == FieldTypePeriodGroup {
+		var v IAdaValue
+		for _, v = range def.Values {
+			if v.Type().Name() == c.Name() {
+				break
+			}
+		}
+		strv := v.(*StructureValue)
+		if index == nil || len(index) == 0 {
+			err = NewGenericError(121)
+			return
+		}
+		Central.Log.Debugf("Use index for field %v", index[0])
+		element := strv.elementMap[index[0]-1]
+		if element == nil {
+			if create {
+				Central.Log.Debugf("Create new Element %d", index[0])
+				strv.initSubValues(index[0]-1, index[0], true)
+				element = strv.elementMap[index[0]-1]
+			} else {
+				err = NewGenericError(122)
+				return
+			}
+		}
+		Central.Log.Debugf("Element : %#v", element)
+		for _, v = range element.Values {
+			x := searchByName{name: fieldName}
+			switch {
+			case index == nil:
+			case len(index) > 1:
+				x.peIndex = index[0]
+				x.muIndex = index[1]
+			case len(index) > 0:
+				x.peIndex = index[0]
+			default:
+			}
+			tvm := TraverserValuesMethods{EnterFunction: searchValueByName, LeaveFunction: searchValueByNameEnd}
+			_, err = strv.Traverse(tvm, &x)
+			if err == nil {
+				if x.found != nil {
+					Central.Log.Debugf("Found value searching %s under %s", x.found.Type().Name(), strv.Type().Name())
+					if x.found.Type().Type() == FieldTypeMultiplefield {
+						if len(index) < 2 {
+							return nil, NewGenericError(61)
+						}
+						strv := x.found.(*StructureValue)
+						element := strv.elementMap[index[1]]
+						if element == nil {
+							err = NewGenericError(123)
+							return
+						}
+					}
+					value = x.found
+					Central.Log.Debugf("Found element: %v", value.Type().Name())
+					return
+				}
+				if x.grFound != nil {
+					Central.Log.Debugf("Element not found, but group found: %v[%d:%d]", x.grFound.Type().Name(),
+						x.grFound.PeriodIndex(), x.grFound.MultipleIndex())
+					if create {
+						strv := x.grFound.(*StructureValue)
+						st := x.grFound.Type().(*StructureType)
+						value, err = st.SubTypes[0].Value()
+						if err != nil {
+							Central.Log.Debugf("Error creating sub types %v", err)
+							value = nil
+							return
+						}
+						strv.addValue(value, index[0])
+						value.setPeriodIndex(index[0])
+						value.setMultipleIndex(index[1])
+						Central.Log.Debugf("New MU value index %d:%d", value.PeriodIndex(), value.MultipleIndex())
+						return
+
+					}
+
+				}
+			}
+			Central.Log.Debugf("Not found or error searching: %v", err)
+		}
+	} else {
+		// No period group
+		Central.Log.Debugf("Search index for structure %s %v", fieldName, len(index))
+		v := def.Search(fieldName)
+		if v == nil {
+			err = NewGenericError(124)
+			return
+		}
+		if v.Type().IsStructure() {
+			strv := v.(*StructureValue)
+			element := strv.elementMap[index[0]]
+			if element == nil {
+				Central.Log.Debugf("Index on %s no element on index %v", v.Type().Name(), index[0])
+				err = NewGenericError(123)
+				return
+			}
+			Central.Log.Debugf("Index on %s found element on index %v", v.Type().Name(), index[0])
+			value = element.Values[0]
+		} else {
+			value = v
+			Central.Log.Debugf("Found value %s", value.Type().Name())
+		}
+		return
+	}
+
+	err = NewGenericError(125)
+	return
+}
+
+func findType(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+	search := x.(*search)
+	Central.Log.Debugf("Check search %s:%s search=%s", adaType.Name(), adaType.ShortName(), search.name)
+	if adaType.Name() == search.name {
+		search.adaType = adaType
+		Central.Log.Debugf("Found type ...")
+		return NewGenericError(126, search.name)
+	}
+	return nil
+}
+
+// SearchType search for a type definition in the tree
+func (def *Definition) SearchType(fieldName string) (adaType IAdaType, err error) {
+	search := &search{name: fieldName}
+	level := 1
+	t := TraverserMethods{EnterFunction: findType}
+	if def.fileFieldTree == nil {
+		err = def.activeFieldTree.Traverse(t, level+1, search)
+	} else {
+		err = def.fileFieldTree.Traverse(t, level+1, search)
+	}
+	if err == nil {
+		err = NewGenericError(41, fieldName)
+		return
+	}
+	err = nil
+	if search.adaType == nil {
+		Central.Log.Debugf("AdaType not found ", fieldName)
+		err = NewGenericError(42, fieldName)
+		return
+	}
+	Central.Log.Debugf("Found adaType for search field %s -> %s", fieldName, search.adaType)
+	adaType = search.adaType
+	return
+}
