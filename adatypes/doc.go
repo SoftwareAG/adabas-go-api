@@ -17,34 +17,10 @@
 *
  */
 
-package adabas
-
-import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"os"
-
-	"github.com/SoftwareAG/adabas-go-api/adatypes"
-)
-
-// MapFile parse map JSON import/export files
-type MapFile struct {
-	Maps []*Map `json:"Maps"`
-}
-
-// ParseJSONFileForFields Parse JSON map export file
-func ParseJSONFileForFields(file *os.File) (mapList []*Map, err error) {
-
-	byteValue, _ := ioutil.ReadAll(file)
-
-	var mapFile MapFile
-	err = json.Unmarshal([]byte(byteValue), &mapFile)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	adatypes.Central.Log.Debugf("Number map entries %d", len(mapFile.Maps))
-	mapList = mapFile.Maps
-	return
-}
+// Package adatypes is used to define types use for parsing Adabas field
+// definitions tables.
+// It contains Adabas and Natural DDM like Map definitions. It converts Adabas types
+// to GO types and vice versa.
+// In addition it contains basic functions used to handle logging facilities and
+// Adabas buffer parsing and generation.
+package adatypes

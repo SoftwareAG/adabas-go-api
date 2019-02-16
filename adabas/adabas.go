@@ -17,16 +17,6 @@
 *
  */
 
-// Package adabas contains Adabas specific Adabas buffer conversion and call functions.
-// The Adabas file metadata will be read and requested field content is returned.
-// The package provides three type of access to the database.
-//
-//  1. The local access using the Adabas client native library. This uses the classic
-//     inter process communication method
-//  2. The Entire Network remote data access using the Entire Network server and corresponding
-//     infrastructure
-//  3. The new Adabas TCP/IP communication for a direct point-to-point access to the database
-//
 package adabas
 
 import (

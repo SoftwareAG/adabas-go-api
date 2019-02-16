@@ -16,7 +16,8 @@
 *   limitations under the License.
 *
  */
- package adabas
+
+package adabas
 
 import (
 	"bytes"

@@ -16,7 +16,8 @@
 *   limitations under the License.
 *
  */
- package adatypes
+
+package adatypes
 
 import (
 	"os"

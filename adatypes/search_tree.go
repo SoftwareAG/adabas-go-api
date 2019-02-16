@@ -17,8 +17,6 @@
 *
  */
 
-// Package adatypes is used to define types use to parse field definitions tables.
-// It converts Adabas types to GO types and vice versa
 package adatypes
 
 import (
