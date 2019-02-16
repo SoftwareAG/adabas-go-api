@@ -55,6 +55,7 @@ type IAdaType interface {
 	Value() (IAdaValue, error)
 	Length() uint32
 	SetLength(uint32)
+	SetRange(*AdaRange)
 	IsStructure() bool
 	Level() uint8
 	SetLevel(uint8)
@@ -105,8 +106,8 @@ type StructureType struct {
 	occ       int
 	condition FieldCondition
 	SubTypes  []IAdaType
-	PeRange   AdaRange
-	MuRange   AdaRange
+	// peRange   AdaRange
+	// muRange   AdaRange
 }
 
 // NewType Define new type with length equal 1
@@ -319,18 +320,18 @@ func NewStructureEmpty(fType FieldType, name string, occByteShort int16,
 			flags:     uint8(1 << FlagOptionToBeRemoved),
 			shortName: name,
 			length:    0,
+			peRange:   *pr,
+			muRange:   *mr,
 			level:     level,
 		},
-		occ:     int(occByteShort),
-		PeRange: *pr,
-		MuRange: *mr,
+		occ: int(occByteShort),
 		condition: FieldCondition{
 			lengthFieldIndex: -1,
 			refField:         NoReferenceField,
 		},
 	}
 	st.adaptSubFields()
-	Central.Log.Debugf("Got structure list Range [%s,%s]", st.PeRange.FormatBuffer(), st.MuRange.FormatBuffer())
+	Central.Log.Debugf("Got structure list Range [%s,%s]", st.peRange.FormatBuffer(), st.muRange.FormatBuffer())
 	return st
 }
 
@@ -353,13 +354,13 @@ func NewStructureList(fType FieldType, name string, occByteShort int16, subField
 	}
 	switch fType {
 	case FieldTypePeriodGroup:
-		st.PeRange = *NewRange(1, lastEntry)
+		st.peRange = *NewRange(1, lastEntry)
 	case FieldTypeMultiplefield:
-		st.MuRange = *NewRange(1, lastEntry)
+		st.muRange = *NewRange(1, lastEntry)
 	default:
 	}
 	st.adaptSubFields()
-	// Central.Log.Debugf("Got structure list Range %s %s", st.PeRange.FormatBuffer(), st.MuRange.FormatBuffer())
+	// Central.Log.Debugf("Got structure list Range %s %s", st.peRange.FormatBuffer(), st.muRange.FormatBuffer())
 
 	return st
 }
@@ -491,6 +492,7 @@ func (adaType *StructureType) AddField(fieldType IAdaType) {
 	Central.Log.Debugf("Add sub field %s on parent %s", fieldType.Name(), adaType.Name())
 	fieldType.SetLevel(adaType.level + 1)
 	fieldType.SetParent(adaType)
+	fieldType.SetRange(&adaType.peRange)
 	Central.Log.Debugf("Parent of %s is %s ", fieldType.Name(), fieldType.GetParent())
 	if adaType.HasFlagSet(FlagOptionPE) {
 		Central.Log.Debugf("Add sub field PE of parent %s field %s", adaType.Name(), fieldType.Name())
@@ -520,7 +522,7 @@ func (adaType *StructureType) RemoveField(fieldType *CommonType) {
 
 // SetRange set Adabas range
 func (adaType *StructureType) SetRange(r *AdaRange) {
-	adaType.PeRange = *r
+	adaType.peRange = *r
 }
 
 // Option return structure option as a string

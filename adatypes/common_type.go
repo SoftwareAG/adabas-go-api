@@ -199,6 +199,11 @@ func (commonType *CommonType) SetEndian(endian binary.ByteOrder) {
 	commonType.endian = endian
 }
 
+// SetRange set Adabas range
+func (commonType *CommonType) SetRange(r *AdaRange) {
+	commonType.peRange = *r
+}
+
 // SetParent set the parent of the type
 func (commonType *CommonType) SetParent(parentType IAdaType) {
 	if parentType != nil {

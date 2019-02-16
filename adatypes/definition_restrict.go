@@ -63,27 +63,27 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 		switch adaType.Type() {
 		case FieldTypeMultiplefield:
 			if adaType.HasFlagSet(FlagOptionMUGhost) {
-				newStructure.PeRange = *fq.fieldRange[0]
-				newStructure.MuRange = *fq.fieldRange[1]
+				newStructure.peRange = *fq.fieldRange[0]
+				newStructure.muRange = *fq.fieldRange[1]
 				Central.Log.Debugf("-------<<<< PE/MU Range %s=[%s,%s]", adaType.Name(),
 					fq.fieldRange[0].FormatBuffer(), fq.fieldRange[1].FormatBuffer())
 			} else {
-				newStructure.MuRange = *fq.fieldRange[0]
+				newStructure.muRange = *fq.fieldRange[0]
 				Central.Log.Debugf("-------<<<< MU Range %s=%s", adaType.Name(), fq.fieldRange[0].FormatBuffer())
 			}
 		case FieldTypePeriodGroup:
-			newStructure.PeRange = *fq.fieldRange[0]
+			newStructure.peRange = *fq.fieldRange[0]
 			Central.Log.Debugf("-------<<<< PE Range %s=%s", adaType.Name(), fq.fieldRange[0].FormatBuffer())
 		default:
 		}
 	} else {
-		Central.Log.Debugf("-------<<<< Last Range %s=%s %s", adaType.Name(), fieldMap.lastStructure.PeRange.FormatBuffer(),
-			newStructure.PeRange.FormatBuffer())
+		Central.Log.Debugf("-------<<<< Last Range %s=%s %s", adaType.Name(), fieldMap.lastStructure.peRange.FormatBuffer(),
+			newStructure.peRange.FormatBuffer())
 		if parentLast {
-			newStructure.PeRange = fieldMap.lastStructure.PeRange
-			newStructure.MuRange = fieldMap.lastStructure.MuRange
+			newStructure.peRange = fieldMap.lastStructure.peRange
+			newStructure.muRange = fieldMap.lastStructure.muRange
 		}
-		Central.Log.Debugf("-------<<<< Org. Range %s=%s", adaType.Name(), newStructure.PeRange.FormatBuffer())
+		Central.Log.Debugf("-------<<<< Org. Range %s=%s", adaType.Name(), newStructure.peRange.FormatBuffer())
 	}
 	Central.Log.Debugf("%s current structure parent is %s (%v)", adaType.Name(),
 		fieldMap.lastStructure.Name(), fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved))
@@ -154,8 +154,8 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 				oldType := adaType.(*AdaSuperType)
 				*newType = *oldType
 				newType.SetParent(fieldMap.lastStructure)
-				newType.peRange = fieldMap.lastStructure.PeRange
-				newType.muRange = fieldMap.lastStructure.MuRange
+				newType.peRange = fieldMap.lastStructure.peRange
+				newType.muRange = fieldMap.lastStructure.muRange
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
 				newType.RemoveFlag(FlagOptionToBeRemoved)
 			case FieldTypeHyperDesc:
@@ -165,7 +165,7 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 				oldType := adaType.(*AdaType)
 				*newType = *oldType
 				newType.SetParent(fieldMap.lastStructure)
-				newType.peRange = fieldMap.lastStructure.PeRange
+				newType.peRange = fieldMap.lastStructure.peRange
 				newType.muRange = fieldMap.lastStructure.muRange
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
 				Central.Log.Debugf("Add type to %s value=%p count=%d %p", fieldMap.lastStructure.Name(), fieldMap.lastStructure, fieldMap.lastStructure.NrFields(), fieldMap.lastStructure.parentType)

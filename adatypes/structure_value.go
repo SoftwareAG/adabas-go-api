@@ -166,8 +166,8 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 	occNumber, err = value.evaluateOccurence(helper)
 	Central.Log.Debugf("%s has %d entries", value.Type().Name(), occNumber)
 	lastNumber := uint32(occNumber)
-	if adaType.PeRange.multiplier() != allEntries {
-		occNumber = adaType.PeRange.multiplier()
+	if adaType.peRange.multiplier() != allEntries {
+		occNumber = adaType.peRange.multiplier()
 	}
 	Central.Log.Debugf("%s read %d entries", value.Type().Name(), occNumber)
 	if occNumber > 10000 {
@@ -175,7 +175,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		panic("Too many occurence entries")
 	}
 	for i := uint32(0); i < uint32(occNumber); i++ {
-		peIndex := adaType.PeRange.index(i+1, lastNumber)
+		peIndex := adaType.peRange.index(i+1, lastNumber)
 		Central.Log.Debugf("Work on %d/%d", peIndex, lastNumber)
 		value.initSubValues(i, peIndex, true)
 	}
@@ -305,12 +305,12 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 		Central.Log.Debugf("Init multiple field sub values")
 		lastNumber := uint32(occNumber)
 		adaType := value.Type().(*StructureType)
-		if adaType.MuRange.multiplier() != allEntries {
-			occNumber = adaType.MuRange.multiplier()
+		if adaType.muRange.multiplier() != allEntries {
+			occNumber = adaType.muRange.multiplier()
 		}
-		Central.Log.Debugf("Defined range for values: %s", adaType.MuRange.FormatBuffer())
+		Central.Log.Debugf("Defined range for values: %s", adaType.muRange.FormatBuffer())
 		for i := uint32(0); i < uint32(occNumber); i++ {
-			muIndex := adaType.MuRange.index(i+1, lastNumber)
+			muIndex := adaType.muRange.index(i+1, lastNumber)
 			Central.Log.Debugf("%d. Work on MU index = %d/%d", i, muIndex, lastNumber)
 			value.initMultipleSubValues(i, value.peIndex, muIndex, true)
 		}
@@ -540,7 +540,7 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 				}
 				buffer.WriteString(value.Type().ShortName() + "C,4")
 				if !value.Type().HasFlagSet(FlagOptionMU) {
-					r := structureType.PeRange.FormatBuffer()
+					r := structureType.peRange.FormatBuffer()
 					buffer.WriteString("," + value.Type().ShortName() + r)
 				}
 				recordBufferLength += option.multipleSize

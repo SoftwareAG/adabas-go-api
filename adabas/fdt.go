@@ -237,7 +237,7 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 				if lastStruct != nil {
 					if lastStruct.Level() == fieldType.Level()-1 {
 						if adatypes.Central.IsDebugLevel() {
-							adatypes.Central.Log.Debugf("Append to Structure %s add %s %d", lastStruct.Name(), fieldType.String(), fieldType.Level())
+							adatypes.Central.Log.Debugf("Append to structure %s add %s %d", lastStruct.Name(), fieldType.String(), fieldType.Level())
 						}
 						lastStruct.(*adatypes.StructureType).AddField(fieldType)
 						break
