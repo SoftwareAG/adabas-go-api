@@ -20,7 +20,6 @@
 package adatypes
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -69,7 +68,6 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 				Central.Log.Debugf("-------<<<< Range %s=[%s,%s]", adaType.Name(),
 					fq.fieldRange[0].FormatBuffer(), fq.fieldRange[1].FormatBuffer())
 			} else {
-				fmt.Println("XXXX: ", len(fq.fieldRange), fq.fieldRange[0])
 				newStructure.MuRange = *fq.fieldRange[0]
 				Central.Log.Debugf("-------<<<< Range %s=%s", adaType.Name(), fq.fieldRange[0].FormatBuffer())
 			}
