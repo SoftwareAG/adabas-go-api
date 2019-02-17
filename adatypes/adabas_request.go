@@ -133,7 +133,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 		structureType := adaType.(*StructureType)
 		r := structureType.peRange.FormatBuffer()
 		Central.Log.Debugf("------->>>>>> Range %s=%s%s", structureType.name, structureType.shortName, r)
-		buffer.WriteString(adaType.ShortName() + "C,4")
+		buffer.WriteString(adaType.ShortName() + "C,4,B")
 		adabasRequest.RecordBufferLength += 4
 		if !adaType.HasFlagSet(FlagOptionMU) {
 			if buffer.Len() > 0 {
@@ -150,9 +150,9 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			structureType := adaType.(*StructureType)
 			r := structureType.peRange.FormatBuffer()
 
-			buffer.WriteString(adaType.ShortName() + r + "C,4")
+			buffer.WriteString(adaType.ShortName() + r + "C,4,B")
 		} else {
-			buffer.WriteString(adaType.ShortName() + "C,4")
+			buffer.WriteString(adaType.ShortName() + "C,4,B")
 		}
 		adabasRequest.RecordBufferLength += 4
 		if !adaType.HasFlagSet(FlagOptionPE) {

@@ -117,7 +117,7 @@ func TestStructureValuePeriod(t *testing.T) {
 
 	var buffer bytes.Buffer
 	vsl.FormatBuffer(&buffer, option)
-	assert.Equal(t, "PEC,4,PE1-N", buffer.String())
+	assert.Equal(t, "PEC,4,B,PE1-N", buffer.String())
 
 	gc1a := vsl.Get("GC", 1)
 	assert.NotNil(t, gc1a)
@@ -181,7 +181,7 @@ func TestStructureValuePeriodMU(t *testing.T) {
 	assert.False(t, option.NeedSecondCall)
 	var buffer bytes.Buffer
 	vsl.FormatBuffer(&buffer, option)
-	assert.Equal(t, "PEC,4", buffer.String())
+	assert.Equal(t, "PEC,4,B", buffer.String())
 	_, err = vsl.parseBuffer(helper, option)
 	assert.True(t, option.NeedSecondCall)
 	assert.NoError(t, err)
@@ -268,7 +268,7 @@ func TestStructureValuePeriodLast(t *testing.T) {
 
 	var buffer bytes.Buffer
 	vsl.FormatBuffer(&buffer, option)
-	assert.Equal(t, "PEC,4,PE1-2", buffer.String())
+	assert.Equal(t, "PEC,4,B,PE1-2", buffer.String())
 
 	gc1a := vsl.Get("GC", 1)
 	assert.NotNil(t, gc1a)

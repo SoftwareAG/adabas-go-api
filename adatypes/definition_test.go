@@ -89,7 +89,7 @@ func TestDefinitionPeriodic(t *testing.T) {
 	request, err := testDefinition.CreateAdabasRequest(false, false)
 	assert.Nil(t, err)
 
-	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,PGC,4,PG1-N,I8,8,B.",
+	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,PGC,4,B,PG1-N,I8,8,B.",
 		request.FormatBuffer.String())
 
 }
@@ -126,7 +126,7 @@ func TestDefinitionMultiple(t *testing.T) {
 	request, err := testDefinition.CreateAdabasRequest(false, false)
 	assert.Nil(t, err)
 
-	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,P1,1,A,PMC,4,PM1-N,1,P,PA,1,A,PX,1,P,I8,8,B.",
+	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,P1,1,A,PMC,4,B,PM1-N,1,P,PA,1,A,PX,1,P,I8,8,B.",
 		request.FormatBuffer.String())
 
 }
@@ -433,7 +433,7 @@ func TestDefinitionQueryMultipleField(t *testing.T) {
 	request, err := testDefinition.CreateAdabasRequest(false, false)
 	assert.Nil(t, err)
 	log.Debug(" ------------------------ after create adabas request 0 0")
-	assert.Equal(t, "U4,4,B,GMC,4,GM1-N,1,P,GS,1,A.",
+	assert.Equal(t, "U4,4,B,GMC,4,B,GM1-N,1,P,GS,1,A.",
 		request.FormatBuffer.String())
 
 	request, err = testDefinition.CreateAdabasRequest(true, false)
@@ -836,7 +836,7 @@ func TestDefinitionRestrictPeriodicWithMU(t *testing.T) {
 	request, err := testDefinition.CreateAdabasRequest(false, false)
 	assert.Nil(t, err)
 
-	assert.Equal(t, "U4,4,B,PGC,4,PG1-N.",
+	assert.Equal(t, "U4,4,B,PGC,4,B,PG1-N.",
 		request.FormatBuffer.String())
 	testDefinition.DumpTypes(false, true)
 }

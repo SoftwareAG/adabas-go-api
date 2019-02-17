@@ -522,7 +522,7 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 				if value.Type().HasFlagSet(FlagOptionPE) {
 					buffer.WriteString(value.Type().ShortName() + p + "(C),4")
 				} else {
-					buffer.WriteString(value.Type().ShortName() + "C,4")
+					buffer.WriteString(value.Type().ShortName() + "C,4,B")
 					muType := structureType.SubTypes[0]
 					buffer.WriteString(fmt.Sprintf(",%s%s,%d,%s",
 						value.Type().ShortName(), p, muType.Length(), muType.Type().FormatCharacter()))
@@ -538,7 +538,7 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 				if buffer.Len() > 0 {
 					buffer.WriteString(",")
 				}
-				buffer.WriteString(value.Type().ShortName() + "C,4")
+				buffer.WriteString(value.Type().ShortName() + "C,4,B")
 				if !value.Type().HasFlagSet(FlagOptionMU) {
 					r := structureType.peRange.FormatBuffer()
 					buffer.WriteString("," + value.Type().ShortName() + r)
