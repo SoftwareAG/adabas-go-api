@@ -688,7 +688,7 @@ func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
 	assert.Nil(t, err)
 	testDefinition.DumpValues(false)
 	log.Debug(" ------------------------ after create adabas request 0 0")
-	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,GRC,4,B,GC1-N,1,A,GM1-NC,4,GS1-N,1,A,GP1-N,1,P,I8,8,B.",
+	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,GRC,4,B,GC1-N,1,A,GM1-NC,4,B,GS1-N,1,A,GP1-N,1,P,I8,8,B.",
 		request.FormatBuffer.String())
 
 	// Generate format buffer for first store call

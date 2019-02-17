@@ -129,8 +129,8 @@ $(TESTOUTPUT):
 	mkdir $(TESTOUTPUT)
 
 test-build: fmt lint vendor | $(BASE) ; $(info $(M) building $(NAME:%=% )tests…) @ ## Build tests
-	$Q cd $(BASE) && for pkg in $(TESTPKGS); do LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$(ACLDIR)/lib" \
-		DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$(ACLDIR)/lib" \
+	$Q cd $(BASE) && for pkg in $(TESTPKGS); do LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
+		DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
 	    TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) REFERENCES=$(REFERENCES) \
 	    $(GO) test -v -c -tags $(GO_TAGS) $$pkg; done
@@ -145,8 +145,8 @@ test-sanitizer:  ARGS=-msan      ## Run tests with race detector
 $(TEST_TARGETS): NAME=$(MAKECMDGOALS:test-%=%)
 $(TEST_TARGETS): test
 check test tests: fmt lint vendor | $(BASE) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests
-	$Q cd $(BASE) && LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$(ACLDIR)/lib" \
-		DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$(ACLDIR)/lib" \
+	$Q cd $(BASE) && LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
+		DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
 	    TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) REFERENCES=$(REFERENCES) \
 	    $(GO) test -timeout $(TIMEOUT)s -v -tags $(GO_TAGS) $(ARGS) $(TESTPKGS)
