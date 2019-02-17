@@ -236,7 +236,12 @@ func ExampleConnection_periodGroupMfPart() {
 	f, _ := initLogWithFile("connection.log")
 	defer f.Close()
 
-	connection, cerr := NewConnection("acj;map;config=[54711,4]")
+	network := os.Getenv("ADAMFDBID")
+	if network == "" {
+		fmt.Println("Mainframe database not defined")
+		return
+	}
+	connection, cerr := NewConnection("acj;map;config=[" + network + ",4]")
 	if cerr != nil {
 		fmt.Println("Error new connection", cerr)
 		return
