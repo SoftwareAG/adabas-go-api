@@ -38,7 +38,8 @@ TESTOUTPUT ?= $(CURDIR)/test
 ENABLE_DEBUG ?= 0
 
 # Executables
-EXECS       = tests/employee_client tests/testsuite tests/simple_read tests/query tests/lobload
+EXECS       = tests/employee_client tests/testsuite tests/simple_read tests/query tests/lobload \
+	tests/clear_map_reference
 LIBS        = 
 BASE        = $(GOPATH)/src/$(PACKAGE)
 BASESRC     = $(CURDIR)

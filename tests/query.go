@@ -182,7 +182,7 @@ func main() {
 		level = log.ErrorLevel
 	}
 
-	f, err := initLogLevelWithFile("testsuite.log", level)
+	f, err := initLogLevelWithFile("query.log", level)
 	if err != nil {
 		fmt.Printf("Error opening log file: %v\n", err)
 		return

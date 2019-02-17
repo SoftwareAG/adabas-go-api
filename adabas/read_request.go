@@ -360,6 +360,18 @@ func (request *ReadRequest) ReadLogicalBy(descriptors string) (result *Response,
 	return
 }
 
+// ReadLogicalByStream read records with a logical order given by a descriptor sort and calls stream function
+func (request *ReadRequest) ReadLogicalByStream(descriptor string, streamFunction StreamFunction,
+	x interface{}) (result *Response, err error) {
+	s := &stream{streamFunction: streamFunction, result: &Response{Definition: request.definition}, x: x}
+	err = request.ReadLogicalByWithParser(descriptor, streamRecord, s)
+	if err != nil {
+		return nil, err
+	}
+	result = s.result
+	return
+}
+
 // ReadLogicalByWithParser read in logical order given by the descriptor argument
 func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultParser adatypes.RequestParser, x interface{}) (err error) {
 	err = request.Open()
