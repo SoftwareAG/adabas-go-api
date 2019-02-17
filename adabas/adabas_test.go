@@ -334,58 +334,58 @@ func ExampleAdabas_readFileDefinition9() {
 	//   1, CA, 1, A ,FI ; CA  PE=false MU=false REMOVE=true
 	//   1, DA, 1, A ,FI ; DA  PE=false MU=false REMOVE=true
 	//   1, EA, 4, P ,DE NC ; EA  PE=false MU=false REMOVE=true
-	//   1, F0 ,PE ; F0  PE=true MU=true REMOVE=true
-	//     2, FA, 60, W NU MU,MU; FA  PE=true MU=true REMOVE=true
+	//   1, F0 ,PE ; F0  PE=true MU=true REMOVE=true PE=1-N
+	//     2, FA, 60, W NU MU,MU; FA  PE=true MU=true REMOVE=true PE=1-N MU=1-N
 	//       3, FA, 60, W ,NU MU ; FA  PE=true MU=true REMOVE=true
-	//     2, FB, 40, W ,NU DE ; FB  PE=true MU=true REMOVE=true
-	//     2, FC, 10, A ,NU ; FC  PE=true MU=true REMOVE=true
-	//     2, FD, 3, A ,NU ; FD  PE=true MU=true REMOVE=true
-	//     2, F1  ; F1  PE=true MU=true REMOVE=true
-	//       3, FE, 6, A ,NU ; FE  PE=true MU=true REMOVE=true
-	//       3, FF, 15, A ,NU ; FF  PE=true MU=true REMOVE=true
-	//       3, FG, 15, A ,NU ; FG  PE=true MU=true REMOVE=true
-	//       3, FH, 15, A ,NU ; FH  PE=true MU=true REMOVE=true
-	//       3, FI, 80, A NU DE MU,MU; FI  PE=true MU=true REMOVE=true
+	//     2, FB, 40, W ,NU DE ; FB  PE=true MU=true REMOVE=true PE=1-N
+	//     2, FC, 10, A ,NU ; FC  PE=true MU=true REMOVE=true PE=1-N
+	//     2, FD, 3, A ,NU ; FD  PE=true MU=true REMOVE=true PE=1-N
+	//     2, F1  ; F1  PE=true MU=true REMOVE=true PE=1-N
+	//       3, FE, 6, A ,NU ; FE  PE=true MU=true REMOVE=true PE=1-N
+	//       3, FF, 15, A ,NU ; FF  PE=true MU=true REMOVE=true PE=1-N
+	//       3, FG, 15, A ,NU ; FG  PE=true MU=true REMOVE=true PE=1-N
+	//       3, FH, 15, A ,NU ; FH  PE=true MU=true REMOVE=true PE=1-N
+	//       3, FI, 80, A NU DE MU,MU; FI  PE=true MU=true REMOVE=true PE=1-N MU=1-N
 	//         4, FI, 80, A ,NU DE MU ; FI  PE=true MU=true REMOVE=true
-	//   1, I0 ,PE ; I0  PE=true MU=true REMOVE=true
-	//     2, IA, 40, W NU MU,MU; IA  PE=true MU=true REMOVE=true
+	//   1, I0 ,PE ; I0  PE=true MU=true REMOVE=true PE=1-N
+	//     2, IA, 40, W NU MU,MU; IA  PE=true MU=true REMOVE=true PE=1-N MU=1-N
 	//       3, IA, 40, W ,NU MU ; IA  PE=true MU=true REMOVE=true
-	//     2, IB, 40, W ,NU DE ; IB  PE=true MU=true REMOVE=true
-	//     2, IC, 10, A ,NU ; IC  PE=true MU=true REMOVE=true
-	//     2, ID, 3, A ,NU ; ID  PE=true MU=true REMOVE=true
-	//     2, IE, 5, A ,NU ; IE  PE=true MU=true REMOVE=true
-	//     2, I1  ; I1  PE=true MU=true REMOVE=true
-	//       3, IF, 6, A ,NU ; IF  PE=true MU=true REMOVE=true
-	//       3, IG, 15, A ,NU ; IG  PE=true MU=true REMOVE=true
-	//       3, IH, 15, A ,NU ; IH  PE=true MU=true REMOVE=true
-	//       3, II, 15, A ,NU ; II  PE=true MU=true REMOVE=true
-	//       3, IJ, 80, A NU DE MU,MU; IJ  PE=true MU=true REMOVE=true
+	//     2, IB, 40, W ,NU DE ; IB  PE=true MU=true REMOVE=true PE=1-N
+	//     2, IC, 10, A ,NU ; IC  PE=true MU=true REMOVE=true PE=1-N
+	//     2, ID, 3, A ,NU ; ID  PE=true MU=true REMOVE=true PE=1-N
+	//     2, IE, 5, A ,NU ; IE  PE=true MU=true REMOVE=true PE=1-N
+	//     2, I1  ; I1  PE=true MU=true REMOVE=true PE=1-N
+	//       3, IF, 6, A ,NU ; IF  PE=true MU=true REMOVE=true PE=1-N
+	//       3, IG, 15, A ,NU ; IG  PE=true MU=true REMOVE=true PE=1-N
+	//       3, IH, 15, A ,NU ; IH  PE=true MU=true REMOVE=true PE=1-N
+	//       3, II, 15, A ,NU ; II  PE=true MU=true REMOVE=true PE=1-N
+	//       3, IJ, 80, A NU DE MU,MU; IJ  PE=true MU=true REMOVE=true PE=1-N MU=1-N
 	//         4, IJ, 80, A ,NU DE MU ; IJ  PE=true MU=true REMOVE=true
 	//   1, JA, 6, A ,DE ; JA  PE=false MU=false REMOVE=true
 	//   1, KA, 66, W ,NU DE ; KA  PE=false MU=false REMOVE=true
-	//   1, L0 ,PE ; L0  PE=true MU=true REMOVE=true
-	//     2, LA, 3, A ,NU ; LA  PE=true MU=true REMOVE=true
-	//     2, LB, 6, P ,NU ; LB  PE=true MU=true REMOVE=true
-	//     2, LC, 6, P NU DE MU,MU; LC  PE=true MU=true REMOVE=true
+	//   1, L0 ,PE ; L0  PE=true MU=true REMOVE=true PE=1-N
+	//     2, LA, 3, A ,NU ; LA  PE=true MU=true REMOVE=true PE=1-N
+	//     2, LB, 6, P ,NU ; LB  PE=true MU=true REMOVE=true PE=1-N
+	//     2, LC, 6, P NU DE MU,MU; LC  PE=true MU=true REMOVE=true PE=1-N MU=1-N
 	//       3, LC, 6, P ,NU DE MU ; LC  PE=true MU=true REMOVE=true
 	//   1, MA, 4, G ,NU ; MA  PE=false MU=false REMOVE=true
 	//   1, N0  ; N0  PE=false MU=false REMOVE=true
 	//     2, NA, 2, U  ; NA  PE=false MU=false REMOVE=true
 	//     2, NB, 3, U ,NU ; NB  PE=false MU=false REMOVE=true
-	//   1, O0 ,PE ; O0  PE=true MU=false REMOVE=true
-	//     2, OA, 8, U ,NU DT=E(DATE) ; OA  PE=true MU=false REMOVE=true
-	//     2, OB, 8, U ,NU DT=E(DATE) ; OB  PE=true MU=false REMOVE=true
-	//   1, PA, 3, A NU DE MU,MU; PA  PE=false MU=true REMOVE=true
+	//   1, O0 ,PE ; O0  PE=true MU=false REMOVE=true PE=1-N
+	//     2, OA, 8, U ,NU DT=E(DATE) ; OA  PE=true MU=false REMOVE=true PE=1-N
+	//     2, OB, 8, U ,NU DT=E(DATE) ; OB  PE=true MU=false REMOVE=true PE=1-N
+	//   1, PA, 3, A NU DE MU,MU; PA  PE=false MU=true REMOVE=true MU=1-N
 	//     2, PA, 3, A ,NU DE MU ; PA  PE=false MU=true REMOVE=true
 	//   1, QA, 7, P  ; QA  PE=false MU=false REMOVE=true
 	//   1, RA, 0, A ,NU NV NB ; RA  PE=false MU=false REMOVE=true
-	//   1, S0 ,PE ; S0  PE=true MU=true REMOVE=true
-	//     2, SA, 80, W ,NU ; SA  PE=true MU=true REMOVE=true
-	//     2, SB, 3, A ,NU ; SB  PE=true MU=true REMOVE=true
-	//     2, SC, 0, A NU NV NB MU,MU; SC  PE=true MU=true REMOVE=true
+	//   1, S0 ,PE ; S0  PE=true MU=true REMOVE=true PE=1-N
+	//     2, SA, 80, W ,NU ; SA  PE=true MU=true REMOVE=true PE=1-N
+	//     2, SB, 3, A ,NU ; SB  PE=true MU=true REMOVE=true PE=1-N
+	//     2, SC, 0, A NU NV NB MU,MU; SC  PE=true MU=true REMOVE=true PE=1-N MU=1-N
 	//       3, SC, 0, A ,NU NV NB MU ; SC  PE=true MU=true REMOVE=true
 	//   1, TC, 20, U ,SY=TIME DT=E(TIMESTAMP) ; TC  PE=false MU=false REMOVE=true
-	//   1, TU, 20, U MU SY=TIME DT=E(TIMESTAMP),MU; TU  PE=false MU=true REMOVE=true
+	//   1, TU, 20, U MU SY=TIME DT=E(TIMESTAMP),MU; TU  PE=false MU=true REMOVE=true MU=1-N
 	//     2, TU, 20, U ,MU SY=TIME DT=E(TIMESTAMP) ; TU  PE=false MU=true REMOVE=true
 	//  CN,HE=COLLATING(BC,'de@collation=phonebook',PRIMAR) ; CN  PE=false MU=false REMOVE=true
 	//  H1=NA(1-2),NB(1-3) ; H1  PE=false MU=false REMOVE=true
@@ -430,19 +430,19 @@ func ExampleAdabas_readFileDefinition9RestrictF0() {
 	// Dump all active field types:
 	//   1, A0  ; A0  PE=false MU=false REMOVE=true
 	//     2, AA, 8, A ,UQ DE NC NN ; AA  PE=false MU=false REMOVE=false
-	//   1, F0 ,PE ; F0  PE=true MU=true REMOVE=false
-	//     2, FA, 60, W NU MU,MU; FA  PE=true MU=true REMOVE=false
-	//       3, FA, 60, W ,NU MU ; FA  PE=true MU=true REMOVE=false
-	//     2, FB, 40, W ,NU DE ; FB  PE=true MU=true REMOVE=false
-	//     2, FC, 10, A ,NU ; FC  PE=true MU=true REMOVE=false
-	//     2, FD, 3, A ,NU ; FD  PE=true MU=true REMOVE=false
-	//     2, F1  ; F1  PE=true MU=true REMOVE=false
-	//       3, FE, 6, A ,NU ; FE  PE=true MU=true REMOVE=false
-	//       3, FF, 15, A ,NU ; FF  PE=true MU=true REMOVE=false
-	//       3, FG, 15, A ,NU ; FG  PE=true MU=true REMOVE=false
-	//       3, FH, 15, A ,NU ; FH  PE=true MU=true REMOVE=false
-	//       3, FI, 80, A NU DE MU,MU; FI  PE=true MU=true REMOVE=false
-	//         4, FI, 80, A ,NU DE MU ; FI  PE=true MU=true REMOVE=false
+	//   1, F0 ,PE ; F0  PE=true MU=true REMOVE=false PE=1-N
+	//     2, FA, 60, W NU MU,MU; FA  PE=true MU=true REMOVE=false PE=1-N MU=1-N
+	//       3, FA, 60, W ,NU MU ; FA  PE=true MU=true REMOVE=false PE=1-N MU=1-N
+	//     2, FB, 40, W ,NU DE ; FB  PE=true MU=true REMOVE=false PE=1-N
+	//     2, FC, 10, A ,NU ; FC  PE=true MU=true REMOVE=false PE=1-N
+	//     2, FD, 3, A ,NU ; FD  PE=true MU=true REMOVE=false PE=1-N
+	//     2, F1  ; F1  PE=true MU=true REMOVE=false PE=1-N
+	//       3, FE, 6, A ,NU ; FE  PE=true MU=true REMOVE=false PE=1-N
+	//       3, FF, 15, A ,NU ; FF  PE=true MU=true REMOVE=false PE=1-N
+	//       3, FG, 15, A ,NU ; FG  PE=true MU=true REMOVE=false PE=1-N
+	//       3, FH, 15, A ,NU ; FH  PE=true MU=true REMOVE=false PE=1-N
+	//       3, FI, 80, A NU DE MU,MU; FI  PE=true MU=true REMOVE=false PE=1-N MU=1-N
+	//         4, FI, 80, A ,NU DE MU ; FI  PE=true MU=true REMOVE=false PE=1-N MU=1-N
 }
 
 func ExampleAdabas_readFileDefinition9Restricted() {
@@ -485,11 +485,11 @@ func ExampleAdabas_readFileDefinition9Restricted() {
 	//       3, AD, 8, B ,NU HF ; AD  PE=false MU=false REMOVE=false
 	//       3, AE, 0, A ,NU NV NB ; AE  PE=false MU=false REMOVE=false
 	//   1, DA, 1, A ,FI ; DA  PE=false MU=false REMOVE=false
-	//   1, L0 ,PE ; L0  PE=true MU=true REMOVE=false
-	//     2, LA, 3, A ,NU ; LA  PE=true MU=true REMOVE=false
-	//     2, LB, 6, P ,NU ; LB  PE=true MU=true REMOVE=false
-	//     2, LC, 6, P NU DE MU,MU; LC  PE=true MU=true REMOVE=false
-	//       3, LC, 6, P ,NU DE MU ; LC  PE=true MU=true REMOVE=false
+	//   1, L0 ,PE ; L0  PE=true MU=true REMOVE=false PE=1-N
+	//     2, LA, 3, A ,NU ; LA  PE=true MU=true REMOVE=false PE=1-N
+	//     2, LB, 6, P ,NU ; LB  PE=true MU=true REMOVE=false PE=1-N
+	//     2, LC, 6, P NU DE MU,MU; LC  PE=true MU=true REMOVE=false PE=1-N MU=1-N
+	//       3, LC, 6, P ,NU DE MU ; LC  PE=true MU=true REMOVE=false PE=1-N MU=1-N
 }
 
 func TestAdabasFdtNewEmployee(t *testing.T) {

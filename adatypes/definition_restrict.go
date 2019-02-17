@@ -77,14 +77,16 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 		default:
 		}
 	} else {
-		Central.Log.Debugf("-------<<<< Last Range %s=[%s->%s] last=%s pl=%v", adaType.Name(),
+		Central.Log.Debugf("-------<<<< Last Range %s=[%s->%s] last=%s pl=%v -> MU=%s %s", adaType.Name(),
 			fieldMap.lastStructure.peRange.FormatBuffer(),
-			newStructure.peRange.FormatBuffer(), fieldMap.lastStructure.Name(), parentLast)
+			newStructure.peRange.FormatBuffer(), fieldMap.lastStructure.Name(), parentLast,
+			newStructure.muRange.FormatBuffer(), fieldMap.lastStructure.muRange.FormatBuffer())
 		if parentLast {
 			newStructure.peRange = fieldMap.lastStructure.peRange
-			newStructure.muRange = fieldMap.lastStructure.muRange
+			//newStructure.muRange = fieldMap.lastStructure.muRange
 		}
-		Central.Log.Debugf("-------<<<< Org. Range %s=%s", adaType.Name(), newStructure.peRange.FormatBuffer())
+		Central.Log.Debugf("-------<<<< Org. Range %s=%s %s", adaType.Name(), newStructure.peRange.FormatBuffer(),
+			newStructure.muRange.FormatBuffer())
 	}
 	Central.Log.Debugf("%s current structure parent is %s (%v)", adaType.Name(),
 		fieldMap.lastStructure.Name(), fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved))
