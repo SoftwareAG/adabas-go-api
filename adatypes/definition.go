@@ -468,8 +468,8 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 			return NewGenericError(127, name)
 		}
 	}
-	Central.Log.Debugf("Found value to add to %s type=%v [%d,%d] %T %T", val.Type().Name(), val.Type().Type(),
-		val.PeriodIndex(), val.MultipleIndex(), val, val.Type())
+	Central.Log.Debugf("Found value to add to %s[%d,%d] type=%v %T %T", val.Type().Name(),
+		val.PeriodIndex(), val.MultipleIndex(), val.Type().Type().name(), val, val.Type())
 	switch val.Type().Type() {
 	case FieldTypeMultiplefield:
 		sv := val.(*StructureValue)

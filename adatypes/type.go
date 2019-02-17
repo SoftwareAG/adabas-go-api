@@ -161,9 +161,25 @@ func NewLongNameTypeWithLength(fType FieldType, name string, shortName string, l
 }
 
 func (commonType *CommonType) flagString() string {
-	flags := fmt.Sprintf(" PE=%v MU=%v REMOVE=%v", commonType.HasFlagSet(FlagOptionPE),
-		commonType.HasFlagSet(FlagOptionMU), commonType.HasFlagSet(FlagOptionToBeRemoved))
+	flags := fmt.Sprintf(" PE=%v MU=%v REMOVE=%v%s", commonType.HasFlagSet(FlagOptionPE),
+		commonType.HasFlagSet(FlagOptionMU), commonType.HasFlagSet(FlagOptionToBeRemoved),
+		commonType.rangeString())
 	return flags
+}
+
+func (commonType *CommonType) rangeString() string {
+	pe := commonType.peRange.FormatBuffer()
+	r := ""
+	if pe != "" {
+		pe = " PE=" + pe
+		r = pe
+	}
+	mu := commonType.muRange.FormatBuffer()
+	if mu != "" {
+		mu = " MU=" + mu
+		r = r + mu
+	}
+	return r
 }
 
 // String return the name of the field
@@ -403,6 +419,7 @@ func (adaType *StructureType) adaptSubFields() {
 	}
 	for _, s := range adaType.SubTypes {
 		s.SetParent(adaType)
+		s.SetRange(&adaType.peRange)
 		if adaType.Type() == FieldTypePeriodGroup {
 			s.AddFlag(FlagOptionPE)
 		}

@@ -158,9 +158,9 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 							value = nil
 							return
 						}
-						strv.addValue(value, index[0])
 						value.setPeriodIndex(index[0])
 						value.setMultipleIndex(index[1])
+						strv.addValue(value, index[0])
 						Central.Log.Debugf("New MU value index %d:%d", value.PeriodIndex(), value.MultipleIndex())
 						return
 

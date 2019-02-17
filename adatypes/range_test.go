@@ -71,7 +71,7 @@ func TestRangeParser(t *testing.T) {
 	defer f.Close()
 	r := NewRangeParser("1-N")
 	assert.Equal(t, "1-N", r.FormatBuffer())
-	assert.Equal(t, lastEntry, r.multiplier())
+	assert.Equal(t, allEntries, r.multiplier())
 	r = NewRangeParser("N")
 	if !assert.NotNil(t, r) {
 		return

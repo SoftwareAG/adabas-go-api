@@ -569,7 +569,7 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 	if value.Elements == nil {
 		Central.Log.Debugf("Elements empty")
 	} else {
-		Central.Log.Debugf("Elements =%d", len(value.Elements))
+		Central.Log.Debugf("Elements in list %d", len(value.Elements))
 	}
 	curIndex := index
 	Central.Log.Debugf("Current add value index = %d", curIndex)
@@ -579,6 +579,8 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 		// fmt.Println(value.Type().Name(), " add index ", curIndex)
 		value.elementMap[curIndex] = element
 		Central.Log.Debugf("Create new Elements on index %d", curIndex)
+	} else {
+		Central.Log.Debugf("Elements already part of map %d", curIndex)
 	}
 	s := fmt.Sprintf("%s-%d-%d", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
 	if Central.IsDebugLevel() {

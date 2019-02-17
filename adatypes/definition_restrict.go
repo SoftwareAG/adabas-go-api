@@ -77,8 +77,9 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 		default:
 		}
 	} else {
-		Central.Log.Debugf("-------<<<< Last Range %s=%s %s", adaType.Name(), fieldMap.lastStructure.peRange.FormatBuffer(),
-			newStructure.peRange.FormatBuffer())
+		Central.Log.Debugf("-------<<<< Last Range %s=[%s->%s] last=%s pl=%v", adaType.Name(),
+			fieldMap.lastStructure.peRange.FormatBuffer(),
+			newStructure.peRange.FormatBuffer(), fieldMap.lastStructure.Name(), parentLast)
 		if parentLast {
 			newStructure.peRange = fieldMap.lastStructure.peRange
 			newStructure.muRange = fieldMap.lastStructure.muRange
@@ -126,7 +127,7 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 			Central.Log.Debugf("Skip removing MU field %s", adaType.Name())
 			return nil
 		}
-		removeStructure(adaType, fieldMap, fq, ok, fieldMap.lastStructure.Name() == parentType.Name())
+		removeStructure(adaType, fieldMap, fq, ok, parentType.Name() != "" && fieldMap.lastStructure.Name() == parentType.Name())
 	} else {
 		Central.Log.Debugf("In map=%v Level=%d < %d", ok, fieldMap.lastStructure.Level(),
 			adaType.Level())
