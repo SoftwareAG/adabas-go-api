@@ -258,10 +258,10 @@ func ExampleConnection_periodGroupMfPart() {
 		fmt.Println("Error create request", err)
 		return
 	}
-	request.QueryFields("PERSONNEL-ID,INCOME")
+	request.QueryFields("personnnel-id,income")
 	request.Limit = 0
 	var result *Response
-	result, err = request.ReadLogicalWith("PERSONNEL-ID=[11100303:11100304]")
+	result, err = request.ReadLogicalWith("personnnel-id=[11100303:11100304]")
 	if err != nil {
 		fmt.Println("Error create request", err)
 		return
