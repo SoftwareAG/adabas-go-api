@@ -239,6 +239,7 @@ clean: ; $(info $(M) cleaning…)	@ ## Cleanup everything
 	@rm -rf $(BIN) $(CURDIR)/pkg $(CURDIR)/logs $(CURDIR)/test
 	@rm -rf test/tests.* test/coverage.*
 	@rm -rf $(BASESRC)/vendor $(BASESRC)/.vendor-new $(CURDIR)/vendor
+	@rm -f $(CURDIR)/adabas.test $(CURDIR)/adatypes.test $(CURDIR)/*.log $(CURDIR)/*.output
 #	$(GO) clean -cache
 
 .PHONY: help
