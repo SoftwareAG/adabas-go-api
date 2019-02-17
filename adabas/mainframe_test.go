@@ -231,3 +231,69 @@ func ExampleConnection_readNoMaximumMainframe() {
 	//    AD = >                      <
 
 }
+
+func ExampleConnection_periodGroupMfPart() {
+	f, _ := initLogWithFile("connection.log")
+	defer f.Close()
+
+	connection, cerr := NewConnection("acj;map;config=[54711,4]")
+	if cerr != nil {
+		fmt.Println("Error new connection", cerr)
+		return
+	}
+	defer connection.Close()
+	openErr := connection.Open()
+	if openErr != nil {
+		fmt.Println("Error open connection", cerr)
+		return
+	}
+
+	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
+	if err != nil {
+		fmt.Println("Error create request", err)
+		return
+	}
+	request.QueryFields("PERSONNEL-ID,INCOME")
+	request.Limit = 0
+	var result *Response
+	result, err = request.ReadLogicalWith("PERSONNEL-ID=[11100303:11100304]")
+	if err != nil {
+		fmt.Println("Error create request", err)
+		return
+	}
+	err = result.DumpValues()
+	if err != nil {
+		fmt.Println("Error dump values", err)
+	}
+
+	// Output: Dump all result values
+	// Record Isn: 0252
+	//   PERSONNEL-ID = > 11100303 <
+	//   INCOME = [ 3 ]
+	//    CURR-CODE[01] = > EUR <
+	//    SALARY[01] = > 21846 <
+	//    BONUS[01] = [ 2 ]
+	//     BONUS[01,01] = > 1717 <
+	//     BONUS[01,02] = > 3000 <
+	//    CURR-CODE[02] = > EUR <
+	//    SALARY[02] = > 21025 <
+	//    BONUS[02] = [ 1 ]
+	//     BONUS[02,01] = > 1538 <
+	//    CURR-CODE[03] = > EUR <
+	//    SALARY[03] = > 20307 <
+	//    BONUS[03] = [ 1 ]
+	//     BONUS[03,01] = > 1282 <
+	// Record Isn: 0253
+	//   PERSONNEL-ID = > 11100304 <
+	//   INCOME = [ 2 ]
+	//    CURR-CODE[01] = > EUR <
+	//    SALARY[01] = > 25230 <
+	//    BONUS[01] = [ 2 ]
+	//     BONUS[01,01] = > 2256 <
+	//     BONUS[01,02] = > 2000 <
+	//    CURR-CODE[02] = > EUR <
+	//    SALARY[02] = > 24102 <
+	//    BONUS[02] = [ 1 ]
+	//     BONUS[02,01] = > 1948 <
+
+}
