@@ -55,12 +55,12 @@ func ExampleDefinitionCache_ShouldRestrictToFields() {
 	//   1, UB, 1, B  ; UB  PE=false MU=false REMOVE=true
 	//   1, I2, 2, B  ; I2  PE=false MU=false REMOVE=true
 	//   1, U8, 8, B  ; U8  PE=false MU=false REMOVE=true
-	//   1, GR ,PE ; GR  PE=true MU=true REMOVE=true
-	//     2, GC, 1, A  ; GC  PE=true MU=true REMOVE=true
-	//     2, GM, 5, P ,MU; GM  PE=true MU=true REMOVE=true
+	//   1, GR ,PE ; GR  PE=true MU=true REMOVE=true PE=1-N
+	//     2, GC, 1, A  ; GC  PE=true MU=true REMOVE=true PE=1-N
+	//     2, GM, 5, P ,MU; GM  PE=true MU=true REMOVE=true PE=1-N MU=1-N
 	//       3, GM, 5, P  ; GM  PE=true MU=true REMOVE=true
-	//     2, GS, 1, A  ; GS  PE=true MU=true REMOVE=true
-	//     2, GP, 1, P  ; GP  PE=true MU=true REMOVE=true
+	//     2, GS, 1, A  ; GS  PE=true MU=true REMOVE=true PE=1-N
+	//     2, GP, 1, P  ; GP  PE=true MU=true REMOVE=true PE=1-N
 	//   1, I8, 8, B  ; I8  PE=false MU=false REMOVE=true
 	//
 	// Dump all active field types:
@@ -69,12 +69,12 @@ func ExampleDefinitionCache_ShouldRestrictToFields() {
 	//   1, UB, 1, B  ; UB  PE=false MU=false REMOVE=true
 	//   1, I2, 2, B  ; I2  PE=false MU=false REMOVE=true
 	//   1, U8, 8, B  ; U8  PE=false MU=false REMOVE=true
-	//   1, GR ,PE ; GR  PE=true MU=true REMOVE=true
-	//     2, GC, 1, A  ; GC  PE=true MU=true REMOVE=true
-	//     2, GM, 5, P ,MU; GM  PE=true MU=true REMOVE=true
+	//   1, GR ,PE ; GR  PE=true MU=true REMOVE=true PE=1-N
+	//     2, GC, 1, A  ; GC  PE=true MU=true REMOVE=true PE=1-N
+	//     2, GM, 5, P ,MU; GM  PE=true MU=true REMOVE=true PE=1-N MU=1-N
 	//       3, GM, 5, P  ; GM  PE=true MU=true REMOVE=true
-	//     2, GS, 1, A  ; GS  PE=true MU=true REMOVE=true
-	//     2, GP, 1, P  ; GP  PE=true MU=true REMOVE=true
+	//     2, GS, 1, A  ; GS  PE=true MU=true REMOVE=true PE=1-N
+	//     2, GP, 1, P  ; GP  PE=true MU=true REMOVE=true PE=1-N
 	//   1, I8, 8, B  ; I8  PE=false MU=false REMOVE=true
 	//
 	// Dump all file field types:
@@ -83,16 +83,16 @@ func ExampleDefinitionCache_ShouldRestrictToFields() {
 	//   1, UB, 1, B  ; UB  PE=false MU=false REMOVE=true
 	//   1, I2, 2, B  ; I2  PE=false MU=false REMOVE=true
 	//   1, U8, 8, B  ; U8  PE=false MU=false REMOVE=true
-	//   1, GR ,PE ; GR  PE=true MU=true REMOVE=true
-	//     2, GC, 1, A  ; GC  PE=true MU=true REMOVE=true
-	//     2, GM, 5, P ,MU; GM  PE=true MU=true REMOVE=true
+	//   1, GR ,PE ; GR  PE=true MU=true REMOVE=true PE=1-N
+	//     2, GC, 1, A  ; GC  PE=true MU=true REMOVE=true PE=1-N
+	//     2, GM, 5, P ,MU; GM  PE=true MU=true REMOVE=true PE=1-N MU=1-N
 	//       3, GM, 5, P  ; GM  PE=true MU=true REMOVE=true
-	//     2, GS, 1, A  ; GS  PE=true MU=true REMOVE=true
-	//     2, GP, 1, P  ; GP  PE=true MU=true REMOVE=true
+	//     2, GS, 1, A  ; GS  PE=true MU=true REMOVE=true PE=1-N
+	//     2, GP, 1, P  ; GP  PE=true MU=true REMOVE=true PE=1-N
 	//   1, I8, 8, B  ; I8  PE=false MU=false REMOVE=true
 	//
 	// Dump all active field types:
-	//   1, GR ,PE ; GR  PE=true MU=true REMOVE=true
-	//     2, GC, 1, A  ; GC  PE=true MU=true REMOVE=false
+	//   1, GR ,PE ; GR  PE=true MU=true REMOVE=true PE=1-N
+	//     2, GC, 1, A  ; GC  PE=true MU=true REMOVE=false PE=1-N
 	//   1, I8, 8, B  ; I8  PE=false MU=false REMOVE=false
 }

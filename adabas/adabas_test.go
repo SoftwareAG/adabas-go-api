@@ -258,7 +258,7 @@ func ExampleAdabas_readFileDefinitionFile11() {
 	//   1, AG, 1, A ,FI ; AG  PE=false MU=false REMOVE=true
 	//   1, AH, 4, P ,DE NC ; AH  PE=false MU=false REMOVE=true
 	//   1, A1  ; A1  PE=false MU=true REMOVE=true
-	//     2, AI, 20, A NU MU,MU; AI  PE=false MU=true REMOVE=true
+	//     2, AI, 20, A NU MU,MU; AI  PE=false MU=true REMOVE=true MU=1-N
 	//       3, AI, 20, A ,NU MU ; AI  PE=false MU=true REMOVE=true
 	//     2, AJ, 20, A ,NU DE ; AJ  PE=false MU=true REMOVE=true
 	//     2, AK, 10, A ,NU ; AK  PE=false MU=true REMOVE=true
@@ -268,18 +268,18 @@ func ExampleAdabas_readFileDefinitionFile11() {
 	//     2, AM, 15, A ,NU ; AM  PE=false MU=false REMOVE=true
 	//   1, AO, 6, A ,DE ; AO  PE=false MU=false REMOVE=true
 	//   1, AP, 25, A ,NU DE ; AP  PE=false MU=false REMOVE=true
-	//   1, AQ ,PE ; AQ  PE=true MU=true REMOVE=true
-	//     2, AR, 3, A ,NU ; AR  PE=true MU=true REMOVE=true
-	//     2, AS, 5, P ,NU ; AS  PE=true MU=true REMOVE=true
-	//     2, AT, 5, P NU MU,MU; AT  PE=true MU=true REMOVE=true
+	//   1, AQ ,PE ; AQ  PE=true MU=true REMOVE=true PE=1-N
+	//     2, AR, 3, A ,NU ; AR  PE=true MU=true REMOVE=true PE=1-N
+	//     2, AS, 5, P ,NU ; AS  PE=true MU=true REMOVE=true PE=1-N
+	//     2, AT, 5, P NU MU,MU; AT  PE=true MU=true REMOVE=true PE=1-N MU=1-N
 	//       3, AT, 5, P ,NU MU ; AT  PE=true MU=true REMOVE=true
 	//   1, A3  ; A3  PE=false MU=false REMOVE=true
 	//     2, AU, 2, U  ; AU  PE=false MU=false REMOVE=true
 	//     2, AV, 2, U ,NU ; AV  PE=false MU=false REMOVE=true
-	//   1, AW ,PE ; AW  PE=true MU=false REMOVE=true
-	//     2, AX, 8, U ,NU ; AX  PE=true MU=false REMOVE=true
-	//     2, AY, 8, U ,NU ; AY  PE=true MU=false REMOVE=true
-	//   1, AZ, 3, A NU DE MU,MU; AZ  PE=false MU=true REMOVE=true
+	//   1, AW ,PE ; AW  PE=true MU=false REMOVE=true PE=1-N
+	//     2, AX, 8, U ,NU ; AX  PE=true MU=false REMOVE=true PE=1-N
+	//     2, AY, 8, U ,NU ; AY  PE=true MU=false REMOVE=true PE=1-N
+	//   1, AZ, 3, A NU DE MU,MU; AZ  PE=false MU=true REMOVE=true MU=1-N
 	//     2, AZ, 3, A ,NU DE MU ; AZ  PE=false MU=true REMOVE=true
 	//  PH=PHON(AE) ; PH  PE=false MU=false REMOVE=true
 	//  H1=AU(1-2),AV(1-2) ; H1  PE=false MU=false REMOVE=true
