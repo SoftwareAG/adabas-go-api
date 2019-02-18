@@ -49,8 +49,8 @@ func newURLWithDbid(dbid Dbid) *URL {
 	return &URL{Dbid: dbid}
 }
 
-// newURL create a URL based on a input string
-func newURL(url string) (*URL, error) {
+// NewURL create a URL based on a input string
+func NewURL(url string) (*URL, error) {
 	URL := &URL{}
 	err := URL.examineURL(url)
 	if err != nil {

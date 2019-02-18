@@ -206,7 +206,7 @@ func extractMapField(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Trave
 				adabasMap.Data.URL = adabasMap.Repository.URL
 			} else {
 				adatypes.Central.Log.Debugf("Create new data reference URL with >%s<", url)
-				URL, err := newURL(url)
+				URL, err := NewURL(url)
 				if err != nil {
 					return adatypes.EndTraverser, err
 				}

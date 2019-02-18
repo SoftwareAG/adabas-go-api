@@ -116,7 +116,7 @@ func NewAdabas(dbid Dbid) (*Adabas, error) {
 // func NewAdabass(target string) (*Adabas, error) {
 // 	ID := NewAdabasID()
 // 	adatypes.Central.Log.Debugf("Implicit created Adabas instance target with ID %s", ID.String())
-// 	URL, err := newURL(target)
+// 	URL, err := NewURL(target)
 // 	if err != nil {
 // 		return nil, err
 // 	}
@@ -138,7 +138,7 @@ func NewAdabasWithID(target string, ID *ID) (*Adabas, error) {
 	}
 	adatypes.Central.Log.Debugf("Use new Adabas with Adabas ID: %s", ID.String())
 	// fmt.Println("Create URL", target)
-	URL, err := newURL(target)
+	URL, err := NewURL(target)
 	if err != nil {
 		return nil, err
 	}
