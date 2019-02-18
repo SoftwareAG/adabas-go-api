@@ -102,7 +102,7 @@ func NewAdabas(dbid Dbid) (*Adabas, error) {
 		return nil, err
 	}
 	acbx := newAcbx(dbid)
-	URL := newURLWithDbid(dbid)
+	URL := NewURLWithDbid(dbid)
 	return &Adabas{
 		ID:           ID,
 		status:       ID.status(URL.String()),

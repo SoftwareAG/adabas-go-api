@@ -26,7 +26,7 @@ import (
 )
 
 func TestURL(t *testing.T) {
-	dbidURL := newURLWithDbid(123)
+	dbidURL := NewURLWithDbid(123)
 	assert.Equal(t, "123", dbidURL.String())
 	assert.Equal(t, ":0", dbidURL.URL())
 	URL, err := NewURL("124(adatcp://host:1234)")

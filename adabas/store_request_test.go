@@ -130,7 +130,7 @@ func TestStoreFailMapFieldsCheck(t *testing.T) {
 
 	fmt.Println("Start : TestStoreFailMapFieldsCheck")
 
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 11}
+	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 11}
 	perr := prepareCreateTestMap(massLoadEmployees, massLoadSystrans, dataRepository)
 	if !assert.NoError(t, perr) {
 		return
@@ -171,7 +171,7 @@ func TestStoreMapFields(t *testing.T) {
 	log.Infof("TEST: %s", t.Name())
 
 	fmt.Println("Prepare create test map")
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
+	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
 	if !assert.NoError(t, perr) {
 		return
@@ -306,7 +306,7 @@ func TestStoreMapFieldsPeriods(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
+	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
 	if !assert.NoError(t, perr) {
 		return
@@ -367,7 +367,7 @@ func TestStoreUpdateMapField(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
+	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
 	if !assert.NoError(t, perr) {
 		return
@@ -751,7 +751,7 @@ func TestStoreEndTransaction(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
+	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
 	if !assert.NoError(t, perr) {
 		return
@@ -819,7 +819,7 @@ func TestStoreCloseWithBackout(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
+	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
 	if !assert.NoError(t, perr) {
 		return
@@ -887,7 +887,7 @@ func TestStoreBackout(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
+	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
 	if !assert.NoError(t, perr) {
 		return

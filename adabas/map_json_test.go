@@ -577,7 +577,7 @@ func TestImportMaps(t *testing.T) {
 		assert.Error(t, err)
 
 		for _, m := range maps {
-			m.Repository = &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 4}
+			m.Repository = &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 4}
 			fmt.Println("MAP", m.Name)
 			err = m.Store()
 			if !assert.NoError(t, err) {

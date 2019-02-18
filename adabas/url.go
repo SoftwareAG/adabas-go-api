@@ -43,9 +43,9 @@ type URL struct {
 	Port   uint32
 }
 
-// newURLWithDbid create a new URL based on the database id only. Simple local access
+// NewURLWithDbid create a new URL based on the database id only. Simple local access
 // to the database
-func newURLWithDbid(dbid Dbid) *URL {
+func NewURLWithDbid(dbid Dbid) *URL {
 	return &URL{Dbid: dbid}
 }
 

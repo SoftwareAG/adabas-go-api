@@ -223,7 +223,7 @@ func BenchmarkConnection_noreconnectremote(b *testing.B) {
 }
 
 func checkVehicleMap(mapName string, jsonImport string) error {
-	databaseURL := &DatabaseURL{URL: *newURLWithDbid(adabasStatDBID), Fnr: 4}
+	databaseURL := &DatabaseURL{URL: *NewURLWithDbid(adabasStatDBID), Fnr: 4}
 	mr := NewMapRepositoryWithURL(*databaseURL)
 	a, _ := NewAdabas(adabasStatDBID)
 	defer a.Close()
@@ -392,7 +392,7 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 	if !assert.NoError(t, cErr) {
 		return
 	}
-	databaseURL := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 4}
+	databaseURL := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 4}
 	mr := NewMapRepositoryWithURL(*databaseURL)
 	ada, _ := NewAdabas(adabasModDBID)
 	_, err := mr.SearchMap(ada, "COPYEMPL")
@@ -652,12 +652,12 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	}
 
 	log.Infof("Prepare create test map")
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
+	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
 	if !assert.NoError(t, perr) {
 		return
 	}
-	dataRepository = &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 19}
+	dataRepository = &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 19}
 	vehicleMapName := mapVehicles + "Go"
 	perr = prepareCreateTestMap(vehicleMapName, vehicleSystransStore, dataRepository)
 	if !assert.NoError(t, perr) {
@@ -731,12 +731,12 @@ func ExampleConnection_mapStore() {
 		return
 	}
 
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
+	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	if perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository); perr != nil {
 		fmt.Println("Error creating map", massLoadSystransStore, perr)
 		return
 	}
-	dataRepository = &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 19}
+	dataRepository = &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 19}
 	vehicleMapName := mapVehicles + "Go"
 	if perr := prepareCreateTestMap(vehicleMapName, vehicleSystransStore, dataRepository); perr != nil {
 		return

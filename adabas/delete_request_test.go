@@ -97,7 +97,7 @@ func TestDeleteRequestByMapNameCommonRepo(t *testing.T) {
 	defer f.Close()
 
 	mapName := storeEmployeesMap
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 16}
+	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(storeEmployeesMap, massLoadSystrans, dataRepository)
 	if !assert.NoError(t, perr) {
 		return

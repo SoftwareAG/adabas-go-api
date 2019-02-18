@@ -72,7 +72,7 @@ func TestMapImport(t *testing.T) {
 	}
 	name := p + string(os.PathSeparator) + "EmployeeX.systrans"
 
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 11}
+	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 11}
 	maps, err := mr.ImportMapRepository(adabas, "*", name, dataRepository)
 	if !assert.NoError(t, err) {
 		fmt.Println(err)
@@ -103,7 +103,7 @@ func TestMapImportMassLoad(t *testing.T) {
 	}
 	name := p + string(os.PathSeparator) + "Empl-MassLoad.systrans"
 
-	dataRepository := &DatabaseURL{URL: *newURLWithDbid(adabasModDBID), Fnr: 11}
+	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 11}
 	maps, err := mr.ImportMapRepository(adabas, "*", name, dataRepository)
 	if !assert.NoError(t, err) {
 		fmt.Println(err)
