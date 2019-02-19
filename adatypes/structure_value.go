@@ -497,11 +497,30 @@ func (value *StructureValue) SetValue(v interface{}) error {
 // FormatBuffer provide the format buffer of this structure
 func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
 	Central.Log.Debugf("Write FormatBuffer for structure of %s store=%v ", value.Type().Name(), option.StoreCall)
+	structureType := value.Type().(*StructureType)
 	if option.SecondCall {
+		if structureType.Type() == FieldTypeMultiplefield && structureType.HasFlagSet(FlagOptionPE) {
+			pb := value.parent
+			p := pb
+			Central.Log.Debugf("Search parent %X", p)
+			for p != nil {
+				pb = p
+				p = p.(*StructureValue).parent
+				Central.Log.Debugf("Search parent %X", p)
+			}
+			if pb != nil {
+				nrPeriodEntries := pb.(*StructureValue).NrElements()
+				for x := 0; x < nrPeriodEntries; x++ {
+					r := structureType.muRange.FormatBuffer()
+					buffer.WriteString(fmt.Sprintf("%s%dC,%s%s", value.Type().Name(), x+1, value.Type().Name(), r))
+				}
+
+				return 4 + (structureType.SubTypes[0].Length() * uint32(nrPeriodEntries))
+			}
+		}
 		Central.Log.Debugf("Skip because second call")
 		return 0
 	}
-	structureType := value.Type().(*StructureType)
 	recordBufferLength := uint32(0)
 	if structureType.NrFields() > 0 {
 		Central.Log.Debugf("Structure FormatBuffer %s type=%d nrFields=%d", value.Type().Name(), value.Type().Type(), structureType.NrFields())
@@ -570,6 +589,7 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 		Central.Log.Debugf("Add value to list for %s[%d,%d], appending %s[%d,%d]", value.Type().Name(), value.PeriodIndex(), value.MultipleIndex(),
 			subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
 	}
+	subValue.SetParent(value)
 	var element *structureElement
 	var ok bool
 	if value.Elements == nil {

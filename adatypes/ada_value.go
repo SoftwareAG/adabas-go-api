@@ -63,7 +63,7 @@ type IAdaValue interface {
 	MultipleIndex() uint32
 	FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32
 	Value() interface{}
-	//	SetParent(parentAdaValue *adaValue)
+	SetParent(parentAdaValue IAdaValue)
 	SetStringValue(string)
 	SetValue(interface{}) error
 	StoreBuffer(*BufferHelper) error
@@ -77,7 +77,7 @@ type IAdaValue interface {
 
 type adaValue struct {
 	adatype IAdaType
-	parent  *IAdaValue
+	parent  IAdaValue
 	peIndex uint32
 	muIndex uint32
 }
@@ -399,7 +399,7 @@ func (adavalue *adaValue) setMultipleIndex(index uint32) {
 	adavalue.muIndex = index
 }
 
-func (adavalue *adaValue) SetParent(parentAdaValue *IAdaValue) {
+func (adavalue *adaValue) SetParent(parentAdaValue IAdaValue) {
 	adavalue.parent = parentAdaValue
 }
 

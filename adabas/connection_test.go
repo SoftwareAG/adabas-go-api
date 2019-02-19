@@ -942,7 +942,7 @@ func ExampleConnection_readIsn() {
 	defer connection.Close()
 	request, err := connection.CreateReadRequest(11)
 	if err != nil {
-		fmt.Println("Error read map : ", err)
+		fmt.Println("Error create request: ", err)
 		return
 	}
 	fmt.Println("Connection : ", connection)
@@ -951,6 +951,7 @@ func ExampleConnection_readIsn() {
 	var result *Response
 	result, err = request.ReadISN(250)
 	if err != nil {
+		fmt.Println("Error reading ISN: ", err)
 		return
 	}
 	fmt.Println("Result data:")
