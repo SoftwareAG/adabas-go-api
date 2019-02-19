@@ -496,27 +496,32 @@ func (value *StructureValue) SetValue(v interface{}) error {
 
 // FormatBuffer provide the format buffer of this structure
 func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
-	Central.Log.Debugf("Write FormatBuffer for structure of %s store=%v ", value.Type().Name(), option.StoreCall)
+	Central.Log.Debugf("Write FormatBuffer for structure of %s store=%v", value.Type().Name(), option.StoreCall)
 	structureType := value.Type().(*StructureType)
 	if option.SecondCall {
 		if structureType.Type() == FieldTypeMultiplefield && structureType.HasFlagSet(FlagOptionPE) {
 			pb := value.parent
 			p := pb
-			Central.Log.Debugf("Search parent %X", p)
-			for p != nil {
-				pb = p
-				p = p.(*StructureValue).parent
-				Central.Log.Debugf("Search parent %X", p)
+			Central.Log.Debugf("Generate FB %X [%d,%d]", p, value.peIndex, value.muIndex)
+			// for p != nil {
+			// 	pb = p
+			// 	p = p.(*StructureValue).parent
+			// 	Central.Log.Debugf("Search parent %X", p)
+			// }
+			// if pb != nil {
+			if buffer.Len() > 0 {
+				buffer.WriteString(",")
 			}
-			if pb != nil {
-				nrPeriodEntries := pb.(*StructureValue).NrElements()
-				for x := 0; x < nrPeriodEntries; x++ {
-					r := structureType.muRange.FormatBuffer()
-					buffer.WriteString(fmt.Sprintf("%s%dC,%s%s", value.Type().Name(), x+1, value.Type().Name(), r))
-				}
 
-				return 4 + (structureType.SubTypes[0].Length() * uint32(nrPeriodEntries))
-			}
+			// nrPeriodEntries := pb.(*StructureValue).NrElements()
+			// for x := 0; x < nrPeriodEntries; x++ {
+			x := value.peIndex - 1
+			r := structureType.muRange.FormatBuffer()
+			buffer.WriteString(fmt.Sprintf("%s%dC,%s%d(%s)", value.Type().Name(), x+1, value.Type().Name(), x+1, r))
+			// }
+
+			return 4 + structureType.SubTypes[0].Length() // * uint32(nrPeriodEntries))
+			//}
 		}
 		Central.Log.Debugf("Skip because second call")
 		return 0
