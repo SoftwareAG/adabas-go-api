@@ -143,14 +143,14 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
 		}
 	case FieldTypeMultiplefield:
-		if buffer.Len() > 0 {
-			buffer.WriteString(",")
-		}
 		if adaType.HasFlagSet(FlagOptionPE) {
 			// structureType := adaType.(*StructureType)
 			// r := structureType.peRange.FormatBuffer()
 			// buffer.WriteString(adaType.ShortName() + r + "C,4,B")
 		} else {
+			if buffer.Len() > 0 {
+				buffer.WriteString(",")
+			}
 			buffer.WriteString(adaType.ShortName() + "C,4,B")
 		}
 		adabasRequest.RecordBufferLength += 4
