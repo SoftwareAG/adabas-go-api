@@ -43,13 +43,16 @@ type parserBufferTr struct {
 func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
 	parameter := x.(*parserBufferTr)
 
-	Central.Log.Debugf("Start parsing value .... %s offset=%d/%X", adaValue.Type().Name(),
-		parameter.helper.offset, parameter.helper.offset)
-	Central.Log.Debugf("Parse value .... second=%v need second=%v",
-		parameter.option.SecondCall, parameter.option.NeedSecondCall)
+	Central.Log.Debugf("Start parsing value .... %s offset=%d/%X type=%s", adaValue.Type().Name(),
+		parameter.helper.offset, parameter.helper.offset, adaValue.Type().Type().name())
+	Central.Log.Debugf("Parse value .... second=%v need second=%v pe=%v",
+		parameter.option.SecondCall, parameter.option.NeedSecondCall, adaValue.Type().HasFlagSet(FlagOptionPE))
 	// On second call, to collect MU fields in an PE group, skip all other parser tasks
-	if parameter.option.SecondCall && !adaValue.Type().HasFlagSet(FlagOptionMUGhost) && adaValue.Type().Type() != FieldTypeLBString {
-		return Continue, nil
+	if !(adaValue.Type().HasFlagSet(FlagOptionPE) && adaValue.Type().Type() == FieldTypeMultiplefield) {
+		if parameter.option.SecondCall && !adaValue.Type().HasFlagSet(FlagOptionMUGhost) && adaValue.Type().Type() != FieldTypeLBString {
+			Central.Log.Debugf("Second call skip parsing %s", adaValue.Type().Name())
+			return Continue, nil
+		}
 	}
 	result, err = adaValue.parseBuffer(parameter.helper, parameter.option)
 	Central.Log.Debugf("End Parseing value .... %s pos=%d", adaValue.Type().Name(), parameter.helper.offset)
@@ -59,8 +62,10 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 // ParseBuffer method start parsing the definition
 func (def *Definition) ParseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 	if def.Values == nil {
+		Central.Log.Debugf("Parse buffer types...")
 		def.Values, err = parseBufferTypes(helper, option, def.activeFieldTree, 0)
 	} else {
+		Central.Log.Debugf("Parse buffer values...")
 		x := parserBufferTr{helper: helper, option: option}
 		t := TraverserValuesMethods{EnterFunction: parseBufferValues}
 		_, err = def.TraverseValues(t, &x)

@@ -281,7 +281,7 @@ func removeFromTree(value *StructureType) {
 	} else {
 		Central.Log.Debugf("Value %s value=%p count=%d contains >0 entries:", value.Name(), value, value.NrFields())
 		for _, t := range value.SubTypes {
-			Central.Log.Debugf("Contains ", t.Name())
+			Central.Log.Debugf("Contains %s", t.Name())
 		}
 	}
 }

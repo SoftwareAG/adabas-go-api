@@ -109,8 +109,10 @@ func (value *StructureValue) PeriodIndex() uint32 {
 }
 
 type evaluateFieldNameStructure struct {
-	names    []string
-	namesMap map[string]bool
+	names      []string
+	namesMap   map[string]bool
+	second     bool
+	needSecond bool
 }
 
 func evaluateFieldNames(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
@@ -118,8 +120,12 @@ func evaluateFieldNames(adaValue IAdaValue, x interface{}) (TraverseResult, erro
 	Central.Log.Debugf("Evaluate field %s", adaValue.Type().Name())
 	if adaValue.Type().IsStructure() {
 		if adaValue.Type().Type() == FieldTypeMultiplefield {
-			if _, ok := efns.namesMap[adaValue.Type().Name()]; !ok {
-				Central.Log.Debugf("Add multiple field")
+			if !efns.second && adaValue.Type().HasFlagSet(FlagOptionPE) {
+				Central.Log.Debugf("Skip PE/multiple field %s in first call", adaValue.Type().Name())
+				efns.needSecond = true
+				return SkipTree, nil
+			} else if _, ok := efns.namesMap[adaValue.Type().Name()]; !ok {
+				Central.Log.Debugf("Add multiple field %s", adaValue.Type().Name())
 				efns.names = append(efns.names, adaValue.Type().Name())
 				efns.namesMap[adaValue.Type().Name()] = true
 			}
@@ -127,7 +133,7 @@ func evaluateFieldNames(adaValue IAdaValue, x interface{}) (TraverseResult, erro
 	} else {
 		if !adaValue.Type().HasFlagSet(FlagOptionMUGhost) {
 			if _, ok := efns.namesMap[adaValue.Type().Name()]; !ok {
-				Central.Log.Debugf("Add field")
+				Central.Log.Debugf("Add field %s", adaValue.Type().Name())
 				efns.names = append(efns.names, adaValue.Type().Name())
 				efns.namesMap[adaValue.Type().Name()] = true
 			}
@@ -157,7 +163,8 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		helper.offset, helper.Remaining(), len(helper.buffer), len(value.Elements))
 
 	adaType := value.Type().(*StructureType)
-	if value.Type().Type() != FieldTypePeriodGroup {
+	if value.Type().Type() != FieldTypePeriodGroup &&
+		!(value.Type().HasFlagSet(FlagOptionPE) && value.Type().Type() == FieldTypeMultiplefield) {
 		Central.Log.Debugf("Skip not group -> %s", value.Type().Name())
 		return
 	}
@@ -174,10 +181,16 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		Central.Log.Debugf("Too many occurences")
 		panic("Too many occurence entries")
 	}
+	peIndex := value.peIndex
+	muIndex := uint32(0)
 	for i := uint32(0); i < uint32(occNumber); i++ {
-		peIndex := adaType.peRange.index(i+1, lastNumber)
+		if value.Type().Type() == FieldTypePeriodGroup {
+			peIndex = adaType.peRange.index(i+1, lastNumber)
+		} else {
+			muIndex = i + 1
+		}
 		Central.Log.Debugf("Work on %d/%d", peIndex, lastNumber)
-		value.initSubValues(i, peIndex, true)
+		value.initMultipleSubValues(i, peIndex, muIndex, true)
 	}
 	if occNumber == 0 {
 		Central.Log.Debugf("Skip parsing, evaluate MU for empty counter")
@@ -187,13 +200,14 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 	} else {
 		/* Evaluate the fields which need ot be parsed in the period group */
 		tm := TraverserValuesMethods{EnterFunction: evaluateFieldNames}
-		efns := &evaluateFieldNameStructure{namesMap: make(map[string]bool)}
+		efns := &evaluateFieldNameStructure{namesMap: make(map[string]bool), second: option.SecondCall}
 		res, err = value.Traverse(tm, efns)
 		Central.Log.Debugf("Got %d names", len(efns.names))
+		option.NeedSecondCall = efns.needSecond
 		for _, n := range efns.names {
 			Central.Log.Debugf("Found name : %s", n)
 			for i := 0; i < occNumber; i++ {
-				Central.Log.Debugf("Get occurence : %d", (i + 1))
+				Central.Log.Debugf("Get occurence : %d -> %d", (i + 1), value.NrElements())
 				v := value.Get(n, i+1)
 				//v.setPeriodIndex(uint32(i + 1))
 				if v.Type().IsStructure() {
@@ -234,6 +248,11 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 					if err != nil {
 						return
 					}
+					Central.Log.Debugf("%s parsed to %d,%d", v.Type().Name(), v.PeriodIndex(), v.MultipleIndex())
+					// if value.Type().Type() == FieldTypeMultiplefield {
+					// 	v.setMultipleIndex(uint32(i + 1))
+					// 	Central.Log.Debugf("MU index %d,%d -> %d", v.PeriodIndex(), v.MultipleIndex(), i)
+					// }
 				}
 			}
 		}
@@ -246,8 +265,10 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 // Parse the structure
 func (value *StructureValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 	if option.SecondCall {
-		Central.Log.Debugf("Skip parsing %s offset=%X", value.Type().Name(), helper.offset)
-		return
+		if !(value.Type().HasFlagSet(FlagOptionPE) && value.Type().Type() == FieldTypeMultiplefield) {
+			Central.Log.Debugf("Skip parsing %s offset=%X", value.Type().Name(), helper.offset)
+			return
+		}
 	}
 	Central.Log.Debugf("Parse structure buffer %s secondCall=%v offset=%d/%X", value.Type().Name(), option.SecondCall, helper.offset, helper.offset)
 	if value.adatype.HasFlagSet(FlagOptionPE) && value.adatype.HasFlagSet(FlagOptionMU) {
@@ -419,7 +440,7 @@ func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (
 					Central.Log.Debugf("Skip structure tree ... ")
 					return Continue, nil
 				}
-				if v.Type().IsStructure() {
+				if v.Type().IsStructure() && ret != SkipTree {
 					Central.Log.Debugf("Traverse tree %s", v.Type().Name())
 					ret, err = v.(*StructureValue).Traverse(t, x)
 					if err != nil || ret == EndTraverser {
@@ -441,6 +462,10 @@ func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (
 
 // Get get the value of an named tree node with an specific index
 func (value *StructureValue) Get(fieldName string, index int) IAdaValue {
+	Central.Log.Debugf("Get field %s index %d -> %d", fieldName, index, len(value.Elements))
+	if len(value.Elements) < index {
+		return nil
+	}
 	v := value.Elements[index-1]
 	for _, vr := range v.Values {
 		if vr.Type().Name() == fieldName {
@@ -507,7 +532,8 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 
 			x := value.peIndex
 			r := structureType.muRange.FormatBuffer()
-			buffer.WriteString(fmt.Sprintf("%s%dC,%s%d(%s)", value.Type().Name(), x, value.Type().Name(), x, r))
+			buffer.WriteString(fmt.Sprintf("%s%dC,4,B,%s%d(%s),%d",
+				value.Type().Name(), x, value.Type().Name(), x, r, structureType.SubTypes[0].Length()))
 
 			return 4 + structureType.SubTypes[0].Length()
 		}

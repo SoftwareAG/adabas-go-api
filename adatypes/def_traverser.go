@@ -49,6 +49,8 @@ const (
 	EndTraverser
 	// SkipStructure skip all other elements of an structure
 	SkipStructure
+	// SkipTree skip tree of the structure value
+	SkipTree
 )
 
 // PrepareTraverser prepare giving current main object
@@ -96,7 +98,8 @@ func (def *Definition) TraverseValues(t TraverserValuesMethods, x interface{}) (
 			Central.Log.Debugf("Skip structure")
 			continue
 		}
-		if value.Type().IsStructure() {
+		if value.Type().IsStructure() && ret != SkipTree {
+			Central.Log.Debugf("Go through structure")
 			ret, err = value.(*StructureValue).Traverse(t, x)
 			if err != nil {
 				return
