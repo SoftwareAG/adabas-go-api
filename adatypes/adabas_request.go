@@ -96,7 +96,12 @@ func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResu
 		adabasRequest.RecordBufferLength += len
 		adabasRequest.PeriodLength += len
 	}
-	Central.Log.Debugf("After %s current Record length %d", adaValue.Type().Name(), adabasRequest.RecordBufferLength)
+	if adabasRequest.Option.SecondCall &&
+		adaValue.Type().Type() == FieldTypeMultiplefield && adaValue.Type().HasFlagSet(FlagOptionPE) {
+		return SkipTree, nil
+	}
+	Central.Log.Debugf("After %s current Record length %d -> %s", adaValue.Type().Name(), adabasRequest.RecordBufferLength,
+		adabasRequest.FormatBuffer.String())
 	return Continue, nil
 }
 
@@ -215,7 +220,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 func (def *Definition) CreateAdabasRequest(store bool, secondCall bool) (adabasRequest *Request, err error) {
 	adabasRequest = &Request{FormatBuffer: bytes.Buffer{}, Option: NewBufferOption(store, secondCall)}
 
-	Central.Log.Debugf("Create format buffer. Init Buffer: %s", adabasRequest.FormatBuffer.String())
+	Central.Log.Debugf("Create format buffer. Init Buffer: %s second=%v", adabasRequest.FormatBuffer.String(), secondCall)
 	if store || secondCall {
 		t := TraverserValuesMethods{EnterFunction: formatBufferTraverserEnter, LeaveFunction: formatBufferTraverserLeave}
 		_, err = def.TraverseValues(t, adabasRequest)
