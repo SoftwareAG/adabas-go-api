@@ -197,30 +197,36 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 				v := value.Get(n, i+1)
 				//v.setPeriodIndex(uint32(i + 1))
 				if v.Type().IsStructure() {
-					nrMu, nrMerr := helper.ReceiveUInt32()
-					if nrMerr != nil {
-						err = nrMerr
-						return
-					}
-					Central.Log.Debugf("Got Nr of Multiple Fields = %d creating them ... for %d", nrMu, v.PeriodIndex())
-					/* Initialize MU elements dependent on the counter result */
-					for muIndex := uint32(0); muIndex < nrMu; muIndex++ {
-						muStructureType := v.Type().(*StructureType)
-						Central.Log.Debugf("Create index MU %d", (muIndex + 1))
-						sv, typeErr := muStructureType.SubTypes[0].Value()
-						if typeErr != nil {
-							err = typeErr
+					st := v.Type().(*StructureType)
+					if st.Type() == FieldTypeMultiplefield && st.HasFlagSet(FlagOptionPE) {
+						Central.Log.Debugf("Skip %s PE=%d", st.Name(), v.PeriodIndex())
+						option.NeedSecondCall = true
+					} else {
+						nrMu, nrMerr := helper.ReceiveUInt32()
+						if nrMerr != nil {
+							err = nrMerr
 							return
 						}
-						muStructure := v.(*StructureValue)
-						sv.Type().AddFlag(FlagOptionSecondCall)
-						sv.setMultipleIndex(muIndex + 1)
-						//sv.setPeriodIndex(uint32(i + 1))
-						sv.setPeriodIndex(v.PeriodIndex())
-						muStructure.addValue(sv, muIndex)
-						Central.Log.Debugf("MU index %d,%d -> %d", sv.PeriodIndex(), sv.MultipleIndex(), i)
-						Central.Log.Debugf("Due to Period and MU field, need second call call (PE/MU) for %s", value.Type().Name())
-						option.NeedSecondCall = true
+						Central.Log.Debugf("Got Nr of Multiple Fields = %d creating them ... for %d", nrMu, v.PeriodIndex())
+						/* Initialize MU elements dependent on the counter result */
+						for muIndex := uint32(0); muIndex < nrMu; muIndex++ {
+							muStructureType := v.Type().(*StructureType)
+							Central.Log.Debugf("Create index MU %d", (muIndex + 1))
+							sv, typeErr := muStructureType.SubTypes[0].Value()
+							if typeErr != nil {
+								err = typeErr
+								return
+							}
+							muStructure := v.(*StructureValue)
+							sv.Type().AddFlag(FlagOptionSecondCall)
+							sv.setMultipleIndex(muIndex + 1)
+							//sv.setPeriodIndex(uint32(i + 1))
+							sv.setPeriodIndex(v.PeriodIndex())
+							muStructure.addValue(sv, muIndex)
+							Central.Log.Debugf("MU index %d,%d -> %d", sv.PeriodIndex(), sv.MultipleIndex(), i)
+							Central.Log.Debugf("Due to Period and MU field, need second call call (PE/MU) for %s", value.Type().Name())
+							option.NeedSecondCall = true
+						}
 					}
 				} else {
 					/* Parse field value for each non-structure field */

@@ -147,10 +147,9 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			buffer.WriteString(",")
 		}
 		if adaType.HasFlagSet(FlagOptionPE) {
-			structureType := adaType.(*StructureType)
-			r := structureType.peRange.FormatBuffer()
-
-			buffer.WriteString(adaType.ShortName() + r + "C,4,B")
+			// structureType := adaType.(*StructureType)
+			// r := structureType.peRange.FormatBuffer()
+			// buffer.WriteString(adaType.ShortName() + r + "C,4,B")
 		} else {
 			buffer.WriteString(adaType.ShortName() + "C,4,B")
 		}

@@ -275,30 +275,30 @@ func ExampleConnection_periodGroupMfPart() {
 	// Record Isn: 0252
 	//   PERSONNEL-ID = > 11100303 <
 	//   INCOME = [ 3 ]
-	//    CURR-CODE[01] = > EUR <
-	//    SALARY[01] = > 21846 <
+	//    CURR-CODE[01] = > DM <
+	//    SALARY[01] = > 42600 <
 	//    BONUS[01] = [ 2 ]
-	//     BONUS[01,01] = > 1717 <
+	//     BONUS[01,01] = > 3350 <
 	//     BONUS[01,02] = > 3000 <
-	//    CURR-CODE[02] = > EUR <
-	//    SALARY[02] = > 21025 <
+	//    CURR-CODE[02] = > DM <
+	//    SALARY[02] = > 41000 <
 	//    BONUS[02] = [ 1 ]
-	//     BONUS[02,01] = > 1538 <
+	//     BONUS[02,01] = > 3000 <
 	//    CURR-CODE[03] = > EUR <
-	//    SALARY[03] = > 20307 <
+	//    SALARY[03] = > 39600 <
 	//    BONUS[03] = [ 1 ]
-	//     BONUS[03,01] = > 1282 <
+	//     BONUS[03,01] = > 2500 <
 	// Record Isn: 0253
 	//   PERSONNEL-ID = > 11100304 <
 	//   INCOME = [ 2 ]
-	//    CURR-CODE[01] = > EUR <
-	//    SALARY[01] = > 25230 <
+	//    CURR-CODE[01] = > DM <
+	//    SALARY[01] = > 49200 <
 	//    BONUS[01] = [ 2 ]
-	//     BONUS[01,01] = > 2256 <
+	//     BONUS[01,01] = > 4400 <
 	//     BONUS[01,02] = > 2000 <
-	//    CURR-CODE[02] = > EUR <
-	//    SALARY[02] = > 24102 <
-	//    BONUS[02] = [ 1 ]
-	//     BONUS[02,01] = > 1948 <
+	//    CURR-CODE[02] = > DM <
+	//    SALARY[02] = > 47000 <
+	//    BONUS[02] = [ 2 ]
+	//     BONUS[02,01] = > 3800 <
 
 }
