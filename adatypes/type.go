@@ -423,10 +423,17 @@ func (adaType *StructureType) adaptSubFields() {
 		if adaType.Type() == FieldTypePeriodGroup {
 			s.AddFlag(FlagOptionPE)
 		}
+		if adaType.HasFlagSet(FlagOptionPE) {
+			s.AddFlag(FlagOptionPE)
+		}
+
 		if adaType.Type() == FieldTypeMultiplefield {
 			Central.Log.Debugf("%s: set MU flag", adaType.Name())
 			adaType.AddFlag(FlagOptionMU)
 			s.AddFlag(FlagOptionMUGhost)
+			if adaType.HasFlagSet(FlagOptionPE) {
+				s.AddFlag(FlagOptionSecondCall)
+			}
 		}
 
 	}

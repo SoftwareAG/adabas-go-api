@@ -538,26 +538,3 @@ func evaluateOption(fieldType *adatypes.AdaType, option uint8, option2 uint8) {
 		}
 	}
 }
-
-// Parse FDT table defintion
-// func parseFieldDefinition(buffer []byte) (definition *adatypes.Definition, err error) {
-// 	adatypes.Central.Log.Debugf("Format field definition")
-// 	helper := adatypes.NewHelper(buffer, len(buffer), Endian())
-
-// 	// Get length of overall data, fdtLength entry
-// 	length, herr := helper.ReceiveUInt32()
-// 	if herr != nil {
-// 		err = herr
-// 		return
-// 	}
-
-// 	// Shrink the buffer to the given length
-// 	helper.Shrink(length)
-// 	option := adatypes.NewBufferOption(false, false)
-// 	fdtDefinition := fdtGeneralDefinition()
-// 	fdtDefinition.ParseBuffer(helper, option)
-
-// 	// Create the field table, convert out of FDT table entries
-// 	definition, err = createFieldDefinitionTable(fdtDefinition)
-// 	return
-// }

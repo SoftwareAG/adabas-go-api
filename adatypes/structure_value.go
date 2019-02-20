@@ -192,12 +192,18 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		Central.Log.Debugf("Work on %d/%d", peIndex, lastNumber)
 		value.initMultipleSubValues(i, peIndex, muIndex, true)
 	}
+	if option.SecondCall &&
+		(value.Type().HasFlagSet(FlagOptionPE) && value.Type().Type() == FieldTypeMultiplefield) {
+		return value.parsePeriodMultiple(helper, option)
+	}
 	if occNumber == 0 {
 		Central.Log.Debugf("Skip parsing, evaluate MU for empty counter")
 		t := TraverserMethods{EnterFunction: countMU}
 		adaType.Traverse(t, 1, helper)
 
 	} else {
+		Central.Log.Debugf("Parse period group/structure %s offset=%d/%X", value.Type().Name(),
+			helper.offset, helper.offset)
 		/* Evaluate the fields which need ot be parsed in the period group */
 		tm := TraverserValuesMethods{EnterFunction: evaluateFieldNames}
 		efns := &evaluateFieldNameStructure{namesMap: make(map[string]bool), second: option.SecondCall}
@@ -205,7 +211,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		Central.Log.Debugf("Got %d names", len(efns.names))
 		option.NeedSecondCall = efns.needSecond
 		for _, n := range efns.names {
-			Central.Log.Debugf("Found name : %s", n)
+			Central.Log.Debugf("Parse start of name : %s offset=%d/%X", n, helper.offset, helper.offset)
 			for i := 0; i < occNumber; i++ {
 				Central.Log.Debugf("Get occurence : %d -> %d", (i + 1), value.NrElements())
 				v := value.Get(n, i+1)
@@ -255,10 +261,27 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 					// }
 				}
 			}
+			Central.Log.Debugf("Parse end of name : %s offset=%d/%X", n, helper.offset, helper.offset)
 		}
 	}
 
 	res = SkipStructure
+	return
+}
+
+func (value *StructureValue) parsePeriodMultiple(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
+	Central.Log.Debugf("Parse MU in PE added nodes")
+	for _, e := range value.Elements {
+		for _, v := range e.Values {
+			v.Type().AddFlag(FlagOptionSecondCall)
+			res, err = v.parseBuffer(helper, option)
+			if err != nil {
+				return
+			}
+		}
+	}
+	Central.Log.Debugf("End parsing MU in PE")
+	res = SkipTree
 	return
 }
 
