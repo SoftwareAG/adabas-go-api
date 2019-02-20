@@ -142,17 +142,17 @@ func evaluateFieldNames(adaValue IAdaValue, x interface{}) (TraverseResult, erro
 	return Continue, nil
 }
 
-func countMU(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
-	helper := x.(*BufferHelper)
-	if adaType.Type() == FieldTypeMultiplefield {
-		Central.Log.Debugf("Skip MU counter %s", adaType.Name())
-		_, err := helper.ReceiveUInt32()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
+// func countMU(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+// 	helper := x.(*BufferHelper)
+// 	if adaType.Type() == FieldTypeMultiplefield {
+// 		Central.Log.Debugf("Skip MU counter %s", adaType.Name())
+// 		_, err := helper.ReceiveUInt32()
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
+// 	return nil
+// }
 
 /*
  Parse buffer if a period group contains multiple fields. In that case the buffer parser need to parse
@@ -172,99 +172,107 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 	var occNumber int
 	occNumber, err = value.evaluateOccurence(helper)
 	Central.Log.Debugf("%s has %d entries", value.Type().Name(), occNumber)
-	lastNumber := uint32(occNumber)
-	if adaType.peRange.multiplier() != allEntries {
-		occNumber = adaType.peRange.multiplier()
-	}
-	Central.Log.Debugf("%s read %d entries", value.Type().Name(), occNumber)
-	if occNumber > 10000 {
-		Central.Log.Debugf("Too many occurences")
-		panic("Too many occurence entries")
-	}
-	peIndex := value.peIndex
-	muIndex := uint32(0)
-	for i := uint32(0); i < uint32(occNumber); i++ {
-		if value.Type().Type() == FieldTypePeriodGroup {
-			peIndex = adaType.peRange.index(i+1, lastNumber)
-		} else {
-			muIndex = i + 1
+	if occNumber > 0 {
+		lastNumber := uint32(occNumber)
+		if adaType.peRange.multiplier() != allEntries {
+			occNumber = adaType.peRange.multiplier()
 		}
-		Central.Log.Debugf("Work on %d/%d", peIndex, lastNumber)
-		value.initMultipleSubValues(i, peIndex, muIndex, true)
-	}
-	if option.SecondCall &&
-		(value.Type().HasFlagSet(FlagOptionPE) && value.Type().Type() == FieldTypeMultiplefield) {
-		return value.parsePeriodMultiple(helper, option)
-	}
-	if occNumber == 0 {
-		Central.Log.Debugf("Skip parsing, evaluate MU for empty counter")
-		t := TraverserMethods{EnterFunction: countMU}
-		adaType.Traverse(t, 1, helper)
+		Central.Log.Debugf("%s read %d entries", value.Type().Name(), occNumber)
+		if occNumber > 10000 {
+			Central.Log.Debugf("Too many occurences")
+			panic("Too many occurence entries")
+		}
+		peIndex := value.peIndex
+		muIndex := uint32(0)
+		for i := uint32(0); i < uint32(occNumber); i++ {
+			if value.Type().Type() == FieldTypePeriodGroup {
+				peIndex = adaType.peRange.index(i+1, lastNumber)
+			} else {
+				muIndex = i + 1
+			}
+			Central.Log.Debugf("Work on %d/%d", peIndex, lastNumber)
+			value.initMultipleSubValues(i, peIndex, muIndex, true)
+		}
+		if option.SecondCall &&
+			(value.Type().HasFlagSet(FlagOptionPE) && value.Type().Type() == FieldTypeMultiplefield) {
+			return value.parsePeriodMultiple(helper, option)
+		}
+		if occNumber == 0 {
+			// Central.Log.Debugf("Skip parsing, evaluate MU for empty counter")
+			// t := TraverserMethods{EnterFunction: countMU}
+			// adaType.Traverse(t, 1, helper)
 
-	} else {
-		Central.Log.Debugf("Parse period group/structure %s offset=%d/%X", value.Type().Name(),
-			helper.offset, helper.offset)
-		/* Evaluate the fields which need ot be parsed in the period group */
-		tm := TraverserValuesMethods{EnterFunction: evaluateFieldNames}
-		efns := &evaluateFieldNameStructure{namesMap: make(map[string]bool), second: option.SecondCall}
-		res, err = value.Traverse(tm, efns)
-		Central.Log.Debugf("Got %d names", len(efns.names))
-		option.NeedSecondCall = efns.needSecond
-		for _, n := range efns.names {
-			Central.Log.Debugf("Parse start of name : %s offset=%d/%X", n, helper.offset, helper.offset)
-			for i := 0; i < occNumber; i++ {
-				Central.Log.Debugf("Get occurence : %d -> %d", (i + 1), value.NrElements())
-				v := value.Get(n, i+1)
-				//v.setPeriodIndex(uint32(i + 1))
-				if v.Type().IsStructure() {
-					st := v.Type().(*StructureType)
-					if st.Type() == FieldTypeMultiplefield && st.HasFlagSet(FlagOptionPE) {
-						Central.Log.Debugf("Skip %s PE=%d", st.Name(), v.PeriodIndex())
-						option.NeedSecondCall = true
-					} else {
-						nrMu, nrMerr := helper.ReceiveUInt32()
-						if nrMerr != nil {
-							err = nrMerr
-							return
-						}
-						Central.Log.Debugf("Got Nr of Multiple Fields = %d creating them ... for %d", nrMu, v.PeriodIndex())
-						/* Initialize MU elements dependent on the counter result */
-						for muIndex := uint32(0); muIndex < nrMu; muIndex++ {
-							muStructureType := v.Type().(*StructureType)
-							Central.Log.Debugf("Create index MU %d", (muIndex + 1))
-							sv, typeErr := muStructureType.SubTypes[0].Value()
-							if typeErr != nil {
-								err = typeErr
-								return
-							}
-							muStructure := v.(*StructureValue)
-							sv.Type().AddFlag(FlagOptionSecondCall)
-							sv.setMultipleIndex(muIndex + 1)
-							//sv.setPeriodIndex(uint32(i + 1))
-							sv.setPeriodIndex(v.PeriodIndex())
-							muStructure.addValue(sv, muIndex)
-							Central.Log.Debugf("MU index %d,%d -> %d", sv.PeriodIndex(), sv.MultipleIndex(), i)
-							Central.Log.Debugf("Due to Period and MU field, need second call call (PE/MU) for %s", value.Type().Name())
-							option.NeedSecondCall = true
-						}
-					}
+		} else {
+			return value.parsePeriodGroup(helper, option, occNumber)
+		}
+	}
+
+	res = SkipStructure
+	return
+}
+
+func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *BufferOption, occNumber int) (res TraverseResult, err error) {
+	Central.Log.Debugf("Parse period group/structure %s offset=%d/%X", value.Type().Name(),
+		helper.offset, helper.offset)
+	/* Evaluate the fields which need ot be parsed in the period group */
+	tm := TraverserValuesMethods{EnterFunction: evaluateFieldNames}
+	efns := &evaluateFieldNameStructure{namesMap: make(map[string]bool), second: option.SecondCall}
+	res, err = value.Traverse(tm, efns)
+	Central.Log.Debugf("Got %d names", len(efns.names))
+	option.NeedSecondCall = efns.needSecond
+	for _, n := range efns.names {
+		Central.Log.Debugf("Parse start of name : %s offset=%d/%X", n, helper.offset, helper.offset)
+		for i := 0; i < occNumber; i++ {
+			Central.Log.Debugf("Get occurence : %d -> %d", (i + 1), value.NrElements())
+			v := value.Get(n, i+1)
+			//v.setPeriodIndex(uint32(i + 1))
+			if v.Type().IsStructure() {
+				st := v.Type().(*StructureType)
+				if st.Type() == FieldTypeMultiplefield && st.HasFlagSet(FlagOptionPE) {
+					Central.Log.Debugf("Skip %s PE=%d", st.Name(), v.PeriodIndex())
+					option.NeedSecondCall = true
 				} else {
-					/* Parse field value for each non-structure field */
-					res, err = v.parseBuffer(helper, option)
-					if err != nil {
+					nrMu, nrMerr := helper.ReceiveUInt32()
+					if nrMerr != nil {
+						err = nrMerr
 						return
 					}
-					Central.Log.Debugf("%s parsed to %d,%d", v.Type().Name(), v.PeriodIndex(), v.MultipleIndex())
-					// if value.Type().Type() == FieldTypeMultiplefield {
-					// 	v.setMultipleIndex(uint32(i + 1))
-					// 	Central.Log.Debugf("MU index %d,%d -> %d", v.PeriodIndex(), v.MultipleIndex(), i)
-					// }
+					Central.Log.Debugf("Got Nr of Multiple Fields = %d creating them ... for %d", nrMu, v.PeriodIndex())
+					/* Initialize MU elements dependent on the counter result */
+					for muIndex := uint32(0); muIndex < nrMu; muIndex++ {
+						muStructureType := v.Type().(*StructureType)
+						Central.Log.Debugf("Create index MU %d", (muIndex + 1))
+						sv, typeErr := muStructureType.SubTypes[0].Value()
+						if typeErr != nil {
+							err = typeErr
+							return
+						}
+						muStructure := v.(*StructureValue)
+						sv.Type().AddFlag(FlagOptionSecondCall)
+						sv.setMultipleIndex(muIndex + 1)
+						//sv.setPeriodIndex(uint32(i + 1))
+						sv.setPeriodIndex(v.PeriodIndex())
+						muStructure.addValue(sv, muIndex)
+						Central.Log.Debugf("MU index %d,%d -> %d", sv.PeriodIndex(), sv.MultipleIndex(), i)
+						Central.Log.Debugf("Due to Period and MU field, need second call call (PE/MU) for %s", value.Type().Name())
+						option.NeedSecondCall = true
+					}
 				}
+			} else {
+				/* Parse field value for each non-structure field */
+				res, err = v.parseBuffer(helper, option)
+				if err != nil {
+					return
+				}
+				Central.Log.Debugf("%s parsed to %d,%d", v.Type().Name(), v.PeriodIndex(), v.MultipleIndex())
+				// if value.Type().Type() == FieldTypeMultiplefield {
+				// 	v.setMultipleIndex(uint32(i + 1))
+				// 	Central.Log.Debugf("MU index %d,%d -> %d", v.PeriodIndex(), v.MultipleIndex(), i)
+				// }
 			}
-			Central.Log.Debugf("Parse end of name : %s offset=%d/%X", n, helper.offset, helper.offset)
 		}
+		Central.Log.Debugf("Parse end of name : %s offset=%d/%X", n, helper.offset, helper.offset)
 	}
-
 	res = SkipStructure
 	return
 }

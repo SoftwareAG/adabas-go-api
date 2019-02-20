@@ -1303,7 +1303,44 @@ func TestConnectionReadAllFields9(t *testing.T) {
 	}
 }
 
-func TestConnectionReadPEFields9(t *testing.T) {
+func TestConnectionReadAllPEFields9(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "connection.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	url := adabasModDBIDs
+	fmt.Println("Connect to ", url)
+	connection, cerr := NewConnection("acj;target=" + url)
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	openErr := connection.Open()
+	assert.NoError(t, openErr)
+	request, err := connection.CreateReadRequest(9)
+	if !assert.NoError(t, err) {
+		return
+	}
+	request.QueryFields("DA,I0,JA")
+	request.Limit = 0
+	var result *Response
+	result, err = request.ReadLogicalWith("AA=40003001")
+	if !assert.NoError(t, err) {
+		return
+	}
+	if assert.NotNil(t, result) {
+		err = result.DumpValues()
+		assert.NoError(t, err)
+	}
+	v, _ := result.Values[0].SearchValue("JA")
+	assert.Equal(t, "MGMT01", v.String())
+}
+
+func TestConnectionReadOnlyPEFields9(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
