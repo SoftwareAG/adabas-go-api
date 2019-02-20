@@ -273,32 +273,34 @@ func ExampleConnection_periodGroupMfPart() {
 
 	// Output: Dump all result values
 	// Record Isn: 0252
-	//   PERSONNEL-ID = > 11100303 <
-	//   INCOME = [ 3 ]
-	//    CURR-CODE[01] = > DM <
-	//    SALARY[01] = > 42600 <
-	//    BONUS[01] = [ 2 ]
-	//     BONUS[01,01] = > 3350 <
-	//     BONUS[01,02] = > 3000 <
-	//    CURR-CODE[02] = > DM <
-	//    SALARY[02] = > 41000 <
-	//    BONUS[02] = [ 1 ]
-	//     BONUS[02,01] = > 3000 <
-	//    CURR-CODE[03] = > EUR <
-	//    SALARY[03] = > 39600 <
-	//    BONUS[03] = [ 1 ]
-	//     BONUS[03,01] = > 2500 <
+	// Record Quantity: 0002
+	//   personnnel-id = > 11100303 <
+	//   income = [ 3 ]
+	//    curr-code[01] = > DM  <
+	//    salary[01] = > 42600 <
+	//    bonus[01] = [ 2 ]
+	// 	bonus[01,01] = > 3350 <
+	// 	bonus[01,02] = > 3000 <
+	//    curr-code[02] = > DM  <
+	//    salary[02] = > 41000 <
+	//    bonus[02] = [ 1 ]
+	// 	bonus[02,01] = > 3000 <
+	//    curr-code[03] = > DM  <
+	//    salary[03] = > 39600 <
+	//    bonus[03] = [ 1 ]
+	// 	bonus[03,01] = > 2500 <
 	// Record Isn: 0253
-	//   PERSONNEL-ID = > 11100304 <
-	//   INCOME = [ 2 ]
-	//    CURR-CODE[01] = > DM <
-	//    SALARY[01] = > 49200 <
-	//    BONUS[01] = [ 2 ]
-	//     BONUS[01,01] = > 4400 <
-	//     BONUS[01,02] = > 2000 <
-	//    CURR-CODE[02] = > DM <
-	//    SALARY[02] = > 47000 <
-	//    BONUS[02] = [ 2 ]
-	//     BONUS[02,01] = > 3800 <
+	// Record Quantity: 0002
+	//   personnnel-id = > 11100304 <
+	//   income = [ 2 ]
+	//    curr-code[01] = > DM  <
+	//    salary[01] = > 49200 <
+	//    bonus[01] = [ 2 ]
+	// 	bonus[01,01] = > 4400 <
+	// 	bonus[01,02] = > 2000 <
+	//    curr-code[02] = > DM  <
+	//    salary[02] = > 47000 <
+	//    bonus[02] = [ 1 ]
+	// 	bonus[02,01] = > 3800 <
 
 }
