@@ -564,7 +564,7 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 			x := value.peIndex
 			r := structureType.muRange.FormatBuffer()
 			buffer.WriteString(fmt.Sprintf("%s%dC,4,B,%s%d(%s),%d",
-				value.Type().Name(), x, value.Type().Name(), x, r, structureType.SubTypes[0].Length()))
+				value.Type().ShortName(), x, value.Type().ShortName(), x, r, structureType.SubTypes[0].Length()))
 
 			Central.Log.Debugf("FB of second call %s", buffer.String())
 			return 4 + structureType.SubTypes[0].Length()
