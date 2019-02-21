@@ -585,6 +585,8 @@ func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
 }
 
 func TestReadMaps(t *testing.T) {
+	f := initTestLogWithFile(t, "request.log")
+	defer f.Close()
 	ada, _ := NewAdabas(24)
 	request := NewReadRequestAdabas(ada, 4)
 	request.Limit = 0
