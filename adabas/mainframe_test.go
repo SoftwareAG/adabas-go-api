@@ -23,6 +23,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -306,6 +307,48 @@ func ExampleConnection_periodGroupMfPart() {
 	//    salary[02] = > 47000 <
 	//    bonus[02] = [ 1 ]
 	//     bonus[02,01] = > 3800 <
+
+}
+
+func TestConnectionPEMUMfMap(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "connection.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	network := os.Getenv("ADAMFDBID")
+	if network == "" {
+		fmt.Println("Mainframe database not defined")
+		return
+	}
+	connection, cerr := NewConnection("acj;map;config=[" + network + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	log.Debug("Created connection : ", connection)
+	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
+	if assert.NoError(t, err) {
+		fmt.Println("Limit query data:")
+		request.QueryFields("*")
+		request.Limit = 0
+		fmt.Println("Read logigcal data:")
+		result, err := request.ReadLogicalWith("personnnel-id=11100301")
+		assert.NoError(t, err)
+		fmt.Println("Result data:")
+		result.DumpValues()
+		fmt.Println("Check size ...", len(result.Values))
+		if assert.Equal(t, 1107, len(result.Values)) {
+			ae := result.Values[1].HashFields["name"]
+			fmt.Println("Check MORENO ...")
+			assert.Equal(t, "MORENO", strings.TrimSpace(ae.String()))
+			ei64, xErr := ae.Int64()
+			assert.Error(t, xErr, "Error should be send if value is string")
+			assert.Equal(t, int64(0), ei64)
+		}
+	}
 
 }
 

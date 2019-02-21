@@ -88,8 +88,8 @@ func (def *Definition) TraverseValues(t TraverserValuesMethods, x interface{}) (
 	}
 	Central.Log.Debugf("Traverse through level 1 values -> %d", len(def.Values))
 	for i, value := range def.Values {
-		Central.Log.Debugf("Found level %d value name=%s type=%d fieldindex=%d", value.Type().Level(),
-			value.Type().Name(), value.Type().Type(), i)
+		Central.Log.Debugf("Found level %d value name=%s/%s type=%d fieldindex=%d", value.Type().Level(),
+			value.Type().Name(), value.Type().ShortName(), value.Type().Type(), i)
 		ret, err = t.EnterFunction(value, x)
 		if err != nil || ret == EndTraverser {
 			return
