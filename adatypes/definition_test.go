@@ -52,7 +52,7 @@ func TestDefinitionGroup(t *testing.T) {
 	}
 
 	testDefinition := NewDefinitionWithTypes(layout)
-	request, err := testDefinition.CreateAdabasRequest(false, false,false)
+	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,G1,1,A,GX,1,A,PA,1,P,I8,8,B.",
 		request.FormatBuffer.String())
@@ -86,7 +86,7 @@ func TestDefinitionPeriodic(t *testing.T) {
 	testDefinition := NewDefinitionWithTypes(layout)
 	testDefinition.InitReferences()
 	// testDefinition.DumpTypes(false)
-	request, err := testDefinition.CreateAdabasRequest(false, false,false)
+	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,PGC,4,B,PG1-N,I8,8,B.",
@@ -123,7 +123,7 @@ func TestDefinitionMultiple(t *testing.T) {
 	}
 
 	testDefinition := NewDefinitionWithTypes(layout)
-	request, err := testDefinition.CreateAdabasRequest(false, false,false)
+	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,P1,1,A,PMC,4,B,PM1-N,1,P,PA,1,A,PX,1,P,I8,8,B.",
@@ -162,7 +162,7 @@ func TestDefinitionQuerySimple(t *testing.T) {
 	testDefinition := NewDefinitionWithTypes(layout)
 	err = testDefinition.ShouldRestrictToFields("U4,I2")
 	assert.Equal(t, nil, err)
-	request, err := testDefinition.CreateAdabasRequest(false, false,false)
+	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "U4,4,B,I2,2,B.",
@@ -209,7 +209,7 @@ func TestDefinitionQueryGroupField(t *testing.T) {
 	testDefinition := NewDefinitionWithTypes(layout)
 	err = testDefinition.ShouldRestrictToFields("U4,GS")
 	assert.Equal(t, nil, err)
-	request, err := testDefinition.CreateAdabasRequest(false, false,false)
+	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "U4,4,B,GS,1,A.",
@@ -273,7 +273,7 @@ func TestDefinitionQueryGroupFieldTwice(t *testing.T) {
 	testDefinition := NewDefinitionWithTypes(layout)
 	err = testDefinition.ShouldRestrictToFields("U4,GS,YS")
 	assert.Equal(t, nil, err)
-	request, err := testDefinition.CreateAdabasRequest(false, false,false)
+	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 	assert.Equal(t, "U4,4,B,YS,1,A,GS,1,A.", request.FormatBuffer.String())
 	adaType, err := testDefinition.SearchType("B1")
@@ -318,7 +318,7 @@ func TestDefinitionQueryWithLongname(t *testing.T) {
 	testDefinition := NewDefinitionWithTypes(layout)
 	err = testDefinition.ShouldRestrictToFields("UInt4,Int2")
 	assert.Equal(t, nil, err)
-	request, err := testDefinition.CreateAdabasRequest(false, false,false)
+	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "U4,4,B,I2,2,B.",
@@ -430,13 +430,13 @@ func TestDefinitionQueryMultipleField(t *testing.T) {
 	assert.Equal(t, nil, err)
 	// testDefinition.DumpTypes(false, false)
 	// testDefinition.DumpTypes(false, true)
-	request, err := testDefinition.CreateAdabasRequest(false, false,false)
+	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 	log.Debug(" ------------------------ after create adabas request 0 0")
 	assert.Equal(t, "U4,4,B,GMC,4,B,GM1-N,1,P,GS,1,A.",
 		request.FormatBuffer.String())
 
-	request, err = testDefinition.CreateAdabasRequest(true, false,false)
+	request, err = testDefinition.CreateAdabasRequest(true, false, false)
 	assert.Nil(t, err)
 
 	log.Debug(" ------------------------ after create adabas request 1 0")
@@ -456,7 +456,7 @@ func TestDefinitionQueryMultipleField(t *testing.T) {
 	testDefinition.DumpValues(false)
 	log.Debug(" ------------------------ before create adabas request 0 0")
 
-	request, err = testDefinition.CreateAdabasRequest(false, true)
+	request, err = testDefinition.CreateAdabasRequest(false, true, false)
 	assert.Nil(t, err)
 	log.Debug(" ------------------------ after create adabas request 0 1")
 
@@ -684,7 +684,7 @@ func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
 	testDefinition := createPeriodGroupMultiplerField()
 	testDefinition.DumpTypes(false, false)
 	// Generate format buffer for first read call
-	request, err := testDefinition.CreateAdabasRequest(false, false)
+	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 	testDefinition.DumpValues(false)
 	log.Debug(" ------------------------ after create adabas request 0 0")
@@ -692,7 +692,7 @@ func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
 		request.FormatBuffer.String())
 
 	// Generate format buffer for first store call
-	request, err = testDefinition.CreateAdabasRequest(true, false)
+	request, err = testDefinition.CreateAdabasRequest(true, false, false)
 	assert.Nil(t, err)
 
 	log.Debug(" ------------------------ after create adabas request 1 0")
@@ -716,7 +716,7 @@ func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
 
 	// Generate format buffer for first store call with PE/MU field data
 	log.Debug(" ------------------------ before create adabas request with data 1 0")
-	request, err = testDefinition.CreateAdabasRequest(true, false)
+	request, err = testDefinition.CreateAdabasRequest(true, false, false)
 	assert.Nil(t, err)
 	log.Debug(" ------------------------ after create adabas request with data 1 0")
 	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,GC1,1,A,GM1(1),5,P,GS1,1,A,GP1,1,P,I8,8,B.",
@@ -726,7 +726,7 @@ func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
 	log.Debug(" ------------------------ before create adabas request 0 0")
 
 	// Generate format buffer for second read call with missing PE/MU field data
-	request, err = testDefinition.CreateAdabasRequest(false, true)
+	request, err = testDefinition.CreateAdabasRequest(false, true, false)
 	assert.Nil(t, err)
 	log.Debug(" ------------------------ after create adabas request 0 1")
 
@@ -764,7 +764,7 @@ func TestDefinitionRestrictPeriodic(t *testing.T) {
 	err = testDefinition.ShouldRestrictToFields("U4,PG")
 	testDefinition.DumpTypes(false, false)
 	testDefinition.DumpTypes(false, true)
-	request, err := testDefinition.CreateAdabasRequest(false, false)
+	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "U4,4,B,PGC,4,B,PG1-N.",
@@ -833,7 +833,7 @@ func TestDefinitionRestrictPeriodicWithMU(t *testing.T) {
 	testDefinition := createLayoutWithPEandMU()
 	testDefinition.DumpValues(false)
 	err = testDefinition.ShouldRestrictToFields("U4,PG")
-	request, err := testDefinition.CreateAdabasRequest(false, false)
+	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "U4,4,B,PGC,4,B,PG1-N.",

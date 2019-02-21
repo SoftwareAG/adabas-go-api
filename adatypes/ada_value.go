@@ -46,11 +46,11 @@ type BufferOption struct {
 
 // NewBufferOption create option to parse the buffer
 func NewBufferOption(store bool, secondCall bool) *BufferOption {
-	return NewBufferOption3(store,secondCall,false)
+	return NewBufferOption3(store, secondCall, false)
 }
 
 // NewBufferOption3 create option to parse the buffer
-func NewBufferOption3(store bool, secondCall bool,mainframe bool) *BufferOption {
+func NewBufferOption3(store bool, secondCall bool, mainframe bool) *BufferOption {
 	return &BufferOption{MultifetchCall: false, StoreCall: store, HoldRecords: false,
 		ExchangeRecord: false, SecondCall: secondCall, NeedSecondCall: false,
 		multipleSize: defaultMultipleSize, Ascending: true, Mainframe: mainframe}

@@ -393,9 +393,9 @@ func TestReadRequestWithStream(t *testing.T) {
 }
 
 func ExampleReadRequest_histogramWithStream() {
-	f,err := initLogWithFile( "request.log")
+	f, err := initLogWithFile("request.log")
 	if err != nil {
-		fmt.Println("Error init log",err)
+		fmt.Println("Error init log", err)
 		return
 	}
 	defer f.Close()
@@ -407,21 +407,21 @@ func ExampleReadRequest_histogramWithStream() {
 	result, err := request.HistogramWithStream("AE='SMITH'", dumpStream, &i)
 	fmt.Println("Read done ...")
 	if err != nil {
-		fmt.Println("Error reading histogram",err)
-return
+		fmt.Println("Error reading histogram", err)
+		return
 	}
-if   i!=1 {
-	fmt.Println("Index error",i)
-}
-	if result!=nil {
+	if i != 1 {
+		fmt.Println("Index error", i)
+	}
+	if result != nil {
 		result.DumpValues()
 		fmt.Println("Result set should be empty")
 	}
 
 	// Output: Read 0 -> SMITH                = 19
-// Read done ...
-// Dump all result values
-// Result set should be empty
+	// Read done ...
+	// Dump all result values
+	// Result set should be empty
 }
 
 func TestReadRequestPhysicalStream(t *testing.T) {
