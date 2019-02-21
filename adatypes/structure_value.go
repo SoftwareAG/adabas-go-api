@@ -197,6 +197,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		}
 		return value.parsePeriodGroup(helper, option, occNumber)
 	}
+	Central.Log.Debugf("No occurance, check shift of PE empty part %v", option.Mainframe)
 	if option.Mainframe {
 		size := uint32(0)
 		t := TraverserMethods{EnterFunction: countPEsize}
