@@ -279,16 +279,16 @@ func ExampleConnection_periodGroupMfPart() {
 	//    curr-code[01] = > DM  <
 	//    salary[01] = > 42600 <
 	//    bonus[01] = [ 2 ]
-	// 	bonus[01,01] = > 3350 <
-	// 	bonus[01,02] = > 3000 <
+	//     bonus[01,01] = > 3350 <
+	//     bonus[01,02] = > 3000 <
 	//    curr-code[02] = > DM  <
 	//    salary[02] = > 41000 <
 	//    bonus[02] = [ 1 ]
-	// 	bonus[02,01] = > 3000 <
+	//     bonus[02,01] = > 3000 <
 	//    curr-code[03] = > DM  <
 	//    salary[03] = > 39600 <
 	//    bonus[03] = [ 1 ]
-	// 	bonus[03,01] = > 2500 <
+	//     bonus[03,01] = > 2500 <
 	// Record Isn: 0253
 	// Record Quantity: 0002
 	//   personnnel-id = > 11100304 <
@@ -296,11 +296,11 @@ func ExampleConnection_periodGroupMfPart() {
 	//    curr-code[01] = > DM  <
 	//    salary[01] = > 49200 <
 	//    bonus[01] = [ 2 ]
-	// 	bonus[01,01] = > 4400 <
-	// 	bonus[01,02] = > 2000 <
+	//     bonus[01,01] = > 4400 <
+	//     bonus[01,02] = > 2000 <
 	//    curr-code[02] = > DM  <
 	//    salary[02] = > 47000 <
 	//    bonus[02] = [ 1 ]
-	// 	bonus[02,01] = > 3800 <
+	//     bonus[02,01] = > 3800 <
 
 }
