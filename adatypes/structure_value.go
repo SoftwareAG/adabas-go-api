@@ -195,15 +195,14 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 			(value.Type().HasFlagSet(FlagOptionPE) && value.Type().Type() == FieldTypeMultiplefield) {
 			return value.parsePeriodMultiple(helper, option)
 		}
-			return value.parsePeriodGroup(helper, option, occNumber)
-	} else {
-		if option.Mainframe {
-			size := uint32(0)
-			t := TraverserMethods{EnterFunction: countPEsize}
-			adaType.Traverse(t, 1, &size)
-			Central.Log.Debugf("Skip parsing, shift PE empty part of size=%s",size)
-			helper.ReceiveBytes(size)
-		}
+		return value.parsePeriodGroup(helper, option, occNumber)
+	}
+	if option.Mainframe {
+		size := uint32(0)
+		t := TraverserMethods{EnterFunction: countPEsize}
+		adaType.Traverse(t, 1, &size)
+		Central.Log.Debugf("Skip parsing, shift PE empty part of size=%s", size)
+		helper.ReceiveBytes(size)
 	}
 
 	res = SkipStructure
