@@ -872,6 +872,6 @@ func dumpMapStoredData(target string, mapName string, search string) error {
 	for i, record := range result.Values {
 		record.Isn = adatypes.Isn(i + 1)
 	}
-	// result.DumpValues()
+	result.DumpValues()
 	return nil
 }
