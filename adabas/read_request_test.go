@@ -568,7 +568,8 @@ func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
 		assert.NotNil(t, result)
 		if result != nil {
 			fmt.Println("Dump result received ...")
-			result.DumpValues()
+			//result.DumpValues()
+			assert.Equals(t, 20, len(result.Values))
 		}
 	}
 }
