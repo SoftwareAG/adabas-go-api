@@ -169,7 +169,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 	Central.Log.Debugf("%s parse buffer for MU in PE/first call", value.Type().Name())
 	var occNumber int
 	occNumber, err = value.evaluateOccurence(helper)
-	Central.Log.Debugf("%s has %d entries", value.Type().Name(), occNumber)
+	Central.Log.Debugf("PE occourence %s has %d entries", value.Type().Name(), occNumber)
 	if occNumber > 0 {
 		lastNumber := uint32(occNumber)
 		if adaType.peRange.multiplier() != allEntries {
@@ -195,16 +195,14 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 			(value.Type().HasFlagSet(FlagOptionPE) && value.Type().Type() == FieldTypeMultiplefield) {
 			return value.parsePeriodMultiple(helper, option)
 		}
-		if occNumber == 0 {
-			if option.Mainframe {
-				size := uint32(0)
-				Central.Log.Debugf("Skip parsing, shift PE empty part")
-				t := TraverserMethods{EnterFunction: countPEsize}
-				adaType.Traverse(t, 1, &size)
-				helper.ReceiveBytes(size)
-			}
-		} else {
 			return value.parsePeriodGroup(helper, option, occNumber)
+	} else {
+		if option.Mainframe {
+			size := uint32(0)
+			t := TraverserMethods{EnterFunction: countPEsize}
+			adaType.Traverse(t, 1, &size)
+			Central.Log.Debugf("Skip parsing, shift PE empty part of size=%s",size)
+			helper.ReceiveBytes(size)
 		}
 	}
 
