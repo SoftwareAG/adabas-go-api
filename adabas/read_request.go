@@ -134,7 +134,7 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, e
 			return
 		}
 	}
-	adabasRequest, err = request.definition.CreateAdabasRequest(false, false)
+	adabasRequest, err = request.definition.CreateAdabasRequest(false, false, request.adabas.status.platform.IsMainframe())
 	if err != nil {
 		return
 	}

@@ -70,7 +70,7 @@ func (request *StoreRequest) Open() (err error) {
 }
 
 func (request *StoreRequest) prepareRequest() (adabasRequest *adatypes.Request, err error) {
-	adabasRequest, err = request.definition.CreateAdabasRequest(true, false)
+	adabasRequest, err = request.definition.CreateAdabasRequest(true, false, request.adabas.status.platform.IsMainframe())
 	if err != nil {
 		return
 	}
