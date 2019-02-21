@@ -742,6 +742,7 @@ func (adabas *Adabas) resetSendSize() {
 	}
 }
 
+// do second call reading lob data or multiple fields of the period group
 func (adabas *Adabas) secondCall(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	adatypes.Central.Log.Debugf("Check second call .... values avail.=%v", (adabasRequest.Definition.Values == nil))
 	if adabasRequest.Option.NeedSecondCall {
