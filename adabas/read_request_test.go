@@ -241,7 +241,7 @@ func TestReadRequestAllJson(t *testing.T) {
 	result, err := request.ReadLogicalBy("AA")
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-	result.DumpValues()
+	// result.DumpValues()
 	res, jerr := json.Marshal(result)
 	if jerr != nil {
 		fmt.Println("Error generating JSON", jerr)
@@ -290,10 +290,10 @@ func TestReadRequestHistogramSuperDescriptor(t *testing.T) {
 	if !assert.NotNil(t, result) {
 		return
 	}
-	if result != nil {
-		fmt.Println("Dump result received ...")
-		result.DumpValues()
-	}
+	// if result != nil {
+	// 	fmt.Println("Dump result received ...")
+	// 	result.DumpValues()
+	// }
 	assert.Equal(t, 10, len(result.Values))
 	adatypes.Central.Log.Debugf("Index  1 %p", result.Values[0].Value[0])
 	adatypes.Central.Log.Debugf("Index  2 %p", result.Values[1].Value[0])
@@ -345,8 +345,8 @@ func TestReadRequestReadMap(t *testing.T) {
 	}
 	assert.NotNil(t, result)
 	if result != nil {
-		fmt.Println("Dump result received ...")
-		result.DumpValues()
+		// fmt.Println("Dump result received ...")
+		// result.DumpValues()
 		assert.Equal(t, 1, len(result.Values))
 	} else {
 		fmt.Println("Error result nil ...")
@@ -392,22 +392,36 @@ func TestReadRequestWithStream(t *testing.T) {
 	}
 }
 
-func TestReadRequestHistogramStream(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
+func ExampleReadRequest_histogramWithStream() {
+	f,err := initLogWithFile( "request.log")
+	if err != nil {
+		fmt.Println("Error init log",err)
+		return
+	}
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
 	request := NewReadRequestAdabas(adabas, 11)
 	defer request.Close()
 	i := uint32(0)
 	result, err := request.HistogramWithStream("AE='SMITH'", dumpStream, &i)
 	fmt.Println("Read done ...")
-	assert.NoError(t, err)
-	assert.Equal(t, uint32(1), i)
-	if assert.NotNil(t, result) {
-		result.DumpValues()
+	if err != nil {
+		fmt.Println("Error reading histogram",err)
+return
 	}
+if   i!=1 {
+	fmt.Println("Index error",i)
+}
+	if result!=nil {
+		result.DumpValues()
+		fmt.Println("Result set should be empty")
+	}
+
+	// Output: Read 0 -> SMITH                = 19
+// Read done ...
+// Dump all result values
+// Result set should be empty
 }
 
 func TestReadRequestPhysicalStream(t *testing.T) {
@@ -556,25 +570,21 @@ func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
 	}
 	defer request.Close()
 	openErr := request.Open()
-	fmt.Println("Open database ...", openErr)
 	if assert.NoError(t, openErr) {
 		err = request.QueryFields("PERSONNEL-ID,FIRST-NAME,NAME")
 		if err != nil {
 			return
 		}
-		fmt.Println("After query fields")
 		result, err := request.ReadLogicalBy("PERSONNEL-ID")
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		if result != nil {
-			fmt.Println("Dump result received ...")
-			//result.DumpValues()
-			assert.Equals(t, 20, len(result.Values))
+			assert.Equal(t, 20, len(result.Values))
 		}
 	}
 }
 
-func TestReadLogical(t *testing.T) {
+func TestReadMaps(t *testing.T) {
 	ada, _ := NewAdabas(24)
 	request := NewReadRequestAdabas(ada, 4)
 	request.Limit = 0

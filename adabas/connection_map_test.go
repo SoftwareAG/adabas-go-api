@@ -275,8 +275,8 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 		fmt.Println("Read logigcal data:")
 		result, err := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
 		assert.NoError(t, err)
-		fmt.Println("Result data:")
-		result.DumpValues()
+		// fmt.Println("Result data:")
+		// result.DumpValues()
 		if assert.Equal(t, 3, len(result.Values)) {
 			ae := result.Values[1].HashFields["NAME"]
 			assert.Equal(t, "HAIBACH", strings.TrimSpace(ae.String()))
@@ -293,8 +293,8 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 		fmt.Println("Read logigcal data:")
 		result, err := request.ReadLogicalWith("Vendor=RENAULT")
 		assert.NoError(t, err)
-		fmt.Println("Result data:")
-		result.DumpValues()
+		// fmt.Println("Result data:")
+		// result.DumpValues()
 		if assert.Equal(t, 57, len(result.Values)) {
 			ae := result.Values[1].HashFields["Vendor"]
 			assert.Equal(t, "RENAULT", strings.TrimSpace(ae.String()))
@@ -333,8 +333,8 @@ func TestConnectionMapPointingToRemote(t *testing.T) {
 		fmt.Println("Read logigcal data:")
 		result, err := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
 		assert.NoError(t, err)
-		fmt.Println("Result data:")
-		result.DumpValues()
+		// fmt.Println("Result data:")
+		// result.DumpValues()
 		if assert.Equal(t, 3, len(result.Values)) {
 			ae := result.Values[1].HashFields["NAME"]
 			assert.Equal(t, "HAIBACH", strings.TrimSpace(ae.String()))
@@ -434,8 +434,8 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 		fmt.Println("Read logigcal data:")
 		err = request.ReadLogicalWithWithParser("PERSONNEL-ID=[11100000:11101000]", copyData, store)
 		assert.NoError(t, err)
-		fmt.Println("Result data:")
-		result.DumpValues()
+		// fmt.Println("Result data:")
+		// result.DumpValues()
 		if !assert.Equal(t, 0, len(result.Values)) {
 			return
 		}
@@ -592,7 +592,7 @@ func addEmployeeRecord(t *testing.T, storeRequest *StoreRequest, val string) err
 	if !assert.NoError(t, err) {
 		return err
 	}
-	storeRecord16.DumpValues()
+	// storeRecord16.DumpValues()
 	fmt.Println("Stored Employees request")
 	adatypes.Central.Log.Debugf("Vehicles store started")
 	err = storeRequest.Store(storeRecord16)
@@ -620,7 +620,7 @@ func addVehiclesRecord(t *testing.T, storeRequest *StoreRequest, val string) err
 	if !assert.NoError(t, err) {
 		return err
 	}
-	storeRecord.DumpValues()
+	// storeRecord.DumpValues()
 	fmt.Println("Store Vehicle request")
 	err = storeRequest.Store(storeRecord)
 	if !assert.NoError(t, err) {
@@ -872,6 +872,6 @@ func dumpMapStoredData(target string, mapName string, search string) error {
 	for i, record := range result.Values {
 		record.Isn = adatypes.Isn(i + 1)
 	}
-	result.DumpValues()
+	// result.DumpValues()
 	return nil
 }

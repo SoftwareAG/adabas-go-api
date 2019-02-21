@@ -228,7 +228,10 @@ func TestStoreMapFields(t *testing.T) {
 		return
 	}
 	fmt.Println("End transaction")
-	storeRequest.EndTransaction()
+	err = storeRequest.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
 }
 
 func clearAdabasFile(t *testing.T, target string, fnr Fnr) error {
@@ -358,7 +361,8 @@ func TestStoreMapFieldsPeriods(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	storeRequest.EndTransaction()
+	err = storeRequest.EndTransaction()
+	assert.NoError(t, err)
 }
 
 func TestStoreUpdateMapField(t *testing.T) {

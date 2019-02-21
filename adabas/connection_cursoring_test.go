@@ -20,49 +20,97 @@ package adabas
 
 import (
 	"fmt"
-	"testing"
-
-	log "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 )
 
-func TestConnectionCursing(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping malloc count in short mode")
+func ExampleReadRequest_ReadLogicalWithCursoring() {
+	f, err := initLogWithFile("connection_map.log")
+	if err != nil {
+		fmt.Println("Error initializing log", err)
+		return
 	}
-	f := initTestLogWithFile(t, "connection_map.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
-	if !assert.NoError(t, cerr) {
+	if cerr != nil {
+		fmt.Println("Error creating new connection", cerr)
 		return
 	}
 	defer connection.Close()
-	fmt.Println("Connection : ", connection)
 	request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
-	if assert.NoError(t, rerr) {
-		fmt.Println("Limit query data:")
-		request.QueryFields("NAME,PERSONNEL-ID")
-		request.Limit = 0
-		fmt.Println("Init cursor data...")
-		col, cerr := request.ReadLogicalWithCursoring("PERSONNEL-ID=[11100110:11100304]")
-		if !assert.NoError(t, cerr) {
+	if rerr != nil {
+		fmt.Println("Error creating map read request", rerr)
+		return
+	}
+	fmt.Println("Limit query data:")
+	request.QueryFields("NAME,PERSONNEL-ID")
+	request.Limit = 0
+	fmt.Println("Init cursor data...")
+	col, cerr := request.ReadLogicalWithCursoring("PERSONNEL-ID=[11100110:11100115]")
+	if cerr != nil {
+		fmt.Println("Error reading logical with using cursoring", cerr)
+		return
+	}
+	fmt.Println("Read next cursor record...")
+	for col.HasNextRecord() {
+		record, rerr := col.NextRecord()
+		if record == nil {
+			fmt.Println("Record nil received")
 			return
 		}
-		fmt.Println("Read next cursor record...")
-		for col.HasNextRecord() {
-			record, rerr := col.NextRecord()
-			assert.NoError(t, rerr)
-			assert.NotNil(t, record)
-			fmt.Println("Record received:")
-			record.DumpValues()
-
+		if rerr != nil {
+			fmt.Println("Error reading logical with using cursoring", rerr)
+			return
 		}
+		fmt.Println("Record received:")
+		record.DumpValues()
+		fmt.Println("Read next cursor record...")
 	}
+	fmt.Println("Last cursor record read")
+
+	// Output: Limit query data:
+	// Init cursor data...
+	// Read next cursor record...
+	// Record received:
+	// Dump all record values
+	//   PERSONNEL-ID = > 11100110 <
+	//   FULL-NAME = [ 1 ]
+	//    NAME = > BUNGERT              <
+	// Read next cursor record...
+	// Record received:
+	// Dump all record values
+	//   PERSONNEL-ID = > 11100111 <
+	//   FULL-NAME = [ 1 ]
+	//    NAME = > THIELE               <
+	// Read next cursor record...
+	// Record received:
+	// Dump all record values
+	//   PERSONNEL-ID = > 11100112 <
+	//   FULL-NAME = [ 1 ]
+	//    NAME = > THOMA                <
+	// Read next cursor record...
+	// Record received:
+	// Dump all record values
+	//   PERSONNEL-ID = > 11100113 <
+	//   FULL-NAME = [ 1 ]
+	//    NAME = > TREIBER              <
+	// Read next cursor record...
+	// Record received:
+	// Dump all record values
+	//   PERSONNEL-ID = > 11100114 <
+	//   FULL-NAME = [ 1 ]
+	//    NAME = > UNGER                <
+	// Read next cursor record...
+	// Record received:
+	// Dump all record values
+	//   PERSONNEL-ID = > 11100115 <
+	//   FULL-NAME = [ 1 ]
+	//    NAME = > VETTER               <
+	// Read next cursor record...
+	// Last cursor record read
+
 }
 
-func ExampleCursoring() {
+func ExampleReadRequest_ReadLogicalWithCursoringLimit() {
 	f, ferr := initLogWithFile("connection_map.log")
 	if ferr != nil {
 		fmt.Println("Error initializing log", ferr)

@@ -335,8 +335,8 @@ func TestRequestResultWithMUWithContent(t *testing.T) {
 		return
 	}
 
-	fmt.Println("Test request result:")
-	record.DumpValues()
+	// fmt.Println("Test request result:")
+	// record.DumpValues()
 	j, err := json.Marshal(record)
 	assert.NoError(t, err)
 	fmt.Println("JSON:", string(j))
@@ -360,8 +360,8 @@ func TestRequestResultWithPEMUWithoutContent(t *testing.T) {
 		return
 	}
 
-	fmt.Println("Test request result:")
-	record.DumpValues()
+	// fmt.Println("Test request result:")
+	// record.DumpValues()
 	j, err := json.Marshal(record)
 	assert.NoError(t, err)
 	fmt.Println("JSON:", string(j))
@@ -419,8 +419,8 @@ func TestRequestResultWithPEMUWithContent(t *testing.T) {
 		return
 	}
 
-	fmt.Println("Test request result:")
-	record.DumpValues()
+	// fmt.Println("Test request result:")
+	// record.DumpValues()
 	j, err := json.Marshal(record)
 	assert.NoError(t, err)
 	fmt.Println("JSON:", string(j))

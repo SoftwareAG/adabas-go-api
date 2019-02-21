@@ -140,7 +140,7 @@ func parseTestConnection(adabasRequest *adatypes.Request, x interface{}) (err er
 		}
 	}
 	fmt.Println("Store record:")
-	storeRecord.DumpValues()
+	// storeRecord.DumpValues()
 	//log.Println("Store record =====================================")
 	err = storeRequest.Store(storeRecord)
 	fmt.Println("ISN: ", storeRecord.Isn, " -> ", err)
@@ -428,11 +428,11 @@ func TestConnectionPeriodAndMultipleField(t *testing.T) {
 	qErr := readRequest.QueryFields("AA,AQ,AZ")
 	assert.NoError(t, qErr)
 	fmt.Println("Result data:")
-	result, rErr := readRequest.ReadISN(499)
+	_, rErr = readRequest.ReadISN(499)
 	if !assert.NoError(t, rErr) {
 		return
 	}
-	result.DumpValues()
+	// result.DumpValues()
 }
 
 func TestConnectionRemote(t *testing.T) {
@@ -482,7 +482,7 @@ func TestConnectionWithMap(t *testing.T) {
 		result, err = request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
 		assert.NoError(t, err)
 		fmt.Println("Result data:")
-		result.DumpValues()
+		// result.DumpValues()
 		if assert.Equal(t, 3, len(result.Values)) {
 			ae := result.Values[1].HashFields["NAME"]
 			assert.Equal(t, "HAIBACH", strings.TrimSpace(ae.String()))
@@ -516,8 +516,8 @@ func TestConnectionAllMap(t *testing.T) {
 		fmt.Println("Read logigcal data:")
 		result, err := request.ReadPhysicalSequence()
 		assert.NoError(t, err)
-		fmt.Println("Result data:")
-		result.DumpValues()
+		// fmt.Println("Result data:")
+		// result.DumpValues()
 		fmt.Println("Check size ...", len(result.Values))
 		if assert.Equal(t, 1107, len(result.Values)) {
 			ae := result.Values[1].HashFields["NAME"]
@@ -1036,39 +1036,87 @@ func TestConnectionADATCPSimpleRemote(t *testing.T) {
 	assert.NoError(t, openErr)
 }
 
-func TestConnectionReadOneLocal(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping malloc count in short mode")
+func ExampleReadRequest_readISN() {
+	f, err := initLogWithFile("connection.log")
+	if err != nil {
+		fmt.Println("Log init error", err)
+		return
 	}
-	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
-	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
-	if !assert.NoError(t, cerr) {
+	if cerr != nil {
+		fmt.Println("Connection error", err)
 		return
 	}
 	defer connection.Close()
 	fmt.Println(connection)
 	openErr := connection.Open()
-	assert.NoError(t, openErr)
+	if openErr != nil {
+		fmt.Println("Open error", openErr)
+	}
 	request, err := connection.CreateReadRequest(11)
-	if !assert.NoError(t, err) {
+	if err != nil {
+		fmt.Println("Create read request error", openErr)
 		return
 	}
 	request.Limit = 0
 	var result *Response
 	result, err = request.ReadISN(1)
-	if !assert.NoError(t, err) {
+	if err != nil {
+		fmt.Println("Read  error", openErr)
 		return
 	}
-	if assert.NotNil(t, result) {
-		fmt.Printf("Result: %p\n", result)
+	if result != nil {
 		err = result.DumpValues()
-		assert.NoError(t, err)
+		if err != nil {
+			fmt.Println("Dump values  error", openErr)
+			return
+		}
 	}
+
+	// Output: Adabas url=23 fnr=0
+	// Dump all result values
+	// Record Isn: 0001
+	//   AA = > 50005800 <
+	//   AB = [ 1 ]
+	//    AC = > SIMONE               <
+	//    AE = > ADAM                 <
+	//    AD = >                      <
+	//   AF = > M <
+	//   AG = > F <
+	//   AH = > 712981 <
+	//   A1 = [ 1 ]
+	//    AI = [ 1 ]
+	//     AI[01] = > 26 AVENUE RHIN ET DA <
+	//    AJ = > JOIGNY               <
+	//    AK = > 89300      <
+	//    AL = > F   <
+	//   A2 = [ 1 ]
+	//    AN = > 1033   <
+	//    AM = > 44864858        <
+	//   AO = > VENT59 <
+	//   AP = > CHEF DE SERVICE           <
+	//   AQ = [ 1 ]
+	//    AR[01] = > EUR <
+	//    AS[01] = > 963 <
+	//    AT[01] = [ 1 ]
+	//     AT[01,01] = > 138 <
+	//   A3 = [ 1 ]
+	//    AU = > 19 <
+	//    AV = > 5 <
+	//   AW = [ 1 ]
+	//    AX[01] = > 19990801 <
+	//    AY[01] = > 19990831 <
+	//   AZ = [ 2 ]
+	//    AZ[01] = > FRE <
+	//    AZ[02] = > ENG <
+	//   PH = >  <
+	//   H1 = > 1905 <
+	//   S1 = > VENT <
+	//   S2 = > VENT59ADAM                 <
+	//   S3 = >  <
 }
 
 func TestConnectionReadAllLocal(t *testing.T) {
