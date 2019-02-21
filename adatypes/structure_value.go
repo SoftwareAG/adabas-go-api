@@ -142,17 +142,15 @@ func evaluateFieldNames(adaValue IAdaValue, x interface{}) (TraverseResult, erro
 	return Continue, nil
 }
 
-// func countMU(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
-// 	helper := x.(*BufferHelper)
-// 	if adaType.Type() == FieldTypeMultiplefield {
-// 		Central.Log.Debugf("Skip MU counter %s", adaType.Name())
-// 		_, err := helper.ReceiveUInt32()
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-// 	return nil
-// }
+func countPEsize(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+	size := x.(*uint32)
+
+	if adaType.Type() != FieldTypeMultiplefield && !adaType.HasFlagSet(FlagOptionMUGhost) {
+		*size = *size + adaType.Length()
+		Central.Log.Debugf("Add to PE size: %s -> %d", adaType.Name(), *size)
+	}
+	return nil
+}
 
 /*
  Parse buffer if a period group contains multiple fields. In that case the buffer parser need to parse
@@ -198,10 +196,13 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 			return value.parsePeriodMultiple(helper, option)
 		}
 		if occNumber == 0 {
-			// Central.Log.Debugf("Skip parsing, evaluate MU for empty counter")
-			// t := TraverserMethods{EnterFunction: countMU}
-			// adaType.Traverse(t, 1, helper)
-
+			if option.Mainframe {
+				size := uint32(0)
+				Central.Log.Debugf("Skip parsing, shift PE empty part")
+				t := TraverserMethods{EnterFunction: countPEsize}
+				adaType.Traverse(t, 1, &size)
+				helper.ReceiveBytes(size)
+			}
 		} else {
 			return value.parsePeriodGroup(helper, option, occNumber)
 		}
