@@ -333,7 +333,7 @@ func (value *StructureValue) evaluateOccurence(helper *BufferHelper) (occNumber 
 		}
 	}
 	if occNumber > 1000000 {
-		return 0,fmt.Errorf("Occurance out of range >1000000")
+		return 0, fmt.Errorf("Occurance out of range >1000000")
 	}
 	Central.Log.Debugf("Evaluate occurrence for %s of type %d to %d", value.Type().Name(), subStructure.occ, occNumber)
 	return
@@ -351,7 +351,7 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 	Central.Log.Debugf("Occurence %d period index=%d", occNumber, value.peIndex)
 	switch value.Type().Type() {
 	case FieldTypePeriodGroup:
-		Central.Log.Debugf("Init period group values occurence=%d mainframe=%v",occNumber,option.Mainframe)
+		Central.Log.Debugf("Init period group values occurence=%d mainframe=%v", occNumber, option.Mainframe)
 		if occNumber == 0 {
 			if option.Mainframe {
 				value.shiftPeriod(helper)
@@ -413,14 +413,14 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 	return
 }
 
-func (value *StructureValue) shiftPeriod(helper *BufferHelper)  {
+func (value *StructureValue) shiftPeriod(helper *BufferHelper) {
 	size := uint32(0)
 	t := TraverserMethods{EnterFunction: countPEsize}
 	adaType := value.Type().(*StructureType)
 	adaType.Traverse(t, 1, &size)
 	Central.Log.Debugf("Skip parsing, shift PE empty part of size=%s", size)
 	helper.ReceiveBytes(size)
-return
+	return
 }
 
 // Search for structures by name
