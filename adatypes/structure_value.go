@@ -353,6 +353,7 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 			if option.Mainframe {
 				value.shiftPeriod(helper)
 			}
+			Central.Log.Debugf("Skip PE shifted to offset=%d/%X", helper.offset, helper.offset)
 			return
 		}
 		for i := uint32(0); i < uint32(occNumber); i++ {
@@ -361,6 +362,14 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 		Central.Log.Debugf("Init period group sub values finished")
 		return
 	case FieldTypeMultiplefield:
+		if occNumber == 0 {
+			if option.Mainframe {
+				adaType := value.Type().(*StructureType)
+				helper.ReceiveBytes(adaType.SubTypes[0].Length())
+			}
+			Central.Log.Debugf("Skip MU shifted to offset=%d/%X", helper.offset, helper.offset)
+			return
+		}
 		Central.Log.Debugf("Init multiple field sub values")
 		lastNumber := uint32(occNumber)
 		adaType := value.Type().(*StructureType)
@@ -415,7 +424,7 @@ func (value *StructureValue) shiftPeriod(helper *BufferHelper) {
 	t := TraverserMethods{EnterFunction: countPEsize}
 	adaType := value.Type().(*StructureType)
 	adaType.Traverse(t, 1, &size)
-	Central.Log.Debugf("Skip parsing, shift PE empty part of size=%s", size)
+	Central.Log.Debugf("Skip parsing, shift PE empty part of size=%d", size)
 	helper.ReceiveBytes(size)
 	return
 }

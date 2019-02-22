@@ -72,6 +72,7 @@ ADG0000071=Invalid URL given, need to be like <dbid>(<protocol>://<host>:<port>)
 ADG0000072='{0}' is no valid port number
 ADG0000080=Type {0} for {1} not supported for structure extraction
 ADG0000081=No values in result list
+ADG0000082=Error reading map  {0} out of map repository
 ADG0000090=Received data length is incorrect: {0}
 ADG0000091=Unknown ADATCP error code {0}
 ADG0000092=ADATCP header received is incomplete

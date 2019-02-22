@@ -819,6 +819,7 @@ var statisMessages = []struct {
 	{"ADG0000072", "en", "'{0}' is no valid port number"},
 	{"ADG0000080", "en", "Type {0} for {1} not supported for structure extraction"},
 	{"ADG0000081", "en", "No values in result list"},
+	{"ADG0000082", "en", "Error reading map  {0} out of map repository"},
 	{"ADG0000090", "en", "Received data length is incorrect: {0}"},
 	{"ADG0000091", "en", "Unknown ADATCP error code {0}"},
 	{"ADG0000092", "en", "ADATCP header received is incomplete"},

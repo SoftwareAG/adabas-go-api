@@ -23,13 +23,11 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 	"time"
-
-	"github.com/SoftwareAG/adabas-go-api/adatypes"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // MaxDatabasesID maximum valid database id

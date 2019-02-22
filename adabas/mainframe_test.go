@@ -352,6 +352,48 @@ func TestConnectionPEMUMfMap(t *testing.T) {
 
 }
 
+func TestConnectionPEShiftMfMap(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "connection.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	network := os.Getenv("ADAMFDBID")
+	if network == "" {
+		fmt.Println("Mainframe database not defined")
+		return
+	}
+	connection, cerr := NewConnection("acj;map;config=[" + network + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	log.Debug("Created connection : ", connection)
+	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
+	if assert.NoError(t, err) {
+		fmt.Println("Limit query data:")
+		request.QueryFields("personnnel-id,language")
+		request.Limit = 0
+		fmt.Println("Read logigcal data:")
+		result, err := request.ReadLogicalWith("personnnel-id=[11400327:11500303]")
+		assert.NoError(t, err)
+		fmt.Println("Result data:")
+		result.DumpValues()
+		fmt.Println("Check size ...", len(result.Values))
+		if assert.Equal(t, 1092, len(result.Values)) {
+			ae := result.Values[1].HashFields["name"]
+			fmt.Println("Check HAIBACH ...")
+			assert.Equal(t, "HAIBACH", strings.TrimSpace(ae.String()))
+			ei64, xErr := ae.Int64()
+			assert.Error(t, xErr, "Error should be send if value is string")
+			assert.Equal(t, int64(0), ei64)
+		}
+	}
+
+}
+
 func TestConnectionAllMfMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
@@ -384,11 +426,14 @@ func TestConnectionAllMfMap(t *testing.T) {
 		fmt.Println("Check size ...", len(result.Values))
 		if assert.Equal(t, 1107, len(result.Values)) {
 			ae := result.Values[1].HashFields["name"]
-			fmt.Println("Check MORENO ...")
-			assert.Equal(t, "MORENO", strings.TrimSpace(ae.String()))
+			fmt.Println("Check SCHIRM ...")
+			assert.Equal(t, "SCHIRM", strings.TrimSpace(ae.String()))
 			ei64, xErr := ae.Int64()
 			assert.Error(t, xErr, "Error should be send if value is string")
 			assert.Equal(t, int64(0), ei64)
+			ae = result.Values[1106].HashFields["name"]
+			fmt.Println("Check OSEA ...")
+			assert.Equal(t, "OSEA", strings.TrimSpace(ae.String()))
 		}
 	}
 

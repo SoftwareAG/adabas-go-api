@@ -203,6 +203,11 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 		return nil, adatypes.NewGenericError(64)
 	}
 	adatypes.Central.Log.Debugf("Search map: %s", mapName)
+	if m, ok := repository.CachedMaps[mapName]; ok {
+		adabasMap = m
+		return
+	}
+
 	request := NewReadRequestAdabas(adabas, repository.Fnr)
 	request.Limit = 0
 	err = request.ReadLogicalWithWithParser(mapFieldName.fieldName()+"="+mapName, parseMaps, repository)
@@ -210,14 +215,16 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 		return
 	}
 	adatypes.Central.Log.Debugf("Read map repoistory searching %s", mapName)
-	if m, ok := repository.CachedMaps[mapName]; !ok {
-		adabasMap, err = repository.readAdabasMap(adabas, mapName)
-		if err != nil {
-			return nil, err
-		}
-	} else {
+	if m, ok := repository.CachedMaps[mapName]; ok {
+		// adabasMap, err = repository.readAdabasMap(adabas, mapName)
+		// if err != nil {
+		// 	return nil, err
+		// }
+		// } else {
 		adabasMap = m
-		adatypes.Central.Log.Debugf("Found map with ISN=%v", adabasMap.Isn)
+		// 	adatypes.Central.Log.Debugf("Found map with ISN=%v", adabasMap.Isn)
+	} else {
+		return nil, adatypes.NewGenericError(82, mapName)
 	}
 	adatypes.Central.Log.Debugf("Got map adabas to %s/%d", adabasMap.Repository.URL.String(), adabasMap.Repository.Fnr)
 	adatypes.Central.Log.Debugf("with data adabas to %s/%d", adabasMap.Data.URL.String(), adabasMap.Data.Fnr)
