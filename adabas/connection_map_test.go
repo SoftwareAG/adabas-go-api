@@ -416,6 +416,11 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 		return
 	}
 	defer connection.Close()
+	rconnection, rerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	defer rconnection.Close()
 	fmt.Println("Connection : ", connection)
 	store, err := connection.CreateMapStoreRequest("COPYEMPL")
 	if !assert.NoError(t, err) {
@@ -425,7 +430,7 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	request, rerr := rconnection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
 	if assert.NoError(t, rerr) {
 		fmt.Println("Limit query data:")
 		request.QueryFields("NAME,PERSONNEL-ID")
