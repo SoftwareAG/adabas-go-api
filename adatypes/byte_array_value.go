@@ -21,7 +21,6 @@ package adatypes
 
 import (
 	"bytes"
-	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"strconv"
@@ -47,7 +46,17 @@ func (value *byteArrayValue) ByteValue() byte {
 }
 
 func (value *byteArrayValue) String() string {
-	return fmt.Sprintf("%v", value.value)
+	var buffer bytes.Buffer
+	for _, b := range value.value {
+		if buffer.Len() > 0 {
+			buffer.WriteRune(' ')
+		} else {
+			buffer.WriteRune('[')
+		}
+		buffer.WriteString(fmt.Sprintf("%d", b))
+	}
+	buffer.WriteRune(']')
+	return buffer.String()
 }
 
 func (value *byteArrayValue) Value() interface{} {
@@ -62,12 +71,34 @@ func (value *byteArrayValue) SetStringValue(stValue string) {
 	if strings.HasPrefix(stValue, "0x") {
 		decoded, err := hex.DecodeString(stValue[2:])
 		if err == nil {
-			value.value = decoded
+			if value.Type().Length() == 0 {
+				value.value = decoded
+			} else {
+				x := len(decoded)
+				value.value = append(decoded[:], value.value[x:]...)
+			}
 		}
 	} else {
 		iv, err := strconv.ParseUint(stValue, 10, 64)
 		if err == nil {
-			binary.LittleEndian.PutUint64(value.value, iv)
+			if value.Type().Length() == 0 {
+				value.value = make([]byte, 8)
+			}
+			switch {
+			case len(value.value) >= 8:
+				endian().PutUint64(value.value, iv)
+			case len(value.value) >= 4:
+				endian().PutUint32(value.value, uint32(iv))
+			case len(value.value) >= 2:
+				endian().PutUint16(value.value, uint16(iv))
+			case len(value.value) >= 1:
+				x, aerr := strconv.Atoi(stValue)
+				if aerr != nil {
+					return
+				}
+				value.value[0] = byte(x)
+			default:
+			}
 		}
 	}
 }
