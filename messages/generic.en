@@ -75,6 +75,7 @@ ADG0000081=No values in result list
 ADG0000082=Error reading map {0} out of map repository
 ADG0000083=Map definition missing
 ADG0000084=Unknown connection string parameter: {0}
+ADG0000085=Cannot evaluate map definition: {0}
 ADG0000090=Received data length is incorrect: {0}
 ADG0000091=Unknown ADATCP error code {0}
 ADG0000092=ADATCP header received is incomplete

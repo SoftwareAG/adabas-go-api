@@ -130,10 +130,18 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 
 	if mapName != "" {
 		adatypes.Central.Log.Debugf("Create map for %s\n", mapName)
-		adabasMap = NewAdabasMap(mapName, &repository.DatabaseURL)
-		adabasToMap, err = NewAdabasWithURL(adabasMap.URL(), adabasID)
-		if err != nil {
-			return nil, err
+		adabasToMap, err = NewAdabasWithID(repository.DatabaseURL.URL.String(), adabasID)
+		adabasMap, rerr := repository.SearchMap(adabasToMap, mapName)
+		if rerr != nil {
+			adabasMap = NewAdabasMap(mapName, &repository.DatabaseURL)
+			if adabasMap == nil {
+				return nil, adatypes.NewGenericError(85, mapName)
+			}
+			adabasToMap, err = NewAdabasWithURL(adabasMap.URL(), adabasID)
+			if err != nil {
+				return nil, err
+			}
+
 		}
 	}
 	adatypes.Central.Log.Debugf("Ready creating connection handle")

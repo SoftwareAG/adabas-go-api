@@ -374,12 +374,14 @@ func TestConnectionMapPointingToRemote(t *testing.T) {
 		assert.NoError(t, err)
 		// fmt.Println("Result data:")
 		// result.DumpValues()
-		if assert.Equal(t, 3, len(result.Values)) {
-			ae := result.Values[1].HashFields["NAME"]
-			assert.Equal(t, "HAIBACH", strings.TrimSpace(ae.String()))
-			ei64, xErr := ae.Int64()
-			assert.Error(t, xErr, "Error should be send if value is string")
-			assert.Equal(t, int64(0), ei64)
+		if assert.NotNil(t, result) {
+			if assert.Equal(t, 3, len(result.Values)) {
+				ae := result.Values[1].HashFields["NAME"]
+				assert.Equal(t, "HAIBACH", strings.TrimSpace(ae.String()))
+				ei64, xErr := ae.Int64()
+				assert.Error(t, xErr, "Error should be send if value is string")
+				assert.Equal(t, int64(0), ei64)
+			}
 		}
 	}
 }

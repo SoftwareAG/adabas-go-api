@@ -822,6 +822,7 @@ var statisMessages = []struct {
 	{"ADG0000082", "en", "Error reading map {0} out of map repository"},
 	{"ADG0000083", "en", "Map definition missing"},
 	{"ADG0000084", "en", "Unknown connection string parameter: {0}"},
+	{"ADG0000085", "en", "Cannot evaluate map definition: {0}"},
 	{"ADG0000090", "en", "Received data length is incorrect: {0}"},
 	{"ADG0000091", "en", "Unknown ADATCP error code {0}"},
 	{"ADG0000092", "en", "ADATCP header received is incomplete"},
