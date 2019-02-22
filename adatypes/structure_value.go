@@ -332,9 +332,6 @@ func (value *StructureValue) evaluateOccurence(helper *BufferHelper) (occNumber 
 			break
 		}
 	}
-	if occNumber > 1000000 {
-		return 0, fmt.Errorf("Occurance out of range >1000000")
-	}
 	Central.Log.Debugf("Evaluate occurrence for %s of type %d to %d", value.Type().Name(), subStructure.occ, occNumber)
 	return
 }
