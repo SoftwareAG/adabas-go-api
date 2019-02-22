@@ -42,7 +42,7 @@ func TestConnectionComplexSearch(t *testing.T) {
 	defer connection.Close()
 	fmt.Println(connection)
 	connection.Open()
-	readRequest, rErr := connection.CreateReadRequest(16)
+	readRequest, rErr := connection.CreateFileReadRequest(16)
 	assert.NoError(t, rErr)
 	readRequest.QueryFields("AA,AB")
 
@@ -70,7 +70,7 @@ func TestConnectionSuperDescriptor(t *testing.T) {
 	defer connection.Close()
 	fmt.Println(connection)
 	connection.Open()
-	readRequest, rErr := connection.CreateReadRequest(11)
+	readRequest, rErr := connection.CreateFileReadRequest(11)
 	assert.NoError(t, rErr)
 	readRequest.QueryFields("AU,AV")
 
@@ -98,7 +98,7 @@ func TestConnectionSuperDescSearch(t *testing.T) {
 	defer connection.Close()
 
 	connection.Open()
-	readRequest, rErr := connection.CreateReadRequest(16)
+	readRequest, rErr := connection.CreateFileReadRequest(16)
 	assert.NoError(t, rErr)
 	err = readRequest.QueryFields("AA,AB")
 	assert.NoError(t, err)

@@ -53,7 +53,7 @@ func BenchmarkConnection_cached(b *testing.B) {
 }
 
 func readAll(b *testing.B) error {
-	connection, cerr := NewConnection("acj;map;config=[24,4]")
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
 		return cerr
 	}
@@ -86,7 +86,7 @@ func BenchmarkConnection_noreconnect(b *testing.B) {
 	}
 	defer f.Close()
 
-	connection, cerr := NewConnection("acj;map;config=[24,4]")
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if !assert.NoError(b, cerr) {
 		return
 	}
@@ -127,14 +127,14 @@ func TestAuth(t *testing.T) {
 	defer f.Close()
 
 	//connection, cerr := NewConnection("acj;map;config=[177(adatcp://pinas:60177),4]")
-	connection, cerr := NewConnection("acj;target=24;auth=NONE,user=TestAuth,id=4,host=xx")
+	connection, cerr := NewConnection("acj;target=" + adabasStatDBIDs + ";auth=NONE,user=TestAuth,id=4,host=xx")
 	if !assert.NoError(t, cerr) {
 		return
 	}
 	assert.Contains(t, connection.ID.String(), "xx      :TestAuth [4] ")
 	connection.Close()
 
-	connection, cerr = NewConnection("acj;target=24;auth=NONE,user=ABCDEFGHIJ,id=65535,host=KLMNOPQRSTUVWXYZ")
+	connection, cerr = NewConnection("acj;target=" + adabasStatDBIDs + ";auth=NONE,user=ABCDEFGHIJ,id=65535,host=KLMNOPQRSTUVWXYZ")
 	if !assert.NoError(t, cerr) {
 		return
 	}
@@ -162,6 +162,45 @@ func TestConnectionRemoteMap(t *testing.T) {
 
 	for i := 0; i < 5; i++ {
 		request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+		if !assert.NoError(t, rerr) {
+			fmt.Println("Error create request", rerr)
+			return
+		}
+		err := request.QueryFields("NAME,FIRST-NAME,PERSONNEL-ID")
+		if !assert.NoError(t, err) {
+			return
+		}
+		request.Limit = 0
+		var result *Response
+		result, err = request.ReadLogicalBy("NAME")
+		if !assert.NoError(t, err) {
+			return
+		}
+		if !assert.Equal(t, 1107, len(result.Values)) {
+			return
+		}
+	}
+}
+
+func TestConnectionMap(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f, err := initLogWithFile("connection_map.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+
+	connection, cerr := NewConnection("acj;map=EMPLOYEES-NAT-DDM;config=[" + adabasStatDBIDs + ",4];auth=NONE,user=XMAP")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	for i := 0; i < 5; i++ {
+		request, rerr := connection.CreateReadRequest()
 		if !assert.NoError(t, rerr) {
 			fmt.Println("Error create request", rerr)
 			return
@@ -260,7 +299,7 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 		return
 	}
 	log.Infof("TEST: %s", t.Name())
-	connection, cerr := NewConnection("acj;map;config=[24,4]")
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if !assert.NoError(t, cerr) {
 		return
 	}
@@ -319,7 +358,7 @@ func TestConnectionMapPointingToRemote(t *testing.T) {
 	}
 
 	log.Infof("TEST: %s", t.Name())
-	connection, cerr := NewConnection("acj;map;config=[24,4];auth=NONE,user=TCMapPoin,id=4,host=REMOTE")
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4];auth=NONE,user=TCMapPoin,id=4,host=REMOTE")
 	if !assert.NoError(t, cerr) {
 		return
 	}
@@ -459,7 +498,7 @@ func ExampleConnection_readWithMap() {
 
 	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
 
-	connection, cerr := NewConnection("acj;map;config=[24,4]")
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
 		return
 	}
@@ -511,7 +550,7 @@ func ExampleConnection_readFileDefinitionMapGroup() {
 	}
 	defer f.Close()
 
-	connection, cerr := NewConnection("acj;map;config=[24,4]")
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
 		return
 	}

@@ -169,7 +169,7 @@ func TestConnectionSimpleTypes(t *testing.T) {
 	defer connection.Close()
 	fmt.Println(connection)
 	connection.Open()
-	readRequest, rErr := connection.CreateReadRequest(16)
+	readRequest, rErr := connection.CreateFileReadRequest(16)
 	assert.NoError(t, rErr)
 	readRequest.QueryFields("")
 	deleteRequest, dErr := connection.CreateDeleteRequest(16)
@@ -179,7 +179,7 @@ func TestConnectionSimpleTypes(t *testing.T) {
 	assert.NoError(t, dErr)
 	deleteRequest.EndTransaction()
 
-	request, rErr2 := connection.CreateReadRequest(11)
+	request, rErr2 := connection.CreateFileReadRequest(11)
 	if !assert.NoError(t, rErr2) {
 		return
 	}
@@ -269,7 +269,7 @@ func TestConnectionMultipleFields(t *testing.T) {
 	defer connection.Close()
 	fmt.Println(connection)
 	connection.Open()
-	readRequest, rErr := connection.CreateReadRequest(16)
+	readRequest, rErr := connection.CreateFileReadRequest(16)
 	if !assert.NoError(t, rErr) {
 		return
 	}
@@ -280,7 +280,7 @@ func TestConnectionMultipleFields(t *testing.T) {
 	err = readRequest.ReadPhysicalSequenceWithParser(deleteRecords, deleteRequest)
 	deleteRequest.EndTransaction()
 
-	request, rErr2 := connection.CreateReadRequest(11)
+	request, rErr2 := connection.CreateFileReadRequest(11)
 	assert.NoError(t, rErr2)
 	storeRequest, sErr := connection.CreateStoreRequest(16)
 	assert.NoError(t, sErr)
@@ -310,7 +310,7 @@ func TestConnectionStorePeriodFields(t *testing.T) {
 	defer connection.Close()
 	fmt.Println(connection)
 	connection.Open()
-	readRequest, rErr := connection.CreateReadRequest(16)
+	readRequest, rErr := connection.CreateFileReadRequest(16)
 	assert.NoError(t, rErr)
 	readRequest.QueryFields("")
 	deleteRequest, dErr := connection.CreateDeleteRequest(16)
@@ -322,7 +322,7 @@ func TestConnectionStorePeriodFields(t *testing.T) {
 	deleteRequest.EndTransaction()
 
 	fmt.Println("Call Read to 11")
-	request, rErr2 := connection.CreateReadRequest(11)
+	request, rErr2 := connection.CreateFileReadRequest(11)
 	assert.NoError(t, rErr2)
 	fmt.Println("Call Store to 16")
 	storeRequest, sErr := connection.CreateStoreRequest(16)
@@ -357,7 +357,7 @@ func TestConnectionMultifetch(t *testing.T) {
 	defer connection.Close()
 	fmt.Println(connection)
 	connection.Open()
-	readRequest, rErr := connection.CreateReadRequest(11)
+	readRequest, rErr := connection.CreateFileReadRequest(11)
 	assert.NoError(t, rErr)
 	readRequest.Limit = 0
 	readRequest.Multifetch = 10
@@ -390,7 +390,7 @@ func TestConnectionNoMultifetch(t *testing.T) {
 	defer connection.Close()
 	fmt.Println(connection)
 	connection.Open()
-	readRequest, rErr := connection.CreateReadRequest(11)
+	readRequest, rErr := connection.CreateFileReadRequest(11)
 	assert.NoError(t, rErr)
 	readRequest.Limit = 0
 	readRequest.Multifetch = 1
@@ -419,7 +419,7 @@ func TestConnectionPeriodAndMultipleField(t *testing.T) {
 	defer connection.Close()
 	fmt.Println(connection)
 	connection.Open()
-	readRequest, rErr := connection.CreateReadRequest(11)
+	readRequest, rErr := connection.CreateFileReadRequest(11)
 	if !assert.NoError(t, rErr) {
 		return
 	}
@@ -538,7 +538,7 @@ func ExampleConnection_readLogicalWith() {
 		return
 	}
 	defer connection.Close()
-	request, err := connection.CreateReadRequest(11)
+	request, err := connection.CreateFileReadRequest(11)
 	if err != nil {
 		fmt.Println("Error read map : ", err)
 		return
@@ -583,7 +583,7 @@ func ExampleConnection_periodGroup() {
 		return
 	}
 	defer connection.Close()
-	request, err := connection.CreateReadRequest(11)
+	request, err := connection.CreateFileReadRequest(11)
 	if err != nil {
 		fmt.Println("Error read map : ", err)
 		return
@@ -638,7 +638,7 @@ func ExampleConnection_wideCharacter() {
 		return
 	}
 	defer connection.Close()
-	request, err := connection.CreateReadRequest(9)
+	request, err := connection.CreateFileReadRequest(9)
 	if err != nil {
 		fmt.Println("Error read map : ", err)
 		return
@@ -742,7 +742,7 @@ func ExampleConnection_marhsalJSONComplete() {
 		return
 	}
 	defer connection.Close()
-	request, err := connection.CreateReadRequest(11)
+	request, err := connection.CreateFileReadRequest(11)
 	if err != nil {
 		fmt.Println("Error read map : ", err)
 		return
@@ -777,7 +777,7 @@ func ExampleConnection_marhsalJSON() {
 		return
 	}
 	defer connection.Close()
-	request, err := connection.CreateReadRequest(11)
+	request, err := connection.CreateFileReadRequest(11)
 	if err != nil {
 		fmt.Println("Error read map : ", err)
 		return
@@ -853,7 +853,7 @@ func TestConnectionReadMap(t *testing.T) {
 		return
 	}
 	defer connection.Close()
-	request, err := connection.CreateReadRequest(4)
+	request, err := connection.CreateFileReadRequest(4)
 	if !assert.NoError(t, err) {
 		fmt.Println("Error read map : ", err)
 		return
@@ -940,7 +940,7 @@ func ExampleConnection_readIsn() {
 		return
 	}
 	defer connection.Close()
-	request, err := connection.CreateReadRequest(11)
+	request, err := connection.CreateFileReadRequest(11)
 	if err != nil {
 		fmt.Println("Error create request: ", err)
 		return
@@ -1056,7 +1056,7 @@ func ExampleReadRequest_readISN() {
 	if openErr != nil {
 		fmt.Println("Open error", openErr)
 	}
-	request, err := connection.CreateReadRequest(11)
+	request, err := connection.CreateFileReadRequest(11)
 	if err != nil {
 		fmt.Println("Create read request error", openErr)
 		return
@@ -1137,7 +1137,7 @@ func TestConnectionReadAllLocal(t *testing.T) {
 	fmt.Println(connection)
 	openErr := connection.Open()
 	assert.NoError(t, openErr)
-	request, err := connection.CreateReadRequest(11)
+	request, err := connection.CreateFileReadRequest(11)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1172,7 +1172,7 @@ func TestConnectionReadSpecialLocal(t *testing.T) {
 	fmt.Println(connection)
 	openErr := connection.Open()
 	assert.NoError(t, openErr)
-	request, err := connection.CreateReadRequest(11)
+	request, err := connection.CreateFileReadRequest(11)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1207,7 +1207,7 @@ func TestConnectionADATCPReadRemote(t *testing.T) {
 	fmt.Println(connection)
 	openErr := connection.Open()
 	assert.NoError(t, openErr)
-	request, err := connection.CreateReadRequest(11)
+	request, err := connection.CreateFileReadRequest(11)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1242,7 +1242,7 @@ func TestConnectionReadUnicode(t *testing.T) {
 	fmt.Println(connection)
 	openErr := connection.Open()
 	assert.NoError(t, openErr)
-	request, err := connection.CreateReadRequest(9)
+	request, err := connection.CreateFileReadRequest(9)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1290,7 +1290,7 @@ func TestConnectionReadDeepPEFields(t *testing.T) {
 	fmt.Println(connection)
 	openErr := connection.Open()
 	assert.NoError(t, openErr)
-	request, err := connection.CreateReadRequest(9)
+	request, err := connection.CreateFileReadRequest(9)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1335,7 +1335,7 @@ func TestConnectionReadAllFields9(t *testing.T) {
 	fmt.Println(connection)
 	openErr := connection.Open()
 	assert.NoError(t, openErr)
-	request, err := connection.CreateReadRequest(9)
+	request, err := connection.CreateFileReadRequest(9)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1369,7 +1369,7 @@ func TestConnectionReadAllPEFields9(t *testing.T) {
 	fmt.Println(connection)
 	openErr := connection.Open()
 	assert.NoError(t, openErr)
-	request, err := connection.CreateReadRequest(9)
+	request, err := connection.CreateFileReadRequest(9)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1406,7 +1406,7 @@ func TestConnectionReadOnlyPEFields9(t *testing.T) {
 	fmt.Println(connection)
 	openErr := connection.Open()
 	assert.NoError(t, openErr)
-	request, err := connection.CreateReadRequest(9)
+	request, err := connection.CreateFileReadRequest(9)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1525,7 +1525,7 @@ func ExampleConnection_endTransaction() {
 		return
 	}
 	fmt.Println("Record stored, check content ...")
-	readRequest, rrerr := connection.CreateReadRequest(16)
+	readRequest, rrerr := connection.CreateFileReadRequest(16)
 	if rrerr != nil {
 		fmt.Println("Read request error", rrerr)
 		return
@@ -1565,7 +1565,7 @@ func checkStoreByFile(t *testing.T, target string, file Fnr, search string) erro
 		return err
 	}
 	defer connection.Close()
-	readRequest, rrerr := connection.CreateReadRequest(file)
+	readRequest, rrerr := connection.CreateFileReadRequest(file)
 	if !assert.NoError(t, rrerr) {
 		return rrerr
 	}
@@ -1774,7 +1774,7 @@ func dumpStoredData(target string, file Fnr, search string) error {
 		return err
 	}
 	defer connection.Close()
-	readRequest, rrerr := connection.CreateReadRequest(file)
+	readRequest, rrerr := connection.CreateFileReadRequest(file)
 	if rrerr != nil {
 		return rrerr
 	}
@@ -1802,4 +1802,28 @@ func dumpStoredData(target string, file Fnr, search string) error {
 	}
 	result.DumpValues()
 	return nil
+}
+
+func TestConnection_NewConnectionError(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "connection.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	url := adabasModDBIDs
+	fmt.Println("Connect to ", url)
+	connection, cerr := NewConnection("xxx;target=" + url)
+	assert.Error(t, cerr)
+	assert.Nil(t, connection)
+
+	connection, cerr = NewConnection("ada;target=xxxx")
+	assert.Error(t, cerr)
+	assert.Nil(t, connection)
+
+	connection, cerr = NewConnection("ada;target=1;abr=1")
+	assert.Error(t, cerr)
+	assert.Nil(t, connection)
+
 }

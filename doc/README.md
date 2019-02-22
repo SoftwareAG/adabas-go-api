@@ -102,7 +102,7 @@ if err!=nil {
 }
 defer connection.Close()
 connection.Open()
-readRequest, rErr := connection.CreateReadRequest(11)
+readRequest, rErr := connection.CreateFileReadRequest(11)
 readRequest.QueryFields("AA,AB")
 readRequest.Limit = 0
 result := &Response{}

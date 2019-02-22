@@ -41,7 +41,7 @@ func ExampleConnection_readMainframe() {
 		return
 	}
 	defer connection.Close()
-	request, err := connection.CreateReadRequest(1)
+	request, err := connection.CreateFileReadRequest(1)
 	if err != nil {
 		fmt.Println("Error creating read request : ", err)
 		return
@@ -95,7 +95,7 @@ func ExampleConnection_readBorderMainframe() {
 		return
 	}
 	defer connection.Close()
-	request, err := connection.CreateReadRequest(1)
+	request, err := connection.CreateFileReadRequest(1)
 	if err != nil {
 		fmt.Println("Error creating read request : ", err)
 		return
@@ -142,7 +142,7 @@ func ExampleConnection_readNoMinimumMainframe() {
 		return
 	}
 	defer connection.Close()
-	request, err := connection.CreateReadRequest(1)
+	request, err := connection.CreateFileReadRequest(1)
 	if err != nil {
 		fmt.Println("Error creating read request : ", err)
 		return
@@ -196,7 +196,7 @@ func ExampleConnection_readNoMaximumMainframe() {
 		return
 	}
 	defer connection.Close()
-	request, err := connection.CreateReadRequest(1)
+	request, err := connection.CreateFileReadRequest(1)
 	if err != nil {
 		fmt.Println("Error creating read request : ", err)
 		return

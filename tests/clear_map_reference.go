@@ -94,7 +94,7 @@ func main() {
 	}
 	defer connection.Close()
 	connection.Open()
-	readRequest, rErr := connection.CreateReadRequest(adabas.Fnr(file))
+	readRequest, rErr := connection.CreateFileReadRequest(adabas.Fnr(file))
 	if rErr != nil {
 		fmt.Println("Error creating read request", rErr)
 		return

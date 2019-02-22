@@ -213,7 +213,7 @@ func clearFile(file Fnr) error {
 	}
 	defer connection.Close()
 	connection.Open()
-	readRequest, rErr := connection.CreateReadRequest(file)
+	readRequest, rErr := connection.CreateFileReadRequest(file)
 	if err != nil {
 		return rErr
 	}

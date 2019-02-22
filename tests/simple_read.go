@@ -38,9 +38,9 @@ func main() {
 		fmt.Printf("Open() error=%v\n", err)
 		return
 	}
-	readRequest, cerr := connection.CreateReadRequest(11)
+	readRequest, cerr := connection.CreateFileReadRequest(11)
 	if cerr != nil {
-		fmt.Printf("CreateReadRequest() error=%v\n", err)
+		fmt.Printf("CreateFileReadRequest() error=%v\n", err)
 		return
 	}
 	err = readRequest.QueryFields("AA,AB")

@@ -61,7 +61,7 @@ if err!=nil {
 defer connection.Close()
 connection.Open()
 // To work on file 11 create corresponding read request
-request, rErr := connection.CreateReadRequest(11)
+request, rErr := connection.CreateFileReadRequest(11)
 // Define the result records content
 request.QueryFields("AA,AB")
 request.Limit = 0

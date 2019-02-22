@@ -108,7 +108,7 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 				}
 			}
 		default:
-			return nil, nil
+			return nil, adatypes.NewGenericError(84, p)
 		}
 	}
 
@@ -244,7 +244,15 @@ func (connection *Connection) Release() error {
 }
 
 // CreateReadRequest create a read request
-func (connection *Connection) CreateReadRequest(fnr Fnr) (*ReadRequest, error) {
+func (connection *Connection) CreateReadRequest() (*ReadRequest, error) {
+	if connection.adabasMap == nil {
+		return nil, adatypes.NewGenericError(83)
+	}
+	return connection.CreateMapReadRequest(connection.adabasMap.Name)
+}
+
+// CreateFileReadRequest create a read request
+func (connection *Connection) CreateFileReadRequest(fnr Fnr) (*ReadRequest, error) {
 	return NewReadRequestAdabas(connection.adabasToData, fnr), nil
 }
 

@@ -202,7 +202,7 @@ func TestFieldTypeRead(t *testing.T) {
 	fmt.Println(connection)
 	openErr := connection.Open()
 	assert.NoError(t, openErr)
-	request, err := connection.CreateReadRequest(270)
+	request, err := connection.CreateFileReadRequest(270)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -328,7 +328,7 @@ func ExampleConnection_FieldType() {
 		fmt.Println("Error opening database", openErr)
 		return
 	}
-	request, err := connection.CreateReadRequest(270)
+	request, err := connection.CreateFileReadRequest(270)
 	if err != nil {
 		fmt.Println("Error creating read request", err)
 		return
