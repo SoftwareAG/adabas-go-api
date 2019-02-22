@@ -337,8 +337,8 @@ func TestConnectionPEMUMfMap(t *testing.T) {
 		fmt.Println("Read logigcal data:")
 		result, err := request.ReadLogicalWith("personnnel-id=11100301")
 		assert.NoError(t, err)
-		fmt.Println("Result data:")
-		result.DumpValues()
+		// fmt.Println("Result data:")
+		// result.DumpValues()
 		fmt.Println("Check size ...", len(result.Values))
 		if assert.Equal(t, 1092, len(result.Values)) {
 			ae := result.Values[1].HashFields["name"]
@@ -374,21 +374,18 @@ func TestConnectionPEShiftMfMap(t *testing.T) {
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
 	if assert.NoError(t, err) {
 		fmt.Println("Limit query data:")
-		request.QueryFields("personnnel-id,language")
+		request.QueryFields("*")
 		request.Limit = 0
 		fmt.Println("Read logigcal data:")
 		result, err := request.ReadLogicalWith("personnnel-id=[11400327:11500303]")
 		assert.NoError(t, err)
-		fmt.Println("Result data:")
-		result.DumpValues()
+		// fmt.Println("Result data:")
+		// result.DumpValues()
 		fmt.Println("Check size ...", len(result.Values))
-		if assert.Equal(t, 1092, len(result.Values)) {
+		if assert.Equal(t, 5, len(result.Values)) {
 			ae := result.Values[1].HashFields["name"]
 			fmt.Println("Check HAIBACH ...")
-			assert.Equal(t, "HAIBACH", strings.TrimSpace(ae.String()))
-			ei64, xErr := ae.Int64()
-			assert.Error(t, xErr, "Error should be send if value is string")
-			assert.Equal(t, int64(0), ei64)
+			assert.Equal(t, "SCHILLING", strings.TrimSpace(ae.String()))
 		}
 	}
 
