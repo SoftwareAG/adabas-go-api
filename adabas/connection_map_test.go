@@ -270,7 +270,7 @@ func checkVehicleMap(mapName string, jsonImport string) error {
 	_, err := mr.SearchMap(a, mapName)
 	if err != nil {
 		fmt.Println("Search map, try loading map ...", err)
-		maps, err := loadJSONMap(jsonImport)
+		maps, err := LoadJSONMap(jsonImport)
 		if err != nil {
 			return err
 		}
@@ -439,7 +439,7 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 	ada, _ := NewAdabas(adabasModDBID)
 	_, err := mr.SearchMap(ada, "COPYEMPL")
 	if err != nil {
-		maps, merr := loadJSONMap("COPYEMPL.json")
+		maps, merr := LoadJSONMap("COPYEMPL.json")
 		if !assert.NoError(t, merr) {
 			return
 		}

@@ -3,15 +3,16 @@
 <!-- TOC -->
 
 - [Adabas Map concept](#adabas-map-concept)
-   - [Concept](#concept)
-   - [Migration](#migration)
-      - [Object of migration](#object-of-migration)
-      - [New Map repository](#new-map-repository)
-      - [New Map repository](#new-map-repository-1)
-   - [Adabas Data Designer](#adabas-data-designer)
-      - [Design of the Adabas Map](#design-of-the-adabas-map)
-      - [Adabas Map FDT](#adabas-map-fdt)
-      - [Usage of Adabas Maps](#usage-of-adabas-maps)
+  - [Concept](#concept)
+  - [Migration](#migration)
+    - [Object of migration](#object-of-migration)
+    - [New Map repository](#new-map-repository)
+    - [New Map repository](#new-map-repository-1)
+  - [Adabas Data Designer](#adabas-data-designer)
+    - [Design of the Adabas Map](#design-of-the-adabas-map)
+    - [Adabas Map FDT](#adabas-map-fdt)
+  - [Usage of Adabas Maps](#usage-of-adabas-maps)
+  - [Import and Export of maps](#import-and-export-of-maps)
 
 <!-- /TOC -->
 
@@ -140,7 +141,7 @@ Field Definition Table:
 -------------------------------------------------------------------------------
 ```
 
-### Usage of Adabas Maps
+## Usage of Adabas Maps
 
 Because the Adabas Maps are part of the basic concept of the Java and GO API, the Adabas Maps can be used in all components. The Adabas RESTful API provides the possibility to access Adabas RESTful data using the Adabas Map name.
 
@@ -149,3 +150,33 @@ Inside the Adabas API the Adabas Map access is possible to be referenced using t
 Because the Adabas Maps are part of the basic concept of the Java and GO API, the Adabas Maps can be used in all components. The Adabas RESTful API provides the possibility to access Adabas RESTful data using the Adabas Map name.
 
 Inside the Adabas GO API the Adabas Map access is possible to be referenced using the repository and the name reference.
+
+## Import and Export of maps
+
+It may be useful to administrate the Map definition. Especially to move them from development databases to the production database.
+
+Therefore an import/export API is introduced. The file format is JSON. Here is an example JSON configuration for a Map
+
+```json
+{"Maps":[
+   {"Name":"VehicleMap",
+   "Data":{
+      "Target":"24(tcpip://vanGogh:0)","File":12},"LastModifified":"2019\\02\\06 20:11:26",
+      "Fields":[
+         {"LongName":"Vendor","ShortName":"AD","ContentType":"","Charset":"US-ASCII","File":0,"FormatType":"A","FormatLength":-1,"FieldType":"ALPHA"},
+         {"LongName":"Model","ShortName":"AE","ContentType":"","Charset":"US-ASCII","File":0,"FormatType":"A","FormatLength":-1,"FieldType":"ALPHA"},
+         {"LongName":"Color","ShortName":"AF","ContentType":"","Charset":"US-ASCII","File":0,"FormatType":"A","FormatLength":-1,"FieldType":"ALPHA"}
+      ]
+   }]
+}
+```
+
+You can use the GO api to load the JSON file and write it to an Map repository like that:
+
+```GO
+maps, merr := LoadJSONMap("COPYEMPL.json")
+for _, m := range maps {
+  m.Repository = &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 4}
+  err = m.Store()
+}
+```

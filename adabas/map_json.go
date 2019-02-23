@@ -48,3 +48,25 @@ func ParseJSONFileForFields(file *os.File) (mapList []*Map, err error) {
 	mapList = mapFile.Maps
 	return
 }
+
+// LoadJSONMap load JSON Map file and creates Map instance of that
+func LoadJSONMap(file string) (maps []*Map, err error) {
+	p := os.Getenv("TESTFILES")
+	if p == "" {
+		p = "."
+	}
+	name := p + "/" + file
+	fmt.Println("Loading ...." + file)
+	f, ferr := os.Open(name)
+	if ferr != nil {
+		return nil, ferr
+	}
+	defer f.Close()
+
+	maps, err = ParseJSONFileForFields(f)
+	if err != nil {
+		fmt.Println("Error parsing file", err)
+		return nil, err
+	}
+	return
+}

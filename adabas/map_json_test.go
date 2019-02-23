@@ -541,33 +541,12 @@ func ExampleParseJSONFileForFields() {
 
 }
 
-func loadJSONMap(file string) (maps []*Map, err error) {
-	p := os.Getenv("TESTFILES")
-	if p == "" {
-		p = "."
-	}
-	name := p + "/" + file
-	fmt.Println("Loading ...." + file)
-	f, ferr := os.Open(name)
-	if ferr != nil {
-		return nil, ferr
-	}
-	defer f.Close()
-
-	maps, err = ParseJSONFileForFields(f)
-	if err != nil {
-		fmt.Println("Error parsing file", err)
-		return nil, err
-	}
-	return
-}
-
 func TestImportMaps(t *testing.T) {
 	f := initTestLogWithFile(t, "mapjson.log")
 	defer f.Close()
 
 	clearFile(4)
-	maps, err := loadJSONMap("Maps.json")
+	maps, err := LoadJSONMap("Maps.json")
 	if !assert.NoError(t, err) {
 		return
 	}
