@@ -131,8 +131,8 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 	if mapName != "" {
 		adatypes.Central.Log.Debugf("Create map for %s\n", mapName)
 		adabasToMap, err = NewAdabasWithID(repository.DatabaseURL.URL.String(), adabasID)
-		adabasMap, rerr := repository.SearchMap(adabasToMap, mapName)
-		if rerr != nil {
+		adabasMap, err = repository.SearchMap(adabasToMap, mapName)
+		if err != nil {
 			adabasMap = NewAdabasMap(mapName, &repository.DatabaseURL)
 			if adabasMap == nil {
 				return nil, adatypes.NewGenericError(85, mapName)
@@ -141,14 +141,15 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 			if err != nil {
 				return nil, err
 			}
-
 		}
+		adatypes.Central.Log.Debugf("Found map %s\n", adabasMap.Name)
+
 	}
-	adatypes.Central.Log.Debugf("Ready creating connection handle")
 
 	connection = &Connection{adabasToData: adabasToData, ID: *adabasID,
 		adabasToMap: adabasToMap, adabasMap: adabasMap, repository: repository}
-	return
+		adatypes.Central.Log.Debugf("Ready created connection handle %#v",connection)
+		return
 }
 
 func parseAuth(id *ID, value string) error {
@@ -254,6 +255,7 @@ func (connection *Connection) Release() error {
 // CreateReadRequest create a read request
 func (connection *Connection) CreateReadRequest() (*ReadRequest, error) {
 	if connection.adabasMap == nil {
+		adatypes.Central.Log.Debugf("Map empty: %#v", connection)
 		return nil, adatypes.NewGenericError(83)
 	}
 	return connection.CreateMapReadRequest(connection.adabasMap.Name)
