@@ -148,8 +148,8 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 
 	connection = &Connection{adabasToData: adabasToData, ID: *adabasID,
 		adabasToMap: adabasToMap, adabasMap: adabasMap, repository: repository}
-		adatypes.Central.Log.Debugf("Ready created connection handle %#v",connection)
-		return
+	adatypes.Central.Log.Debugf("Ready created connection handle %#v", connection)
+	return
 }
 
 func parseAuth(id *ID, value string) error {

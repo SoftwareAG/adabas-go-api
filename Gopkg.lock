@@ -54,22 +54,22 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5462386895a322b94a79a5de7314310edbd5f4d15f851ae032f146b2c951b3de"
+  digest = "1:d0f4eb7abce3fbd3f0dcbbc03ffe18464846afd34c815928d2ae11c1e5aded04"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = ""
-  revision = "74369b46fc6756741c016591724fd1cb8e26845f"
+  revision = "ffb98f73852f696ea2bb21a617a5c4b3e067a439"
 
 [[projects]]
   branch = "master"
-  digest = "1:7b42c9a7f12584d8f351c3f3757f6a9f6894cd7ea987170fe472ce3a8f9bb6b8"
+  digest = "1:798023f857a80303a8c539417e988e76a070524e340e4731d8a565cb4efc58a5"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = ""
-  revision = "983097b1a8a340cd1cc7df17d735154d89e10b1a"
+  revision = "cd391775e71e684db52b63df9affd58269495083"
 
 [[projects]]
   branch = "master"

@@ -200,7 +200,7 @@ func TestConnectionMap(t *testing.T) {
 	defer connection.Close()
 
 	for i := 0; i < 5; i++ {
-		fmt.Printf("%d. instance called\n",i+1)
+		fmt.Printf("%d. instance called\n", i+1)
 		request, rerr := connection.CreateReadRequest()
 		if !assert.NoError(t, rerr) {
 			fmt.Println("Error create request", rerr)
