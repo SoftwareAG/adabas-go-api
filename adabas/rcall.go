@@ -54,7 +54,7 @@ func NewAdabasID() *ID {
 func (adabas *Adabas) CallAdabas() (err error) {
 	defer adatypes.TimeTrack(time.Now(), "CallAdabas "+string(adabas.Acbx.Acbxcmd[:]))
 
-	adatypes.Central.Log.Debugf("Call Adabas %p %s\n%v", adabas, adabas.URL.String(), adabas.ID.String())
+	adatypes.Central.Log.Debugf("Call Adabas (local disabled) adabasp=%p  %s\n%v", adabas, adabas.URL.String(), adabas.ID.String())
 	adatypes.LogMultiLineString(adabas.Acbx.String())
 	if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
 		return adatypes.NewGenericError(2, string(adabas.Acbx.Acbxcmd[:]))
