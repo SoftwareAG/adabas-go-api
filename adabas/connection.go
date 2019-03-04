@@ -30,7 +30,7 @@ import (
 
 // Connection Adabas connection context
 type Connection struct {
-	ID           ID
+	ID           *ID
 	adabasToData *Adabas
 	adabasMap    *Map
 	adabasToMap  *Adabas
@@ -146,7 +146,7 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 
 	}
 
-	connection = &Connection{adabasToData: adabasToData, ID: *adabasID,
+	connection = &Connection{adabasToData: adabasToData, ID: adabasID,
 		adabasToMap: adabasToMap, adabasMap: adabasMap, repository: repository}
 	adatypes.Central.Log.Debugf("Ready created connection handle %#v", connection)
 	return
@@ -252,6 +252,11 @@ func (connection *Connection) Release() error {
 	return nil
 }
 
+// AddCredential add user id and password credentials
+func (connection *Connection) AddCredential(user string, pwd string) {
+	connection.ID.AddCredential(user, pwd)
+}
+
 // CreateReadRequest create a read request
 func (connection *Connection) CreateReadRequest() (*ReadRequest, error) {
 	if connection.adabasMap == nil {
@@ -263,6 +268,8 @@ func (connection *Connection) CreateReadRequest() (*ReadRequest, error) {
 
 // CreateFileReadRequest create a read request
 func (connection *Connection) CreateFileReadRequest(fnr Fnr) (*ReadRequest, error) {
+	adatypes.Central.Log.Debugf("Connection: %#v", connection)
+	adatypes.Central.Log.Debugf("Data referenced : %#v", connection.adabasToData)
 	return NewReadRequestAdabas(connection.adabasToData, fnr), nil
 }
 
@@ -308,7 +315,7 @@ func (connection *Connection) prepareMapUsage(mapName string) (err error) {
 	adatypes.Central.Log.Debugf("Data Repository : %s", connection.adabasMap.Data.URL.String())
 	if connection.adabasToData == nil || connection.adabasToData.URL.String() != connection.adabasMap.Data.URL.String() {
 		adatypes.Central.Log.Debugf("Create new Adabas")
-		connection.adabasToData, err = NewAdabasWithURL(connection.adabasMap.URL(), &connection.ID)
+		connection.adabasToData, err = NewAdabasWithURL(connection.adabasMap.URL(), connection.ID)
 		if err != nil {
 			return err
 		}
@@ -344,7 +351,7 @@ func (connection *Connection) CreateMapDeleteRequest(mapName string) (request *D
 		err = adatypes.NewGenericError(8, mapName)
 		return
 	}
-	connection.adabasToData, err = NewAdabasWithURL(connection.adabasMap.URL(), &connection.ID)
+	connection.adabasToData, err = NewAdabasWithURL(connection.adabasMap.URL(), connection.ID)
 	if err != nil {
 		//err = adatypes.NewGenericError(10)
 		return

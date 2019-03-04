@@ -246,6 +246,8 @@ type Status struct {
 type ID struct {
 	connectionMap map[string]*Status
 	AdaID         *AID
+	user          string
+	pwd           string
 }
 
 // SetUser set the user id name into the ID, prepare byte array correctly
@@ -269,6 +271,12 @@ func (adaid *ID) SetHost(Host string) {
 // SetID set the pid into the ID, prepare byte array correctly
 func (adaid *ID) SetID(pid uint32) {
 	adaid.AdaID.Pid = pid
+}
+
+// AddCredential add user id and password credentials
+func (adaid *ID) AddCredential(user string, pwd string) {
+	adaid.user = user
+	adaid.pwd = pwd
 }
 
 // String return string representation of Adabas ID

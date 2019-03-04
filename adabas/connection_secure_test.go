@@ -2,16 +2,17 @@ package adabas
 
 import (
 	"fmt"
+	"testing"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestConnectionSecure_fail(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection_descriptor.log")
+	f := initTestLogWithFile(t, "connection_secure.log")
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
@@ -34,7 +35,7 @@ func TestConnectionSecure_pwd(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection_descriptor.log")
+	f := initTestLogWithFile(t, "connection_secure.log")
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
@@ -42,14 +43,14 @@ func TestConnectionSecure_pwd(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	connection.AddCredential("sag", "pwd")
+	connection.AddCredential("hkaf", "dummy1")
 
 	request, rerr := connection.CreateFileReadRequest(11)
 	if !assert.NoError(t, rerr) {
 		fmt.Println("Error create request", rerr)
 		return
 	}
-	err = request.QueryFields("AA")
+	err = request.QueryFields("AA,AE")
 	assert.NoError(t, err)
 	if err != nil {
 		fmt.Println("Error query fields for request", err)

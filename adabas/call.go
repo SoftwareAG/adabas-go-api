@@ -55,6 +55,11 @@ import (
 #include "adabasx.h"
 long flags = 0;
 
+typedef struct credential {
+  char *user;
+  char *pwd;
+} CREDENTIAL;
+
 // Initialize ABD array with number of ABD
 PABD *create_abd(int num_abd)
 {
@@ -86,7 +91,7 @@ void destroy_abd(PABD *pabd, int num_abd)
 }
 
 // Adabas interface for Go to call ACBX Adabas calls
-int go_eadabasx(ADAID_T *adabas_id, PACBX acbx, int num_abd, PABD *abd)
+int go_eadabasx(ADAID_T *adabas_id, PACBX acbx, int num_abd, PABD *abd, CREDENTIAL *c)
 {
 	register int i;
 	int rsp;
@@ -95,9 +100,16 @@ int go_eadabasx(ADAID_T *adabas_id, PACBX acbx, int num_abd, PABD *abd)
 	uint32_t timeOut;
 	char user[9];
 	char node[9];
+#if 0
+	fprintf(stdout,"user %p %s\n",c->user,c->user);
+	fprintf(stdout,"pwd  %p\n",c->pwd);
+#endif
 	// Here I call the ACBX enabled Adabas function of adabasx
 	{
 		lnk_set_adabas_id((unsigned char *)(adabas_id));
+		if (c->user!=NULL) {
+			lnk_set_uid_pw(acbx->acbxdbid, c->user, c->pwd);
+		}
 		rsp = adabasx(acbx, num_abd, abd);
 	}
 	return (rsp);
@@ -259,14 +271,29 @@ func (adabas *Adabas) CallAdabas() (err error) {
 			adabas.AdabasBuffers[index].abd.Abdrecv = adabas.AdabasBuffers[index].abd.Abdsize
 			adabas.AdabasBuffers[index].createCAbd(pabdArray, index)
 		}
+		x := &C.CREDENTIAL{}
+		if adabas.ID.pwd != "" && adabas.Acbx.Acbxcmd == op.code() {
+			adatypes.Central.Log.Debugf("Set user %s password credentials", adabas.ID.user)
+			cUser := C.CString(adabas.ID.user)
+			cPassword := C.CString(adabas.ID.pwd)
+			x.user = cUser
+			x.pwd = cPassword
+			// C.lnk_set_uid_pw(C.uint(adabas.Acbx.Acbxdbid), cUser, cPassword)
+			// C.free(unsafe.Pointer(cUser))
+			// C.free(unsafe.Pointer(cPassword))
+		}
 		ret := int(C.go_eadabasx((*C.ADAID_T)(unsafe.Pointer(adabas.ID.AdaID)),
-			(*C.ACBX)(unsafe.Pointer(adabas.Acbx)), C.int(len(adabas.AdabasBuffers)), pabdArray))
+			(*C.ACBX)(unsafe.Pointer(adabas.Acbx)), C.int(len(adabas.AdabasBuffers)), pabdArray, x))
 		if adatypes.Central.IsDebugLevel() {
 			adatypes.Central.Log.Debugf("Send calling CC %c%c adabasp=%p URL=%s Adabas ID=%v",
 				adabas.Acbx.Acbxcmd[0], adabas.Acbx.Acbxcmd[1],
 				adabas, adabas.URL.String(), adabas.ID.String())
 			adatypes.Central.Log.Debugf("Local Adabas call returns: %d", ret)
 			adatypes.LogMultiLineString(adabas.Acbx.String())
+		}
+		if adabas.ID.pwd != "" && adabas.Acbx.Acbxcmd == op.code() {
+			C.free(unsafe.Pointer(x.user))
+			C.free(unsafe.Pointer(x.pwd))
 		}
 		for index := range adabas.AdabasBuffers {
 			//	adatypes.Central.Log.Debugf(index, ".ABD out : ", adabas.AdabasBuffers[index].abd.Abdsize)
