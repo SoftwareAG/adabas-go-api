@@ -36,12 +36,13 @@ import (
 )
 
 type caller struct {
-	url      string
-	file     uint32
-	counter  int
-	name     string
-	fields   string
-	threadNr uint32
+	url         string
+	file        uint32
+	counter     int
+	name        string
+	fields      string
+	threadNr    uint32
+	credentials string
 }
 
 var wg sync.WaitGroup
@@ -70,6 +71,15 @@ func callAdabas(c caller) {
 			return
 		}
 		defer connection.Close()
+
+		if c.credentials != "" {
+			c := strings.Split(c.credentials, ":")
+			if len(c) != 2 {
+				fmt.Printf("User credentials invalid format")
+				return
+			}
+			connection.AddCredential(c[0], c[1])
+		}
 
 		err = connection.Open()
 		if err != nil {
@@ -195,6 +205,7 @@ func main() {
 	var file int
 	var name string
 	var fields string
+	var credentials string
 	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 	var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
@@ -202,6 +213,7 @@ func main() {
 	flag.IntVar(&countValue, "c", 1, "Number of loops")
 	flag.IntVar(&threadValue, "t", 1, "Number of threads")
 	flag.StringVar(&name, "n", "AE=SMITH", "Search request")
+	flag.StringVar(&credentials, "p", "", "Define user and password credentials of type 'user:password'")
 	flag.StringVar(&fields, "d", "AA", "Query field list")
 	flag.IntVar(&file, "f", 11, "Adabas file used to read, should be Employees file")
 	flag.BoolVar(&output, "o", false, "display output")
@@ -231,7 +243,8 @@ func main() {
 	for i := uint32(0); i < uint32(threadValue); i++ {
 		fmt.Printf("Start thread %d/%d\n", i+1, threadValue)
 		c := caller{url: args[0], counter: countValue, threadNr: i + 1,
-			name: names[int(i)%len(names)], file: uint32(file), fields: fields}
+			name: names[int(i)%len(names)], file: uint32(file),
+			fields: fields, credentials: credentials}
 		go callAdabas(c)
 
 	}

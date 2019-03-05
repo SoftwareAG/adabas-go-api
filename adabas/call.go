@@ -272,6 +272,10 @@ func (adabas *Adabas) CallAdabas() (err error) {
 			adabas.AdabasBuffers[index].createCAbd(pabdArray, index)
 		}
 		x := &C.CREDENTIAL{}
+		/* For OP calls, initialize the security layer setting the password. The corresponding
+		 * Security buffer (Z-Buffer) are generated inside the Adabas client layer.
+		 * Under the hood the Z-Buffer will generate one time passwords send with the next call
+		 * after OP. */
 		if adabas.ID.pwd != "" && adabas.Acbx.Acbxcmd == op.code() {
 			adatypes.Central.Log.Debugf("Set user %s password credentials", adabas.ID.user)
 			cUser := C.CString(adabas.ID.user)
@@ -291,6 +295,8 @@ func (adabas *Adabas) CallAdabas() (err error) {
 			adatypes.Central.Log.Debugf("Local Adabas call returns: %d", ret)
 			adatypes.LogMultiLineString(adabas.Acbx.String())
 		}
+
+		// Free the corresponding C based memory
 		if adabas.ID.pwd != "" && adabas.Acbx.Acbxcmd == op.code() {
 			C.free(unsafe.Pointer(x.user))
 			C.free(unsafe.Pointer(x.pwd))
