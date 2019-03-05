@@ -37,11 +37,12 @@ import (
 )
 
 type caller struct {
-	url      string
-	file     uint32
-	counter  int
-	name     string
-	threadNr uint32
+	url        string
+	file       uint32
+	counter    int
+	name       string
+	threadNr   uint32
+	credential string
 }
 
 var wg sync.WaitGroup
@@ -105,6 +106,15 @@ func callAdabas(c caller) {
 		}
 		defer connection.Close()
 
+		if c.credential != "" {
+			c := strings.Split(c.credential, ":")
+			if len(c) != 2 {
+				fmt.Printf("User credentials invalid format")
+				return
+			}
+			connection.AddCredential(c[0], c[1])
+		}
+
 		err = connection.Open()
 		if err != nil {
 			fmt.Printf("Error opening connection to thread %d: %v\n", c.threadNr, err)
@@ -132,6 +142,15 @@ func callAdabas(c caller) {
 				fmt.Printf("Error create connection to thread %d\n", c.threadNr)
 				return
 			}
+			if c.credential != "" {
+				c := strings.Split(c.credential, ":")
+				if len(c) != 2 {
+					fmt.Printf("User credentials invalid format")
+					return
+				}
+				connection.AddCredential(c[0], c[1])
+			}
+
 			err = connection.Open()
 			if err != nil {
 				fmt.Printf("Error opening connection to thread %d\n", c.threadNr)
@@ -227,6 +246,7 @@ func main() {
 	var threadValue int
 	var file int
 	var name string
+	var credential string
 	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 	var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
@@ -234,6 +254,7 @@ func main() {
 	flag.IntVar(&countValue, "c", 1, "Number of loops")
 	flag.IntVar(&threadValue, "t", 1, "Number of threads")
 	flag.StringVar(&name, "n", "SMITH", "Test search for employee names separated by ','")
+	flag.StringVar(&credential, "p", "", "Define user and password credentials of type 'user:password'")
 	flag.IntVar(&file, "f", 11, "Adabas file used to read, should be Employees file")
 	flag.BoolVar(&output, "o", false, "display output")
 	flag.BoolVar(&close, "C", false, "Close Adabas connection in each loop")
@@ -262,7 +283,8 @@ func main() {
 	for i := uint32(0); i < uint32(threadValue); i++ {
 		fmt.Printf("Start thread %d/%d\n", i+1, threadValue)
 		c := caller{url: args[0], counter: countValue, threadNr: i + 1,
-			name: names[int(i)%len(names)], file: uint32(file)}
+			name: names[int(i)%len(names)], file: uint32(file),
+			credential: credential}
 		go callAdabas(c)
 
 	}

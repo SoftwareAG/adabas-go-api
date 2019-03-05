@@ -108,6 +108,15 @@ func callAdabas(c caller) {
 				fmt.Printf("Error create connection to thread %d\n", c.threadNr)
 				return
 			}
+			if c.credentials != "" {
+				c := strings.Split(c.credentials, ":")
+				if len(c) != 2 {
+					fmt.Printf("User credentials invalid format")
+					return
+				}
+				connection.AddCredential(c[0], c[1])
+			}
+
 			err = connection.Open()
 			if err != nil {
 				fmt.Printf("Error opening connection to thread %d\n", c.threadNr)
