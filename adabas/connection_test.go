@@ -20,6 +20,7 @@
 package adabas
 
 import (
+	"crypto/sha1"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -1826,4 +1827,35 @@ func TestConnection_NewConnectionError(t *testing.T) {
 	assert.Error(t, cerr)
 	assert.Nil(t, connection)
 
+}
+
+func TestConnectionLob(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "connection.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("ada;target=" + adabasModDBIDs)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	connection.Open()
+	readRequest, rErr := connection.CreateFileReadRequest(160)
+	assert.NoError(t, rErr)
+	err = readRequest.QueryFields("DC")
+	assert.NoError(t, err)
+	result, rerr := readRequest.ReadISN(1)
+	assert.NoError(t, rerr)
+
+	dc, serr := result.Values[0].SearchValue("DC")
+	assert.NoError(t, serr)
+	assert.NotNil(t, dc)
+	h := sha1.New()
+	h.Write(dc.Bytes())
+	fmt.Printf("SHA ALL: %x\n", h.Sum(nil))
+	assert.Equal(t, "f9652fc5077d9e73adece7918a5d2436b2ea2fe8", fmt.Sprintf("%x", h.Sum(nil)))
 }
