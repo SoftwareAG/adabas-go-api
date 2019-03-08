@@ -1837,14 +1837,14 @@ func TestConnectionLob(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	connection, err := NewConnection("ada;target=" + adabasModDBIDs)
+	connection, err := NewConnection("ada;target=" + adabasStatDBIDs)
 	if !assert.NoError(t, err) {
 		return
 	}
 	defer connection.Close()
 	fmt.Println(connection)
 	connection.Open()
-	readRequest, rErr := connection.CreateFileReadRequest(160)
+	readRequest, rErr := connection.CreateFileReadRequest(202)
 	assert.NoError(t, rErr)
 	err = readRequest.QueryFields("DC")
 	assert.NoError(t, err)
@@ -1857,5 +1857,41 @@ func TestConnectionLob(t *testing.T) {
 	h := sha1.New()
 	h.Write(dc.Bytes())
 	fmt.Printf("SHA ALL: %x\n", h.Sum(nil))
-	assert.Equal(t, "f9652fc5077d9e73adece7918a5d2436b2ea2fe8", fmt.Sprintf("%x", h.Sum(nil)))
+	assert.Equal(t, "a147a6bff1d2dc47e2e63404c3548d939764e6d2", fmt.Sprintf("%x", h.Sum(nil)))
+}
+
+func TestConnectionLobCheckAll(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "connection.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("ada;target=" + adabasStatDBIDs)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	connection.Open()
+	readRequest, rErr := connection.CreateFileReadRequest(202)
+	assert.NoError(t, rErr)
+	err = readRequest.QueryFields("DC,EC")
+	assert.NoError(t, err)
+	result, rerr := readRequest.ReadLogicalBy("BB")
+	assert.NoError(t, rerr)
+
+	for _, v := range result.Values {
+		dc, serr := v.SearchValue("DC")
+		assert.NoError(t, serr)
+		assert.NotNil(t, dc)
+		h := sha1.New()
+		h.Write(dc.Bytes())
+		ea, eerr := v.SearchValue("EC")
+		assert.NoError(t, eerr)
+		assert.NotNil(t, ea)
+		fmt.Printf("SHA ALL: %x\n", h.Sum(nil))
+		assert.Equal(t, ea.String(), fmt.Sprintf("%x", h.Sum(nil)))
+	}
 }
