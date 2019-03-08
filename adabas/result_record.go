@@ -31,7 +31,7 @@ import (
 // Record one result record of the result
 type Record struct {
 	Isn        adatypes.Isn `xml:"Isn,attr"`
-	Quantity   uint64
+	Quantity   uint64       `xml:"Isn,attr"`
 	Value      []adatypes.IAdaValue
 	HashFields map[string]adatypes.IAdaValue `xml:"-" json:"-"`
 	definition *adatypes.Definition          `xml:"-" json:"-"`

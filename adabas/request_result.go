@@ -189,7 +189,12 @@ func (Response *Response) MarshalXML(e *xml.Encoder, start xml.StartElement) err
 	if Response.Values != nil {
 		for _, record := range Response.Values {
 			rec := xml.StartElement{Name: xml.Name{Local: "Record"}}
-			rec.Attr = []xml.Attr{xml.Attr{Name: xml.Name{Local: "ISN"}, Value: strconv.Itoa(int(record.Isn))}}
+			if record.Isn > 0 {
+				rec.Attr = []xml.Attr{xml.Attr{Name: xml.Name{Local: "ISN"}, Value: strconv.Itoa(int(record.Isn))}}
+			}
+			if record.Quantity > 0 {
+				rec.Attr = []xml.Attr{xml.Attr{Name: xml.Name{Local: "Quantity"}, Value: strconv.Itoa(int(record.Quantity))}}
+			}
 			e.EncodeToken(rec)
 			// e.EncodeToken(xml.Attr{Name: xml.Name{Local: "ISN"}, Value: strconv.Itoa(int(record.Isn))})
 			record.traverse(tm, e)
@@ -376,7 +381,12 @@ func (Response *Response) MarshalJSON() ([]byte, error) {
 		dataMap := make(map[string]interface{})
 		req.dataMap = &dataMap
 		req.Values = append(req.Values, req.dataMap)
-		dataMap["ISN"] = record.Isn
+		if record.Isn > 0 {
+			dataMap["ISN"] = record.Isn
+		}
+		if record.Quantity > 0 {
+			dataMap["Quantity"] = record.Quantity
+		}
 		_, err := record.traverse(tm, req)
 		if err != nil {
 			adatypes.Central.Log.Debugf("Error creating JSON: %v", err)
@@ -413,7 +423,12 @@ func (record *Record) MarshalJSON() ([]byte, error) {
 	dataMap := make(map[string]interface{})
 	req.dataMap = &dataMap
 	req.Values = append(req.Values, req.dataMap)
-	dataMap["ISN"] = record.Isn
+	if record.Isn > 0 {
+		dataMap["ISN"] = record.Isn
+	}
+	if record.Quantity > 0 {
+		dataMap["Quantity"] = record.Quantity
+	}
 
 	// Traverse record generating JSON
 	_, err := record.traverse(tm, req)
