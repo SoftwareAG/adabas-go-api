@@ -34,7 +34,7 @@
 // the database id, the Adabas map or a remote reference with port 0. It is possible to reference remote
 // databases with the host and port directly.
 //
-// A local database reference: "24", "24(tcpip://host:0)","24(adatcp://host:0)".
+// A local database reference: "24", "24","24(adatcp://host:0)".
 //
 // A remote database reference: "24(adatcp://host:123)"
 //

@@ -64,7 +64,7 @@ func ExampleParseJSONFileForFields() {
 	// Output: Loading ....Maps.json
 	// Number of maps 17
 	// MAP NEW_EMPLOYEES
-	//   23(tcpip://host:0) 9
+	//   23 9
 	//    ln=personnel-data sn=A0 len=8 format=  content=
 	//    ln=personnel-id sn=AA len=8 format=A content=
 	//    ln=id-data sn=AB len=12 format=  content=
@@ -131,7 +131,7 @@ func ExampleParseJSONFileForFields() {
 	//    ln=Last_Updates sn=TU len=20 format=N content=
 	//    ln=Last_Updates sn=TU len=20 format=N content=
 	// MAP ADABAS_MAP
-	//   23(tcpip://host:0) 4
+	//   23 4
 	//    ln=TYPE-GROUP sn=TY len=0 format=  content=
 	//    ln=TYPE sn=TA len=1 format=B content=
 	//    ln=GENERATED sn=AA len=28 format=  content=
@@ -157,7 +157,7 @@ func ExampleParseJSONFileForFields() {
 	//    ln=TIMESTAMP sn=ZB len=8 format=B content=
 	//    ln=TIMESTAMP sn=ZB len=8 format=B content=
 	// MAP EMPLOYEES-NAT-DDM
-	//   23(tcpip://host:0) 11
+	//   23 11
 	//    ln=PERSONNEL-ID sn=AA len=8 format=A content=
 	//    ln=FULL-NAME sn=AB len=21 format=  content=
 	//    ln=FIRST-NAME sn=AC len=20 format=A content=
@@ -196,7 +196,7 @@ func ExampleParseJSONFileForFields() {
 	//    ln=DEPT-PERSON sn=S2 len=0 format=A content=
 	//    ln=CURRENCY-SALARY sn=S3 len=0 format=A content=
 	// MAP LOBEXAMPLE
-	//   23(tcpip://host:0) 202
+	//   23 202
 	//    ln=Generated sn=AA len=16 format=  content=
 	//    ln=Host sn=AB len=0 format=A content=
 	//    ln=Date sn=AC len=8 format=B content=
@@ -224,7 +224,7 @@ func ExampleParseJSONFileForFields() {
 	//    ln=Width sn=FH len=0 format=U content=charset=UTF-8
 	//    ln=Height sn=FI len=0 format=U content=charset=UTF-8
 	// MAP VEHICLES
-	//   23(tcpip://host:0) 12
+	//   23 12
 	//    ln=REG-NUM sn=AA len=15 format=A content=
 	//    ln=CHASSIS-NUM sn=AB len=4 format=B content=
 	//    ln=PERSONNEL-ID sn=AC len=8 format=A content=
@@ -241,7 +241,7 @@ func ExampleParseJSONFileForFields() {
 	//    ln=MAINT-COST sn=AM len=7 format=P content=
 	//    ln=MODEL-YEAR-MAKE sn=AO len=0 format=A content=
 	// MAP EmployeeMap
-	//   23(tcpip://host:0) 11
+	//   23 11
 	//    ln=Id sn=AA len=-1 format=A content=
 	//    ln=Name sn=AB len=-1 format=  content=
 	//    ln=FirstName sn=AC len=-1 format=A content=
@@ -254,12 +254,12 @@ func ExampleParseJSONFileForFields() {
 	//    ln=Bonus sn=AT len=-1 format=A content=
 	//    ln=Bonus sn=AT len=-1 format=A content=
 	// MAP VehicleMap
-	//   23(tcpip://host:0) 12
+	//   23 12
 	//    ln=Vendor sn=AD len=-1 format=A content=
 	//    ln=Model sn=AE len=-1 format=A content=
 	//    ln=Color sn=AF len=-1 format=A content=
 	// MAP LOB_MAP
-	//   23(tcpip://host:0) 202
+	//   23 202
 	//    ln=Location sn=BA len=-1 format=  content=
 	//    ln=Filename sn=BC len=-1 format=A content=
 	//    ln=Type sn=CA len=-1 format=  content=
@@ -269,7 +269,7 @@ func ExampleParseJSONFileForFields() {
 	//    ln=Checksum sn=EA len=-1 format=  content=
 	//    ln=PictureSHAchecksum sn=EC len=-1 format=A content=
 	// MAP PictureStore
-	//   23(tcpip://host:0) 280
+	//   23 280
 	//    ln=Generated sn=AA len=20 format=  content=
 	//    ln=Host sn=AB len=0 format=A content=
 	//    ln=Date sn=AC len=8 format=B content=
@@ -305,7 +305,7 @@ func ExampleParseJSONFileForFields() {
 	//    ln=Album sn=AL len=0 format=A content=
 	//    ln=Album sn=AL len=0 format=A content=
 	// MAP LOBSTORE
-	//   23(tcpip://host:0) 160
+	//   23 160
 	//    ln=Generated sn=AA len=16 format=  content=
 	//    ln=Host sn=AB len=0 format=A content=
 	//    ln=Date sn=AC len=8 format=B content=
@@ -333,7 +333,7 @@ func ExampleParseJSONFileForFields() {
 	//    ln=Width sn=FH len=0 format=U content=charset=UTF-8
 	//    ln=Height sn=FI len=0 format=U content=charset=UTF-8
 	// MAP EmployeeX
-	//   23(tcpip://host:0) 11
+	//   23 11
 	//    ln=PERSONNEL-ID sn=AA len=8 format=A content=
 	//    ln=FULL-NAME sn=AB len=0 format=  content=
 	//    ln=FIRST-NAME sn=AC len=20 format=A content=
@@ -367,7 +367,7 @@ func ExampleParseJSONFileForFields() {
 	//    ln=LANG sn=AZ len=3 format=A content=
 	//    ln=LANG sn=AZ len=3 format=A content=
 	// MAP Empl
-	//   23(tcpip://host:0) 11
+	//   23 11
 	//    ln=PERSONNEL-ID sn=AA len=8 format=A content=
 	//    ln=FULL-NAME sn=AB len=0 format=  content=
 	//    ln=FIRST-NAME sn=AC len=20 format=A content=
@@ -402,7 +402,7 @@ func ExampleParseJSONFileForFields() {
 	//    ln=LANG sn=AZ len=3 format=A content=
 	//    ln=PHONETIC-NAME sn=PH len=20 format=A content=
 	// MAP DublicateNames
-	//   23(tcpip://host:0) 11
+	//   23 11
 	//    ln=PERSONNEL-ID sn=AA len=8 format=A content=
 	//    ln=FULL-NAME sn=AB len=21 format=  content=
 	//    ln=FIRST-NAME sn=AC len=20 format=A content=
@@ -439,7 +439,7 @@ func ExampleParseJSONFileForFields() {
 	//    ln=LEAVE-LEFT sn=H1 len=0 format=A content=
 	//    ln=DEPARTMENT sn=S1 len=0 format=A content=
 	// MAP NewEmployees
-	//   23(tcpip://host:0) 9
+	//   23 9
 	//    ln=personnel-data sn=A0 len=0 format=  content=
 	//    ln=personnel-id sn=AA len=8 format=A content=
 	//    ln=id-data sn=AB len=0 format=  content=
@@ -467,7 +467,7 @@ func ExampleParseJSONFileForFields() {
 	//    ln=private-email sn=FI len=80 format=A content=
 	//    ln=private-email sn=FI len=80 format=A content=
 	// MAP MF_TYPES_FRACTIONAL
-	//   23(tcpip://host:0) 101
+	//   23 101
 	//    ln=ISN sn=AA len=8 format=P content=
 	//    ln=NUM_UNPACKED_W_SIGN_U sn=AB len=10 format=N content=
 	//    ln=BINARY sn=AC len=10 format=B content=
@@ -495,7 +495,7 @@ func ExampleParseJSONFileForFields() {
 	//    ln=B1_FIELD sn=AY len=1 format=B content=
 	//    ln=NUMERIC_UNPACKED_U sn=AZ len=10 format=N content=
 	// MAP MF_TYPES_FRACTIONAL2
-	//   23(tcpip://host:0) 101
+	//   23 101
 	//    ln=ISN sn=AA len=5 format=P content=
 	//    ln=NUM_UNPACKED_W_SIGN_U sn=AB len=10 format=N content=
 	//    ln=BINARY sn=AC len=10 format=B content=
@@ -523,7 +523,7 @@ func ExampleParseJSONFileForFields() {
 	//    ln=B1_FIELD sn=AY len=1 format=N content=
 	//    ln=NUMERIC_UNPACKED_U sn=AZ len=10 format=N content=
 	// MAP Employees
-	//   23(tcpip://host:0) 16
+	//   23 16
 	//    ln=ID sn=AA len=8 format=A content=
 	//    ln=FullName sn=AB len=40 format=  content=
 	//    ln=FirstName sn=AC len=20 format=A content=
