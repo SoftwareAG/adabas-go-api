@@ -900,28 +900,23 @@ func ExampleConnection_map() {
 		return
 	}
 	defer connection.Close()
-	fmt.Println("Connection :", connection)
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
 	if err != nil {
 		fmt.Println("Error read map : ", err)
 		return
 	}
 	fmt.Println("Connection :", connection)
-
-	fmt.Println("Limit query data:")
 	request.QueryFields("NAME,PERSONNEL-ID")
 	request.Limit = 2
-	fmt.Println("Read logical data:")
+	fmt.Println("Read logical data, two records:")
 	result, rerr := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
 	if rerr != nil {
 		return
 	}
 	fmt.Println("Result data:")
 	result.DumpValues()
-	// Output: Connection : Target not defined
-	// Connection : Map=EMPLOYEES-NAT-DDM Adabas url=24 fnr=0 connection file=11
-	// Limit query data:
-	// Read logical data:
+	// Output: Connection : Map=EMPLOYEES-NAT-DDM Adabas url=24 fnr=0 connection file=11
+	// Read logical data, two records:
 	// Result data:
 	// Dump all result values
 	// Record Isn: 0251
