@@ -103,7 +103,7 @@ func (URL URL) URL() string {
 
 // String Full reference of the URL, like 123(adatcp://hostname:port)
 func (URL URL) String() string {
-	if URL.Driver == "" {
+	if URL.Driver == "" || URL.Port == 0 {
 		return strconv.Itoa(int(URL.Dbid))
 	}
 	return strconv.Itoa(int(URL.Dbid)) + "(" + URL.Driver + "://" + URL.URL() + ")"
