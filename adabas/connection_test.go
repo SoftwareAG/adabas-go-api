@@ -1832,7 +1832,7 @@ func TestConnectionLob(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	connection, err := NewConnection("ada;target=" + adabasStatDBIDs)
+	connection, err := NewConnection("ada;target=24(adatcp://localhost:60024)")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -1841,7 +1841,7 @@ func TestConnectionLob(t *testing.T) {
 	connection.Open()
 	readRequest, rErr := connection.CreateFileReadRequest(202)
 	assert.NoError(t, rErr)
-	err = readRequest.QueryFields("DC")
+	err = readRequest.QueryFields("DC,EC")
 	assert.NoError(t, err)
 	result, rerr := readRequest.ReadISN(1)
 	assert.NoError(t, rerr)
@@ -1853,6 +1853,10 @@ func TestConnectionLob(t *testing.T) {
 	h.Write(dc.Bytes())
 	fmt.Printf("SHA ALL: %x\n", h.Sum(nil))
 	assert.Equal(t, "a147a6bff1d2dc47e2e63404c3548d939764e6d2", fmt.Sprintf("%x", h.Sum(nil)))
+	ea, eerr := result.Values[0].SearchValue("EC")
+	assert.NoError(t, eerr)
+	assert.NotNil(t, ea)
+	assert.Equal(t, ea.String(), fmt.Sprintf("%x", h.Sum(nil)))
 }
 
 func TestConnectionLobCheckAll(t *testing.T) {

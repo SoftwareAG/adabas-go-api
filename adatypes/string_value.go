@@ -194,7 +194,7 @@ func (value *stringValue) StoreBuffer(helper *BufferHelper) error {
 func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 
 	if option.SecondCall {
-		Central.Log.Debugf("Old size of lob data %d of %d", len(value.value), value.lobSize)
+		Central.Log.Debugf("Old size of lob data %d of %d offset=%d/%X", len(value.value), value.lobSize, helper.offset, helper.offset)
 		if value.Type().Type() == FieldTypeLBString && uint32(len(value.value)) < value.lobSize {
 			data, rErr := helper.ReceiveBytes(value.lobSize - uint32(len(value.value)))
 			if rErr != nil {
@@ -203,10 +203,11 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 			}
 			value.value = append(value.value, data...)
 			if Central.IsDebugLevel() {
+				LogMultiLineString(FormatByteBuffer("Data: ", data))
 				LogMultiLineString(FormatByteBuffer("(2)LOB Buffer: ", value.value))
 			}
 
-			Central.Log.Debugf("New size of lob data %d", len(value.value))
+			Central.Log.Debugf("New size of lob data %d offset=%d/%X", len(value.value), helper.Offset, helper.Offset)
 		}
 		if !value.Type().HasFlagSet(FlagOptionSecondCall) {
 			Central.Log.Debugf("Skip parsing %s offset=%d", value.Type().Name(), helper.offset)
