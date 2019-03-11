@@ -44,6 +44,27 @@ func TestMapRepository(t *testing.T) {
 
 }
 
+func TestGlobalMapRepository(t *testing.T) {
+	f := initTestLogWithFile(t, "map_repositories.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	ada, _ := NewAdabas(24)
+	defer ada.Close()
+	AddGlobalMapRepository(ada, 4)
+	defer DelGlobalMapRepository(ada, 4)
+	ada.Acbx.Acbxdbid = 23
+	AddGlobalMapRepository(ada, 4)
+	defer DelGlobalMapRepository(ada, 4)
+	adabasMaps, err := GloablMaps(ada)
+	assert.NoError(t, err)
+	assert.NotNil(t, adabasMaps)
+	for _, m := range adabasMaps {
+		fmt.Printf("%s -> %d\n", m.Name, m.Isn)
+	}
+
+}
+
 func TestMapRepositoryReadAll(t *testing.T) {
 	f := initTestLogWithFile(t, "map_repositories.log")
 	defer f.Close()
