@@ -81,3 +81,31 @@ func TestMapRepositoryReadAll(t *testing.T) {
 		fmt.Println(m.Name)
 	}
 }
+
+func TestGlobalMapConnection(t *testing.T) {
+	f := initTestLogWithFile(t, "map_repositories.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	ada, _ := NewAdabas(24)
+	defer ada.Close()
+	AddGlobalMapRepository(ada, 4)
+	defer DelGlobalMapRepository(ada, 4)
+
+	connection, cerr := NewConnection("acj;map=EMPLOYEES")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateReadRequest()
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	request.QueryFields("NAME,PERSONNEL-ID")
+	result, err := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
+	if !assert.NoError(t, err) {
+		return
+	}
+	result.DumpValues()
+}

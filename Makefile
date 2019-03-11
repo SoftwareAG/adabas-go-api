@@ -80,7 +80,6 @@ $(LIBS): | $(BASE) ; $(info $(M) building libraries…) @ ## Build program binar
 
 $(EXECS): | $(BASE) ; $(info $(M) building executable…) @ ## Build program binary
 	$Q cd $(BASE) && \
-	echo $(BIN)/$@ && \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" $(GO) build $(GO_FLAGS) \
 		-ldflags '-X $(PACKAGE)/cmd.Version=$(VERSION) -X $(PACKAGE)/cmd.BuildDate=$(DATE)' \
 		-o $(BIN)/$@ $@.go
