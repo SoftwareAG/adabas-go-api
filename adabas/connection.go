@@ -154,7 +154,14 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 			}
 		}
 		adatypes.Central.Log.Debugf("Found map %s\n", adabasMap.Name)
-		adabasToData = adabasToMap
+		if adabasMap.URL().String() == adabasMap.Data.URL.String() {
+			adabasToData = adabasToMap
+		} else {
+			adabasToMap, err = NewAdabasWithURL(&adabasMap.Data.URL, adabasID)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	connection = &Connection{adabasToData: adabasToData, ID: adabasID,
