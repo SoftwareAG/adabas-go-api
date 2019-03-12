@@ -69,7 +69,7 @@ func AddGlobalMapRepository(adabas *Adabas, fnr Fnr) {
 	}
 	rep := NewMapRepository(adabas, fnr)
 	reference := fmt.Sprintf("%s/%03d", adabas.URL.String(), fnr)
-	adatypes.Central.Log.Debugf("Add global repository: %s", reference)
+	adatypes.Central.Log.Debugf("Add global repository >%s<", reference)
 	repositories[reference] = rep
 }
 
@@ -291,10 +291,10 @@ func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, err er
 // GloablMaps search in map repository all maps
 func GloablMaps(adabas *Adabas) (maps []*Map, err error) {
 	mm := make(map[string]string)
-	for _, mr := range repositories {
+	for mn, mr := range repositories {
 		adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
-		adatypes.Central.Log.Debugf("Read in repository using Adabas %s for %s/%03d",
-			adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr)
+		adatypes.Central.Log.Debugf("Read in repository using Adabas %s for %s/%03d in %s",
+			adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr, mn)
 		adabasMaps, serr := mr.LoadAllMaps(adabas)
 		if serr != nil {
 			adatypes.Central.Log.Debugf("Continue in next repository because of error %v\n", serr)
