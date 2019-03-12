@@ -85,7 +85,7 @@ func recordValuesTraverser(adaValue adatypes.IAdaValue, x interface{}) (adatypes
 
 func (record *Record) String() string {
 	var buffer bytes.Buffer
-	buffer.WriteString(fmt.Sprintf("ISN=%d quanity=%d\n", record.Isn, record.Quantity))
+	buffer.WriteString(fmt.Sprintf("ISN=%d quantity=%d\n", record.Isn, record.Quantity))
 	t := adatypes.TraverserValuesMethods{EnterFunction: recordValuesTraverser}
 	record.traverse(t, &buffer)
 	// for _, v := range record.Value {
