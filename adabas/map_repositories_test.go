@@ -102,8 +102,8 @@ func TestGlobalMapConnection(t *testing.T) {
 	if !assert.NoError(t, rerr) {
 		return
 	}
-	request.QueryFields("NAME,PERSONNEL-ID")
-	result, err := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
+	request.QueryFields("name,personnel-id")
+	result, err := request.ReadLogicalWith("personnel-id=[11100301:11100303]")
 	if !assert.NoError(t, err) {
 		return
 	}

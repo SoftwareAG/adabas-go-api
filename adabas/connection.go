@@ -136,6 +136,9 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 			if err != nil {
 				return nil, err
 			}
+			if adabasMap == nil {
+				return nil, adatypes.NewGenericError(85, mapName)
+			}
 		} else {
 			adabasToMap, err = NewAdabasWithID(repository.DatabaseURL.URL.String(), adabasID)
 			adabasMap, err = repository.SearchMap(adabasToMap, mapName)
@@ -151,7 +154,7 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 			}
 		}
 		adatypes.Central.Log.Debugf("Found map %s\n", adabasMap.Name)
-
+		adabasToData = adabasToMap
 	}
 
 	connection = &Connection{adabasToData: adabasToData, ID: adabasID,
@@ -266,12 +269,15 @@ func (connection *Connection) AddCredential(user string, pwd string) {
 }
 
 // CreateReadRequest create a read request
-func (connection *Connection) CreateReadRequest() (*ReadRequest, error) {
+func (connection *Connection) CreateReadRequest() (request *ReadRequest, err error) {
 	if connection.adabasMap == nil {
 		adatypes.Central.Log.Debugf("Map empty: %#v", connection)
 		return nil, adatypes.NewGenericError(83)
 	}
-	return connection.CreateMapReadRequest(connection.adabasMap.Name)
+	connection.fnr = connection.adabasMap.Data.Fnr
+	adatypes.Central.Log.Debugf("Map referenced : %#v", connection.adabasMap)
+	request, err = NewMapReadRequestByMap(connection.adabasToData, connection.adabasMap)
+	return
 }
 
 // CreateFileReadRequest create a read request

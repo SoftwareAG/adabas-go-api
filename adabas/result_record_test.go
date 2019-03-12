@@ -49,7 +49,7 @@ func TestRecord(t *testing.T) {
 	result, err := NewRecord(testDefinition)
 	if assert.NoError(t, err) {
 		assert.NotNil(t, result)
-		assert.Equal(t, "ISN=0 quanity=0\n U4=\"0\"\n B1=\"0\"\n UB=\"0\"\n I2=\"0\"\n U8=\"0\"\n I8=\"0\"\n", result.String())
+		assert.Equal(t, "ISN=0 quantity=0\n U4=\"0\"\n B1=\"0\"\n UB=\"0\"\n I2=\"0\"\n U8=\"0\"\n I8=\"0\"\n", result.String())
 		v, verr := result.SearchValue("I2")
 		assert.NoError(t, verr)
 		assert.NotNil(t, v)
