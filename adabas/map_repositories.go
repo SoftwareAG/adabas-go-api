@@ -267,8 +267,10 @@ func (repository *Repository) LoadAllMaps(adabas *Adabas) (adabasMaps []*Map, er
 // SearchMapRepository search in map repository for a specific map name
 func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, err error) {
 	for _, mr := range repositories {
-		adatypes.Central.Log.Debugf("Search in repository using Adabas %s for %s/%03d", adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr)
+		adatypes.Central.Log.Debugf("Search in repository using Adabas %s for %s/%03d",
+			adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr)
 		var serr error
+		adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
 		adabasMap, serr = mr.SearchMapInRepository(adabas, mapName)
 		if serr != nil {
 			adatypes.Central.Log.Debugf("Continue in next repository because of error %v\n", serr)
@@ -290,12 +292,9 @@ func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, err er
 func GloablMaps(adabas *Adabas) (maps []*Map, err error) {
 	mm := make(map[string]string)
 	for _, mr := range repositories {
+		adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
 		adatypes.Central.Log.Debugf("Read in repository using Adabas %s for %s/%03d",
 			adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr)
-		if adabas.Acbx.Acbxdbid != mr.DatabaseURL.URL.Dbid {
-			adabas.Close()
-			adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
-		}
 		adabasMaps, serr := mr.LoadAllMaps(adabas)
 		if serr != nil {
 			adatypes.Central.Log.Debugf("Continue in next repository because of error %v\n", serr)

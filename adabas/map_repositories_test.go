@@ -49,14 +49,17 @@ func TestGlobalMapRepository(t *testing.T) {
 	defer f.Close()
 
 	log.Infof("TEST: %s", t.Name())
-	ada, _ := NewAdabas(24)
+	ada, _ := NewAdabas(23)
 	defer ada.Close()
 	AddGlobalMapRepository(ada, 4)
 	defer DelGlobalMapRepository(ada, 4)
-	ada.Acbx.Acbxdbid = 23
+	ada.SetDbid(24)
 	AddGlobalMapRepository(ada, 4)
 	defer DelGlobalMapRepository(ada, 4)
-	adabasMaps, err := GloablMaps(ada)
+
+	ada2, _ := NewAdabas(1)
+	defer ada2.Close()
+	adabasMaps, err := GloablMaps(ada2)
 	assert.NoError(t, err)
 	assert.NotNil(t, adabasMaps)
 	for _, m := range adabasMaps {

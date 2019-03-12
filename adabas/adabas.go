@@ -23,11 +23,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
+	log "github.com/sirupsen/logrus"
 )
 
 // MaxDatabasesID maximum valid database id
@@ -925,6 +926,7 @@ func (adabas *Adabas) SetDbid(dbid Dbid) {
 	}
 	adabas.Close()
 	adabas.Acbx.Acbxdbid = dbid
+	adabas.URL = NewURLWithDbid(dbid)
 }
 
 // DeleteIsn delete a single isn
