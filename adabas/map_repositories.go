@@ -137,6 +137,7 @@ func (repository *Repository) SearchMapInRepository(adabas *Adabas, mapName stri
 // readAdabasMapWithRequest read specific Adabas Map defined by the map name and the repository
 func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequest, name string) (adabasMap *Map, err error) {
 	if repository == nil {
+		//debug.PrintStack()
 		err = adatypes.NewGenericError(5)
 		return
 	}

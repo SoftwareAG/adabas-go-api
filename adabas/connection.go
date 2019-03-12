@@ -128,45 +128,87 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 		// repository.LoadMapRepository()
 	}
 
+	connection = &Connection{adabasToData: adabasToData, ID: adabasID,
+		adabasToMap: adabasToMap, adabasMap: adabasMap, repository: repository}
+
 	if mapName != "" {
-		adatypes.Central.Log.Debugf("Create map for %s\n", mapName)
-		if repository == nil {
-			adabasToMap, err = NewAdabasWithID("1", adabasID)
-			adabasMap, err = SearchMapRepository(adabasToMap, mapName)
-			if err != nil {
-				return nil, err
-			}
-			if adabasMap == nil {
-				return nil, adatypes.NewGenericError(85, mapName)
-			}
-		} else {
-			adabasToMap, err = NewAdabasWithID(repository.DatabaseURL.URL.String(), adabasID)
-			adabasMap, err = repository.SearchMap(adabasToMap, mapName)
-			if err != nil {
-				adabasMap = NewAdabasMap(mapName, &repository.DatabaseURL)
-				if adabasMap == nil {
-					return nil, adatypes.NewGenericError(85, mapName)
-				}
-				adabasToMap, err = NewAdabasWithURL(adabasMap.URL(), adabasID)
-				if err != nil {
-					return nil, err
-				}
-			}
+		connection.searchRepository(adabasID, repository, mapName)
+		if err != nil {
+			return nil, err
 		}
-		adatypes.Central.Log.Debugf("Found map %s\n", adabasMap.Name)
-		if adabasMap.URL().String() == adabasMap.Data.URL.String() {
-			adabasToData = adabasToMap
-		} else {
-			adabasToMap, err = NewAdabasWithURL(&adabasMap.Data.URL, adabasID)
+		// adatypes.Central.Log.Debugf("Create map for %s\n", mapName)
+		// if repository == nil {
+		// 	adabasToMap, err = NewAdabasWithID("1", adabasID)
+		// 	adabasMap, err = SearchMapRepository(adabasToMap, mapName)
+		// 	if err != nil {
+		// 		return nil, err
+		// 	}
+		// 	if adabasMap == nil {
+		// 		return nil, adatypes.NewGenericError(85, mapName)
+		// 	}
+		// } else {
+		// 	adabasToMap, err = NewAdabasWithID(repository.DatabaseURL.URL.String(), adabasID)
+		// 	adabasMap, err = repository.SearchMap(adabasToMap, mapName)
+		// 	if err != nil {
+		// 		adabasMap = NewAdabasMap(mapName, &repository.DatabaseURL)
+		// 		if adabasMap == nil {
+		// 			return nil, adatypes.NewGenericError(85, mapName)
+		// 		}
+		// 		adabasToMap, err = NewAdabasWithURL(adabasMap.URL(), adabasID)
+		// 		if err != nil {
+		// 			return nil, err
+		// 		}
+		// 	}
+		// }
+		// adatypes.Central.Log.Debugf("Found map %s\n", adabasMap.Name)
+		// if adabasMap.URL().String() == adabasMap.Data.URL.String() {
+		// 	adabasToData = adabasToMap
+		// } else {
+		// 	adabasToMap, err = NewAdabasWithURL(&adabasMap.Data.URL, adabasID)
+		// 	if err != nil {
+		// 		return nil, err
+		// 	}
+		// }
+	}
+
+	adatypes.Central.Log.Debugf("Ready created connection handle %#v", connection)
+	return
+}
+
+func (connection *Connection) searchRepository(adabasID *ID, repository *Repository,
+	mapName string) (err error) {
+	if repository == nil {
+		connection.adabasToMap, err = NewAdabasWithID("1", adabasID)
+		connection.adabasMap, err = SearchMapRepository(connection.adabasToMap, mapName)
+		if err != nil {
+			return err
+		}
+		if connection.adabasMap == nil {
+			return adatypes.NewGenericError(85, mapName)
+		}
+	} else {
+		connection.adabasToMap, err = NewAdabasWithID(repository.DatabaseURL.URL.String(), adabasID)
+		connection.adabasMap, err = repository.SearchMap(connection.adabasToMap, mapName)
+		if err != nil {
+			connection.adabasMap = NewAdabasMap(mapName, &repository.DatabaseURL)
+			if connection.adabasMap == nil {
+				return adatypes.NewGenericError(85, mapName)
+			}
+			connection.adabasToMap, err = NewAdabasWithURL(connection.adabasMap.URL(), adabasID)
 			if err != nil {
-				return nil, err
+				return err
 			}
 		}
 	}
-
-	connection = &Connection{adabasToData: adabasToData, ID: adabasID,
-		adabasToMap: adabasToMap, adabasMap: adabasMap, repository: repository}
-	adatypes.Central.Log.Debugf("Ready created connection handle %#v", connection)
+	adatypes.Central.Log.Debugf("Found map %s\n", connection.adabasMap.Name)
+	if connection.adabasMap.URL().String() == connection.adabasMap.Data.URL.String() {
+		connection.adabasToData = connection.adabasToMap
+	} else {
+		connection.adabasToMap, err = NewAdabasWithURL(&connection.adabasMap.Data.URL, adabasID)
+		if err != nil {
+			return err
+		}
+	}
 	return
 }
 
@@ -312,38 +354,42 @@ func (connection *Connection) CreateStoreRequest(fnr Fnr) (*StoreRequest, error)
 }
 
 func (connection *Connection) prepareMapUsage(mapName string) (err error) {
-	if connection.repository == nil {
-		return adatypes.NewGenericError(5)
-	}
-	// TODO search global enable
-	adatypes.Central.Log.Debugf("Search Map : %s platform: %v", mapName, connection.adabasToMap.ID.platform)
-	connection.adabasMap, err = connection.repository.SearchMap(connection.adabasToMap, mapName)
-	if err != nil {
-		return
-	}
-	if connection.adabasMap == nil {
-		err = adatypes.NewGenericError(6, mapName)
-		return
-	}
-	// Reuse Adabas handle
-	if connection.adabasMap.Repository.URL.String() == connection.adabasMap.Data.URL.String() {
-		connection.adabasToData = connection.adabasToMap
-	}
-	adatypes.Central.Log.Debugf("Found Adabas : %p", connection.adabasToData)
-	if connection.adabasToData != nil {
-		adatypes.Central.Log.Debugf("Found Adabas Map : %s", connection.adabasToData.URL.String())
-	}
-	adatypes.Central.Log.Debugf("Data Repository : %s", connection.adabasMap.Data.URL.String())
-	if connection.adabasToData == nil || connection.adabasToData.URL.String() != connection.adabasMap.Data.URL.String() {
-		adatypes.Central.Log.Debugf("Create new Adabas")
-		connection.adabasToData, err = NewAdabasWithURL(connection.adabasMap.URL(), connection.ID)
-		if err != nil {
-			return err
-		}
-	}
-	adatypes.Central.Log.Debugf("Platform Map : %#v", connection.adabasToMap.ID.platform)
-	adatypes.Central.Log.Debugf("Platform Adabas : %#v", connection.adabasToData.ID.platform)
-	return nil
+	return connection.searchRepository(connection.ID, connection.repository, mapName)
+	// if err == nil {
+	// 	return nil
+	// }
+	// if connection.repository == nil {
+	// 	return adatypes.NewGenericError(5)
+	// }
+	// // TODO search global enable
+	// adatypes.Central.Log.Debugf("Search Map : %s platform: %v", mapName, connection.adabasToMap.ID.platform)
+	// connection.adabasMap, err = connection.repository.SearchMap(connection.adabasToMap, mapName)
+	// if err != nil {
+	// 	return
+	// }
+	// if connection.adabasMap == nil {
+	// 	err = adatypes.NewGenericError(6, mapName)
+	// 	return
+	// }
+	// // Reuse Adabas handle
+	// if connection.adabasMap.Repository.URL.String() == connection.adabasMap.Data.URL.String() {
+	// 	connection.adabasToData = connection.adabasToMap
+	// }
+	// adatypes.Central.Log.Debugf("Found Adabas : %p", connection.adabasToData)
+	// if connection.adabasToData != nil {
+	// 	adatypes.Central.Log.Debugf("Found Adabas Map : %s", connection.adabasToData.URL.String())
+	// }
+	// adatypes.Central.Log.Debugf("Data Repository : %s", connection.adabasMap.Data.URL.String())
+	// if connection.adabasToData == nil || connection.adabasToData.URL.String() != connection.adabasMap.Data.URL.String() {
+	// 	adatypes.Central.Log.Debugf("Create new Adabas")
+	// 	connection.adabasToData, err = NewAdabasWithURL(connection.adabasMap.URL(), connection.ID)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+	// adatypes.Central.Log.Debugf("Platform Map : %#v", connection.adabasToMap.ID.platform)
+	// adatypes.Central.Log.Debugf("Platform Adabas : %#v", connection.adabasToData.ID.platform)
+	// return nil
 }
 
 // CreateMapStoreRequest create a store request using map name
