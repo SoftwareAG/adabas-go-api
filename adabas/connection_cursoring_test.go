@@ -110,7 +110,7 @@ func ExampleReadRequest_ReadLogicalWithCursoring() {
 
 }
 
-func ExampleReadRequest_ReadLogicalWithCursoringLimit() {
+func ExampleReadRequest_readLogicalWithCursoringLimit() {
 	f, ferr := initLogWithFile("connection_map.log")
 	if ferr != nil {
 		fmt.Println("Error initializing log", ferr)

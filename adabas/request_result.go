@@ -268,9 +268,8 @@ func evaluateValue(adaValue adatypes.IAdaValue) (interface{}, error) {
 		}
 		return v, nil
 	default:
-		return strings.Trim(adaValue.String(), " "), nil
 	}
-	return nil, adatypes.NewGenericError(-1)
+	return strings.Trim(adaValue.String(), " "), nil
 }
 
 func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {

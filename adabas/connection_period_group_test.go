@@ -25,7 +25,7 @@ import (
 	//	"testing"
 )
 
-func ExampleConnection_PeriodGroup() {
+func ExampleConnection_periodGroup2() {
 	f, _ := initLogWithFile("connection.log")
 	defer f.Close()
 
@@ -155,7 +155,7 @@ func ExampleConnection_PeriodGroup() {
 
 }
 
-func ExampleConnection_PeriodGroupPart() {
+func ExampleConnection_periodGroupPart() {
 	f, _ := initLogWithFile("connection.log")
 	defer f.Close()
 
@@ -221,7 +221,7 @@ func ExampleConnection_PeriodGroupPart() {
 
 }
 
-func ExampleConnection_PeriodGroupLastEntry() {
+func ExampleConnection_periodGroupLastEntry() {
 	f, _ := initLogWithFile("connection.log")
 	defer f.Close()
 
@@ -277,7 +277,7 @@ func ExampleConnection_PeriodGroupLastEntry() {
 
 }
 
-func ExampleConnection_MultiplefieldIndex() {
+func ExampleConnection_multiplefieldIndex() {
 	f, _ := initLogWithFile("connection.log")
 	defer f.Close()
 
