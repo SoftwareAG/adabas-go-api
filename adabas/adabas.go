@@ -54,8 +54,7 @@ type adabasOption uint32
 
 // Transaction flags to synchronize and manage different requests
 type transactions struct {
-	openTransactions uint32
-	connection       interface{}
+	connection interface{}
 }
 
 // Adabas is an main Adabas structure containing all call specific parameters
@@ -204,7 +203,7 @@ func (adabas *Adabas) Open() (err error) {
 
 // Close A session to the database will be closed
 func (adabas *Adabas) Close() {
-	if adabas.transactions.openTransactions > 0 {
+	if adabas.ID.transactions(adabas.URL.String()) > 0 {
 		adabas.BackoutTransaction()
 	}
 	adabas.AdabasBuffers = nil
@@ -212,7 +211,6 @@ func (adabas *Adabas) Close() {
 	ret := adabas.CallAdabas()
 	adatypes.Central.Log.Debugf("Close call response ret=%v %s", ret, adabas.ID.String())
 	adabas.ID.changeOpenState(adabas.URL.String(), false)
-	adabas.transactions.openTransactions = 0
 }
 
 // Release Any resource in the database of the session are released
@@ -792,14 +790,12 @@ func (adabas *Adabas) Histogram(fileNr Fnr, adabasRequest *adatypes.Request, x i
 
 // Store store a record into database
 func (adabas *Adabas) Store(fileNr Fnr, adabasRequest *adatypes.Request) (err error) {
-	adatypes.Central.Log.Debugf("Prepare Store transactions=%d adabas=%p", adabas.transactions.openTransactions,
-		adabas)
 	err = adabas.Open()
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("Store transactions=%d adabas=%p", adabas.transactions.openTransactions,
-		adabas)
+	adatypes.Central.Log.Debugf("Call store, pending transactions=%d adabas=%p",
+		adabas.ID.transactions(adabas.URL.String()), adabas)
 	if adabasRequest.Isn != 0 {
 		adatypes.Central.Log.Debugf("Store data ... %s", n2.command())
 		adabas.Acbx.Acbxcmd = n2.code()
@@ -838,21 +834,19 @@ func (adabas *Adabas) Store(fileNr Fnr, adabasRequest *adatypes.Request) (err er
 		adatypes.Central.Log.Debugf("%v", err)
 		return
 	}
-	adabas.transactions.openTransactions++
+	adabas.ID.incTransactions(adabas.URL.String())
 	adabasRequest.Isn = adabas.Acbx.Acbxisn
 	return
 }
 
 // Update update a record in database
 func (adabas *Adabas) Update(fileNr Fnr, adabasRequest *adatypes.Request) (err error) {
-	adatypes.Central.Log.Debugf("Prepare Update transactions=%d adabas=%p", adabas.transactions.openTransactions,
-		adabas)
 	err = adabas.Open()
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("Update transactions=%d adabas=%p", adabas.transactions.openTransactions,
-		adabas)
+	adatypes.Central.Log.Debugf("Call update, pending transactions=%d adabas=%p",
+		adabas.ID.transactions(adabas.URL.String()), adabas)
 	adatypes.Central.Log.Debugf("Update data ... %s", a1.command())
 	adabas.Acbx.Acbxcmd = a1.code()
 	adabas.Acbx.Acbxisn = adabasRequest.Isn
@@ -891,7 +885,7 @@ func (adabas *Adabas) Update(fileNr Fnr, adabasRequest *adatypes.Request) (err e
 		adatypes.Central.Log.Debugf("%v", err)
 		return
 	}
-	adabas.transactions.openTransactions++
+	adabas.ID.incTransactions(adabas.URL.String())
 	adabasRequest.Isn = adabas.Acbx.Acbxisn
 	return
 }
@@ -908,7 +902,7 @@ func (adabas *Adabas) SetDbid(dbid Dbid) {
 
 // DeleteIsn delete a single isn
 func (adabas *Adabas) DeleteIsn(fileNr Fnr, isn adatypes.Isn) (err error) {
-	adatypes.Central.Log.Debugf("Delete ISN transactions=%d adabas=%p", adabas.transactions.openTransactions,
+	adatypes.Central.Log.Debugf("Delete ISN transactions=%d adabas=%p", adabas.ID.transactions(adabas.URL.String()),
 		adabas)
 	adatypes.Central.Log.Debugf("Delete Isn ...%s on dbid %d and file %d", e1.command(), adabas.Acbx.Acbxdbid, fileNr)
 	adabas.Acbx.Acbxcmd = e1.code()
@@ -920,9 +914,9 @@ func (adabas *Adabas) DeleteIsn(fileNr Fnr, isn adatypes.Isn) (err error) {
 		adatypes.Central.Log.Debugf("Delete isn call response error=%v", err)
 		return
 	}
-	adabas.transactions.openTransactions++
+	adabas.ID.incTransactions(adabas.URL.String())
 	adatypes.Central.Log.Debugf("Delete ISN error ...%d transactions=%d adabas=%p", adabas.Acbx.Acbxrsp,
-		adabas.transactions.openTransactions, adabas)
+		adabas.ID.transactions(adabas.URL.String()), adabas)
 	// Error received from Adabas
 	if adabas.Acbx.Acbxrsp != AdaNormal {
 		log.Errorf("Error reading data: %s", adabas.getAdabasMessage())
@@ -936,7 +930,7 @@ func (adabas *Adabas) DeleteIsn(fileNr Fnr, isn adatypes.Isn) (err error) {
 // BackoutTransaction backout transaction initiated
 func (adabas *Adabas) BackoutTransaction() (err error) {
 	adatypes.Central.Log.Debugf("Open flag %p bt", adabas)
-	if !adabas.ID.isOpen(adabas.URL.String()) || adabas.transactions.openTransactions == 0 {
+	if adabas.ID.transactions(adabas.URL.String()) == 0 {
 		return
 	}
 	adatypes.Central.Log.Debugf("Backout transaction ... %s", bt.command())
@@ -945,7 +939,7 @@ func (adabas *Adabas) BackoutTransaction() (err error) {
 
 	ret := adabas.CallAdabas()
 	adatypes.Central.Log.Debugf("Backout transaction rsp ... ret=%d rsp=%d", ret, adabas.Acbx.Acbxrsp)
-	adabas.transactions.openTransactions = 0
+	adabas.ID.clearTransactions(adabas.URL.String())
 
 	// Error received from Adabas
 	if adabas.Acbx.Acbxrsp != AdaNormal {
@@ -959,12 +953,11 @@ func (adabas *Adabas) BackoutTransaction() (err error) {
 
 // EndTransaction end of transaction initiated
 func (adabas *Adabas) EndTransaction() (err error) {
-	adatypes.Central.Log.Debugf("End of transaction=%d adabas=%p", adabas.transactions.openTransactions,
-		adabas)
+	adatypes.Central.Log.Debugf("End of transaction pending=%d adabas=%p",
+		adabas.ID.transactions(adabas.URL.String()), adabas)
 
-	if !adabas.ID.isOpen(adabas.URL.String()) ||
-		adabas.transactions.openTransactions == 0 {
-		adatypes.Central.Log.Debugf("End of transaction ... not opened")
+	if adabas.ID.transactions(adabas.URL.String()) == 0 {
+		adatypes.Central.Log.Debugf("End of transaction ... not pending transactions")
 		return
 	}
 	adatypes.Central.Log.Debugf("End of transaction ... %s", et.command())
@@ -976,7 +969,7 @@ func (adabas *Adabas) EndTransaction() (err error) {
 	if err != nil {
 		return
 	}
-	adabas.transactions.openTransactions = 0
+	adabas.ID.clearTransactions(adabas.URL.String())
 	adatypes.Central.Log.Debugf("End of transaction rsp ... rsp=%d", adabas.Acbx.Acbxrsp)
 	// Error received from Adabas
 	if adabas.Acbx.Acbxrsp != AdaNormal {

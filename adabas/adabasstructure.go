@@ -237,9 +237,10 @@ type AID struct {
 
 // Status of the referenced connection
 type Status struct {
-	ref      string
-	open     bool
-	platform *adatypes.Platform
+	ref              string
+	open             bool
+	openTransactions uint32
+	platform         *adatypes.Platform
 }
 
 // ID Adabas Id
@@ -304,11 +305,29 @@ func (adaid *ID) platform(url string) *adatypes.Platform {
 
 func (adaid *ID) changeOpenState(url string, open bool) {
 	adatypes.Central.Log.Debugf("Register open=%v to url=%s", open, url)
-	adaid.status(url).open = open
+	s := adaid.status(url)
+	s.open = open
+	if !open {
+		s.openTransactions = 0
+	}
 }
 
 func (adaid *ID) isOpen(url string) bool {
 	open := adaid.status(url).open
 	adatypes.Central.Log.Debugf("Register open=%v to url=%s", open, url)
 	return open
+}
+
+func (adaid *ID) transactions(url string) uint32 {
+	return adaid.status(url).openTransactions
+}
+
+func (adaid *ID) incTransactions(url string) {
+	s := adaid.status(url)
+	s.openTransactions++
+}
+
+func (adaid *ID) clearTransactions(url string) {
+	s := adaid.status(url)
+	s.openTransactions = 0
 }
