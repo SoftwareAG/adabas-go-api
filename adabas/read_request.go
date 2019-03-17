@@ -20,6 +20,10 @@
 package adabas
 
 import (
+	"errors"
+	"fmt"
+	"strings"
+
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
@@ -28,12 +32,23 @@ const (
 	defaultMultifetchLimit = 10
 )
 
+type queryField struct {
+	field string
+	index int
+}
+
+type scanFields struct {
+	fields    map[string]*queryField
+	parameter []interface{}
+}
+
 // ReadRequest request instance handling field query information
 type ReadRequest struct {
 	commonRequest
 	Limit             uint64
 	Multifetch        uint32
 	RecordBufferShift uint32
+	fields            map[string]*queryField
 	HoldRecords       adatypes.HoldType
 	cursoring         *Cursoring
 }
@@ -504,15 +519,76 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 }
 
 // QueryFields define the fields queried in that request
-func (request *ReadRequest) QueryFields(fields string) (err error) {
+func (request *ReadRequest) QueryFields(fieldq string) (err error) {
+	adatypes.Central.Log.Debugf("Query fields to %s", fieldq)
 	err = request.Open()
 	if err != nil {
 		return
 	}
+	if fieldq != "*" && fieldq != "" {
+		request.fields = make(map[string]*queryField)
+		for i, s := range strings.Split(fieldq, ",") {
+			request.fields[s] = &queryField{field: s, index: i}
+		}
+	}
+
 	err = request.loadDefinition()
 	if err != nil {
 		return
 	}
-	err = request.definition.ShouldRestrictToFields(fields)
+	err = request.definition.ShouldRestrictToFields(fieldq)
 	return
+}
+
+func scanFieldsTraverser(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
+	sf := x.(*scanFields)
+	fmt.Println("Scan field of ", adaValue.Type().Name())
+	if f, ok := sf.fields[adaValue.Type().Name()]; ok {
+		fmt.Println("Part field: ", adaValue.Type().Name())
+		switch sf.parameter[f.index].(type) {
+		case *int:
+			v32, err := adaValue.Int32()
+			if err != nil {
+				return adatypes.EndTraverser, err
+			}
+			*(sf.parameter[f.index].(*int)) = int(v32)
+		case *int32:
+			v32, err := adaValue.Int32()
+			if err != nil {
+				return adatypes.EndTraverser, err
+			}
+			*(sf.parameter[f.index].(*int32)) = v32
+		case *int64:
+			v64, err := adaValue.Int64()
+			if err != nil {
+				return adatypes.EndTraverser, err
+			}
+			*(sf.parameter[f.index].(*int64)) = v64
+		case *string:
+			*(sf.parameter[f.index].(*string)) = adaValue.String()
+		}
+	}
+	return adatypes.Continue, nil
+}
+
+// Scan scan for different field entries
+func (request *ReadRequest) Scan(dest ...interface{}) error {
+	if request.cursoring.HasNextRecord() {
+		record, err := request.cursoring.NextRecord()
+		if err != nil {
+			return err
+		}
+		if f, ok := request.fields["#ISN"]; ok {
+			*(dest[f.index].(*int)) = int(record.Isn)
+		}
+		record.DumpValues()
+		tm := adatypes.TraverserValuesMethods{EnterFunction: scanFieldsTraverser}
+		sf := &scanFields{fields: request.fields, parameter: dest}
+		_, err = record.traverse(tm, sf)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	return errors.New("EOF")
 }

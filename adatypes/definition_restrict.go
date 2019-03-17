@@ -171,7 +171,7 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 				newType.peRange = fieldMap.lastStructure.peRange
 				newType.muRange = fieldMap.lastStructure.muRange
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
-				Central.Log.Debugf("Add type to %s value=%p count=%d %p", fieldMap.lastStructure.Name(), fieldMap.lastStructure, fieldMap.lastStructure.NrFields(), fieldMap.lastStructure.parentType)
+				Central.Log.Debugf("Add type to %s value=%p count=%d", fieldMap.lastStructure.Name(), fieldMap.lastStructure, fieldMap.lastStructure.NrFields())
 				Central.Log.Debugf("Add type entry in structure %s", newType.Name())
 				newType.RemoveFlag(FlagOptionToBeRemoved)
 			}

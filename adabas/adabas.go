@@ -470,7 +470,7 @@ func (adabas *Adabas) readISN(fileNr Fnr, adabasRequest *adatypes.Request, x int
 		return
 	}
 	adatypes.Central.Log.Debugf("Read ISN %d ... %s dbid=%d fnr=%d", adabasRequest.Isn, l1.command(), adabas.Acbx.Acbxdbid, fileNr)
-	if adabasRequest.Option.HoldRecords {
+	if adabasRequest.HoldRecords != adatypes.HoldNone {
 		adabas.Acbx.Acbxcmd = l4.code()
 	} else {
 		adabas.Acbx.Acbxcmd = l1.code()
@@ -494,7 +494,7 @@ func (adabas *Adabas) ReadLogicalWith(fileNr Fnr, adabasRequest *adatypes.Reques
 		return
 	}
 	adatypes.Central.Log.Debugf("Read logical ... %s dbid=%d multifetch=%d", l3.command(), adabas.Acbx.Acbxdbid, adabasRequest.Multifetch)
-	if adabasRequest.Option.HoldRecords {
+	if adabasRequest.HoldRecords != adatypes.HoldNone {
 		adabas.Acbx.Acbxcmd = l6.code()
 	} else {
 		adabas.Acbx.Acbxcmd = l3.code()
@@ -574,7 +574,7 @@ func (adabas *Adabas) SearchLogicalWith(fileNr Fnr, adabasRequest *adatypes.Requ
 		return
 	}
 
-	if adabasRequest.Option.HoldRecords {
+	if adabasRequest.HoldRecords == adatypes.HoldNone {
 		adabas.Acbx.Acbxcmd = l1.code()
 	} else {
 		adabas.Acbx.Acbxcmd = l4.code()
