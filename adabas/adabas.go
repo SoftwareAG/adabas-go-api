@@ -267,7 +267,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 			adabas.ID.AdaID.Node, adabas.ID.AdaID.Pid, adabas.ID.AdaID.Timestamp)
 		if err != nil {
 			adabas.Acbx.Acbxrsp = AdaSysCe
-			adatypes.Central.Log.Debugf("Establish TCP context error ", err)
+			adatypes.Central.Log.Debugf("Establish TCP context error %v", err)
 			err = NewError(adabas)
 			return
 		}
