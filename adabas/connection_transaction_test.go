@@ -65,10 +65,12 @@ func prepareStoreAndHold(t *testing.T, c chan bool) {
 		c <- false
 		return
 	}
+	fmt.Println("Records set in hold")
 	c <- true
 	time.Sleep(10 * time.Second)
 	fmt.Println("End transaction")
 	connection.EndTransaction()
+	fmt.Println("Notify main function")
 	c <- true
 
 }
@@ -109,6 +111,25 @@ func TestConnectionTransaction(t *testing.T) {
 	if !x && t.Failed() {
 		return
 	}
+	fmt.Println("Read records set in hold")
+
+	connection, err := NewConnection("acj;map=" + massLoadSystransStore + ";config=[" + adabasModDBIDs + ",250]")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateReadRequest()
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	//request.SetHoldRecords(adatypes.HoldWait)
+	request.QueryFields("AA")
+	result, rrerr := request.ReadPhysicalSequence()
+	if !assert.NoError(t, rrerr) {
+		return
+	}
+	result.DumpValues()
 	x = <-c
 
 	fmt.Println("Check stored data", x)

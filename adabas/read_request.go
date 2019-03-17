@@ -34,12 +34,13 @@ type ReadRequest struct {
 	Limit             uint64
 	Multifetch        uint32
 	RecordBufferShift uint32
+	HoldRecords       adatypes.HoldType
 	cursoring         *Cursoring
 }
 
 // NewReadRequestCommon create a request defined by another request (not even ReadRequest required)
 func NewReadRequestCommon(commonRequest *commonRequest) *ReadRequest {
-	request := &ReadRequest{}
+	request := &ReadRequest{HoldRecords: adatypes.HoldNone}
 	request.commonRequest = *commonRequest
 	request.commonRequest.adabasMap = nil
 	request.commonRequest.mapName = ""
@@ -66,7 +67,7 @@ func NewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Repositor
 		return nil, nerr
 	}
 	dataRepository := NewMapRepository(adabas, adabasMap.Data.Fnr)
-	request = &ReadRequest{Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
+	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
 		commonRequest: commonRequest{mapName: mapName, adabas: dataAdabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
@@ -88,7 +89,7 @@ func NewMapReadRequest(adabas *Adabas, mapName string) (request *ReadRequest, er
 	adatypes.Central.Log.Debugf("Read: Adabas new map reference for %s to %d", mapName, adabasMap.Data.Fnr)
 
 	dataRepository := NewMapRepository(adabas, adabasMap.Data.Fnr)
-	request = &ReadRequest{Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
+	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
 		commonRequest: commonRequest{mapName: mapName, adabas: adabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
@@ -105,7 +106,7 @@ func NewMapReadRequestByMap(adabas *Adabas, adabasMap *Map) (request *ReadReques
 	cloneAdabas := NewClonedAdabas(adabas)
 
 	dataRepository := NewMapRepository(adabas, adabasMap.Data.Fnr)
-	request = &ReadRequest{Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
+	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
 		commonRequest: commonRequest{mapName: adabasMap.Name, adabas: cloneAdabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
@@ -115,7 +116,7 @@ func NewMapReadRequestByMap(adabas *Adabas, adabasMap *Map) (request *ReadReques
 func NewReadRequestAdabas(adabas *Adabas, fnr Fnr) *ReadRequest {
 	clonedAdabas := NewClonedAdabas(adabas)
 
-	return &ReadRequest{Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
+	return &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
 		commonRequest: commonRequest{adabas: clonedAdabas,
 			repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}
 }
@@ -140,7 +141,13 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, e
 	}
 	adabasRequest.Definition = request.definition
 	adabasRequest.RecordBufferShift = request.RecordBufferShift
+	adabasRequest.HoldRecords = request.HoldRecords
 	return
+}
+
+// SetHoldRecords set hold record done
+func (request *ReadRequest) SetHoldRecords(hold adatypes.HoldType) {
+	request.HoldRecords = hold
 }
 
 func parseRead(adabasRequest *adatypes.Request, x interface{}) (err error) {

@@ -27,6 +27,18 @@ import (
 // RequestParser function callback used to go through the list of received buffer
 type RequestParser func(adabasRequest *Request, x interface{}) error
 
+// HoldType hold enum type
+type HoldType uint32
+
+const (
+	// HoldNone no hold
+	HoldNone HoldType = iota
+	// HoldWait wait for hold released
+	HoldWait
+	// HoldResponse receive response code
+	HoldResponse
+)
+
 // Request contains all relevant buffer and parameters for a Adabas call
 type Request struct {
 	FormatBuffer       bytes.Buffer
@@ -36,6 +48,7 @@ type Request struct {
 	PeriodLength       uint32
 	SearchTree         *SearchTree
 	Parser             RequestParser
+	HoldRecords        HoldType
 	Limit              uint64
 	Multifetch         uint32
 	Descriptors        []string
