@@ -74,6 +74,8 @@ func NewRecordIsn(isn adatypes.Isn, isnQuantity uint64, definition *adatypes.Def
 	}
 	record.Isn = isn
 	record.Quantity = isnQuantity
+	adatypes.Central.Log.Debugf("New record with ISN=%d and ISN quantity=%d", isn, isnQuantity)
+
 	return record, nil
 }
 

@@ -94,7 +94,7 @@ func (request *StoreRequest) StoreFields(fields string) (err error) {
 	adatypes.Central.Log.Debugf("Check store fields Definition values %#v", request.definition.Values)
 	adatypes.Central.Log.Debugf("Dump all fields")
 	request.definition.DumpTypes(true, true)
-	adatypes.Central.Log.Debugf("Restrict fields to %s", fields)
+	adatypes.Central.Log.Debugf("Store restrict fields to %s", fields)
 	err = request.definition.ShouldRestrictToFields(fields)
 	if err != nil {
 		return

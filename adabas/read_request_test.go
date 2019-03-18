@@ -86,37 +86,6 @@ func TestRequestLogicalWithQueryFields(t *testing.T) {
 	}
 }
 
-func TestRequestLogicalWithQueryFieldsScan(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
-
-	log.Infof("TEST: %s", t.Name())
-	adabas, err := NewAdabas(adabasStatDBID)
-	if !assert.NoError(t, err) {
-		fmt.Println("Error new adabas", err)
-		return
-	}
-	request := NewReadRequestAdabas(adabas, 11)
-	if !assert.NotNil(t, request) {
-		fmt.Println("Error request nil")
-		return
-	}
-	defer request.Close()
-	err = request.QueryFields("#ISN,AA,AC,AD")
-	if assert.NoError(t, err) {
-		return
-	}
-
-	_, err = request.ReadLogicalWithCursoring("AE=SMITH")
-	assert.NoError(t, err)
-	var id int
-	var x, y, z string
-	err = request.Scan(&id, &x, &y, &z)
-	assert.NoError(t, err)
-
-	fmt.Println("Scan result id=", id, "AA=", x, "AC=", y, "AD=", z)
-}
-
 func TestRequestLogicalWithFields(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()

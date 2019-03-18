@@ -36,7 +36,6 @@ type BufferOption struct {
 	StoreCall      bool
 	SecondCall     bool
 	NeedSecondCall bool
-	HoldRecords    bool
 	ExchangeRecord bool
 	PartialLobSize bool
 	Ascending      bool
@@ -51,7 +50,7 @@ func NewBufferOption(store bool, secondCall bool) *BufferOption {
 
 // NewBufferOption3 create option to parse the buffer
 func NewBufferOption3(store bool, secondCall bool, mainframe bool) *BufferOption {
-	return &BufferOption{MultifetchCall: false, StoreCall: store, HoldRecords: false,
+	return &BufferOption{MultifetchCall: false, StoreCall: store,
 		ExchangeRecord: false, SecondCall: secondCall, NeedSecondCall: false,
 		multipleSize: defaultMultipleSize, Ascending: true, Mainframe: mainframe}
 }

@@ -20,6 +20,8 @@
 package adabas
 
 import (
+	"fmt"
+
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
@@ -51,17 +53,42 @@ func (request *ReadRequest) ReadLogicalWithCursoring(search string) (cursor *Cur
 	request.cursoring.result = result
 	request.cursoring.search = search
 	request.cursoring.request = request
+	request.queryFunction = request.ReadLogicalWith
+	return request.cursoring, nil
+}
+
+// HistogramByCursoring initialize the read records using cursoring
+func (request *ReadRequest) HistogramByCursoring(descriptor string) (cursor *Cursoring, err error) {
+	request.cursoring = &Cursoring{}
+	if request.Limit == 0 {
+		request.Limit = 10
+	}
+	request.Multifetch = uint32(request.Limit)
+	if request.Multifetch > 20 {
+		request.Multifetch = 20
+	}
+	result, rerr := request.HistogramBy(descriptor)
+	if rerr != nil {
+		return nil, rerr
+	}
+	request.cursoring.result = result
+	request.cursoring.search = ""
+	request.cursoring.request = request
+	request.queryFunction = request.HistogramBy
 	return request.cursoring, nil
 }
 
 // HasNextRecord check cursoring if a next record exist in the query
 func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 	if cursor.offset+1 > uint32(len(cursor.result.Values)) {
-		if cursor.adabasRequest.Response != AdaNormal {
+		if cursor.adabasRequest == nil || cursor.adabasRequest.Response != AdaNormal {
+			fmt.Printf("Error adabas request empty of not normal response %#v\n", cursor.adabasRequest)
 			return false
 		}
-		cursor.result, cursor.err = cursor.request.ReadLogicalWith(cursor.search)
-		if cursor.err != nil {
+
+		cursor.result, cursor.err = cursor.request.queryFunction(cursor.search)
+		if cursor.err != nil || cursor.result == nil {
+			fmt.Printf("Error query function %v %#v\n", cursor.err, cursor.result)
 			return false
 		}
 		hasNext = len(cursor.result.Values) > 0
@@ -85,6 +112,7 @@ func (cursor *Cursoring) NextRecord() (record *Record, err error) {
 		}
 	}
 	cursor.offset++
-	adatypes.Central.Log.Debugf("ISN=%d\n", cursor.result.Values[cursor.offset-1].Isn)
+	adatypes.Central.Log.Debugf("ISN=%d ISN quantity=%d\n", cursor.result.Values[cursor.offset-1].Isn,
+		cursor.result.Values[cursor.offset-1].Quantity)
 	return cursor.result.Values[cursor.offset-1], nil
 }

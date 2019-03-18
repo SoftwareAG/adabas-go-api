@@ -106,7 +106,7 @@ func TestInt8(t *testing.T) {
 
 }
 
-func ExampleInt8_setValue() {
+func ExampleIAdaType_setValue() {
 	f, err := initLogWithFile("unpacked.log")
 	if err != nil {
 		fmt.Println("Error enable log")
@@ -321,7 +321,7 @@ func TestUInt8(t *testing.T) {
 
 }
 
-func ExampleUInt8_setValue() {
+func ExampleIAdaType_uint8SetValue() {
 	f, err := initLogWithFile("unpacked.log")
 	if err != nil {
 		fmt.Println("Error enable log")

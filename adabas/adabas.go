@@ -619,6 +619,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())
 		adabasRequest.Isn = adatypes.Isn(adabas.Acbx.Acbxisn)
 		adabasRequest.IsnQuantity = adabas.Acbx.Acbxisq
+		adatypes.Central.Log.Debugf("ISN= %d ISN quantity=%d", adabasRequest.Isn, adabasRequest.IsnQuantity)
 
 		// If parser is available, use the parser to extract content
 		if adabasRequest.Parser != nil {
@@ -667,10 +668,12 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 					if adabas.Acbx.Acbxcmd != l2.code() {
 						adabas.Acbx.Acbxisn = adatypes.Isn(isn)
 					}
-					_, err = multifetchHelper.ReceiveUInt32()
-					if err != nil {
+					quantity, qerr := multifetchHelper.ReceiveUInt32()
+					if qerr != nil {
 						return
 					}
+					adatypes.Central.Log.Debugf("ISN quantity %d", quantity)
+					adabasRequest.IsnQuantity = uint64(quantity)
 				}
 
 				adatypes.Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values == nil))

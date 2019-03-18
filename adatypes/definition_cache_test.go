@@ -23,7 +23,7 @@ import (
 	"fmt"
 )
 
-func ExampleDefinitionCache_ShouldRestrictToFields() {
+func ExampleDefinition_ShouldRestrictToFields() {
 	f, err := initLogWithFile("definition.log")
 	if err != nil {
 		return

@@ -204,6 +204,22 @@ func TestSearchTwoStringValue(t *testing.T) {
 
 }
 
+func TestSearchFails(t *testing.T) {
+	f, err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "ABCDEF")
+	searchInfo.Definition = tDefinition()
+	tree := &SearchTree{}
+	searchInfo.extractBinding(tree, searchInfo.search)
+
+}
+
 func TestSearchRange(t *testing.T) {
 	f, err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {

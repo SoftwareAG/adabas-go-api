@@ -201,20 +201,22 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 	fieldMap.stackStructure = NewStack()
 	if field != nil {
 		for _, f := range field {
-			b := strings.Index(f, "[")
-			fl := f
-			var r *AdaRange
-			if b > 0 {
-				fl = f[:b]
-				e := strings.Index(f, "]")
-				r = NewRangeParser(f[b+1 : e])
-				if r == nil {
-					return nil, NewGenericError(129, f)
+			if !strings.HasPrefix(f, "#ISN") {
+				b := strings.Index(f, "[")
+				fl := f
+				var r *AdaRange
+				if b > 0 {
+					fl = f[:b]
+					e := strings.Index(f, "]")
+					r = NewRangeParser(f[b+1 : e])
+					if r == nil {
+						return nil, NewGenericError(129, f)
+					}
+					Central.Log.Debugf("Add to map: %s -> %s", fl, r.FormatBuffer())
+					fieldMap.set[fl] = &fieldQuery{name: fl, fieldRange: []*AdaRange{r}}
+				} else {
+					fieldMap.set[fl] = &fieldQuery{name: fl}
 				}
-				Central.Log.Debugf("Add to map: %s -> %s", fl, r.FormatBuffer())
-				fieldMap.set[fl] = &fieldQuery{name: fl, fieldRange: []*AdaRange{r}}
-			} else {
-				fieldMap.set[fl] = &fieldQuery{name: fl}
 			}
 		}
 	}
@@ -225,7 +227,7 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 
 // ShouldRestrictToFieldSlice Restrict the tree to contain only the given nodes
 func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
-	Central.Log.Debugf("Restrict fields to %#v", field)
+	Central.Log.Debugf("Should restrict fields to %#v", field)
 	def.Values = nil
 	fieldMap, ferr := def.newFieldMap(field)
 	if ferr != nil {

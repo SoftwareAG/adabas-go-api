@@ -50,6 +50,7 @@ type ReadRequest struct {
 	RecordBufferShift uint32
 	fields            map[string]*queryField
 	HoldRecords       adatypes.HoldType
+	queryFunction     func(string) (*Response, error)
 	cursoring         *Cursoring
 }
 
@@ -170,12 +171,13 @@ func parseRead(adabasRequest *adatypes.Request, x interface{}) (err error) {
 
 	isn := adabasRequest.Isn
 	isnQuantity := adabasRequest.IsnQuantity
-	adatypes.Central.Log.Debugf("Got ISN %d record", isn)
-	Record, xerr := NewRecordIsn(isn, isnQuantity, adabasRequest.Definition)
+	record, xerr := NewRecordIsn(isn, isnQuantity, adabasRequest.Definition)
 	if xerr != nil {
 		return xerr
 	}
-	result.Values = append(result.Values, Record)
+	result.Values = append(result.Values, record)
+	adatypes.Central.Log.Debugf("Got ISN=%d Quantity=%d record", record.Isn, record.Quantity)
+
 	return
 }
 
@@ -432,28 +434,39 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 
 // HistogramBy read a descriptor in a descriptor order
 func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, err error) {
-	err = request.Open()
-	if err != nil {
-		return
-	}
-	err = request.QueryFields(descriptor)
-	if err != nil {
-		return
-	}
-	adabasRequest, prepareErr := request.prepareRequest()
-	if prepareErr != nil {
-		err = prepareErr
-		return
-	}
-	adabasRequest.Parser = parseRead
-	adabasRequest.Limit = request.Limit
-	adabasRequest.Descriptors = []string{descriptor}
+	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
+		err = request.Open()
+		if err != nil {
+			return
+		}
+		err = request.QueryFields(descriptor)
+		if err != nil {
+			return
+		}
+		adabasRequest, prepareErr := request.prepareRequest()
+		if prepareErr != nil {
+			err = prepareErr
+			return
+		}
+		adabasRequest.Parser = parseRead
+		adabasRequest.Limit = request.Limit
+		adabasRequest.Descriptors = []string{descriptor}
+		if request.cursoring != nil {
+			request.cursoring.adabasRequest = adabasRequest
+		}
 
-	Response := &Response{Definition: request.definition}
+		Response := &Response{Definition: request.definition}
 
-	err = request.adabas.Histogram(request.repository.Fnr, adabasRequest, Response)
-	if err == nil {
-		result = Response
+		err = request.adabas.Histogram(request.repository.Fnr, adabasRequest, Response)
+		if err == nil {
+			result = Response
+		}
+	} else {
+		result = &Response{Definition: request.definition}
+		adatypes.Central.Log.Debugf("Read next chunk")
+		err = request.adabas.loopCall(request.cursoring.adabasRequest, result)
+		adatypes.Central.Log.Debugf("Read next chunk done %v", err)
+		request.cursoring.result = result
 	}
 	return
 }
@@ -525,10 +538,17 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	if err != nil {
 		return
 	}
-	if fieldq != "*" && fieldq != "" {
-		request.fields = make(map[string]*queryField)
-		for i, s := range strings.Split(fieldq, ",") {
-			request.fields[s] = &queryField{field: s, index: i}
+	// Could not recreate field content of a request!!!
+	if request.fields == nil {
+		if fieldq != "*" && fieldq != "" {
+			request.fields = make(map[string]*queryField)
+			adatypes.Central.Log.Debugf("Check Query field %s", fieldq)
+			for i, s := range strings.Split(fieldq, ",") {
+				adatypes.Central.Log.Debugf("Add Query field %s=%d", s, i)
+				request.fields[s] = &queryField{field: s, index: i}
+			}
+		} else {
+			adatypes.Central.Log.Debugf("General Query")
 		}
 	}
 
@@ -542,30 +562,77 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 
 func scanFieldsTraverser(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	sf := x.(*scanFields)
-	fmt.Println("Scan field of ", adaValue.Type().Name())
+	adatypes.Central.Log.Debugf("Scan field of %s", adaValue.Type().Name())
 	if f, ok := sf.fields[adaValue.Type().Name()]; ok {
-		fmt.Println("Part field: ", adaValue.Type().Name())
-		switch sf.parameter[f.index].(type) {
-		case *int:
-			v32, err := adaValue.Int32()
-			if err != nil {
-				return adatypes.EndTraverser, err
+		adatypes.Central.Log.Debugf("Part field: %s", adaValue.Type().Name())
+		if f.index < len(sf.parameter) && sf.parameter[f.index] != nil {
+			switch sf.parameter[f.index].(type) {
+			case *int:
+				v32, err := adaValue.Int32()
+				if err != nil {
+					return adatypes.EndTraverser, err
+				}
+				*(sf.parameter[f.index].(*int)) = int(v32)
+			case *int32:
+				v32, err := adaValue.Int32()
+				if err != nil {
+					return adatypes.EndTraverser, err
+				}
+				*(sf.parameter[f.index].(*int32)) = v32
+			case *int64:
+				v64, err := adaValue.Int64()
+				if err != nil {
+					return adatypes.EndTraverser, err
+				}
+				*(sf.parameter[f.index].(*int64)) = v64
+			case *uint32:
+				v32, err := adaValue.UInt32()
+				if err != nil {
+					return adatypes.EndTraverser, err
+				}
+				*(sf.parameter[f.index].(*uint32)) = v32
+			case *uint64:
+				v64, err := adaValue.UInt64()
+				if err != nil {
+					return adatypes.EndTraverser, err
+				}
+				*(sf.parameter[f.index].(*uint64)) = v64
+			case *float32:
+				v64, err := adaValue.Float()
+				if err != nil {
+					return adatypes.EndTraverser, err
+				}
+				*(sf.parameter[f.index].(*float32)) = float32(v64)
+			case *float64:
+				v64, err := adaValue.Float()
+				if err != nil {
+					return adatypes.EndTraverser, err
+				}
+				*(sf.parameter[f.index].(*float64)) = v64
+			case *string:
+				s := strings.Trim(adaValue.String(), " ")
+				if *(sf.parameter[f.index].(*string)) == "" {
+					*(sf.parameter[f.index].(*string)) = s
+				} else {
+					os := *(sf.parameter[f.index].(*string))
+					*(sf.parameter[f.index].(*string)) = os + "," + s
+
+				}
+			case *[]string:
+				s := strings.Trim(adaValue.String(), " ")
+				x := sf.parameter[f.index].(*[]string)
+				if adaValue.PeriodIndex() > 0 && uint32(len(*x)) >= adaValue.PeriodIndex() {
+					if adaValue.MultipleIndex() == 1 {
+						(*x)[adaValue.PeriodIndex()-1] = s
+					} else {
+						(*x)[adaValue.PeriodIndex()-1] = (*x)[adaValue.PeriodIndex()-1] + "," + s
+					}
+				} else {
+					*x = append(*x, s)
+				}
+			default:
+				return adatypes.EndTraverser, adatypes.NewGenericError(150, fmt.Sprintf("%T", sf.parameter[f.index]))
 			}
-			*(sf.parameter[f.index].(*int)) = int(v32)
-		case *int32:
-			v32, err := adaValue.Int32()
-			if err != nil {
-				return adatypes.EndTraverser, err
-			}
-			*(sf.parameter[f.index].(*int32)) = v32
-		case *int64:
-			v64, err := adaValue.Int64()
-			if err != nil {
-				return adatypes.EndTraverser, err
-			}
-			*(sf.parameter[f.index].(*int64)) = v64
-		case *string:
-			*(sf.parameter[f.index].(*string)) = adaValue.String()
 		}
 	}
 	return adatypes.Continue, nil
@@ -578,10 +645,16 @@ func (request *ReadRequest) Scan(dest ...interface{}) error {
 		if err != nil {
 			return err
 		}
+		adatypes.Central.Log.Debugf("Scan Record %#v", request.fields)
 		if f, ok := request.fields["#ISN"]; ok {
+			adatypes.Central.Log.Debugf("Fill Record ISN=%d", record.Isn)
 			*(dest[f.index].(*int)) = int(record.Isn)
 		}
-		record.DumpValues()
+		if f, ok := request.fields["#ISNQUANTITY"]; ok {
+			adatypes.Central.Log.Debugf("Fill Record ISN quantity=%d", record.Quantity)
+			*(dest[f.index].(*int)) = int(record.Quantity)
+		}
+		// Traverse to current entries
 		tm := adatypes.TraverserValuesMethods{EnterFunction: scanFieldsTraverser}
 		sf := &scanFields{fields: request.fields, parameter: dest}
 		_, err = record.traverse(tm, sf)

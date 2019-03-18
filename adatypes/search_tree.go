@@ -195,6 +195,9 @@ func (tree *SearchTree) evalueDescriptors() bool {
 		}
 	} else {
 		Central.Log.Debugf("Empty node use value descriptor")
+		if tree.value == nil {
+			return false
+		}
 		descriptor := tree.value.orderBy()
 		if descriptor != "" {
 			Central.Log.Debugf("Add value descriptor : %s", descriptor)
