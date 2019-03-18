@@ -76,6 +76,27 @@ func (request *ReadRequest) HistogramByCursoring(descriptor string) (cursor *Cur
 	return request.cursoring, nil
 }
 
+// HistogramWithCursoring initialize the read records using cursoring
+func (request *ReadRequest) HistogramWithCursoring(search string) (cursor *Cursoring, err error) {
+	request.cursoring = &Cursoring{}
+	if request.Limit == 0 {
+		request.Limit = 10
+	}
+	request.Multifetch = uint32(request.Limit)
+	if request.Multifetch > 20 {
+		request.Multifetch = 20
+	}
+	result, rerr := request.HistogramWith(search)
+	if rerr != nil {
+		return nil, rerr
+	}
+	request.cursoring.result = result
+	request.cursoring.search = search
+	request.cursoring.request = request
+	request.queryFunction = request.HistogramWith
+	return request.cursoring, nil
+}
+
 // HasNextRecord check cursoring if a next record exist in the query
 func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 	if cursor.offset+1 > uint32(len(cursor.result.Values)) {

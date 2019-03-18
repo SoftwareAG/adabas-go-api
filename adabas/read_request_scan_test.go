@@ -246,3 +246,58 @@ func TestHistogramByQueryFieldsScan(t *testing.T) {
 	assert.Equal(t, 804, i)
 
 }
+
+func TestHistogramWithQueryFieldsScan(t *testing.T) {
+	f := initTestLogWithFile(t, "request.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	adabas, err := NewAdabas(adabasStatDBID)
+	if !assert.NoError(t, err) {
+		fmt.Println("Error new adabas", err)
+		return
+	}
+	request := NewReadRequestAdabas(adabas, 11)
+	if !assert.NotNil(t, request) {
+		fmt.Println("Error request nil")
+		return
+	}
+	defer request.Close()
+	err = request.QueryFields("AE,#ISNQUANTITY")
+	if !assert.NoError(t, err) {
+		fmt.Println("Error query fields", err)
+		return
+	}
+
+	_, err = request.HistogramWithCursoring("AE=[A:B]")
+	assert.NoError(t, err)
+	var id int
+	err = nil
+	i := 0
+	for err == nil {
+		var x string
+		err = request.Scan(&x, &id)
+		if err == nil {
+			switch x {
+			case "ADKINSON":
+				assert.Equal(t, 8, id)
+				fmt.Printf("%d. Scan result id=%d AA=%s\n", i, id, x)
+			case "ALEMAN":
+				assert.Equal(t, 1, id)
+				fmt.Printf("%d. Scan result id=%d AA=%s\n", i, id, x)
+			case "ALEXANDER":
+				assert.Equal(t, 5, id)
+				fmt.Printf("%d. Scan result id=%d AA=%s\n", i, id, x)
+			case "ANDERSEN":
+				assert.Equal(t, 3, id)
+				fmt.Printf("%d. Scan result id=%d AA=%s\n", i, id, x)
+			default:
+			}
+			assert.True(t, id > 0, fmt.Sprintf("Quantity is %d", id))
+			//			fmt.Printf("%d. Scan result id=%d AA=%s\n", i, id, x)
+			i++
+		}
+	}
+	assert.Equal(t, 20, i)
+
+}
