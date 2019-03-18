@@ -847,5 +847,6 @@ var statisMessages = []struct {
 	{"ADG0000127", "en", "Error searching period group value {0} (internal error)"},
 	{"ADG0000128", "en", "Error creating structure value for: {0}"},
 	{"ADG0000129", "en", "Invalid range used: {0}"},
+	{"ADG0000130", "en", "End of cursor"},
 	{"ADG0000150", "en", "Cannot scan value for type {0}"},
 }
