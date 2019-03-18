@@ -20,7 +20,6 @@
 package adabas
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -663,5 +662,5 @@ func (request *ReadRequest) Scan(dest ...interface{}) error {
 		}
 		return nil
 	}
-	return errors.New("EOF")
+	return adatypes.NewGenericError(130)
 }

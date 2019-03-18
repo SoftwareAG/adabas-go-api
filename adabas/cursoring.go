@@ -20,8 +20,6 @@
 package adabas
 
 import (
-	"fmt"
-
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
@@ -82,13 +80,13 @@ func (request *ReadRequest) HistogramByCursoring(descriptor string) (cursor *Cur
 func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 	if cursor.offset+1 > uint32(len(cursor.result.Values)) {
 		if cursor.adabasRequest == nil || cursor.adabasRequest.Response != AdaNormal {
-			fmt.Printf("Error adabas request empty of not normal response %#v\n", cursor.adabasRequest)
+			adatypes.Central.Log.Debugf("Error adabas request empty of not normal response, may be EOF %#v\n", cursor.adabasRequest)
 			return false
 		}
 
 		cursor.result, cursor.err = cursor.request.queryFunction(cursor.search)
 		if cursor.err != nil || cursor.result == nil {
-			fmt.Printf("Error query function %v %#v\n", cursor.err, cursor.result)
+			adatypes.Central.Log.Debugf("Error query function %v %#v\n", cursor.err, cursor.result)
 			return false
 		}
 		hasNext = len(cursor.result.Values) > 0

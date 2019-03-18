@@ -72,7 +72,7 @@ func TestRequestLogicalWithQueryFieldsScan1(t *testing.T) {
 
 	err = request.Scan(&id, &x, &y, &z)
 	assert.Error(t, err)
-	assert.Equal(t, "EOF", err.Error())
+	assert.Equal(t, "End of cursoring", err.Error())
 
 }
 
@@ -209,13 +209,13 @@ func TestHistogramByQueryFieldsScan(t *testing.T) {
 		return
 	}
 	defer request.Close()
-	err = request.QueryFields("AA,#ISNQUANTITY")
+	err = request.QueryFields("AE,#ISNQUANTITY")
 	if !assert.NoError(t, err) {
 		fmt.Println("Error query fields", err)
 		return
 	}
 
-	_, err = request.HistogramByCursoring("AA")
+	_, err = request.HistogramByCursoring("AE")
 	assert.NoError(t, err)
 	var id int
 	err = nil
@@ -223,12 +223,26 @@ func TestHistogramByQueryFieldsScan(t *testing.T) {
 	for err == nil {
 		var x string
 		err = request.Scan(&x, &id)
-		if !assert.NoError(t, err) {
-			return
+		if err == nil {
+			switch x {
+			case "SMITH":
+				assert.Equal(t, 19, id)
+				fmt.Printf("%d. Scan result id=%d AA=%s\n", i, id, x)
+			case "WOOD":
+				assert.Equal(t, 2, id)
+				fmt.Printf("%d. Scan result id=%d AA=%s\n", i, id, x)
+			case "JONES":
+				assert.Equal(t, 9, id)
+				fmt.Printf("%d. Scan result id=%d AA=%s\n", i, id, x)
+			case "FERNANDEZ":
+				assert.Equal(t, 9, id)
+				fmt.Printf("%d. Scan result id=%d AA=%s\n", i, id, x)
+			default:
+			}
+			assert.True(t, id > 0, fmt.Sprintf("Quantity is %d", id))
+			i++
 		}
-		i++
-		fmt.Printf("%d. Scan result id=%d AA=%s\n", i, id, x)
-
 	}
+	assert.Equal(t, 804, i)
 
 }
