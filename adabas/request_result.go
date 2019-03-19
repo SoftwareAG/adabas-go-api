@@ -212,7 +212,17 @@ func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 	enc := x.(*xml.Encoder)
 	start := xml.StartElement{Name: xml.Name{Local: adaValue.Type().Name()}}
 	enc.EncodeToken(start)
-	if !adaValue.Type().IsStructure() {
+	if adaValue.Type().IsStructure() {
+		if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup {
+			start := xml.StartElement{Name: xml.Name{Local: "Period"}}
+			enc.EncodeToken(start)
+		}
+		if adaValue.Type().Type() == adatypes.FieldTypeMultiplefield {
+			start := xml.StartElement{Name: xml.Name{Local: "Multiple"}}
+			enc.EncodeToken(start)
+		}
+		//fmt.Println("Work on " + adaValue.Type().Name())
+	} else {
 		enc.EncodeToken(xml.CharData([]byte(adaValue.String())))
 		enc.EncodeToken(start.End())
 	}
@@ -222,8 +232,37 @@ func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 func traverseMarshalXMLEnd2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	if adaValue.Type().IsStructure() {
 		enc := x.(*xml.Encoder)
+		sv := adaValue.(*adatypes.StructureValue)
+		if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup && sv.NrElements() > 0 {
+			//fmt.Println("E Entry", adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex())
+			end := xml.EndElement{Name: xml.Name{Local: "Entry"}}
+			enc.EncodeToken(end)
+		}
+		if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup {
+			end := xml.EndElement{Name: xml.Name{Local: "Period"}}
+			enc.EncodeToken(end)
+		}
+		if adaValue.Type().Type() == adatypes.FieldTypeMultiplefield {
+			end := xml.EndElement{Name: xml.Name{Local: "Multiple"}}
+			enc.EncodeToken(end)
+		}
 		end := xml.EndElement{Name: xml.Name{Local: adaValue.Type().Name()}}
 		enc.EncodeToken(end)
+	}
+	return adatypes.Continue, nil
+}
+
+func traverseMarshalXMLElement(adaValue adatypes.IAdaValue, nr, max int, x interface{}) (adatypes.TraverseResult, error) {
+	enc := x.(*xml.Encoder)
+	if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup {
+		if nr > 0 {
+			//fmt.Println("E Entry", adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex(), nr, max)
+			end := xml.EndElement{Name: xml.Name{Local: "Entry"}}
+			enc.EncodeToken(end)
+		}
+		//fmt.Println("S Entry", adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex(), nr, max)
+		start := xml.StartElement{Name: xml.Name{Local: "Entry"}}
+		enc.EncodeToken(start)
 	}
 	return adatypes.Continue, nil
 }
@@ -232,7 +271,7 @@ func traverseMarshalXMLEnd2(adaValue adatypes.IAdaValue, x interface{}) (adatype
 func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	// x := xml.StartElement{Name: xml.Name{Local: "Response"}}
 	// e.EncodeToken(x)
-	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalXML2, LeaveFunction: traverseMarshalXMLEnd2}
+	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalXML2, LeaveFunction: traverseMarshalXMLEnd2, ElementFunction: traverseMarshalXMLElement}
 	rec := xml.StartElement{Name: xml.Name{Local: "Record"}}
 	rec.Attr = []xml.Attr{xml.Attr{Name: xml.Name{Local: "ISN"}, Value: strconv.Itoa(int(record.Isn))}}
 	e.EncodeToken(rec)
