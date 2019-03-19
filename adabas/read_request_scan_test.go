@@ -81,7 +81,7 @@ func TestRequestLogicalWithQueryFieldsScan1(t *testing.T) {
 
 	err = request.Scan(&id, &x, &y, &z)
 	assert.Error(t, err)
-	assert.Equal(t, "End of cursoring", err.Error())
+	assert.Equal(t, "ADG0000130: End of cursor", err.Error())
 
 }
 
