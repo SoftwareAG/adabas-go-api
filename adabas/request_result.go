@@ -230,8 +230,8 @@ func traverseMarshalXMLEnd2(adaValue adatypes.IAdaValue, x interface{}) (adatype
 
 // MarshalXML provide XML
 func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-	x := xml.StartElement{Name: xml.Name{Local: "Response"}}
-	e.EncodeToken(x)
+	// x := xml.StartElement{Name: xml.Name{Local: "Response"}}
+	// e.EncodeToken(x)
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalXML2, LeaveFunction: traverseMarshalXMLEnd2}
 	rec := xml.StartElement{Name: xml.Name{Local: "Record"}}
 	rec.Attr = []xml.Attr{xml.Attr{Name: xml.Name{Local: "ISN"}, Value: strconv.Itoa(int(record.Isn))}}
@@ -239,7 +239,7 @@ func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	record.traverse(tm, e)
 	e.EncodeToken(rec.End())
 
-	e.EncodeToken(x.End())
+	// e.EncodeToken(x.End())
 	return nil
 }
 
