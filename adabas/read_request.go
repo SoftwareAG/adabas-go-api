@@ -150,6 +150,12 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, e
 			return
 		}
 	}
+	if request.adabas.status == nil {
+		fmt.Printf("STATUS EMPTY :........\n")
+	}
+	if request.adabas.status == nil {
+		fmt.Printf("PLATFORM EMPTY :........%#v\n", request.adabas.status)
+	}
 	adabasRequest, err = request.definition.CreateAdabasRequest(false, false, request.adabas.status.platform.IsMainframe())
 	if err != nil {
 		return
