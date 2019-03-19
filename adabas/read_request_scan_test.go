@@ -42,6 +42,9 @@ func TestRequestLogicalWithQueryFieldsScan1(t *testing.T) {
 	assert.Equal(t, "11100308", x)
 	assert.Equal(t, "DIETER", y)
 	assert.Equal(t, "PETER", z)
+	x = ""
+	y = ""
+	z = ""
 
 	err = request.Scan(&id, &x, &y, &z)
 	assert.NoError(t, err)
@@ -51,6 +54,9 @@ func TestRequestLogicalWithQueryFieldsScan1(t *testing.T) {
 	assert.Equal(t, "11300317", x)
 	assert.Equal(t, "HORST", y)
 	assert.Equal(t, "WERNER", z)
+	x = ""
+	y = ""
+	z = ""
 
 	err = request.Scan(&id, &x, &y, &z)
 	assert.NoError(t, err)
@@ -60,6 +66,9 @@ func TestRequestLogicalWithQueryFieldsScan1(t *testing.T) {
 	assert.Equal(t, "11600314", x)
 	assert.Equal(t, "BEATE", y)
 	assert.Equal(t, "BIRGIT", z)
+	x = ""
+	y = ""
+	z = ""
 
 	err = request.Scan(&id, &x, &y, &z)
 	assert.NoError(t, err)
