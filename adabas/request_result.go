@@ -210,19 +210,25 @@ func (Response *Response) MarshalXML(e *xml.Encoder, start xml.StartElement) err
 
 func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	enc := x.(*xml.Encoder)
-	start := xml.StartElement{Name: xml.Name{Local: adaValue.Type().Name()}}
-	enc.EncodeToken(start)
 	if adaValue.Type().IsStructure() {
-		if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup {
-			start := xml.StartElement{Name: xml.Name{Local: "Period"}}
+		switch adaValue.Type().Type() {
+		case adatypes.FieldTypePeriodGroup:
+			attrs := make([]xml.Attr, 0)
+			attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})
+			start := xml.StartElement{Name: xml.Name{Local: "Period"}, Attr: attrs}
+			enc.EncodeToken(start)
+		case adatypes.FieldTypeMultiplefield:
+			attrs := make([]xml.Attr, 0)
+			attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})
+			start := xml.StartElement{Name: xml.Name{Local: "Multiple"}, Attr: attrs}
+			enc.EncodeToken(start)
+		default:
+			start := xml.StartElement{Name: xml.Name{Local: adaValue.Type().Name()}}
 			enc.EncodeToken(start)
 		}
-		if adaValue.Type().Type() == adatypes.FieldTypeMultiplefield {
-			start := xml.StartElement{Name: xml.Name{Local: "Multiple"}}
-			enc.EncodeToken(start)
-		}
-		//fmt.Println("Work on " + adaValue.Type().Name())
 	} else {
+		start := xml.StartElement{Name: xml.Name{Local: adaValue.Type().Name()}}
+		enc.EncodeToken(start)
 		enc.EncodeToken(xml.CharData([]byte(adaValue.String())))
 		enc.EncodeToken(start.End())
 	}
