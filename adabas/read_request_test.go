@@ -540,12 +540,16 @@ func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
 	defer request.Close()
 	openErr := request.Open()
 	fmt.Println("Open database ...", openErr)
+	fmt.Printf("Status ...%#v", request.adabas.status)
+	assert.NotNil(t, request.adabas.status.platform)
 	if assert.NoError(t, openErr) {
 		err = request.QueryFields("PERSONNEL-ID,FIRST-NAME,NAME")
 		if err != nil {
 			return
 		}
 		fmt.Println("After query fields")
+		fmt.Printf("Status ...%#v", request.adabas.status)
+		assert.NotNil(t, request.adabas.status.platform)
 		result, err := request.ReadLogicalBy("PERSONNEL-ID")
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
