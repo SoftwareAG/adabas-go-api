@@ -390,10 +390,6 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.Request) {
 	adabas.AdabasBuffers[0].abd.Abdsize = uint64(adabasRequest.FormatBuffer.Len())
 	adabas.AdabasBuffers[0].abd.Abdsend = adabas.AdabasBuffers[0].abd.Abdsize
 	adabas.AdabasBuffers[0].abd.Abdrecv = 0
-	if adabas.AdabasBuffers[0].abd.Abdver[0] != 'G' {
-		adatypes.Central.Log.Infof("ABD init 0 error %p\n", adabas.AdabasBuffers[0])
-		os.Exit(100)
-	}
 	adatypes.Central.Log.Debugf("ABD init 0 %p\n", adabas.AdabasBuffers[0])
 
 	// Create record buffer for the call
@@ -901,6 +897,8 @@ func (adabas *Adabas) SetDbid(dbid Dbid) {
 	adabas.Close()
 	adabas.Acbx.Acbxdbid = dbid
 	adabas.URL = NewURLWithDbid(dbid)
+	// Different adabas instance, need to update status
+	adabas.status = adabas.ID.status(adabas.URL.String())
 }
 
 // DeleteIsn delete a single isn
@@ -1120,7 +1118,7 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 	} else {
 		adatypes.Central.Log.Debugf("Skip parse ABD buffers")
 	}
-	adatypes.Central.Log.Infof("Got adabas call " + string(adabas.Acbx.Acbxcmd[:]))
+	adatypes.Central.Log.Debugf("Got adabas call " + string(adabas.Acbx.Acbxcmd[:]))
 	return
 }
 

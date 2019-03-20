@@ -187,7 +187,7 @@ func NewAdabasID() *ID {
 	AdaID.Timestamp = uint64(time.Now().Unix())
 	AdaID.Pid = uint32((AdaID.Timestamp - (AdaID.Timestamp % 100)) + uint64(id))
 	// fmt.Printf("Create Adabas ID: %d -> %s", AdaID.Pid, aid.String())
-	adatypes.Central.Log.Infof("Create Adabas ID: %d -> %s", AdaID.Pid, aid.String())
+	adatypes.Central.Log.Debugf("Create Adabas ID: %d -> %s", AdaID.Pid, aid.String())
 	return &aid
 }
 
