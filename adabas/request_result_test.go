@@ -294,7 +294,7 @@ func TestRequestResultWithMU(t *testing.T) {
 	assert.Equal(t, "{\"AA\":0,\"B1\":0,\"GR\":{\"PA\":0},\"I2\":0,\"I8\":0,\"MU\":[],\"U4\":0,\"U8\":0,\"UB\":0}", string(j))
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
-	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>0</AA><B1>0</B1><UB>0</UB><I2>0</I2><U4>0</U4><U8>0</U8><MU></MU><GR><PA>0</PA></GR><I8>0</I8></Record></Response>", string(x))
+	assert.Equal(t, "<Record ISN=\"0\"><AA>0</AA><B1>0</B1><UB>0</UB><I2>0</I2><U4>0</U4><U8>0</U8><Multiple sn=\"MU\"></Multiple><GR><PA>0</PA></GR><I8>0</I8></Record>", string(x))
 }
 
 func TestRequestResultWithMUWithContent(t *testing.T) {
@@ -343,7 +343,7 @@ func TestRequestResultWithMUWithContent(t *testing.T) {
 	assert.Equal(t, "{\"AA\":2,\"B1\":3,\"GR\":{\"PA\":1},\"I2\":0,\"I8\":0,\"MU\":[\"AAX001\",\"AAX002\",\"AAX003\",\"AAX004\",\"AAX005\"],\"U4\":0,\"U8\":0,\"UB\":0}", string(j))
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
-	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>2</AA><B1>3</B1><UB>0</UB><I2>0</I2><U4>0</U4><U8>0</U8><MU><MU>AAX001    </MU><MU>AAX002    </MU><MU>AAX003    </MU><MU>AAX004    </MU><MU>AAX005    </MU></MU><GR><PA>1</PA></GR><I8>0</I8></Record></Response>", string(x))
+	assert.Equal(t, "<Record ISN=\"0\"><AA>2</AA><B1>3</B1><UB>0</UB><I2>0</I2><U4>0</U4><U8>0</U8><Multiple sn=\"MU\"><MU>AAX001    </MU><MU>AAX002    </MU><MU>AAX003    </MU><MU>AAX004    </MU><MU>AAX005    </MU></Multiple><GR><PA>1</PA></GR><I8>0</I8></Record>", string(x))
 }
 
 func TestRequestResultWithPEMUWithoutContent(t *testing.T) {
@@ -368,7 +368,7 @@ func TestRequestResultWithPEMUWithoutContent(t *testing.T) {
 	assert.Equal(t, "{\"AA\":0,\"I8\":0,\"P2\":[],\"PE\":[],\"U8\":0}", string(j))
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
-	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>0</AA><PE></PE><U8>0</U8><P2></P2><I8>0</I8></Record></Response>", string(x))
+	assert.Equal(t, "<Record ISN=\"0\"><AA>0</AA><Period sn=\"PE\"></Period><U8>0</U8><Period sn=\"P2\"></Period><I8>0</I8></Record>", string(x))
 }
 
 func TestRequestResultWithPEMUWithContent(t *testing.T) {
@@ -427,7 +427,7 @@ func TestRequestResultWithPEMUWithContent(t *testing.T) {
 	assert.Equal(t, "{\"AA\":2,\"I8\":1,\"P2\":[],\"PE\":[{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[100,122],\"PP\":1},{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[],\"PP\":2},{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[],\"PP\":3}],\"U8\":3}", string(j))
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
-	assert.Equal(t, "<Response><Record ISN=\"0\"><AA>2</AA><PE><PP>1</PP><MU><MU>100</MU><MU>122</MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8><PP>2</PP><MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8><PP>3</PP><MU></MU><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8></PE><U8>3</U8><P2></P2><I8>1</I8></Record></Response>", string(x))
+	assert.Equal(t, "<Record ISN=\"0\"><AA>2</AA><Period sn=\"PE\"><Entry><PP>1</PP><Multiple sn=\"MU\"><MU>100</MU><MU>122</MU></Multiple><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8></Entry><Entry><PP>2</PP><Multiple sn=\"MU\"></Multiple><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8></Entry><Entry><PP>3</PP><Multiple sn=\"MU\"></Multiple><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8></Entry></Period><U8>3</U8><Period sn=\"P2\"></Period><I8>1</I8></Record>", string(x))
 }
 
 func ExampleRecord_dumpZeroValues() {
