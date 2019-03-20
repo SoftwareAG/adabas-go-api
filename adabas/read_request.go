@@ -607,10 +607,14 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	if request.fields == nil {
 		if fieldq != "*" && fieldq != "" {
 			f := make(map[string]int)
-			for i, s := range strings.Split(fieldq, ",") {
-				f[s] = i
-			}
 			ev := &evaluateFieldMap{queryFields: make(map[string]*queryField), fields: f}
+			for i, s := range strings.Split(fieldq, ",") {
+				if s == "#ISN" || s == "#ISNQUANTITY" {
+					ev.queryFields[s] = &queryField{field: s, index: i}
+				} else {
+					f[s] = i
+				}
+			}
 			tm := adatypes.NewTraverserMethods(traverseFieldMap)
 			request.definition.TraverseTypes(tm, true, ev)
 			request.fields = ev.queryFields
@@ -705,7 +709,7 @@ func (request *ReadRequest) Scan(dest ...interface{}) error {
 		if err != nil {
 			return err
 		}
-		return record.Scan(request.fields, dest)
+		return record.Scan(dest...)
 	}
 	return adatypes.NewGenericError(130)
 }
