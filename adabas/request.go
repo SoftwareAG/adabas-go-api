@@ -24,12 +24,12 @@ import (
 )
 
 type commonRequest struct {
-	adabas     *Adabas
-	mapName    string
-	adabasMap  *Map
-	repository *Repository
-	definition *adatypes.Definition
-	isOpen     bool
+	adabas      *Adabas
+	mapName     string
+	adabasMap   *Map
+	repository  *Repository
+	definition  *adatypes.Definition
+	initialized bool
 }
 
 // StreamFunction function callback used to go through the list of received records
@@ -59,7 +59,7 @@ func (request *commonRequest) Close() {
 		request.adabas.Close()
 	}
 	request.definition = nil
-	request.isOpen = false
+	request.initialized = false
 }
 
 // Endtransaction end the transaction of the Adabas session
@@ -75,11 +75,11 @@ func (request *commonRequest) BackoutTransaction() error {
 // Open Open the Adabas session
 func (request *commonRequest) commonOpen() (err error) {
 	adatypes.Central.Log.Debugf("Open read request")
-	if request.isOpen {
-		return
-	}
 	err = request.adabas.Open()
 	if err != nil {
+		return
+	}
+	if request.initialized {
 		return
 	}
 	if request.mapName != "" {
@@ -123,14 +123,14 @@ func (request *commonRequest) commonOpen() (err error) {
 	}
 	request.definition.DumpTypes(true, true)
 	adatypes.Central.Log.Debugf("Database open complete")
-	request.isOpen = true
+	request.initialized = true
 
 	return
 }
 
 // IsOpen provide True if the database connection is opened
 func (request *commonRequest) IsOpen() bool {
-	if request.isOpen {
+	if request.adabas.status.open {
 		return true
 	}
 	return false
