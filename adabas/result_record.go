@@ -34,6 +34,7 @@ type Record struct {
 	Quantity   uint64       `xml:"Quantity,attr"`
 	Value      []adatypes.IAdaValue
 	HashFields map[string]adatypes.IAdaValue `xml:"-" json:"-"`
+	fields     map[string]*queryField
 	definition *adatypes.Definition
 }
 
@@ -195,4 +196,26 @@ func (record *Record) SearchValueIndex(name string, index []uint32) (adatypes.IA
 	record.definition.Values = record.Value
 	adatypes.Central.Log.Debugf("Record value : %#v", record.Value)
 	return record.definition.SearchByIndex(name, index, false)
+}
+
+// Scan scan for different field entries
+func (record *Record) Scan(dest ...interface{}) (err error) {
+	adatypes.Central.Log.Debugf("Scan Record %#v", record.fields)
+	if f, ok := record.fields["#ISN"]; ok {
+		adatypes.Central.Log.Debugf("Fill Record ISN=%d", record.Isn)
+		*(dest[f.index].(*int)) = int(record.Isn)
+	}
+	if f, ok := record.fields["#ISNQUANTITY"]; ok {
+		adatypes.Central.Log.Debugf("Fill Record ISN quantity=%d", record.Quantity)
+		*(dest[f.index].(*int)) = int(record.Quantity)
+	}
+	// Traverse to current entries
+	tm := adatypes.TraverserValuesMethods{EnterFunction: scanFieldsTraverser}
+	sf := &scanFields{fields: record.fields, parameter: dest}
+	_, err = record.traverse(tm, sf)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }

@@ -55,5 +55,8 @@ func main() {
 		return
 	}
 	fmt.Printf("ReadLogicalWith() result=%v\n", result)
+	var aa, ac, ad, ae string
+	// Read given AA(alpha) and all entries of group AB to string variables
+	result.Scan(&aa, &ac, &ad, &ae)
 
 }

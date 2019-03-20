@@ -67,6 +67,9 @@ request.QueryFields("AA,AB")
 request.Limit = 0
 // Read in the database using search query
 result,err := request.ReadLogicalWith("AA=60010001")
+var aa,ac,ad,ae string
+// Read given AA(alpha) and all entries of group AB to string variables
+result.Scan(&aa,&ac,&ad,&ae)
 ```
 
 The example code is referenced [here](.//tests//simple_read.go). See detailed documentation [here](.//doc//README.md)

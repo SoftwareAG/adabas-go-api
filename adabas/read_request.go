@@ -175,6 +175,7 @@ func parseRead(adabasRequest *adatypes.Request, x interface{}) (err error) {
 		return xerr
 	}
 	result.Values = append(result.Values, record)
+	record.fields = result.fields
 	adatypes.Central.Log.Debugf("Got ISN=%d Quantity=%d record", record.Isn, record.Quantity)
 
 	return
@@ -182,7 +183,7 @@ func parseRead(adabasRequest *adatypes.Request, x interface{}) (err error) {
 
 // ReadPhysicalSequence read records in physical order
 func (request *ReadRequest) ReadPhysicalSequence() (result *Response, err error) {
-	result = &Response{Definition: request.definition}
+	result = &Response{Definition: request.definition, fields: request.fields}
 	err = request.ReadPhysicalSequenceWithParser(nil, result)
 	if err != nil {
 		return nil, err
@@ -193,7 +194,7 @@ func (request *ReadRequest) ReadPhysicalSequence() (result *Response, err error)
 // ReadPhysicalSequenceStream read records in physical order
 func (request *ReadRequest) ReadPhysicalSequenceStream(streamFunction StreamFunction,
 	x interface{}) (result *Response, err error) {
-	s := &stream{streamFunction: streamFunction, result: &Response{Definition: request.definition}, x: x}
+	s := &stream{streamFunction: streamFunction, result: &Response{Definition: request.definition, fields: request.fields}, x: x}
 	err = request.ReadPhysicalSequenceWithParser(streamRecord, s)
 	if err != nil {
 		return nil, err
@@ -236,7 +237,7 @@ func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes
 
 // ReadISN read records defined by a given ISN
 func (request *ReadRequest) ReadISN(isn adatypes.Isn) (result *Response, err error) {
-	result = &Response{Definition: request.definition}
+	result = &Response{Definition: request.definition, fields: request.fields}
 	err = request.ReadISNWithParser(isn, nil, result)
 	if err != nil {
 		return nil, err
@@ -300,7 +301,7 @@ func (request *ReadRequest) ReadLogicalWithStream(search string, streamFunction 
 
 // ReadLogicalWith read records with a logical order given by a search string
 func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, err error) {
-	result = &Response{Definition: request.definition}
+	result = &Response{Definition: request.definition, fields: request.fields}
 	err = request.ReadLogicalWithWithParser(search, parseRead, result)
 	if err != nil {
 		return nil, err
@@ -386,7 +387,7 @@ func (request *ReadRequest) ReadLogicalBy(descriptors string) (result *Response,
 // ReadLogicalByStream read records with a logical order given by a descriptor sort and calls stream function
 func (request *ReadRequest) ReadLogicalByStream(descriptor string, streamFunction StreamFunction,
 	x interface{}) (result *Response, err error) {
-	s := &stream{streamFunction: streamFunction, result: &Response{Definition: request.definition}, x: x}
+	s := &stream{streamFunction: streamFunction, result: &Response{Definition: request.definition, fields: request.fields}, x: x}
 	err = request.ReadLogicalByWithParser(descriptor, streamRecord, s)
 	if err != nil {
 		return nil, err
@@ -454,14 +455,14 @@ func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, er
 			request.cursoring.adabasRequest = adabasRequest
 		}
 
-		Response := &Response{Definition: request.definition}
+		Response := &Response{Definition: request.definition, fields: request.fields}
 
 		err = request.adabas.Histogram(request.repository.Fnr, adabasRequest, Response)
 		if err == nil {
 			result = Response
 		}
 	} else {
-		result = &Response{Definition: request.definition}
+		result = &Response{Definition: request.definition, fields: request.fields}
 		adatypes.Central.Log.Debugf("Read next chunk")
 		err = request.adabas.loopCall(request.cursoring.adabasRequest, result)
 		adatypes.Central.Log.Debugf("Read next chunk done %v", err)
@@ -484,7 +485,7 @@ func (request *ReadRequest) HistogramWithStream(search string, streamFunction St
 
 // HistogramWith read a descriptor given by a search criteria
 func (request *ReadRequest) HistogramWith(search string) (result *Response, err error) {
-	response := &Response{Definition: request.definition}
+	response := &Response{Definition: request.definition, fields: request.fields}
 	err = request.histogramWithWithParser(search, parseRead, response)
 	if err != nil {
 		return nil, err
@@ -530,6 +531,51 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 	return
 }
 
+type evaluateFieldMap struct {
+	queryFields map[string]*queryField
+	fields      map[string]int
+}
+
+func initFieldSubTypes(st *adatypes.StructureType, queryFields map[string]*queryField, current *int) {
+	for _, sub := range st.SubTypes {
+		if sub.IsStructure() {
+			sst := sub.(*adatypes.StructureType)
+			initFieldSubTypes(sst, queryFields, current)
+		} else {
+			adatypes.Central.Log.Debugf("Sub field %s = %d", sub.Name(), *current)
+			queryFields[sub.Name()] = &queryField{field: sub.Name(), index: *current}
+			*current++
+		}
+	}
+
+}
+
+func traverseFieldMap(adaType adatypes.IAdaType, parentType adatypes.IAdaType, level int, x interface{}) error {
+	ev := x.(*evaluateFieldMap)
+	s := adaType.Name()
+	if index, ok := ev.fields[s]; ok {
+		if _, okq := ev.queryFields[s]; !okq {
+			if adaType.IsStructure() {
+				st := adaType.(*adatypes.StructureType)
+				current := index
+				initFieldSubTypes(st, ev.queryFields, &current)
+				if current > index {
+					d := current - index - 1
+					for s, i := range ev.fields {
+						if i > index {
+							ev.fields[s] = i + d
+						}
+						adatypes.Central.Log.Debugf("New order %s -> %d", s, ev.fields[s])
+					}
+				}
+			} else {
+				ev.queryFields[s] = &queryField{field: s, index: index}
+			}
+		}
+	}
+	return nil
+}
+
 // QueryFields define the fields queried in that request
 func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	adatypes.Central.Log.Debugf("Query fields to %s", fieldq)
@@ -537,25 +583,40 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	if err != nil {
 		return
 	}
-	// Could not recreate field content of a request!!!
-	if request.fields == nil {
-		if fieldq != "*" && fieldq != "" {
-			request.fields = make(map[string]*queryField)
-			adatypes.Central.Log.Debugf("Check Query field %s", fieldq)
-			for i, s := range strings.Split(fieldq, ",") {
-				adatypes.Central.Log.Debugf("Add Query field %s=%d", s, i)
-				request.fields[s] = &queryField{field: s, index: i}
-			}
-		} else {
-			adatypes.Central.Log.Debugf("General Query")
-		}
-	}
+	// // Could not recreate field content of a request!!!
+	// if request.fields == nil {
+	// 	if fieldq != "*" && fieldq != "" {
+	// 		request.fields = make(map[string]*queryField)
+	// 		adatypes.Central.Log.Debugf("Check Query field %s", fieldq)
+	// 		for i, s := range strings.Split(fieldq, ",") {
+	// 			adatypes.Central.Log.Debugf("Add Query field %s=%d", s, i)
+	// 			request.fields[s] = &queryField{field: s, index: i}
+	// 		}
+	// 	} else {
+	// 		adatypes.Central.Log.Debugf("General Query")
+	// 	}
+	// }
 
 	err = request.loadDefinition()
 	if err != nil {
 		return
 	}
 	err = request.definition.ShouldRestrictToFields(fieldq)
+
+	// Could not recreate field content of a request!!!
+	if request.fields == nil {
+		if fieldq != "*" && fieldq != "" {
+			f := make(map[string]int)
+			for i, s := range strings.Split(fieldq, ",") {
+				f[s] = i
+			}
+			ev := &evaluateFieldMap{queryFields: make(map[string]*queryField), fields: f}
+			tm := adatypes.NewTraverserMethods(traverseFieldMap)
+			request.definition.TraverseTypes(tm, true, ev)
+			request.fields = ev.queryFields
+		}
+	}
+
 	return
 }
 
@@ -644,23 +705,7 @@ func (request *ReadRequest) Scan(dest ...interface{}) error {
 		if err != nil {
 			return err
 		}
-		adatypes.Central.Log.Debugf("Scan Record %#v", request.fields)
-		if f, ok := request.fields["#ISN"]; ok {
-			adatypes.Central.Log.Debugf("Fill Record ISN=%d", record.Isn)
-			*(dest[f.index].(*int)) = int(record.Isn)
-		}
-		if f, ok := request.fields["#ISNQUANTITY"]; ok {
-			adatypes.Central.Log.Debugf("Fill Record ISN quantity=%d", record.Quantity)
-			*(dest[f.index].(*int)) = int(record.Quantity)
-		}
-		// Traverse to current entries
-		tm := adatypes.TraverserValuesMethods{EnterFunction: scanFieldsTraverser}
-		sf := &scanFields{fields: request.fields, parameter: dest}
-		_, err = record.traverse(tm, sf)
-		if err != nil {
-			return err
-		}
-		return nil
+		return record.Scan(request.fields, dest)
 	}
 	return adatypes.NewGenericError(130)
 }

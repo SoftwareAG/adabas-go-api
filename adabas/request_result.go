@@ -57,6 +57,7 @@ func (record *Record) createRecordBuffer(helper *adatypes.BufferHelper) (err err
 type Response struct {
 	XMLName    xml.Name  `xml:"-" json:"-"`
 	Values     []*Record `xml:"Records" json:"Records"`
+	fields     map[string]*queryField
 	Definition *adatypes.Definition
 }
 

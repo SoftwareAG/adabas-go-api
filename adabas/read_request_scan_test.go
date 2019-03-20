@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -308,5 +309,126 @@ func TestHistogramWithQueryFieldsScan(t *testing.T) {
 		}
 	}
 	assert.Equal(t, 20, i)
+
+}
+
+func TestConnectionSimpleScan(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "request.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs + ";auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+
+	connection.Open()
+	readRequest, rErr := connection.CreateFileReadRequest(11)
+	assert.NoError(t, rErr)
+	err = readRequest.QueryFields("AA,AC,AD,AE")
+	assert.NoError(t, err)
+
+	adatypes.Central.Log.Debugf("Test Search with ...")
+	result, rerr := readRequest.ReadLogicalWith("AE=ADAM")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	fmt.Println("Found entries:", result.NrRecords())
+	assert.Equal(t, 1, result.NrRecords())
+	for _, record := range result.Values {
+		var aa, ac, ad, ae string
+		// Read given AA(alpha) and all entries of group AB to string variables
+		record.Scan(&aa, &ac, &ad, &ae)
+		fmt.Println(aa, ac, ad, ae)
+		assert.Equal(t, "50005800", aa)
+		assert.Equal(t, "SIMONE", ac)
+		assert.Equal(t, "", ad)
+		assert.Equal(t, "ADAM", ae)
+	}
+
+}
+
+func TestConnectionSimpleScanGroupReference(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "request.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs + ";auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+
+	connection.Open()
+	readRequest, rErr := connection.CreateFileReadRequest(11)
+	assert.NoError(t, rErr)
+	err = readRequest.QueryFields("AA,AB")
+	assert.NoError(t, err)
+
+	adatypes.Central.Log.Debugf("Test Search with ...")
+	result, rerr := readRequest.ReadLogicalWith("AE=ADAM")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	fmt.Println("Found entries:", result.NrRecords())
+	assert.Equal(t, 1, result.NrRecords())
+	for _, record := range result.Values {
+		var aa, ac, ad, ae string
+		// Read given AA(alpha) and all entries of group AB to string variables
+		record.Scan(&aa, &ac, &ae, &ad)
+		fmt.Println(aa, ac, ad, ae)
+		assert.Equal(t, "50005800", aa)
+		assert.Equal(t, "SIMONE", ac)
+		assert.Equal(t, "", ad)
+		assert.Equal(t, "ADAM", ae)
+	}
+
+}
+
+func TestConnectionSimpleScanGroupAndField(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "request.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs + ";auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+
+	connection.Open()
+	readRequest, rErr := connection.CreateFileReadRequest(11)
+	assert.NoError(t, rErr)
+	err = readRequest.QueryFields("AA,AB,AO")
+	assert.NoError(t, err)
+
+	adatypes.Central.Log.Debugf("Test Search with ...")
+	result, rerr := readRequest.ReadLogicalWith("AE=ADAM")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	fmt.Println("Found entries:", result.NrRecords())
+	assert.Equal(t, 1, result.NrRecords())
+	for _, record := range result.Values {
+		var aa, ac, ad, ae, ao string
+		// Read given AA(alpha) and all entries of group AB to string variables
+		record.Scan(&aa, &ac, &ae, &ad, &ao)
+		fmt.Println(aa, ac, ad, ae, ao)
+		assert.Equal(t, "50005800", aa)
+		assert.Equal(t, "SIMONE", ac)
+		assert.Equal(t, "", ad)
+		assert.Equal(t, "ADAM", ae)
+		assert.Equal(t, "VENT59", ao)
+	}
 
 }
