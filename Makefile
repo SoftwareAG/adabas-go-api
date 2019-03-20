@@ -22,7 +22,6 @@ VERSION    ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/nu
 			cat $(CURDIR)/.version 2> /dev/null || echo v0)
 TMPPATH    ?= /tmp
 GOPATH      = $(TMPPATH)/tmp_adabas-go-api.$(shell id -u)
-GO111MODULE = off
 BIN         = $(CURDIR)/bin
 LOGPATH     = $(CURDIR)/logs
 TESTFILES   = $(CURDIR)/files
@@ -104,9 +103,6 @@ $(BIN)/%: $(BIN) | $(BASE) ; $(info $(M) building $(REPOSITORY)…)
 		(GOPATH=$$tmp CGO_CFLAGS= CGO_LDFLAGS= \
 		go get $(REPOSITORY) && cp $$tmp/bin/* $(BIN)/.) || ret=$$?; \
 		rm -rf $$tmp ; exit $$ret
-
-GODEP = $(BIN)/dep
-$(BIN)/dep: REPOSITORY=github.com/golang/dep/cmd/dep
 
 GOLINT = $(BIN)/golint
 $(BIN)/golint: REPOSITORY=golang.org/x/lint/golint
@@ -194,7 +190,7 @@ test-coverage: fmt lint vendor test-coverage-tools | $(BASE) ; $(info $(M) runni
 	$Q $(GOCOV) convert $(COVERAGE_PROFILE) | $(GOCOVXML) > $(COVERAGE_XML)
 
 .PHONY: lint
-lint: vendor | $(BASE) $(GOLINT) ; $(info $(M) running golint…) @ ## Run golint
+lint: | $(BASE) $(GOLINT) ; $(info $(M) running golint…) @ ## Run golint
 	$Q cd $(BASE) && ret=0 && for pkg in $(PKGS); do \
 		test -z "$$($(GOLINT) $$pkg | tee /dev/stderr)" || ret=1 ; \
 	 done ; exit $$ret
@@ -207,31 +203,12 @@ fmt: ; $(info $(M) running gofmt…) @ ## Run gofmt on all source files
 
 # Dependency management
 
-vendor: Gopkg.toml Gopkg.lock | $(BASE) $(GODEP) ; $(info $(M) retrieving dependencies…)
-	$Q cd $(GOPATH)/src/$(PACKAGE) && $(GODEP) ensure -v
-	@echo "$(GOPATH)"
-#	@ln -nsf . vendor/src
-	@touch $@
-
-.PHONY: vendor-update
-vendor-update: vendor | $(BASE) $(GODEP)
-ifeq "$(origin PKG)" "command line"
-	$(info $(M) updating $(PKG) dependency…)
-	$Q cd $(BASE) && $(GODEP) ensure -update $(PKG)
-else
-	$(info $(M) updating all dependencies…)
-	$Q cd $(BASE) && $(GODEP) ensure -update
-endif
-#	@ln -nsf . vendor/src
-	@touch vendor
-
 .PHONY: generate
 generate: ; $(info $(M) generating…) @ ## Generate message go repository
 	$Q cd $(BASESRC)/generate && 2>&1 CURDIR=$(CURDIR) GO_ADA_MESSAGES=$(MESSAGES) \
 	                      $(GO) generate -v $(GO_FLAGS)
 
 # Misc
-
 .PHONY: clean
 clean: ; $(info $(M) cleaning…)	@ ## Cleanup everything
 	@rm -rf $(GOPATH) $(CURDIR)/adabas/vendor
