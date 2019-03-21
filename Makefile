@@ -146,11 +146,11 @@ test-sanitizer:  ARGS=-msan      ## Run tests with race detector
 $(TEST_TARGETS): NAME=$(MAKECMDGOALS:test-%=%)
 $(TEST_TARGETS): test
 check test tests: fmt lint | $(BASE) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests
-	$Q cd $(BASE) && LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
+	$Q cd $(CURDIR) && LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 		DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
 	    TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) REFERENCES=$(REFERENCES) \
-	    $(GO) test -timeout $(TIMEOUT)s -v -tags $(GO_TAGS) $(ARGS) $(TESTPKGS)
+	    $(GO) test -timeout $(TIMEOUT)s -v -tags $(GO_TAGS) $(ARGS) ./...
 
 TEST_XML_TARGETS := test-xml-bench
 .PHONY: $(TEST_XML_TARGETS) test-xml
@@ -159,11 +159,11 @@ $(TEST_XML_TARGETS): NAME=$(MAKECMDGOALS:test-xml-%=%)
 $(TEST_XML_TARGETS): test-xml
 test-xml: prepare fmt lint $(TESTOUTPUT) | $(BASE) $(GO2XUNIT) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
 	sh $(CURDIR)/sh/evaluateQueues.sh
-	$Q cd $(BASE) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
+	$Q cd $(CURDIR) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
 	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
 	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
-	    $(GO) test -timeout $(TIMEOUT)s -count=1 $(GO_FLAGS) -v $(ARGS) $(TESTPKGS) | tee $(TESTOUTPUT)/tests.output
+	    $(GO) test -timeout $(TIMEOUT)s -count=1 $(GO_FLAGS) -v $(ARGS) ./... | tee $(TESTOUTPUT)/tests.output
 	sh $(CURDIR)/sh/evaluateQueues.sh
 	$(GO2XUNIT) -input $(TESTOUTPUT)/tests.output -output $(TESTOUTPUT)/tests.xml
 
