@@ -103,9 +103,9 @@ $(BIN):
 	@mkdir -p $@
 $(BIN)/%: $(BIN) | $(BASE) ; $(info $(M) building $(REPOSITORY)…)
 	$Q tmp=$$(mktemp -d); \
-		(GOPATH=$$tmp CGO_CFLAGS= CGO_LDFLAGS= \
+		(GO111MODULE=off GOPATH=$$tmp CGO_CFLAGS= CGO_LDFLAGS= \
 		go get $(REPOSITORY) && cp $$tmp/bin/* $(BIN)/.) || ret=$$?; \
-		(GOPATH=$$tmp go clean -modcache ./...); \
+		# (GOPATH=$$tmp go clean -modcache ./...); \
 		rm -rf $$tmp ; exit $$ret
 
 # Tools
