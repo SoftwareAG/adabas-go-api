@@ -63,7 +63,7 @@ Q = $(if $(filter 1,$V),,@)
 M = $(shell printf "\033[34;1m▶\033[0m")
 
 .PHONY: all
-all: prepare generate fmt lint vendor lib $(EXECS) test-build
+all: prepare generate fmt lint lib $(EXECS) test-build
 
 lib: $(LIBS) $(CEXEC)
 
@@ -123,7 +123,7 @@ $(BIN)/go2xunit: REPOSITORY=github.com/tebeka/go2xunit
 $(TESTOUTPUT):
 	mkdir $(TESTOUTPUT)
 
-test-build: fmt lint vendor | $(BASE) ; $(info $(M) building $(NAME:%=% )tests…) @ ## Build tests
+test-build: fmt lint | $(BASE) ; $(info $(M) building $(NAME:%=% )tests…) @ ## Build tests
 	$Q cd $(BASE) && for pkg in $(TESTPKGS); do LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 		DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
@@ -139,7 +139,7 @@ test-race:    ARGS=-race         ## Run tests with race detector
 test-sanitizer:  ARGS=-msan      ## Run tests with race detector
 $(TEST_TARGETS): NAME=$(MAKECMDGOALS:test-%=%)
 $(TEST_TARGETS): test
-check test tests: fmt lint vendor | $(BASE) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests
+check test tests: fmt lint | $(BASE) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests
 	$Q cd $(BASE) && LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 		DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
@@ -151,7 +151,7 @@ TEST_XML_TARGETS := test-xml-bench
 test-xml-bench:     ARGS=-run=__absolutelynothing__ -bench=. ## Run benchmarks
 $(TEST_XML_TARGETS): NAME=$(MAKECMDGOALS:test-xml-%=%)
 $(TEST_XML_TARGETS): test-xml
-test-xml: prepare fmt lint vendor $(TESTOUTPUT) | $(BASE) $(GO2XUNIT) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
+test-xml: prepare fmt lint $(TESTOUTPUT) | $(BASE) $(GO2XUNIT) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
 	sh $(CURDIR)/sh/evaluateQueues.sh
 	$Q cd $(BASE) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
 	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
@@ -168,7 +168,7 @@ COVERAGE_HTML = $(COVERAGE_DIR)/index.html
 .PHONY: test-coverage test-coverage-tools
 test-coverage-tools: | $(GOCOVMERGE) $(GOCOV) $(GOCOVXML)
 test-coverage: COVERAGE_DIR := $(CURDIR)/test/coverage
-test-coverage: fmt lint vendor test-coverage-tools | $(BASE) ; $(info $(M) running coverage tests…) @ ## Run coverage tests
+test-coverage: fmt lint test-coverage-tools | $(BASE) ; $(info $(M) running coverage tests…) @ ## Run coverage tests
 	$Q mkdir -p $(COVERAGE_DIR)/coverage
 	$Q echo "Work on test packages: $(TESTPKGS)"
 	$Q cd $(BASE) && for pkg in $(TESTPKGS); do echo "Coverage for $$pkg"; \
