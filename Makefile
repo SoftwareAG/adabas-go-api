@@ -44,6 +44,7 @@ BASE        = $(GOPATH)/src/$(PACKAGE)
 BASESRC     = $(CURDIR)
 PKGS        = $(or $(PKG),$(shell cd $(BASE) && env GOPATH=$(GOPATH) $(GO) list ./... | grep -v "^vendor/"))
 TESTPKGS    = $(shell env GOPATH=$(GOPATH) $(GO) list -f '{{ if or .TestGoFiles .XTestGoFiles }}{{ .ImportPath }}{{ end }}' $(PKGS))
+TESTPKGSDIR = adabas adatypes #$(foreach dir,$(PKGS),$(shell basename $(dir)))
 CGO_CFLAGS  = $(if $(ACLDIR),-I$(ACLDIR)/inc,)
 CGO_LDFLAGS = $(if $(ACLDIR),-L$(ACLDIR)/lib -ladalnkx,)
 CGO_EXT_LDFLAGS = $(if $(ACLDIR),-lsagsmp2 -lsagxts3 -ladazbuf,)
@@ -54,7 +55,6 @@ export GOPATH GO111MODULE
 
 GO      = go
 GODOC   = godoc
-GOFMT   = gofmt
 GOARCH   ?= $(shell $(GO) env GOARCH)
 GOOS     ?= $(shell $(GO) env GOOS)
 TIMEOUT = 2000
@@ -78,17 +78,20 @@ $(LIBS): | $(BASE) ; $(info $(M) building libraries…) @ ## Build program binar
 		-o $(BIN)/$(GOOS)/$@.so $@.go
 
 $(EXECS): | $(BASE) ; $(info $(M) building executable…) @ ## Build program binary
-	$Q cd $(BASE) && echo "Build $@"; \
+	$Q cd $(BASE) && \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" $(GO) build $(GO_FLAGS) \
 		-ldflags '-X $(PACKAGE)/cmd.Version=$(VERSION) -X $(PACKAGE)/cmd.BuildDate=$(DATE)' \
 		-o $(BIN)/$@ $@.go
 
-$(BASE): ; $(info $(M) setting GOPATH…)
-	@mkdir -p $(dir $@)
-#	cp -r $(CURDIR)/$(PACKAGE) $@
-	ln -sf $(CURDIR) $@
+cleanModules:  ; $(info $(M) cleaning modules) @ ## Build program binary
+ifneq ("$(wildcard $(BASE)/pkg/mod)","")
+	$Q cd $(CURDIR) &&  \
+	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" $(GO) clean -modcache -cache ./...
+endif
 
-# Tools
+$(BASE): ; $(info $(M) creating BASE…)
+	@mkdir -p $(dir $@)
+	ln -sf $(CURDIR) $@
 
 $(LOGPATH):
 	@mkdir -p $@
@@ -102,8 +105,10 @@ $(BIN)/%: $(BIN) | $(BASE) ; $(info $(M) building $(REPOSITORY)…)
 	$Q tmp=$$(mktemp -d); \
 		(GOPATH=$$tmp CGO_CFLAGS= CGO_LDFLAGS= \
 		go get $(REPOSITORY) && cp $$tmp/bin/* $(BIN)/.) || ret=$$?; \
+		(GOPATH=$$tmp go clean -modcache ./...); \
 		rm -rf $$tmp ; exit $$ret
 
+# Tools
 GOLINT = $(BIN)/golint
 $(BIN)/golint: REPOSITORY=golang.org/x/lint/golint
 
@@ -123,12 +128,13 @@ $(BIN)/go2xunit: REPOSITORY=github.com/tebeka/go2xunit
 $(TESTOUTPUT):
 	mkdir $(TESTOUTPUT)
 
-test-build: fmt lint | $(BASE) ; $(info $(M) building $(NAME:%=% )tests…) @ ## Build tests
-	$Q cd $(BASE) && for pkg in $(TESTPKGS); do LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
+test-build: | $(BASE) ; $(info $(M) building $(NAME:%=% )tests…) @ ## Build tests
+	$Q cd $(CURDIR) && for pkg in $(TESTPKGSDIR); do echo "Build $$pkg in $(CURDIR)"; \
+	LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 		DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
 	    TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) REFERENCES=$(REFERENCES) \
-	    $(GO) test -v -c -tags $(GO_TAGS) $$pkg; done
+	    $(GO) test -c -tags $(GO_TAGS) ./$$pkg; done
 
 TEST_TARGETS := test-default test-bench test-short test-verbose test-race test-sanitizer
 .PHONY: $(TEST_TARGETS) check test tests
@@ -191,32 +197,31 @@ test-coverage: fmt lint test-coverage-tools | $(BASE) ; $(info $(M) running cove
 
 .PHONY: lint
 lint: | $(BASE) $(GOLINT) ; $(info $(M) running golint…) @ ## Run golint
-	$Q cd $(BASE) && ret=0 && for pkg in $(PKGS); do \
+	$Q cd $(CURDIR) && ret=0 && for pkg in $(PKGS); do \
 		test -z "$$($(GOLINT) $$pkg | tee /dev/stderr)" || ret=1 ; \
 	 done ; exit $$ret
 
 .PHONY: fmt
-fmt: ; $(info $(M) running gofmt…) @ ## Run gofmt on all source files
+fmt: ; $(info $(M) running fmt…) @ ## Run go fmt on all source files
 	@ret=0 && for d in $$($(GO) list -f '{{.Dir}}' ./... | grep -v /vendor/); do \
-		$(GOFMT) -l -w $$d/*.go || ret=$$? ; \
+		$(GO) fmt  $$d/*.go || ret=$$? ; \
 	 done ; exit $$ret
 
 # Dependency management
 
 .PHONY: generate
-generate: ; $(info $(M) generating…) @ ## Generate message go repository
+generate: ; $(info $(M) generating messages…) @ ## Generate message go code
 	$Q cd $(BASESRC)/generate && 2>&1 CURDIR=$(CURDIR) GO_ADA_MESSAGES=$(MESSAGES) \
 	                      $(GO) generate -v $(GO_FLAGS)
 
 # Misc
 .PHONY: clean
-clean: ; $(info $(M) cleaning…)	@ ## Cleanup everything
+clean: cleanModules; $(info $(M) cleaning…)	@ ## Cleanup everything
 	@rm -rf $(GOPATH) $(CURDIR)/adabas/vendor
 	@rm -rf $(BIN) $(CURDIR)/pkg $(CURDIR)/logs $(CURDIR)/test
 	@rm -rf test/tests.* test/coverage.*
 	@rm -rf $(BASESRC)/vendor $(BASESRC)/.vendor-new $(CURDIR)/vendor
 	@rm -f $(CURDIR)/adabas.test $(CURDIR)/adatypes.test $(CURDIR)/*.log $(CURDIR)/*.output
-#	$(GO) clean -cache
 
 .PHONY: help
 help:
