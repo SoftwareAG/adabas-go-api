@@ -177,7 +177,7 @@ test-coverage: COVERAGE_DIR := $(CURDIR)/test/coverage
 test-coverage: fmt lint test-coverage-tools | $(BASE) ; $(info $(M) running coverage tests…) @ ## Run coverage tests
 	$Q mkdir -p $(COVERAGE_DIR)/coverage
 	$Q echo "Work on test packages: $(TESTPKGS)"
-	$Q cd $(BASE) && for pkg in $(TESTPKGS); do echo "Coverage for $$pkg"; \
+	$Q cd $(CURDIR) && for pkg in $(TESTPKGS); do echo "Coverage for $$pkg"; \
 		TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
 	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \
