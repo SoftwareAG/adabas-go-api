@@ -16,31 +16,29 @@
 #   limitations under the License.
 #
 
-PACKAGE     = github.com/SoftwareAG/adabas-go-api
-TESTPKGSDIR = adabas adatypes #$(foreach dir,$(PKGS),$(shell basename $(dir)))
+PACKAGE       = github.com/SoftwareAG/adabas-go-api
+TESTPKGSDIR   = adabas adatypes
 
-DATE       ?= $(shell date +%FT%T%z)
-VERSION    ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/null || \
+DATE         ?= $(shell date +%FT%T%z)
+VERSION      ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/null || \
 			cat $(CURDIR)/.version 2> /dev/null || echo v0)
-TMPPATH    ?= /tmp
-GOPATH      = $(TMPPATH)/tmp_adabas-go-api.$(shell id -u)
-BIN         = $(CURDIR)/bin
-LOGPATH     = $(CURDIR)/logs
-TESTFILES   = $(CURDIR)/files
-REFERENCES  = $(TESTFILES)/references
-MESSAGES    = $(CURDIR)/messages
-CURLOGPATH  = $(CURDIR)/logs
+BIN           = $(CURDIR)/bin
+LOGPATH       = $(CURDIR)/logs
+TESTFILES     = $(CURDIR)/files
+REFERENCES    = $(TESTFILES)/references
+MESSAGES      = $(CURDIR)/messages
+CURLOGPATH    = $(CURDIR)/logs
 
 # Test parameter
-WCPHOST    ?= wcphost:30011
-ADATCPHOST ?= tcphost:60177
-ADAMFDBID  ?= 54712
-TESTOUTPUT ?= $(CURDIR)/test
+WCPHOST      ?= wcphost:30011
+ADATCPHOST   ?= tcphost:60177
+ADAMFDBID    ?= 54712
+TESTOUTPUT   ?= $(CURDIR)/test
 ENABLE_DEBUG ?= 0
 
 # Executables
-EXECS       = tests/employee_client tests/testsuite tests/simple_read tests/query tests/lobload \
-	tests/clear_map_reference
-LIBS        = 
+EXECS         = $(BIN)/tests/employee_client $(BIN)/tests/testsuite $(BIN)/tests/simple_read tests/query \
+    $(BIN)/tests/lobload $(BIN)/tests/clear_map_reference
+LIBS          = 
 
 include $(CURDIR)/make/common.mk
