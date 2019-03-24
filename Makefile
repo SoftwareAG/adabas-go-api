@@ -19,10 +19,13 @@
 PACKAGE       = github.com/SoftwareAG/adabas-go-api
 TESTPKGSDIR   = adabas adatypes
 
+GOARCH      ?= $(shell $(GO) env GOARCH)
+GOOS        ?= $(shell $(GO) env GOOS)
+
 DATE         ?= $(shell date +%FT%T%z)
 VERSION      ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/null || \
 			cat $(CURDIR)/.version 2> /dev/null || echo v0)
-BIN           = $(CURDIR)/bin
+BIN           = $(CURDIR)/bin/$(GOOS)_$(GOARCH)
 LOGPATH       = $(CURDIR)/logs
 TESTFILES     = $(CURDIR)/files
 REFERENCES    = $(TESTFILES)/references

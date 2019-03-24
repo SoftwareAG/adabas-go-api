@@ -28,8 +28,6 @@ GO_FLAGS        = $(if $(debug),"-x",) -tags $(GO_TAGS)
 
 GO           = go
 GODOC        = godoc
-GOARCH      ?= $(shell $(GO) env GOARCH)
-GOOS        ?= $(shell $(GO) env GOOS)
 TIMEOUT      = 2000
 V = 0
 Q = $(if $(filter 1,$V),,@)
