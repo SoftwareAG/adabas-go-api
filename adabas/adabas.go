@@ -31,6 +31,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// BuildDate build date
+var BuildDate string
+
+// BuildVersion build version
+var BuildVersion string
+
 // MaxDatabasesID maximum valid database id
 const MaxDatabasesID = 65536
 

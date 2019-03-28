@@ -47,13 +47,13 @@ $(LIBS): ; $(info $(M) building libraries…) @ ## Build program binary
 	$Q cd $(CURDIR) && \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" $(GO) build $(GO_FLAGS) \
 		-buildmode=c-shared \
-		-ldflags '-X $(PACKAGE)/cmd.Version=$(VERSION) -X $(PACKAGE)/cmd.BuildDate=$(DATE)' \
+		-ldflags '-X $(PACKAGE)/adabas.Version=$(VERSION) -X $(PACKAGE)/adabas.BuildDate=$(DATE)' \
 		-o $(BIN)/$(GOOS)/$@.so $@.go
 
 $(EXECS): ; $(info $(M) building executable $(@:$(BIN)/%=%)…) @ ## Build program binary
 	$Q cd $(CURDIR) &&  \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" $(GO) build $(GO_FLAGS) \
-		-ldflags '-X $(PACKAGE)/cmd.Version=$(VERSION) -X $(PACKAGE)/cmd.BuildDate=$(DATE)' \
+		-ldflags '-X $(PACKAGE)/adabas.Version=$(VERSION) -X $(PACKAGE)/adabas.BuildDate=$(DATE)' \
 		-o $@ ./$(@:$(BIN)/%=%)
 
 cleanModules:  ; $(info $(M) cleaning modules) @ ## Build program binary
