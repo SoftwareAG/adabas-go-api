@@ -110,6 +110,9 @@ func (record *Record) traverse(t adatypes.TraverserValuesMethods, x interface{})
 			if err != nil {
 				return
 			}
+			if ret == adatypes.SkipStructure {
+				continue
+			}
 		}
 		if value.Type().IsStructure() {
 			adatypes.Central.Log.Debugf("Go through structure %s %d", value.Type().Name(), value.Type().Type())
