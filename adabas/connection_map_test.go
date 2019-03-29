@@ -922,3 +922,61 @@ func dumpMapStoredData(target string, mapName string, search string) error {
 	result.DumpValues()
 	return nil
 }
+
+func ExampleConnection_readShortMap() {
+	f, err := initLogWithFile("connection_map.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",250]")
+	if cerr != nil {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest("EMPLSHORT")
+	if rerr != nil {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err = request.QueryFields("*")
+	if err != nil {
+		return
+	}
+	request.Limit = 0
+	var result *Response
+	fmt.Println("Read logigcal data:")
+	result, err = request.ReadLogicalWith("ID=[11100314:11100317]")
+	result.DumpValues()
+	// Output:Read logigcal data:
+	// Dump all result values
+	// Record Isn: 0393
+	//   ID = > 11100314 <
+	//   FULL-NAME = [ 1 ]
+	//    FIRST-NAME = > WOLFGANG             <
+	//    NAME = > SCHMIDT              <
+	//    SECOND-NAME = > MARIA                <
+	// Record Isn: 0261
+	//   ID = > 11100315 <
+	//   FULL-NAME = [ 1 ]
+	//    FIRST-NAME = > GLORIA               <
+	//    NAME = > MERTEN               <
+	//    SECOND-NAME = > ELISABETH            <
+	// Record Isn: 0262
+	//   ID = > 11100316 <
+	//   FULL-NAME = [ 1 ]
+	//    FIRST-NAME = > HEINZ                <
+	//    NAME = > RAMSER               <
+	//    SECOND-NAME = > EWALD                <
+	// Record Isn: 0263
+	//   ID = > 11100317 <
+	//   FULL-NAME = [ 1 ]
+	//    FIRST-NAME = > ALFONS               <
+	//    NAME = > DORSCH               <
+	//    SECOND-NAME = > FRITZ                <
+}

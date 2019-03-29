@@ -225,6 +225,16 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 	return fieldMap, nil
 }
 
+// RestrictFieldSlice Restrict the tree to contain only the given nodes
+func (def *Definition) RestrictFieldSlice(field []string) (err error) {
+	err = def.ShouldRestrictToFieldSlice(field)
+	if err != nil {
+		return
+	}
+	def.fileFieldTree = def.activeFieldTree
+	return nil
+}
+
 // ShouldRestrictToFieldSlice Restrict the tree to contain only the given nodes
 func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	Central.Log.Debugf("Should restrict fields to %#v", field)

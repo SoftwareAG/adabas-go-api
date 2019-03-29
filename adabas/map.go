@@ -118,6 +118,24 @@ func (adabasMap *Map) addFields(shortName string, longName string) *MapField {
 	return mField
 }
 
+// FieldNames list of fields of map
+func (adabasMap *Map) FieldNames() []string {
+	fields := make([]string, 0)
+	for _, f := range adabasMap.Fields {
+		fields = append(fields, f.LongName)
+	}
+	return fields
+}
+
+// FieldShortNames list of fields of map
+func (adabasMap *Map) FieldShortNames() []string {
+	fields := make([]string, 0)
+	for _, f := range adabasMap.Fields {
+		fields = append(fields, f.ShortName)
+	}
+	return fields
+}
+
 // String report the Map repository, data reference and the fields mapping of a map
 func (adabasMap *Map) String() string {
 	var buffer bytes.Buffer
@@ -280,6 +298,10 @@ func (adabasMap *Map) adaptFieldType(definition *adatypes.Definition) (err error
 	adatypes.Central.Log.Debugf("Adapt map long names to type definition %#v", adabasMap)
 	tm := adatypes.NewTraverserMethods(adaptType)
 	err = definition.TraverseTypes(tm, true, adabasMap)
+	if err != nil {
+		return
+	}
+	err = definition.RestrictFieldSlice(adabasMap.FieldNames())
 	return
 }
 
