@@ -524,6 +524,13 @@ func TestRequestWithMapLogicalBy(t *testing.T) {
 	}
 }
 
+func traverseFieldCounter(IAdaType adatypes.IAdaType, parentType adatypes.IAdaType, level int, x interface{}) error {
+	fi := x.(*int)
+	*fi++
+	fmt.Println("A")
+	return nil
+}
+
 func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
@@ -547,6 +554,11 @@ func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
 		if err != nil {
 			return
 		}
+		fsize := 0
+		tm := adatypes.NewTraverserMethods(traverseFieldCounter)
+		request.TraverseFields(tm, &fsize)
+		assert.Equal(t, 4, fsize)
+
 		fmt.Println("After query fields")
 		fmt.Printf("Status ...%#v", request.adabas.status)
 		assert.NotNil(t, request.adabas.status.platform)

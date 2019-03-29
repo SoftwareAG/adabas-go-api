@@ -135,3 +135,7 @@ func (request *commonRequest) IsOpen() bool {
 	}
 	return false
 }
+
+func (request *commonRequest) TraverseFields(t adatypes.TraverserMethods, p interface{}) error {
+	return request.definition.TraverseTypes(t, true, p)
+}
