@@ -75,6 +75,43 @@ func TestInt4Byte(t *testing.T) {
 
 }
 
+func TestInt4Variable(t *testing.T) {
+	f, err := initLogWithFile("unpacked.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	adaType := NewType(FieldTypeInt4, "I4")
+	adaType.SetLength(0)
+	up := newInt4Value(adaType)
+	checkValueInt64(t, up, []byte{2, 1}, 1)
+	checkValueInt64(t, up, []byte{2, 255}, -1)
+	checkValueInt64(t, up, []byte{3, 1, 1}, 0x101)
+	checkValueInt64(t, up, []byte{4, 1, 1, 1}, 65793)
+	checkValueInt64(t, up, []byte{4, 255, 1, 1}, 66047)
+	checkValueInt64(t, up, []byte{4, 1, 1, 255}, 16711937)
+	checkValueInt64(t, up, []byte{5, 1, 1, 255, 255}, -65279)
+	checkValueInt64(t, up, []byte{4, 0, 0, 255}, 16711680)
+}
+
+func TestUInt4Variable(t *testing.T) {
+	f, err := initLogWithFile("unpacked.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	adaType := NewType(FieldTypeUInt4, "I4")
+	adaType.SetLength(0)
+	up := newUInt8Value(adaType)
+	checkValueUInt64(t, up, []byte{2, 1}, 1)
+	checkValueUInt64(t, up, []byte{3, 1, 1}, 0x101)
+	checkValueUInt64(t, up, []byte{4, 1, 1, 1}, 0x10101)
+}
+
 func TestInt4Max(t *testing.T) {
 	v := make([]byte, 5)
 	binary.PutUvarint(v, uint64(4294967295))

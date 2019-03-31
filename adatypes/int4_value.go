@@ -79,7 +79,45 @@ func (value *uint32Value) StoreBuffer(helper *BufferHelper) error {
 }
 
 func (value *uint32Value) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
-	value.value, err = helper.ReceiveUInt32()
+	if value.Type().Length() == 0 {
+		len, lerr := helper.ReceiveInt8()
+		if lerr != nil {
+			return EndTraverser, lerr
+		}
+		len--
+		Central.Log.Debugf("Buffer get variable length=%d", len)
+		switch len {
+		case 1:
+			vba, verr := helper.ReceiveUInt8()
+			if verr != nil {
+				return EndTraverser, verr
+			}
+			value.value = uint32(vba)
+		case 2:
+			vba, verr := helper.ReceiveUInt16()
+			if verr != nil {
+				return EndTraverser, verr
+			}
+			value.value = uint32(vba)
+		case 4:
+			vba, verr := helper.ReceiveUInt32()
+			if verr != nil {
+				return EndTraverser, verr
+			}
+			value.value = uint32(vba)
+		default:
+			vba, verr := helper.ReceiveBytes(uint32(len))
+			if verr != nil {
+				return EndTraverser, verr
+			}
+			value.value = 0
+			for i, v := range vba {
+				value.value = value.value + uint32(v)<<(uint32(i)*8)
+			}
+		}
+	} else {
+		value.value, err = helper.ReceiveUInt32()
+	}
 	Central.Log.Debugf("Buffer get uint4 offset=%d %s %d", helper.offset, value.Type().Name(), value.value)
 	return
 }
@@ -157,7 +195,45 @@ func (value *int32Value) StoreBuffer(helper *BufferHelper) error {
 }
 
 func (value *int32Value) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
-	value.value, err = helper.ReceiveInt32()
+	if value.Type().Length() == 0 {
+		len, lerr := helper.ReceiveInt8()
+		if lerr != nil {
+			return EndTraverser, lerr
+		}
+		len--
+		Central.Log.Debugf("Buffer get variable length=%d", len)
+		switch len {
+		case 1:
+			vba, verr := helper.ReceiveInt8()
+			if verr != nil {
+				return EndTraverser, verr
+			}
+			value.value = int32(vba)
+		case 2:
+			vba, verr := helper.ReceiveInt16()
+			if verr != nil {
+				return EndTraverser, verr
+			}
+			value.value = int32(vba)
+		case 4:
+			vba, verr := helper.ReceiveInt32()
+			if verr != nil {
+				return EndTraverser, verr
+			}
+			value.value = int32(vba)
+		default:
+			vba, verr := helper.ReceiveBytes(uint32(len))
+			if verr != nil {
+				return EndTraverser, verr
+			}
+			v4 := make([]byte, 4)
+			copy(v4[:len], vba[:])
+			buf := bytes.NewBuffer(v4)
+			binary.Read(buf, helper.order, &value.value)
+		}
+	} else {
+		value.value, err = helper.ReceiveInt32()
+	}
 	Central.Log.Debugf("Buffer get int4 offset=%d %s", helper.offset, value.Type().Name())
 	return
 }

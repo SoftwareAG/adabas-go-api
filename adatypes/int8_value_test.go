@@ -106,6 +106,38 @@ func TestInt8(t *testing.T) {
 
 }
 
+func TestInt8Variable(t *testing.T) {
+	f, err := initLogWithFile("unpacked.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	adaType := NewType(FieldTypeUInt8, "U8")
+	adaType.SetLength(0)
+	up := newInt8Value(adaType)
+	checkValueInt64(t, up, []byte{2, 1}, 1)
+	checkValueInt64(t, up, []byte{2, 255}, -1)
+	checkValueInt64(t, up, []byte{3, 1, 1}, 0x101)
+	checkValueInt64(t, up, []byte{4, 1, 1, 1}, 65793)
+	checkValueInt64(t, up, []byte{4, 0, 0, 255}, 16711680)
+	checkValueInt64(t, up, []byte{5, 1, 1, 1, 1}, 0x1010101)
+}
+
+func checkValueInt64(t *testing.T, up IAdaValue, input []byte, expect int64) {
+	helper := NewDynamicHelper(binary.LittleEndian)
+	helper.putBytes(input)
+	helper.offset = 0
+	option := &BufferOption{}
+	_, perr := up.parseBuffer(helper, option)
+	assert.NoError(t, perr)
+	v, err := up.Int64()
+	assert.NoError(t, err)
+	assert.Equal(t, expect, v)
+
+}
+
 func ExampleIAdaType_setValue() {
 	f, err := initLogWithFile("unpacked.log")
 	if err != nil {
@@ -318,6 +350,36 @@ func TestUInt8(t *testing.T) {
 	ui64, ui64err = up.UInt64()
 	assert.NoError(t, ui64err)
 	assert.Equal(t, uint64(1234), ui64)
+
+}
+
+func TestUInt8Variable(t *testing.T) {
+	f, err := initLogWithFile("unpacked.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	adaType := NewType(FieldTypeUInt8, "I8")
+	adaType.SetLength(0)
+	up := newUInt8Value(adaType)
+	checkValueUInt64(t, up, []byte{2, 1}, 1)
+	checkValueUInt64(t, up, []byte{3, 1, 1}, 0x101)
+	checkValueUInt64(t, up, []byte{4, 1, 1, 1}, 0x10101)
+	checkValueUInt64(t, up, []byte{5, 1, 1, 1, 1}, 0x1010101)
+}
+
+func checkValueUInt64(t *testing.T, up IAdaValue, input []byte, expect uint64) {
+	helper := NewDynamicHelper(binary.LittleEndian)
+	helper.putBytes(input)
+	helper.offset = 0
+	option := &BufferOption{}
+	_, perr := up.parseBuffer(helper, option)
+	assert.NoError(t, perr)
+	v, err := up.UInt64()
+	assert.NoError(t, err)
+	assert.Equal(t, expect, v)
 
 }
 

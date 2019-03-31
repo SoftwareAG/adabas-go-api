@@ -79,7 +79,29 @@ func (value *uint16Value) StoreBuffer(helper *BufferHelper) error {
 }
 
 func (value *uint16Value) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
-	value.value, err = helper.ReceiveUInt16()
+	if value.Type().Length() == 0 {
+		len, lerr := helper.ReceiveUInt8()
+		if lerr != nil {
+			return EndTraverser, lerr
+		}
+		len--
+		Central.Log.Debugf("Buffer get variable length=%d", len)
+		if len == 1 {
+			vba, verr := helper.ReceiveUInt8()
+			if verr != nil {
+				return EndTraverser, verr
+			}
+			value.value = uint16(vba)
+		} else {
+			vba, verr := helper.ReceiveUInt16()
+			if verr != nil {
+				return EndTraverser, verr
+			}
+			value.value = uint16(vba)
+		}
+	} else {
+		value.value, err = helper.ReceiveUInt16()
+	}
 	Central.Log.Debugf("Buffer get uint2 offset=%d %s", helper.offset, value.Type().String())
 	return
 }
@@ -157,7 +179,29 @@ func (value *int16Value) StoreBuffer(helper *BufferHelper) error {
 }
 
 func (value *int16Value) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
-	value.value, err = helper.ReceiveInt16()
+	if value.Type().Length() == 0 {
+		len, lerr := helper.ReceiveInt8()
+		if lerr != nil {
+			return EndTraverser, lerr
+		}
+		len--
+		Central.Log.Debugf("Buffer get variable length=%d", len)
+		if len == 1 {
+			vba, verr := helper.ReceiveInt8()
+			if verr != nil {
+				return EndTraverser, verr
+			}
+			value.value = int16(vba)
+		} else {
+			vba, verr := helper.ReceiveInt16()
+			if verr != nil {
+				return EndTraverser, verr
+			}
+			value.value = int16(vba)
+		}
+	} else {
+		value.value, err = helper.ReceiveInt16()
+	}
 	Central.Log.Debugf("Buffer get int2 offset=%d %s", helper.offset, value.Type().String())
 	return
 }

@@ -980,3 +980,71 @@ func ExampleConnection_readShortMap() {
 	//    NAME = > DORSCH               <
 	//    SECOND-NAME = > FRITZ                <
 }
+
+func ExampleConnection_readLongMap() {
+	f, err := initLogWithFile("connection_map.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if cerr != nil {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest("EMPLOYEES")
+	if rerr != nil {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err = request.QueryFields("*")
+	if err != nil {
+		return
+	}
+	request.Limit = 0
+	var result *Response
+	fmt.Println("Read logigcal data:")
+	result, err = request.ReadISN(1)
+	result.DumpValues()
+	// Output:Read logigcal data:
+	// Dump all result values
+	// Record Isn: 0001
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 50005800 <
+	//    id-data = [ 1 ]
+	//     personnel-no_-UQ_taken- = > 0 <
+	//     id-card = > 0 <
+	//     signature = >  <
+	//   full-name = [ 1 ]
+	//    first-name = > Simone <
+	//    middle-name = >   <
+	//    name = > Adam <
+	//   mar-stat = > M <
+	//   sex = > F <
+	//   birth = > 718460 <
+	//   private-address = [ 1 ]
+	//    address-line[01] = [ 1 ]
+	//     address-line[01,01] = > 26 Avenue Rhin Et Da <
+	//    city[01] = > Joigny <
+	//    post-code[01] = > 89300 <
+	//    country[01] = > F <
+	//    phone-email[01] = [ 1 ]
+	//     area-code[01] = > 1033 <
+	//     private-phone[01] = > 44864858 <
+	//     private-fax[01] = >   <
+	//     private-mobile[01] = >   <
+	//     private-email[01] = [ 0 ]
+	//   business-address = [ 0 ]
+	//   dept = > VENT59 <
+	//   job-title = > Chef de Service <
+	//   income = [ 1 ]
+	//    curr-code[01] = > EUR <
+	//    salary_P9.2[01] = > 963 <
+	//    bonus_P9.2[01] = [ 1 ]
+	//     bonus_P9.2[01,01] = > 138 <
+}

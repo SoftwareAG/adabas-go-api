@@ -103,7 +103,6 @@ func ExampleConnection_periodGroup2() {
 	//    LEAVE-END[01] = > 19980523 <
 	//   LANG = [ 1 ]
 	//    LANG[01] = > GER <
-	//   PH = >  <
 	//   LEAVE-LEFT = > 3003 <
 	//   DEPARTMENT = > FINA <
 	//   DEPT-PERSON = > FINA21FALTER               <
@@ -147,7 +146,6 @@ func ExampleConnection_periodGroup2() {
 	//   LANG = [ 2 ]
 	//    LANG[01] = > GER <
 	//    LANG[02] = > ENG <
-	//   PH = >  <
 	//   LEAVE-LEFT = > 3000 <
 	//   DEPARTMENT = > FINA <
 	//   DEPT-PERSON = > FINA21SCHMIDT              <

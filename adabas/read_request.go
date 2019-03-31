@@ -583,25 +583,14 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	if err != nil {
 		return
 	}
-	// // Could not recreate field content of a request!!!
-	// if request.fields == nil {
-	// 	if fieldq != "*" && fieldq != "" {
-	// 		request.fields = make(map[string]*queryField)
-	// 		adatypes.Central.Log.Debugf("Check Query field %s", fieldq)
-	// 		for i, s := range strings.Split(fieldq, ",") {
-	// 			adatypes.Central.Log.Debugf("Add Query field %s=%d", s, i)
-	// 			request.fields[s] = &queryField{field: s, index: i}
-	// 		}
-	// 	} else {
-	// 		adatypes.Central.Log.Debugf("General Query")
-	// 	}
-	// }
 
 	err = request.loadDefinition()
 	if err != nil {
 		return
 	}
-	err = request.definition.ShouldRestrictToFields(fieldq)
+	if !(request.adabasMap != nil && fieldq == "*") {
+		err = request.definition.ShouldRestrictToFields(fieldq)
+	}
 
 	// Could not recreate field content of a request!!!
 	if request.fields == nil {
