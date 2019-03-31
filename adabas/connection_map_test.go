@@ -981,7 +981,7 @@ func ExampleConnection_readShortMap() {
 	//    SECOND-NAME = > FRITZ                <
 }
 
-func ExampleConnection_readLongMap() {
+func ExampleConnection_readLongMapIsn() {
 	f, err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
@@ -1047,4 +1047,110 @@ func ExampleConnection_readLongMap() {
 	//    salary_P9.2[01] = > 963 <
 	//    bonus_P9.2[01] = [ 1 ]
 	//     bonus_P9.2[01,01] = > 138 <
+}
+
+func ExampleConnection_readLongMapRange() {
+	f, err := initLogWithFile("connection_map.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if cerr != nil {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest("EMPLOYEES")
+	if rerr != nil {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err = request.QueryFields("*")
+	if err != nil {
+		return
+	}
+	request.Limit = 0
+	var result *Response
+	fmt.Println("Read logigcal data:")
+	result, err = request.ReadLogicalWith("personnel-id=[50005800:50005801]")
+	result.DumpValues()
+	// Output:Read logigcal data:
+	// Dump all result values
+	// Record Isn: 0001
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 50005800 <
+	//    id-data = [ 1 ]
+	//     personnel-no_-UQ_taken- = > 0 <
+	//     id-card = > 0 <
+	//     signature = >  <
+	//   full-name = [ 1 ]
+	//    first-name = > Simone <
+	//    middle-name = >   <
+	//    name = > Adam <
+	//   mar-stat = > M <
+	//   sex = > F <
+	//   birth = > 718460 <
+	//   private-address = [ 1 ]
+	//    address-line[01] = [ 1 ]
+	//     address-line[01,01] = > 26 Avenue Rhin Et Da <
+	//    city[01] = > Joigny <
+	//    post-code[01] = > 89300 <
+	//    country[01] = > F <
+	//    phone-email[01] = [ 1 ]
+	//     area-code[01] = > 1033 <
+	//     private-phone[01] = > 44864858 <
+	//     private-fax[01] = >   <
+	//     private-mobile[01] = >   <
+	//     private-email[01] = [ 0 ]
+	//   business-address = [ 0 ]
+	//   dept = > VENT59 <
+	//   job-title = > Chef de Service <
+	//   income = [ 1 ]
+	//    curr-code[01] = > EUR <
+	//    salary_P9.2[01] = > 963 <
+	//    bonus_P9.2[01] = [ 1 ]
+	//     bonus_P9.2[01,01] = > 138 <
+	// Record Isn: 1251
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 50005801 <
+	//    id-data = [ 1 ]
+	//     personnel-no_-UQ_taken- = > 0 <
+	//     id-card = > 0 <
+	//     signature = >  <
+	//   full-name = [ 1 ]
+	//    first-name = > वासुदेव <
+	//    middle-name = > मूर्ती <
+	//    name = > कुमार <
+	//   mar-stat = > M <
+	//   sex = > M <
+	//   birth = > 721484 <
+	//   private-address = [ 1 ]
+	//    address-line[01] = [ 1 ]
+	//     address-line[01,01] = > ह-1,दिशा स्क्यलैइन म <
+	//    city[01] = > नोयडा <
+	//    post-code[01] = > 201301 <
+	//    country[01] = > IND <
+	//    phone-email[01] = [ 1 ]
+	//     area-code[01] = > 01189 <
+	//     private-phone[01] = > 233449 <
+	//     private-fax[01] = >   <
+	//     private-mobile[01] = >   <
+	//     private-email[01] = [ 0 ]
+	//   business-address = [ 0 ]
+	//   dept = > COMP02 <
+	//   job-title = > सीनियर प्रोग्रामर <
+	//   income = [ 1 ]
+	//    curr-code[01] = > INR <
+	//    salary_P9.2[01] = > 45000 <
+	//    bonus_P9.2[01] = [ 5 ]
+	//     bonus_P9.2[01,01] = > 5000 <
+	//     bonus_P9.2[01,02] = > 5000 <
+	//     bonus_P9.2[01,03] = > 5000 <
+	//     bonus_P9.2[01,04] = > 5000 <
+	//     bonus_P9.2[01,05] = > 5000 <
 }
