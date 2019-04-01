@@ -1004,6 +1004,7 @@ func ExampleConnection_readLongMapIsn() {
 	}
 	err = request.QueryFields("*")
 	if err != nil {
+		fmt.Println("Error query fields", err)
 		return
 	}
 	request.Limit = 0
