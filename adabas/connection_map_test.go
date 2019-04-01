@@ -20,13 +20,12 @@ package adabas
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
-	"testing"
-
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"strconv"
+	"strings"
+	"testing"
 )
 
 func BenchmarkConnection_cached(b *testing.B) {
@@ -54,12 +53,12 @@ func BenchmarkConnection_cached(b *testing.B) {
 
 func readAll(b *testing.B) error {
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
-	if cerr != nil {
+	if !assert.NoError(b, cerr) {
 		return cerr
 	}
 	defer connection.Close()
 	request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
-	if rerr != nil {
+	if !assert.NoError(b, rerr) {
 		fmt.Println("Error create request", rerr)
 		return rerr
 	}

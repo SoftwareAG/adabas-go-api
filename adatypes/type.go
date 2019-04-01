@@ -108,6 +108,7 @@ type StructureType struct {
 	SubTypes  []IAdaType
 	// peRange   AdaRange
 	// muRange   AdaRange
+	fieldMap map[string]IAdaType
 }
 
 // NewType Define new type with length equal 1
@@ -523,6 +524,14 @@ func (adaType *StructureType) AddField(fieldType IAdaType) {
 		fieldType.AddFlag(FlagOptionPE)
 	}
 	adaType.SubTypes = append(adaType.SubTypes, fieldType)
+	if adaType.fieldMap == nil {
+		adaType.fieldMap = make(map[string]IAdaType)
+	}
+	adaType.fieldMap[fieldType.Name()] = fieldType
+	if fieldType.IsStructure() {
+		st := fieldType.(*StructureType)
+		st.fieldMap = adaType.fieldMap
+	}
 }
 
 // RemoveField remote field of the structure type

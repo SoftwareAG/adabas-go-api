@@ -590,10 +590,15 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	}
 	if !(request.adabasMap != nil && fieldq == "*") {
 		err = request.definition.ShouldRestrictToFields(fieldq)
+		if err != nil {
+			adatypes.Central.Log.Debugf("Restrict error", err)
+			return err
+		}
 	}
 
 	// Could not recreate field content of a request!!!
 	if request.fields == nil {
+		adatypes.Central.Log.Debugf("Create field content")
 		if fieldq != "*" && fieldq != "" {
 			f := make(map[string]int)
 			ev := &evaluateFieldMap{queryFields: make(map[string]*queryField), fields: f}

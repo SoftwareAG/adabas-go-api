@@ -150,7 +150,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 		}
 		structureType := adaType.(*StructureType)
 		r := structureType.peRange.FormatBuffer()
-		Central.Log.Debugf("------->>>>>> Range %s=%s%s", structureType.name, structureType.shortName, r)
+		Central.Log.Debugf("------->>>>>> Range %s=%s%s %p", structureType.name, structureType.shortName, r, structureType)
 		buffer.WriteString(adaType.ShortName() + "C,4,B")
 		adabasRequest.RecordBufferLength += 4
 		if !adaType.HasFlagSet(FlagOptionMU) {

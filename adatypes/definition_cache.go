@@ -49,6 +49,55 @@ func FinitDefinitionCache() {
 	definitionCache = nil
 }
 
+func traverseCacheCopy(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+	st := x.(*StructureType)
+	f := st.fieldMap[parentType.Name()]
+	cst := st
+	if f != nil {
+		cst = f.(*StructureType)
+	}
+
+	var newNode IAdaType
+	switch adaType.(type) {
+	case *StructureType:
+		nst := &StructureType{}
+		ost := adaType.(*StructureType)
+		*nst = *ost
+		Central.Log.Debugf("------->>>>>> Range %s=%s%s -> %p", ost.name, ost.shortName, ost.peRange.FormatBuffer(), ost)
+		//		nst.peRange = &AdaRange{}
+		nst.peRange = ost.peRange
+		//nst.muRange = &AdaRange{}
+		nst.muRange = ost.muRange
+		Central.Log.Debugf("------->>>>>> Range %s=%s%s %p", nst.name, nst.shortName, nst.peRange.FormatBuffer(), nst)
+		nst.SubTypes = make([]IAdaType, 0)
+		newNode = nst
+	case *AdaPhoneticType:
+		npt := &AdaPhoneticType{}
+		*npt = *(adaType.(*AdaPhoneticType))
+		newNode = npt
+	case *AdaSuperType:
+		npt := &AdaSuperType{}
+		*npt = *(adaType.(*AdaSuperType))
+		newNode = npt
+	default:
+		nat := &AdaType{}
+		*nat = *(adaType.(*AdaType))
+		newNode = nat
+	}
+	cst.AddField(newNode)
+	switch adaType.(type) {
+	case *StructureType:
+		nst := newNode.(*StructureType)
+		ost := adaType.(*StructureType)
+		nst.peRange = ost.peRange
+		nst.muRange = ost.muRange
+		Central.Log.Debugf("------->>>>>> Range %s=%s%s %p", nst.name, nst.shortName, nst.peRange.FormatBuffer(), nst)
+	default:
+	}
+
+	return nil
+}
+
 // CreateDefinitionByCache create definition out of cache if available
 func CreateDefinitionByCache(reference string) *Definition {
 	if definitionCache == nil {
@@ -61,9 +110,19 @@ func CreateDefinitionByCache(reference string) *Definition {
 	}
 	Central.Log.Debugf("Get cache entry: %s", reference)
 	definition := NewDefinition()
-	definition.activeFieldTree = e.fileFieldTree
+	//	definition.activeFieldTree = &StructureType{}
+	x := &StructureType{fieldMap: make(map[string]IAdaType)}
+	t := TraverserMethods{EnterFunction: traverseCacheCopy}
+	e.fileFieldTree.Traverse(t, 0, x)
+	//	definition.activeFieldTree = e.fileFieldTree
+	definition.activeFieldTree = x
 	definition.fileFieldTree = definition.activeFieldTree
+	Central.Log.Debugf("ORIG %#v\n", e.fileFieldTree)
+	Central.Log.Debugf("COPY %#v\n", x)
 	definition.InitReferences()
+	Central.Log.Debugf("Get copied cache entry: %s", reference)
+	definition.DumpTypes(true, false)
+
 	return definition
 }
 
@@ -72,8 +131,10 @@ func (def *Definition) PutCache(reference string) {
 	if definitionCache == nil {
 		return
 	}
-	definitionCache[reference] = &cacheEntry{timestamp: time.Now(), fileFieldTree: def.fileFieldTree}
 	Central.Log.Debugf("Put cache entry: %s", reference)
+	def.DumpTypes(true, false)
+	definitionCache[reference] = &cacheEntry{timestamp: time.Now(), fileFieldTree: def.fileFieldTree}
+	Central.Log.Debugf("Done put cache entry: %s", reference)
 }
 
 func cacheClearer() {
