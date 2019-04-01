@@ -932,7 +932,7 @@ func ExampleConnection_readShortMap() {
 
 	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
 
-	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",250]")
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBID + ",4]")
 	if cerr != nil {
 		return
 	}
