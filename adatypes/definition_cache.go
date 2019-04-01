@@ -92,6 +92,12 @@ func traverseCacheCopy(adaType IAdaType, parentType IAdaType, level int, x inter
 		nst.peRange = ost.peRange
 		nst.muRange = ost.muRange
 		Central.Log.Debugf("------->>>>>> Range %s=%s%s %p", nst.name, nst.shortName, nst.peRange.FormatBuffer(), nst)
+	case *AdaType:
+		nst := newNode.(*AdaType)
+		ost := adaType.(*AdaType)
+		nst.peRange = ost.peRange
+		nst.muRange = ost.muRange
+		Central.Log.Debugf("------->>>>>> Range %s=%s%s %p", nst.name, nst.shortName, nst.peRange.FormatBuffer(), nst)
 	default:
 	}
 

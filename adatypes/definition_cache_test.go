@@ -26,6 +26,7 @@ import (
 func ExampleDefinition_ShouldRestrictToFields() {
 	f, err := initLogWithFile("definition.log")
 	if err != nil {
+		fmt.Println("Init log error:", err)
 		return
 	}
 	defer f.Close()
@@ -37,14 +38,17 @@ func ExampleDefinition_ShouldRestrictToFields() {
 	err = testDefinition.ShouldRestrictToFields("GC,I8")
 	if err != nil {
 		fmt.Println("Restrict original entry", err)
+		return
 	}
 	definition := CreateDefinitionByCache("AA")
 	if definition == nil {
 		fmt.Println("Error create cache definition nil")
+		return
 	}
 	err = definition.ShouldRestrictToFields("GC,I8")
 	if err != nil {
 		fmt.Println("Restrict cached entry error", err)
+		return
 	}
 	definition.DumpTypes(false, false)
 	definition.DumpTypes(false, true)
