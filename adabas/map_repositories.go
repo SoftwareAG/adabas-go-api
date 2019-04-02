@@ -147,15 +147,20 @@ func DelGlobalMapRepository(url *URL, fnr Fnr) {
 // DumpGlobalMapRepositories dump global map repositories
 func DumpGlobalMapRepositories() {
 	fmt.Println("Dump global registered map repositories:")
+	id := NewAdabasID()
 	for _, r := range repositories {
 		fmt.Printf("Repository at %s map file=%d:\n", r.URL, r.Fnr)
 		if r.MapNames == nil || len(r.MapNames) == 0 {
-			fmt.Println("    Map repository is empty or not initiated already")
-		} else {
-			for m := range r.MapNames {
-				fmt.Printf("    %s\n", m)
+			if a, err := NewAdabasWithURL(&r.DatabaseURL.URL, id); err == nil {
+				r.LoadMapRepository(a)
+			} else {
+				fmt.Println("    Map repository is empty or not initiated already", err)
 			}
 		}
+		for m := range r.MapNames {
+			fmt.Printf("    %s\n", m)
+		}
+
 	}
 	fmt.Println("Dump global registered map repositories done")
 }

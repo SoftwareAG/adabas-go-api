@@ -235,6 +235,7 @@ func main() {
 	var name string
 	var search string
 	var fields string
+	var showMaps bool
 	var credentials string
 	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 	var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
@@ -249,6 +250,7 @@ func main() {
 	flag.StringVar(&fields, "d", "", "Query field list")
 	flag.StringVar(&repository, "r", "", "Adabas map repository used for search")
 	flag.BoolVar(&output, "o", false, "display output")
+	flag.BoolVar(&showMaps, "M", false, "List all maps available")
 	flag.BoolVar(&close, "C", false, "Close Adabas connection in each loop")
 	flag.Parse()
 	args := flag.Args()
@@ -272,6 +274,10 @@ func main() {
 	names := strings.Split(name, ",")
 
 	adabas.AddGlobalMapRepositoryReference(repository)
+
+	if showMaps {
+		adabas.DumpGlobalMapRepositories()
+	}
 
 	wg.Add(threadValue)
 	for i := uint32(0); i < uint32(threadValue); i++ {
