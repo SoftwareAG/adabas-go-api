@@ -65,7 +65,17 @@ func init() {
 }
 
 // NewMapRepository new map repository created
-func NewMapRepository(url *URL, fnr Fnr) *Repository {
+func NewMapRepository(i interface{}, fnr Fnr) *Repository {
+	var url *URL
+	switch i.(type) {
+	case *Adabas:
+		a := i.(*Adabas)
+		url = a.URL
+	case *URL:
+		url = i.(*URL)
+	default:
+		return nil
+	}
 	mr := &Repository{DatabaseURL: DatabaseURL{URL: *url, Fnr: fnr}}
 	mr.CachedMaps = make(map[string]*Map)
 	return mr
