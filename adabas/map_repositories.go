@@ -80,7 +80,7 @@ func evaluateURL(i interface{}) *URL {
 
 // NewMapRepository new map repository created
 func NewMapRepository(i interface{}, fnr Fnr) *Repository {
-	url evaluateURL(i)
+	url := evaluateURL(i)
 	mr := &Repository{DatabaseURL: DatabaseURL{URL: *url, Fnr: fnr}}
 	mr.CachedMaps = make(map[string]*Map)
 	return mr
@@ -152,7 +152,7 @@ func DelGlobalMapRepositoryReference(reference string) error {
 
 // DelGlobalMapRepository delete global map repository
 func DelGlobalMapRepository(i interface{}, fnr Fnr) {
-	url evaluateURL(i)
+	url := evaluateURL(i)
 	if repositories != nil {
 		reference := fmt.Sprintf("%s/%03d", url.String(), fnr)
 		adatypes.Central.Log.Debugf("Remove global repository: %s", reference)

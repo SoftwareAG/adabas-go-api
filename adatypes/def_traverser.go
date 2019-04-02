@@ -83,34 +83,41 @@ type TraverserValuesMethods struct {
 func (def *Definition) TraverseValues(t TraverserValuesMethods, x interface{}) (ret TraverseResult, err error) {
 	if def.Values == nil {
 		Central.Log.Debugf("Init create values")
-		def.CreateValues(false)
+		err = def.CreateValues(false)
+		if err != nil {
+			return EndTraverser, err
+		}
 		Central.Log.Debugf("Done create values")
 	}
 	Central.Log.Debugf("Traverse through level 1 values -> %d", len(def.Values))
 	for i, value := range def.Values {
-		Central.Log.Debugf("Found level %d value name=%s/%s type=%d fieldindex=%d", value.Type().Level(),
-			value.Type().Name(), value.Type().ShortName(), value.Type().Type(), i)
+		Central.Log.Debugf("Found level %d value name=%s/%s type=%d fieldindex=%d/%d", value.Type().Level(),
+			value.Type().Name(), value.Type().ShortName(), value.Type().Type(), i, len(def.Values))
 		ret, err = t.EnterFunction(value, x)
 		if err != nil || ret == EndTraverser {
+			Central.Log.Debugf("Error traverse enter of %s -> %v", value.Type().Name(), err)
 			return
 		}
 		if ret == SkipStructure {
-			Central.Log.Debugf("Skip structure")
+			Central.Log.Debugf("Skip structure of %s", value.Type().Name())
 			continue
 		}
 		if value.Type().IsStructure() && ret != SkipTree {
 			Central.Log.Debugf("Go through structure")
 			ret, err = value.(*StructureValue).Traverse(t, x)
 			if err != nil {
+				Central.Log.Debugf("Error traverse structure of %s -> %v", value.Type().Name(), err)
 				return
 			}
 			if ret == SkipStructure {
+				Central.Log.Debugf("Skip sub structure of %s", value.Type().Name())
 				continue
 			}
 		}
 		if t.LeaveFunction != nil {
 			ret, err = t.LeaveFunction(value, x)
 			if err != nil || ret == EndTraverser {
+				Central.Log.Debugf("Error traverse leave of %s -> %v", value.Type().Name(), err)
 				return
 			}
 		}

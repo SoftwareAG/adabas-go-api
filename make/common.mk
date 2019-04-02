@@ -50,7 +50,7 @@ $(LIBS): ; $(info $(M) building libraries…) @ ## Build program binary
 		-ldflags '-X $(PACKAGE)/adabas.Version=$(VERSION) -X $(PACKAGE)/adabas.BuildDate=$(DATE)' \
 		-o $(BIN)/$(GOOS)/$@.so $@.go
 
-$(EXECS): ; $(info $(M) building executable $(@:$(BIN)/%=%)…) @ ## Build program binary
+$(EXECS): $(OBJECTS) ; $(info $(M) building executable $(@:$(BIN)/%=%)…) @ ## Build program binary
 	$Q cd $(CURDIR) &&  \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" $(GO) build $(GO_FLAGS) \
 		-ldflags '-X $(PACKAGE)/adabas.Version=$(VERSION) -X $(PACKAGE)/adabas.BuildDate=$(DATE)' \
@@ -97,7 +97,7 @@ $(BIN)/go2xunit: REPOSITORY=github.com/tebeka/go2xunit
 $(TESTOUTPUT):
 	mkdir $(TESTOUTPUT)
 
-test-build: ; $(info $(M) building $(NAME:%=% )tests…) @ ## Build tests
+test-build: $(OBJECTS) ; $(info $(M) building $(NAME:%=% )tests…) @ ## Build tests
 	$Q cd $(CURDIR) && for pkg in $(TESTDIR); do echo "Build $$pkg in $(CURDIR)"; \
 	LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 		DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \

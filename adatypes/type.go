@@ -277,7 +277,7 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 		case (8):
 			adaValue = newDoubleValue(adaType)
 		default:
-			err = NewGenericError(110, adaType.length, adaType.String())
+			err = NewGenericError(110, adaType.length, adaType.Name())
 		}
 	case FieldTypeFiller:
 		Central.Log.Debugf("Return filler value")

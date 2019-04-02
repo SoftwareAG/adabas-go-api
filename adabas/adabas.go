@@ -595,7 +595,10 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 	var responseCode uint32
 	for responseCode == 0 {
 		if !adabasRequest.Option.SecondCall {
-			adabasRequest.Definition.CreateValues(false)
+			err = adabasRequest.Definition.CreateValues(false)
+			if err != nil {
+				return
+			}
 		}
 		adabas.resetSendSize()
 		// Call Adabas

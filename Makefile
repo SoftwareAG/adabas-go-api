@@ -28,6 +28,7 @@ VERSION      ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/
 BIN           = $(CURDIR)/bin/$(GOOS)_$(GOARCH)
 LOGPATH       = $(CURDIR)/logs
 TESTFILES     = $(CURDIR)/files
+OBJECTS       = adabas/*.go adatypes/*.go
 REFERENCES    = $(TESTFILES)/references
 MESSAGES      = $(CURDIR)/messages
 CURLOGPATH    = $(CURDIR)/logs
