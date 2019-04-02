@@ -37,8 +37,8 @@ import (
 
 type caller struct {
 	url         string
-	file        uint32
 	counter     int
+	mapName     string
 	name        string
 	search      string
 	fields      string
@@ -52,7 +52,7 @@ var output = false
 var close = false
 
 func (c caller) createConnection() (*adabas.Connection, error) {
-	connStr := fmt.Sprintf("acj;target=%s;auth=NONE,id=%d,user=user%04d", c.url, c.threadNr, c.threadNr)
+	connStr := fmt.Sprintf("acj;map;auth=NONE,id=%d,user=user%04d", c.threadNr, c.threadNr)
 	connection, err := adabas.NewConnection(connStr)
 	if err != nil {
 		fmt.Println("Open connection error", err)
@@ -125,7 +125,7 @@ func callAdabas(c caller) {
 				return
 			}
 		}
-		readRequest, rerr := connection.CreateFileReadRequest(adabas.Fnr(c.file))
+		readRequest, rerr := connection.CreateMapReadRequest(c.mapName)
 		if rerr != nil {
 			fmt.Println("Error creating read reference of database:", rerr)
 			return
@@ -230,7 +230,7 @@ func main() {
 
 	var countValue int
 	var threadValue int
-	var file int
+	var repository string
 	var limit int
 	var name string
 	var search string
@@ -247,7 +247,7 @@ func main() {
 	flag.StringVar(&search, "s", "", "Search request")
 	flag.StringVar(&credentials, "p", "", "Define user and password credentials of type 'user:password'")
 	flag.StringVar(&fields, "d", "", "Query field list")
-	flag.IntVar(&file, "f", 11, "Adabas file used to read, should be Employees file")
+	flag.StringVar(&repository, "r", "", "Adabas map repository used for search")
 	flag.BoolVar(&output, "o", false, "display output")
 	flag.BoolVar(&close, "C", false, "Close Adabas connection in each loop")
 	flag.Parse()
@@ -271,11 +271,13 @@ func main() {
 
 	names := strings.Split(name, ",")
 
+	adabas.AddGlobalMapRepositoryReference(repository)
+
 	wg.Add(threadValue)
 	for i := uint32(0); i < uint32(threadValue); i++ {
 		fmt.Printf("Start thread %d/%d\n", i+1, threadValue)
-		c := caller{url: args[0], counter: countValue, threadNr: i + 1,
-			name: names[int(i)%len(names)], file: uint32(file), limit: uint64(limit),
+		c := caller{mapName: args[0], counter: countValue, threadNr: i + 1,
+			name: names[int(i)%len(names)], limit: uint64(limit),
 			fields: fields, credentials: credentials}
 		go callAdabas(c)
 

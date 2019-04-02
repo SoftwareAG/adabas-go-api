@@ -315,6 +315,6 @@ func (adabasMap *Map) Store() error {
 	if err != nil {
 		return err
 	}
-	repository := NewMapRepository(adabas, adabasMap.Repository.Fnr)
+	repository := NewMapRepository(adabas.URL, adabasMap.Repository.Fnr)
 	return repository.writeAdabasMapsWithAdabas(adabas, adabasMap)
 }

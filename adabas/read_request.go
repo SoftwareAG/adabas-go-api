@@ -81,7 +81,7 @@ func NewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Repositor
 	if nerr != nil {
 		return nil, nerr
 	}
-	dataRepository := NewMapRepository(adabas, adabasMap.Data.Fnr)
+	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
 	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
 		commonRequest: commonRequest{mapName: mapName, adabas: dataAdabas, adabasMap: adabasMap,
 			repository: dataRepository}}
@@ -103,7 +103,7 @@ func NewMapReadRequest(adabas *Adabas, mapName string) (request *ReadRequest, er
 	adabas.SetDbid(dbid)
 	adatypes.Central.Log.Debugf("Read: Adabas new map reference for %s to %d", mapName, adabasMap.Data.Fnr)
 
-	dataRepository := NewMapRepository(adabas, adabasMap.Data.Fnr)
+	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
 	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
 		commonRequest: commonRequest{mapName: mapName, adabas: adabas, adabasMap: adabasMap,
 			repository: dataRepository}}
@@ -120,7 +120,7 @@ func NewMapReadRequestByMap(adabas *Adabas, adabasMap *Map) (request *ReadReques
 		adabasMap.Data.Fnr, adabas.ID.platform)
 	cloneAdabas := NewClonedAdabas(adabas)
 
-	dataRepository := NewMapRepository(adabas, adabasMap.Data.Fnr)
+	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
 	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
 		commonRequest: commonRequest{mapName: adabasMap.Name, adabas: cloneAdabas, adabasMap: adabasMap,
 			repository: dataRepository}}

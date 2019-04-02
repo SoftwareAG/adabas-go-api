@@ -56,7 +56,7 @@ func NewStoreRequestAdabas(adabas *Adabas, fnr Fnr) *StoreRequest {
 // NewAdabasMapNameStoreRequest create new map name store request
 func NewAdabasMapNameStoreRequest(adabas *Adabas, adabasMap *Map) (request *StoreRequest, err error) {
 	clonedAdabas := NewClonedAdabas(adabas)
-	dataRepository := NewMapRepository(adabas, adabasMap.Data.Fnr)
+	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
 	request = &StoreRequest{commonRequest: commonRequest{mapName: adabasMap.Name,
 		adabas:    clonedAdabas,
 		adabasMap: adabasMap, repository: dataRepository}}

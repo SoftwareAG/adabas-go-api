@@ -136,8 +136,8 @@ func TestStoreFailMapFieldsCheck(t *testing.T) {
 		return
 	}
 	ada, _ := NewAdabas(adabasModDBID)
-	AddGlobalMapRepository(ada, 250)
-	defer DelGlobalMapRepository(ada, 250)
+	AddGlobalMapRepository(ada.URL, 250)
+	defer DelGlobalMapRepository(ada.URL, 250)
 	adabasMap, serr := SearchMapRepository(ada, massLoadEmployees)
 	if !assert.NoError(t, serr) {
 		return
@@ -178,8 +178,8 @@ func TestStoreMapFields(t *testing.T) {
 	}
 
 	ada, _ := NewAdabas(adabasModDBID)
-	AddGlobalMapRepository(ada, 250)
-	defer DelGlobalMapRepository(ada, 250)
+	AddGlobalMapRepository(ada.URL, 250)
+	defer DelGlobalMapRepository(ada.URL, 250)
 
 	fmt.Println("Prepare clear test map")
 	clearErr := clearMap(t, ada, massLoadSystransStore)
@@ -315,8 +315,8 @@ func TestStoreMapFieldsPeriods(t *testing.T) {
 		return
 	}
 	ada, _ := NewAdabas(adabasModDBID)
-	AddGlobalMapRepository(ada, 250)
-	defer DelGlobalMapRepository(ada, 250)
+	AddGlobalMapRepository(ada.URL, 250)
+	defer DelGlobalMapRepository(ada.URL, 250)
 
 	clearErr := clearMap(t, ada, massLoadSystransStore)
 	if !assert.NoError(t, clearErr) {

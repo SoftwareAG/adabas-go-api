@@ -41,7 +41,7 @@ ENABLE_DEBUG ?= 0
 
 # Executables
 EXECS         = $(BIN)/tests/employee_client $(BIN)/tests/testsuite $(BIN)/tests/simple_read $(BIN)/tests/query \
-    $(BIN)/tests/lobload $(BIN)/tests/clear_map_reference
+    $(BIN)/tests/querym $(BIN)/tests/lobload $(BIN)/tests/clear_map_reference
 LIBS          = 
 
 include $(CURDIR)/make/common.mk

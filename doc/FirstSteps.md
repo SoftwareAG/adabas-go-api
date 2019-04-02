@@ -30,5 +30,53 @@ For a detailed list of environments variables of the Adabas Docker container ple
 Part of the GO code is a program called `testsuite`. This program can access the Adabas example file 11, the EMPLOYEES example. This command will start the EMPLOYEES search for all records containing the name `SMITH` (`NAME=SMITH`). The request to the database can be request using the  Adabas TCP/IP at the Docker container host at the Adabas TCP/IP listening port (in the example above it is 60001). This example search will call the search 10000 times in two separated threads:
 
 ```sh
-bin/tests/testsuite -c 10000 -t 2 "167(adatcp://localhost:60001)"
+bin/linux_amd64/tests/testsuite -c 10000 -t 2 "167(adatcp://localhost:60001)"
+```
+
+## Query tool
+
+A tool is provided to search in your own database records. You can define your own searches and field list using the `query` test tool.
+
+```sh
+bin/linux_amd64/tests/query -d AA,F0 -f 9 -s "AA=[0:Z]" -o -l 2 "24(adatcp://adahost:60024)"
+```
+
+This query will search for all records with field `AA` starting with 0 to Z and it will read field AA and F0. The number of records is limited to two records.
+The corresponding output of the `query` command will be like following:
+
+```sh
+Start thread 1/1
+Result of query search= descriptor= and fields=AA,F0Dump all result values
+Record Isn: 0001
+  A0 = [ 1 ]
+   AA = > 50005800 <
+  F0 = [ 1 ]
+   FA[01] = [ 1 ]
+    FA[01,01] = > 26 Avenue Rhin Et Da                                         <
+   FB[01] = > Joigny                                   <
+   FC[01] = > 89300      <
+   FD[01] = > F   <
+   F1[01] = [ 1 ]
+    FE[01] = > 1033   <
+    FF[01] = > 44864858        <
+    FG[01] = >                 <
+    FH[01] = >                 <
+    FI[01] = [ 0 ]
+Record Isn: 0002
+  A0 = [ 1 ]
+   AA = > 50005600 <
+  F0 = [ 1 ]
+   FA[01] = [ 1 ]
+    FA[01,01] = > 51 Rue Victor Faugie                                         <
+   FB[01] = > Vienne                                   <
+   FC[01] = > 38200      <
+   FD[01] = > F   <
+   F1[01] = [ 1 ]
+    FE[01] = > 1033   <
+    FF[01] = > 42457727        <
+    FG[01] = >                 <
+    FH[01] = >                 <
+    FI[01] = [ 0 ]
+Finish thread 1 with 1 loops
+Done testsuite test took 6.913943ms
 ```

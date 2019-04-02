@@ -21,10 +21,12 @@ package adabas
 
 import (
 	"fmt"
-	"os"
-	"time"
-
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
+	"os"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // DatabaseURL defines the target URL of a database file. Might be a database data file or a map repository
@@ -48,9 +50,23 @@ type Repository struct {
 
 var repositories map[string]*Repository
 
+func init() {
+	queryMaps := os.Getenv("QUERY_MAPFILES")
+	adatypes.Central.Log.Debugf("QUERY_MAPFILES: %s" + queryMaps)
+	var re = regexp.MustCompile(`(?m)\(((\d+|\d+\(.*\)),\d+)\)`)
+
+	for _, match := range re.FindAllStringSubmatch(queryMaps, -1) {
+		adatypes.Central.Log.Debugf("Add to global repository search: %s", match[1])
+		err := AddGlobalMapRepositoryReference(match[1])
+		if err != nil {
+			adatypes.Central.Log.Debugf("Error adding global map %v", err)
+		}
+	}
+}
+
 // NewMapRepository new map repository created
-func NewMapRepository(adabas *Adabas, fnr Fnr) *Repository {
-	mr := &Repository{DatabaseURL: DatabaseURL{URL: *adabas.URL, Fnr: fnr}}
+func NewMapRepository(url *URL, fnr Fnr) *Repository {
+	mr := &Repository{DatabaseURL: DatabaseURL{URL: *url, Fnr: fnr}}
 	mr.CachedMaps = make(map[string]*Map)
 	return mr
 }
@@ -62,21 +78,67 @@ func NewMapRepositoryWithURL(url DatabaseURL) *Repository {
 	return mr
 }
 
+func extractReference(reference string) (url *URL, fnr Fnr, err error) {
+	v := strings.Split(reference, ",")
+	url, err = NewURL(v[0])
+	if err != nil {
+		return
+	}
+	f, ferr := strconv.Atoi(v[1])
+	if ferr != nil {
+		err = ferr
+		return
+	}
+	fnr = Fnr(f)
+	return
+}
+
+// AddGlobalMapRepositoryReference add global map repository
+func AddGlobalMapRepositoryReference(reference string) error {
+	url, fnr, err := extractReference(reference)
+	if err != nil {
+		return err
+	}
+	AddGlobalMapRepository(url, fnr)
+	return nil
+}
+
 // AddGlobalMapRepository add global map repository
-func AddGlobalMapRepository(adabas *Adabas, fnr Fnr) {
+func AddGlobalMapRepository(i interface{}, fnr Fnr) {
+	var url *URL
+	switch i.(type) {
+	case *URL:
+		url = i.(*URL)
+	case *Adabas:
+		a := i.(*Adabas)
+		url = a.URL
+	default:
+		fmt.Println("Error adding global repository with", i)
+		return
+	}
 	if repositories == nil {
 		repositories = make(map[string]*Repository)
 	}
-	rep := NewMapRepository(adabas, fnr)
-	reference := fmt.Sprintf("%s/%03d", adabas.URL.String(), fnr)
+	rep := NewMapRepository(url, fnr)
+	reference := fmt.Sprintf("%s/%03d", url.String(), fnr)
 	adatypes.Central.Log.Debugf("Add global repository >%s<", reference)
 	repositories[reference] = rep
 }
 
+// DelGlobalMapRepositoryReference delete global map repository
+func DelGlobalMapRepositoryReference(reference string) error {
+	url, fnr, err := extractReference(reference)
+	if err != nil {
+		return err
+	}
+	DelGlobalMapRepository(url, fnr)
+	return nil
+}
+
 // DelGlobalMapRepository delete global map repository
-func DelGlobalMapRepository(adabas *Adabas, fnr Fnr) {
+func DelGlobalMapRepository(url *URL, fnr Fnr) {
 	if repositories != nil {
-		reference := fmt.Sprintf("%s/%03d", adabas.URL.String(), fnr)
+		reference := fmt.Sprintf("%s/%03d", url.String(), fnr)
 		adatypes.Central.Log.Debugf("Remove global repository: %s", reference)
 		delete(repositories, reference)
 	}
