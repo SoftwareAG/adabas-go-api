@@ -218,7 +218,7 @@ func (value *unpackedValue) unpackedToLong(ebcdic bool) int64 {
 }
 
 func (value *unpackedValue) LongToUnpacked(intValue int64, len int, ebcdic bool) {
-	Central.Log.Debugf("Convert integer ", intValue)
+	Central.Log.Debugf("Convert integer %d", intValue)
 	b := make([]byte, len)
 	upperByte := uint8(0x30)
 	negativByte := uint8(0x70)

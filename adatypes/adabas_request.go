@@ -154,6 +154,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 		buffer.WriteString(adaType.ShortName() + "C,4,B")
 		adabasRequest.RecordBufferLength += 4
 		if !adaType.HasFlagSet(FlagOptionMU) {
+			Central.Log.Debugf("No MU field, use general range group query")
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")
 			}

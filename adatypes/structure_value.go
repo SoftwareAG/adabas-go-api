@@ -166,7 +166,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		Central.Log.Debugf("Skip not group -> %s", value.Type().Name())
 		return
 	}
-	Central.Log.Debugf("%s parse buffer for MU in PE/first call", value.Type().Name())
+	Central.Log.Debugf("%s/%s parse buffer for MU in PE/first call", value.Type().Name(), value.Type().ShortName())
 	var occNumber int
 	occNumber, err = value.evaluateOccurence(helper)
 	Central.Log.Debugf("PE occourence %s has %d entries", value.Type().Name(), occNumber)
@@ -296,7 +296,8 @@ func (value *StructureValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 			return
 		}
 	}
-	Central.Log.Debugf("Parse structure buffer %s secondCall=%v offset=%d/%X", value.Type().Name(), option.SecondCall, helper.offset, helper.offset)
+	Central.Log.Debugf("Parse structure buffer %s/%s secondCall=%v offset=%d/%X", value.Type().Name(), value.Type().ShortName(),
+		option.SecondCall, helper.offset, helper.offset)
 	if value.adatype.HasFlagSet(FlagOptionPE) && value.adatype.HasFlagSet(FlagOptionMU) {
 		return value.parseBufferWithMUPE(helper, option)
 	}

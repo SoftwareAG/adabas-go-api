@@ -207,7 +207,13 @@ func (adaType *AdaType) Length() uint32 {
 
 // SetLength set the length of the field
 func (adaType *AdaType) SetLength(length uint32) {
-	adaType.length = length
+	Central.Log.Debugf("Set length for %s from %d to %d type=%s", adaType.Name(), adaType.length, length, adaType.fieldType.name())
+
+	if (adaType.fieldType != FieldTypeFloat && adaType.fieldType != FieldTypeDouble) || length > 0 {
+		adaType.length = length
+	} else {
+		Central.Log.Debugf("Skip float or double to %d", adaType.length)
+	}
 }
 
 // IsStructure return if it is an structure
@@ -490,7 +496,7 @@ func (adaType *StructureType) Traverse(t TraverserMethods, level int, x interfac
 	Central.Log.Debugf("Current structure -> %s", adaType.name)
 	Central.Log.Debugf("Nr of structure types -> %v", len(adaType.SubTypes))
 	for _, v := range adaType.SubTypes {
-		Central.Log.Debugf("Traverse on %s", v.Name())
+		Central.Log.Debugf("Traverse on %s/%s", v.Name(), v.ShortName())
 		err = t.EnterFunction(v, adaType, level, x)
 		if err != nil {
 			return

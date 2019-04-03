@@ -1154,3 +1154,46 @@ func ExampleConnection_readLongMapRange() {
 	//     bonus_P9.2[01,04] = > 5000 <
 	//     bonus_P9.2[01,05] = > 5000 <
 }
+
+func TestConnection_readAllMap(t *testing.T) {
+	f, err := initLogWithFile("connection_map.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest("EMPLOYEES")
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err = request.QueryFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	request.Limit = 0
+	var result *Response
+	fmt.Println("Read logigcal data:")
+	result, err = request.ReadISN(1)
+	if !assert.NoError(t, err) {
+		return
+	}
+	result.DumpValues()
+	if assert.Equal(t, 1, len(result.Values)) {
+		v, verr := result.Values[0].SearchValue("last_update_--TIMX-")
+		if !assert.NoError(t, verr) {
+			return
+		}
+		assert.Equal(t, "0", v.String())
+	}
+
+}
