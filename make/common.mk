@@ -187,8 +187,8 @@ generate: ; $(info $(M) generating messages…) @ ## Generate message go code
 .PHONY: clean
 clean: cleanModules; $(info $(M) cleaning…)	@ ## Cleanup everything
 	@rm -rf $(GOPATH) $(CURDIR)/adabas/vendor
-	@rm -rf $(BIN) $(CURDIR)/pkg $(CURDIR)/logs $(CURDIR)/test
-	@rm -rf test/tests.* test/coverage.*
+	@rm -rf $(CURDIR)/bin $(CURDIR)/pkg $(CURDIR)/logs $(CURDIR)/test
+	@rm -rf test/tests.* test/coverage.* $(CURDIR)/vendor
 	@rm -f $(CURDIR)/adabas.test $(CURDIR)/adatypes.test $(CURDIR)/*.log $(CURDIR)/*.output
 
 .PHONY: help
