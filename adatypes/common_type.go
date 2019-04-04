@@ -342,6 +342,13 @@ func (commonType *CommonType) HasFlagSet(flagOption FlagOption) bool {
 // AddFlag add the flag to the type flag set
 func (commonType *CommonType) AddFlag(flagOption FlagOption) {
 	commonType.flags |= flagOption.Bit()
+	if flagOption == FlagOptionMU {
+		p := commonType.GetParent()
+		for p != nil {
+			p.AddFlag(flagOption)
+			p = p.GetParent()
+		}
+	}
 }
 
 // RemoveFlag add the flag to the type flag set

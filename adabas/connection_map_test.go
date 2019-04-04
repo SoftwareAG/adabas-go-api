@@ -1047,6 +1047,22 @@ func ExampleConnection_readLongMapIsn() {
 	//    salary_P9.2[01] = > 963 <
 	//    bonus_P9.2[01] = [ 1 ]
 	//     bonus_P9.2[01,01] = > 138 <
+	//   total_income_-EUR- = > 0.000000 <
+	//   leave-date = [ 1 ]
+	//    leave-due = > 19 <
+	//    leave-taken_N2.1 = > 5 <
+	//   leave-booked = [ 1 ]
+	//    leave-start[01] = > 20070801 <
+	//    leave-end[01] = > 20070831 <
+	//   language = [ 2 ]
+	//    language[01] = > FRE <
+	//    language[02] = > ENG <
+	//   last_update_--TIMX- = > 0 <
+	//   picture = >  <
+	//   documents = [ 0 ]
+	//   creation_time = > 1743368156493754199 <
+	//   Last_Updates = [ 1 ]
+	//    Last_Updates[01] = > 1743368156493754579 <
 }
 
 func ExampleConnection_readLongMapRange() {
@@ -1115,6 +1131,22 @@ func ExampleConnection_readLongMapRange() {
 	//    salary_P9.2[01] = > 963 <
 	//    bonus_P9.2[01] = [ 1 ]
 	//     bonus_P9.2[01,01] = > 138 <
+	//   total_income_-EUR- = > 0.000000 <
+	//   leave-date = [ 1 ]
+	//    leave-due = > 19 <
+	//    leave-taken_N2.1 = > 5 <
+	//   leave-booked = [ 1 ]
+	//    leave-start[01] = > 20070801 <
+	//    leave-end[01] = > 20070831 <
+	//   language = [ 2 ]
+	//    language[01] = > FRE <
+	//    language[02] = > ENG <
+	//   last_update_--TIMX- = > 0 <
+	//   picture = >  <
+	//   documents = [ 0 ]
+	//   creation_time = > 1743368156493754199 <
+	//   Last_Updates = [ 1 ]
+	//    Last_Updates[01] = > 1743368156493754579 <
 	// Record Isn: 1251
 	//   personnel-data = [ 1 ]
 	//    personnel-id = > 50005801 <
@@ -1153,6 +1185,22 @@ func ExampleConnection_readLongMapRange() {
 	//     bonus_P9.2[01,03] = > 5000 <
 	//     bonus_P9.2[01,04] = > 5000 <
 	//     bonus_P9.2[01,05] = > 5000 <
+	//   total_income_-EUR- = > 0.000000 <
+	//   leave-date = [ 1 ]
+	//    leave-due = > 8 <
+	//    leave-taken_N2.1 = > 7 <
+	//   leave-booked = [ 1 ]
+	//    leave-start[01] = > 20060915 <
+	//    leave-end[01] = > 20060922 <
+	//   language = [ 2 ]
+	//    language[01] = > HIN <
+	//    language[02] = > ENG <
+	//   last_update_--TIMX- = > 0 <
+	//   picture = >  <
+	//   documents = [ 0 ]
+	//   creation_time = > 1743368156493810305 <
+	//   Last_Updates = [ 1 ]
+	//    Last_Updates[01] = > 1743368156493810306 <
 }
 
 func TestConnection_readAllMap(t *testing.T) {

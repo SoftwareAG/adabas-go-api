@@ -93,6 +93,9 @@ $(BIN)/gocov-xml: REPOSITORY=github.com/AlekSi/gocov-xml
 GO2XUNIT = $(BIN)/go2xunit
 $(BIN)/go2xunit: REPOSITORY=github.com/tebeka/go2xunit
 
+COBERTURA = $(BIN)/gocover-cobertura
+$(BIN)/gocover-cobertura: REPOSITORY=github.com/t-yuki/gocover-cobertura
+
 # Tests
 $(TESTOUTPUT):
 	mkdir $(TESTOUTPUT)
@@ -139,9 +142,10 @@ test-xml: prepare fmt lint $(TESTOUTPUT) | $(GO2XUNIT) ; $(info $(M) running $(N
 COVERAGE_MODE = atomic
 COVERAGE_PROFILE = $(COVERAGE_DIR)/profile.out
 COVERAGE_XML = $(COVERAGE_DIR)/coverage.xml
+COVERAGE_COB_XML = $(COVERAGE_DIR)/coverage-cobertura.xml
 COVERAGE_HTML = $(COVERAGE_DIR)/index.html
 .PHONY: test-coverage test-coverage-tools
-test-coverage-tools: | $(GOCOVMERGE) $(GOCOV) $(GOCOVXML)
+test-coverage-tools: | $(GOCOVMERGE) $(GOCOV) $(GOCOVXML) #$(COBERTURA)
 test-coverage: COVERAGE_DIR := $(CURDIR)/test/coverage
 test-coverage: fmt lint test-coverage-tools ; $(info $(M) running coverage tests…) @ ## Run coverage tests
 	$Q mkdir -p $(COVERAGE_DIR)/coverage
@@ -163,6 +167,7 @@ test-coverage: fmt lint test-coverage-tools ; $(info $(M) running coverage tests
 	$Q $(GOCOVMERGE) $(COVERAGE_DIR)/coverage/*.cover > $(COVERAGE_PROFILE)
 	$Q $(GO) tool cover -html=$(COVERAGE_PROFILE) -o $(COVERAGE_HTML)
 	$Q $(GOCOV) convert $(COVERAGE_PROFILE) | $(GOCOVXML) > $(COVERAGE_XML)
+#	$Q $(COBERTURA) <$(COVERAGE_DIR)/coverage/*.cover > $(COVERAGE_COB_XML)
 
 .PHONY: lint
 lint: | $(GOLINT) ; $(info $(M) running golint…) @ ## Run golint
