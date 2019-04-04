@@ -21,10 +21,11 @@ package adabas
 
 import (
 	"fmt"
-	"reflect"
-	"testing"
-
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
+	"os"
+	"reflect"
+	"strconv"
+	"testing"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -141,4 +142,35 @@ func TestMapCreate(t *testing.T) {
 
 	err := newMap.Store()
 	assert.NoError(t, err)
+}
+
+func TestMapFieldsMainframe(t *testing.T) {
+	f := initTestLogWithFile(t, "map.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	network := os.Getenv("ADAMFDBID")
+	if network == "" {
+		fmt.Println("Mainframe database not defined")
+		return
+	}
+	dbid, derr := strconv.Atoi(network)
+	if !assert.NoError(t, derr) {
+		return
+	}
+
+	adabas, _ := NewAdabas(Dbid(dbid))
+	defer adabas.Close()
+
+	mr := NewMapRepository(adabas, 4)
+	log.Debugf("Repository %#v\n", *mr)
+	m, err := mr.readAdabasMap(adabas, "EMPLOYEES-NAT-MF")
+	if !assert.NoError(t, err) {
+		fmt.Println("Error found", err)
+	}
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(m)
 }

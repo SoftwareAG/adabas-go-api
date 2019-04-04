@@ -282,7 +282,7 @@ func adaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, level in
 			adaType.SetLength(0)
 
 		} else {
-			adatypes.Central.Log.Debugf("Set length to %d", f.Length)
+			adatypes.Central.Log.Debugf("Set %s length to %d", adaType.Name(), f.Length)
 			adaType.SetLength(uint32(f.Length))
 		}
 	}

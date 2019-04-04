@@ -209,7 +209,11 @@ func (adaType *AdaType) Length() uint32 {
 func (adaType *AdaType) SetLength(length uint32) {
 	Central.Log.Debugf("Set length for %s from %d to %d type=%s", adaType.Name(), adaType.length, length, adaType.fieldType.name())
 
+	//fmt.Printf("Set length for %s from %d to %d type=%s", adaType.Name(), adaType.length, length, adaType.fieldType.name())
 	if (adaType.fieldType != FieldTypeFloat && adaType.fieldType != FieldTypeDouble) || length > 0 {
+		if adaType.HasFlagSet(FlagOptionPE) {
+			Central.Log.Debugf("Period length change, CANNNOT use collected FB entry!!!!")
+		}
 		adaType.length = length
 	} else {
 		Central.Log.Debugf("Skip float or double to %d", adaType.length)
@@ -237,8 +241,25 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 		Central.Log.Debugf("Return byte value")
 		adaValue = newUByteValue(adaType)
 		return
-	case FieldTypeString, FieldTypeLAString, FieldTypeLBString:
+	case FieldTypeString:
 		Central.Log.Debugf("Return string value")
+		if adaType.length > 253 {
+			return nil, NewGenericError(111, adaType.length, "string", adaType.Name())
+		}
+		adaValue = newStringValue(adaType)
+		return
+	case FieldTypeLAString:
+		Central.Log.Debugf("Return LA string value")
+		if adaType.length > 65533 {
+			return nil, NewGenericError(111, adaType.length, "large string", adaType.Name())
+		}
+		adaValue = newStringValue(adaType)
+		return
+	case FieldTypeLBString:
+		Central.Log.Debugf("Return LB string value")
+		if adaType.length > 2147483543 {
+			return nil, NewGenericError(111, adaType.length, "large object string", adaType.Name())
+		}
 		adaValue = newStringValue(adaType)
 		return
 	case FieldTypeUnicode, FieldTypeLAUnicode, FieldTypeLBUnicode:

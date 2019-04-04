@@ -199,12 +199,12 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 	return
 }
 
-func findType(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+func traverserFindType(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
 	search := x.(*search)
 	Central.Log.Debugf("Check search %s:%s search=%s", adaType.Name(), adaType.ShortName(), search.name)
 	if adaType.Name() == search.name {
 		search.adaType = adaType
-		Central.Log.Debugf("Found type ...")
+		Central.Log.Debugf("Found type ...return error find")
 		return NewGenericError(126, search.name)
 	}
 	return nil
@@ -214,7 +214,7 @@ func findType(adaType IAdaType, parentType IAdaType, level int, x interface{}) e
 func (def *Definition) SearchType(fieldName string) (adaType IAdaType, err error) {
 	search := &search{name: fieldName}
 	level := 1
-	t := TraverserMethods{EnterFunction: findType}
+	t := TraverserMethods{EnterFunction: traverserFindType}
 	if def.fileFieldTree == nil {
 		err = def.activeFieldTree.Traverse(t, level+1, search)
 	} else {

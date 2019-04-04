@@ -212,17 +212,17 @@ func (commonType *CommonType) SetParent(parentType IAdaType) {
 			Central.Log.Debugf("Inherit PE flag from parent %s to %s %p->%p", parentType.Name(), commonType.Name(), commonType, parentType)
 			commonType.AddFlag(FlagOptionPE)
 		}
-		//if commonType.HasFlagSet(FlagOptionMU) {
-		p := parentType
-		for p != nil {
-			if p.GetParent() != nil {
-				Central.Log.Debugf("Inherit MU flag to parent from %s to %s (%p)", commonType.Name(), p.Name(), p)
-				p.AddFlag(FlagOptionMU)
-				Central.Log.Debugf("Flag set? %v", p.HasFlagSet(FlagOptionMU))
+		if commonType.HasFlagSet(FlagOptionMU) {
+			p := parentType
+			for p != nil {
+				if p.GetParent() != nil {
+					Central.Log.Debugf("Inherit MU flag to parent from %s to %s (%p)", commonType.Name(), p.Name(), p)
+					p.AddFlag(FlagOptionMU)
+					Central.Log.Debugf("Flag set? %v", p.HasFlagSet(FlagOptionMU))
+				}
+				p = p.GetParent()
 			}
-			p = p.GetParent()
 		}
-		//}
 	} else {
 		Central.Log.Debugf("%s: Reset parent type to nil of %p", commonType.name, commonType)
 		if commonType.parentType != nil {

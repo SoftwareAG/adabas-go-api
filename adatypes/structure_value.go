@@ -209,7 +209,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *BufferOption, occNumber int) (res TraverseResult, err error) {
 	Central.Log.Debugf("Parse period group/structure %s offset=%d/%X", value.Type().Name(),
 		helper.offset, helper.offset)
-	/* Evaluate the fields which need ot be parsed in the period group */
+	/* Evaluate the fields which need to be parsed in the period group */
 	tm := TraverserValuesMethods{EnterFunction: evaluateFieldNames}
 	efns := &evaluateFieldNameStructure{namesMap: make(map[string]bool), second: option.SecondCall}
 	res, err = value.Traverse(tm, efns)
