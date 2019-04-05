@@ -136,9 +136,11 @@ func (record *Record) traverse(t adatypes.TraverserValuesMethods, x interface{})
 // DumpValues traverse through the tree of values calling a callback method
 func (record *Record) DumpValues() {
 	fmt.Println("Dump all record values")
+	var buffer bytes.Buffer
 	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump,
 		EnterFunction: traverseDumpRecord}
-	record.traverse(t, nil)
+	record.traverse(t, &buffer)
+	fmt.Println(buffer.String())
 }
 
 func (record *Record) searchValue(field string) (adatypes.IAdaValue, bool) {

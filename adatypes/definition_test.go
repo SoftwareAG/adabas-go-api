@@ -89,8 +89,8 @@ func TestDefinitionPeriodic(t *testing.T) {
 	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 
-	//	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,PGC,4,B,PG1-N,I8,8,B.",
-	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,PGC,4,B,GC1-N,1,A,GS1-N,1,A,GP1-N,1,P,I8,8,B.",
+	//assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,PGC,4,B,GC1-N,1,A,GS1-N,1,A,GP1-N,1,P,I8,8,B.",
+	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,PGC,4,B,PG1-N,I8,8,B.",
 		request.FormatBuffer.String())
 
 }
@@ -768,7 +768,7 @@ func TestDefinitionRestrictPeriodic(t *testing.T) {
 	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 
-	assert.Equal(t, "U4,4,B,PGC,4,B,GC1-N,1,A,GS1-N,1,A,GP1-N,1,P.",
+	assert.Equal(t, "U4,4,B,PGC,4,B,PG1-N.",
 		request.FormatBuffer.String())
 
 }
@@ -837,7 +837,7 @@ func TestDefinitionRestrictPeriodicWithMU(t *testing.T) {
 	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 
-	assert.Equal(t, "U4,4,B,PGC,4,B,GC1-N,1,A,GS1-N,1,A,GP1-N,1,P.",
+	assert.Equal(t, "U4,4,B,PGC,4,B,PG1-N.",
 		request.FormatBuffer.String())
 	testDefinition.DumpTypes(false, true)
 }
@@ -861,12 +861,12 @@ func ExampleDefinition_dumpValuesAll() {
 	//   1, UB, 1, B  ; UB  PE=false MU=false REMOVE=true
 	//   1, I2, 2, B  ; I2  PE=false MU=false REMOVE=true
 	//   1, U8, 8, B  ; U8  PE=false MU=false REMOVE=true
-	//   1, PG  ; PG  PE=false MU=true REMOVE=true
-	//     2, GC, 1, A  ; GC  PE=false MU=true REMOVE=true
-	//     2, GS, 1, A  ; GS  PE=false MU=true REMOVE=true
-	//     2, GP, 1, P  ; GP  PE=false MU=true REMOVE=true
-	//   1, GM  ; GM  PE=false MU=true REMOVE=true
-	//     2, MA, 1, P  ; MA  PE=false MU=true REMOVE=true
+	//   1, PG  ; PG  PE=false MU=false REMOVE=true
+	//     2, GC, 1, A  ; GC  PE=false MU=false REMOVE=true
+	//     2, GS, 1, A  ; GS  PE=false MU=false REMOVE=true
+	//     2, GP, 1, P  ; GP  PE=false MU=false REMOVE=true
+	//   1, GM  ; GM  PE=false MU=false REMOVE=true
+	//     2, MA, 1, P  ; MA  PE=false MU=false REMOVE=true
 	//
 	// Dump values :   U4 = >0<
 	//  B1 = >0<
@@ -902,10 +902,10 @@ func ExampleDefinition_dumpValuesRestrict() {
 
 	// Output: Dump all active field types:
 	//   1, U4, 4, B  ; U4  PE=false MU=false REMOVE=false
-	//   1, PG  ; PG  PE=false MU=true REMOVE=false
-	//     2, GC, 1, A  ; GC  PE=false MU=true REMOVE=false
-	//     2, GS, 1, A  ; GS  PE=false MU=true REMOVE=false
-	//     2, GP, 1, P  ; GP  PE=false MU=true REMOVE=false
+	//   1, PG  ; PG  PE=false MU=false REMOVE=false
+	//     2, GC, 1, A  ; GC  PE=false MU=false REMOVE=false
+	//     2, GS, 1, A  ; GS  PE=false MU=false REMOVE=false
+	//     2, GP, 1, P  ; GP  PE=false MU=false REMOVE=false
 	//
 	// Dump values :   U4 = >0<
 	//  PG = [1]
