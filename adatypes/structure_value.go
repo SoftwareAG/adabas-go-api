@@ -197,7 +197,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		}
 		return value.parsePeriodGroup(helper, option, occNumber)
 	}
-	Central.Log.Debugf("No occurance, check shift of PE empty part %v", option.Mainframe)
+	Central.Log.Debugf("No occurance, check shift of PE empty part %v need second=%v", option.Mainframe,option.NeedSecondCall)
 	if option.Mainframe {
 		value.shiftPeriod(helper)
 	}
@@ -207,16 +207,19 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 }
 
 func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *BufferOption, occNumber int) (res TraverseResult, err error) {
-	Central.Log.Debugf("Parse period group/structure %s offset=%d/%X", value.Type().Name(),
-		helper.offset, helper.offset)
+	Central.Log.Debugf("Parse period group/structure %s offset=%d/%X need second=%v", value.Type().Name(),
+		helper.offset, helper.offset,option.NeedSecondCall)
 	/* Evaluate the fields which need to be parsed in the period group */
 	tm := TraverserValuesMethods{EnterFunction: evaluateFieldNames}
 	efns := &evaluateFieldNameStructure{namesMap: make(map[string]bool), second: option.SecondCall}
 	res, err = value.Traverse(tm, efns)
-	Central.Log.Debugf("Got %d names", len(efns.names))
-	option.NeedSecondCall = efns.needSecond
+	Central.Log.Debugf("Got %d names got need second=%v was need second=%v", len(efns.names),efns.needSecond,option.NeedSecondCall)
+	if !option.NeedSecondCall {
+		option.NeedSecondCall = efns.needSecond
+	}
 	for _, n := range efns.names {
-		Central.Log.Debugf("Parse start of name : %s offset=%d/%X", n, helper.offset, helper.offset)
+		Central.Log.Debugf("Parse start of name : %s offset=%d/%X need second=%v", n, helper.offset, 
+			helper.offset,option.NeedSecondCall)
 		for i := 0; i < occNumber; i++ {
 			Central.Log.Debugf("Get occurence : %d -> %d", (i + 1), value.NrElements())
 			v := value.Get(n, i+1)

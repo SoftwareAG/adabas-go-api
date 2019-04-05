@@ -55,7 +55,8 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 		}
 	}
 	result, err = adaValue.parseBuffer(parameter.helper, parameter.option)
-	Central.Log.Debugf("End Parseing value .... %s pos=%d", adaValue.Type().Name(), parameter.helper.offset)
+	Central.Log.Debugf("End Parseing value .... %s pos=%d need second=%v", 
+		adaValue.Type().Name(), parameter.helper.offset, parameter.option.NeedSecondCall)
 	return
 }
 
@@ -97,8 +98,8 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 		parentStructure = str.(*StructureValue)
 		parent = parentStructure.adatype.(*StructureType)
 	}
-	Central.Log.Debugf("================== Parse Buffer for IAdaTypes of %s -> value avail.=%v index=%d",
-		parent.Name(), (parentStructure != nil), peIndex)
+	Central.Log.Debugf("================== Parse Buffer for IAdaTypes of %s -> value avail.=%v index=%d need second=%v",
+		parent.Name(), (parentStructure != nil), peIndex,option.NeedSecondCall)
 	var types []IAdaType
 	types = parent.SubTypes
 	var conditionMatrix []byte
@@ -118,7 +119,8 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 
 	// Create IAdaTypes until reference index or the end of the types
 	// if no reference index available
-	Central.Log.Debugf("Reference field index=%d length field index=%d", refField, lengthFieldIndex)
+	Central.Log.Debugf("Reference field index=%d length field index=%d need second=%v", refField, 
+	lengthFieldIndex,option.NeedSecondCall)
 	for i := 0; i < refField+1; i++ {
 		Central.Log.Debugf("Parse type -> %s offset=%d", types[i].Name(), helper.offset)
 		var value IAdaValue
@@ -227,7 +229,7 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 	}
 
 	if Central.IsDebugLevel() {
-		Central.Log.Debugf("================== Ending Parse buffer for IAdaTypes of %v", parent)
+		Central.Log.Debugf("================== Ending Parse buffer for IAdaTypes of %v need second=%v", parent,option.NeedSecondCall)
 	}
 
 	return
