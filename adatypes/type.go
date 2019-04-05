@@ -236,6 +236,9 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 		return
 	case FieldTypeByteArray:
 		Central.Log.Debugf("Return byte array value")
+		if adaType.length > 126 {
+			return nil, NewGenericError(111, adaType.length, "binary", adaType.Name())
+		}
 		adaValue = newByteArrayValue(adaType)
 		return
 	case FieldTypeLength, FieldTypeUByte, FieldTypeCharacter:
@@ -245,26 +248,43 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 	case FieldTypeString:
 		Central.Log.Debugf("Return string value")
 		if adaType.length > 253 {
-			return nil, NewGenericError(111, adaType.length, "string", adaType.Name())
+			return nil, NewGenericError(111, adaType.length, "alpha", adaType.Name())
 		}
 		adaValue = newStringValue(adaType)
 		return
 	case FieldTypeLAString:
 		Central.Log.Debugf("Return LA string value")
 		if adaType.length > 65533 {
-			return nil, NewGenericError(111, adaType.length, "large string", adaType.Name())
+			return nil, NewGenericError(111, adaType.length, "large alpha", adaType.Name())
 		}
 		adaValue = newStringValue(adaType)
 		return
 	case FieldTypeLBString:
 		Central.Log.Debugf("Return LB string value")
 		if adaType.length > 2147483543 {
-			return nil, NewGenericError(111, adaType.length, "large object string", adaType.Name())
+			return nil, NewGenericError(111, adaType.length, "large object alpha", adaType.Name())
 		}
 		adaValue = newStringValue(adaType)
 		return
-	case FieldTypeUnicode, FieldTypeLAUnicode, FieldTypeLBUnicode:
+	case FieldTypeUnicode:
 		Central.Log.Debugf("Return unicode value")
+		if adaType.length > 253 {
+			return nil, NewGenericError(111, adaType.length, "unicode", adaType.Name())
+		}
+		adaValue = newUnicodeValue(adaType)
+		return
+	case FieldTypeLAUnicode:
+		Central.Log.Debugf("Return unicode value")
+		if adaType.length > 16381 {
+			return nil, NewGenericError(111, adaType.length, "large unicode", adaType.Name())
+		}
+		adaValue = newUnicodeValue(adaType)
+		return
+	case FieldTypeLBUnicode:
+		Central.Log.Debugf("Return unicode value")
+		if adaType.length > 16381 {
+			return nil, NewGenericError(111, adaType.length, "large object unicode", adaType.Name())
+		}
 		adaValue = newUnicodeValue(adaType)
 		return
 	case FieldTypeUInt2:
@@ -293,9 +313,15 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 		return
 	case FieldTypeUnpacked:
 		Central.Log.Debugf("Return Unpacked value")
+		if adaType.length > 29 {
+			return nil, NewGenericError(111, adaType.length, "unpacked", adaType.Name())
+		}
 		adaValue = newUnpackedValue(adaType)
 	case FieldTypePacked:
 		Central.Log.Debugf("Return Packed value")
+		if adaType.length > 15 {
+			return nil, NewGenericError(111, adaType.length, "packed", adaType.Name())
+		}
 		adaValue = newPackedValue(adaType)
 	case FieldTypeFloat:
 		Central.Log.Debugf("Return Float value")

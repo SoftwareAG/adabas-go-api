@@ -959,25 +959,25 @@ func ExampleConnection_readShortMap() {
 	//   FULL-NAME = [ 1 ]
 	//    FIRST-NAME = > WOLFGANG             <
 	//    NAME = > SCHMIDT              <
-	//    SECOND-NAME = > MARIA                <
+	//    MIDDLE-NAME = > MARIA                <
 	// Record Isn: 0261
 	//   ID = > 11100315 <
 	//   FULL-NAME = [ 1 ]
 	//    FIRST-NAME = > GLORIA               <
 	//    NAME = > MERTEN               <
-	//    SECOND-NAME = > ELISABETH            <
+	//    MIDDLE-NAME = > ELISABETH            <
 	// Record Isn: 0262
 	//   ID = > 11100316 <
 	//   FULL-NAME = [ 1 ]
 	//    FIRST-NAME = > HEINZ                <
 	//    NAME = > RAMSER               <
-	//    SECOND-NAME = > EWALD                <
+	//    MIDDLE-NAME = > EWALD                <
 	// Record Isn: 0263
 	//   ID = > 11100317 <
 	//   FULL-NAME = [ 1 ]
 	//    FIRST-NAME = > ALFONS               <
 	//    NAME = > DORSCH               <
-	//    SECOND-NAME = > FRITZ                <
+	//    MIDDLE-NAME = > FRITZ                <
 }
 
 func ExampleConnection_readLongMapIsn() {
@@ -1010,9 +1010,19 @@ func ExampleConnection_readLongMapIsn() {
 	var result *Response
 	fmt.Println("Read logigcal data:")
 	result, err = request.ReadISN(1)
+	for _, v := range result.Values {
+		f, e := v.SearchValue("creation_time")
+		f.SetValue(0)
+		f, e = v.SearchValue("Last_Updates[01]")
+		if err != nil || f == nil {
+			fmt.Println(e)
+			return
+		}
+		f.SetValue(0)
+	}
+
 	fmt.Println(result.String())
 	// Output:Read logigcal data:
-	// Dump all result values
 	// Record Isn: 0001
 	//   personnel-data = [ 1 ]
 	//    personnel-id = > 50005800 <
@@ -1060,9 +1070,9 @@ func ExampleConnection_readLongMapIsn() {
 	//   last_update_--TIMX- = > 0 <
 	//   picture = >  <
 	//   documents = [ 0 ]
-	//   creation_time = > 1743368156493754199 <
+	//   creation_time = > 0 <
 	//   Last_Updates = [ 1 ]
-	//    Last_Updates[01] = > 1743368156493754579 <
+	//    Last_Updates[01] = > 0 <
 }
 
 func ExampleConnection_readLongMapRange() {
