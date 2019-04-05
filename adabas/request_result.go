@@ -127,7 +127,7 @@ func (Response *Response) DumpValues() (err error) {
 	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump, EnterFunction: traverseDumpRecord}
 	_, err = Response.TraverseValues(t, &buffer)
 	fmt.Println("Dump all result values")
-	fmt.Println(buffer.String())
+	fmt.Printf("%s", buffer.String())
 	return
 }
 

@@ -140,7 +140,7 @@ func (record *Record) DumpValues() {
 	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump,
 		EnterFunction: traverseDumpRecord}
 	record.traverse(t, &buffer)
-	fmt.Println(buffer.String())
+	fmt.Printf("%s", buffer.String())
 }
 
 func (record *Record) searchValue(field string) (adatypes.IAdaValue, bool) {
