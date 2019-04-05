@@ -32,7 +32,7 @@ type searchByName struct {
 	grFound IAdaValue
 }
 
-func searchValueByName(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
+func traverseSearchValueByName(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
 	search := x.(*searchByName)
 	Central.Log.Debugf("Search value by name %s and index %d:%d, found %s %d/%d", search.name, search.peIndex,
 		search.muIndex, adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex())
@@ -49,7 +49,7 @@ func searchValueByName(adaValue IAdaValue, x interface{}) (TraverseResult, error
 	return Continue, nil
 }
 
-func searchValueByNameEnd(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
+func traverseSearchValueByNameEnd(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
 	search := x.(*searchByName)
 	Central.Log.Debugf("Search end value by name %s and index %d:%d, found %s %d/%d", search.name, search.peIndex,
 		search.muIndex, adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex())
@@ -64,8 +64,9 @@ func searchValueByNameEnd(adaValue IAdaValue, x interface{}) (TraverseResult, er
 
 // Search search for a specific field structure in the tree
 func (def *Definition) Search(fieldName string) IAdaValue {
+	Central.Log.Debugf("Indexless search of %s", fieldName)
 	x := searchByName{name: fieldName}
-	t := TraverserValuesMethods{EnterFunction: searchValueByName}
+	t := TraverserValuesMethods{EnterFunction: traverseSearchValueByName}
 	_, err := def.TraverseValues(t, &x)
 	if err == nil {
 		return x.found
@@ -90,7 +91,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 
 	// Main group name if period group use other
 	Central.Log.Debugf("Main group parent name : %s", c.Name())
-	if c.Type() == FieldTypePeriodGroup {
+	if c.Type() == FieldTypePeriodGroup || c.Type() == FieldTypeMultiplefield {
 		var v IAdaValue
 		for _, v = range def.Values {
 			if v.Type().Name() == c.Name() {
@@ -123,10 +124,14 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 				x.peIndex = index[0]
 				x.muIndex = index[1]
 			case len(index) > 0:
-				x.peIndex = index[0]
+				if c.Type() == FieldTypeMultiplefield {
+					x.muIndex = index[0]
+				} else {
+					x.peIndex = index[0]
+				}
 			default:
 			}
-			tvm := TraverserValuesMethods{EnterFunction: searchValueByName, LeaveFunction: searchValueByNameEnd}
+			tvm := TraverserValuesMethods{EnterFunction: traverseSearchValueByName, LeaveFunction: traverseSearchValueByNameEnd}
 			_, err = strv.Traverse(tvm, &x)
 			if err == nil {
 				if x.found != nil {

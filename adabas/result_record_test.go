@@ -67,5 +67,11 @@ func TestRecord(t *testing.T) {
 		assert.NoError(t, verr)
 		assert.NotNil(t, v)
 		assert.Equal(t, "0", v.String())
+		v, verr = result.SearchValue("X1[1]")
+		assert.Error(t, verr)
+		assert.Nil(t, v)
+		v, verr = result.SearchValue("X1[1,10]")
+		assert.Error(t, verr)
+		assert.Nil(t, v)
 	}
 }

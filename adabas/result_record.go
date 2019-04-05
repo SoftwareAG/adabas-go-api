@@ -22,10 +22,10 @@ package adabas
 import (
 	"bytes"
 	"fmt"
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
+	"regexp"
 	"strconv"
 	"strings"
-
-	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
 // Record one result record of the result
@@ -137,7 +137,7 @@ func (record *Record) traverse(t adatypes.TraverserValuesMethods, x interface{})
 func (record *Record) DumpValues() {
 	fmt.Println("Dump all record values")
 	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump,
-		EnterFunction: dumpRecord}
+		EnterFunction: traverseDumpRecord}
 	record.traverse(t, nil)
 }
 
@@ -190,8 +190,35 @@ func (record *Record) SetValueWithIndex(name string, index []uint32, x interface
 }
 
 // SearchValue search value in the tree
-func (record *Record) SearchValue(name string) (adatypes.IAdaValue, error) {
-	return record.SearchValueIndex(name, []uint32{0, 0})
+func (record *Record) SearchValue(parameter ...interface{}) (adatypes.IAdaValue, error) {
+	name := parameter[0].(string)
+	var index []uint32
+	if len(parameter) > 1 {
+		index = parameter[1].([]uint32)
+	} else {
+		if strings.ContainsRune(name, '[') {
+			var re = regexp.MustCompile(`(?m)(\w+(\[(\d+),?(\d+)?\])?)`)
+			for _, s := range re.FindAllStringSubmatch(name, -1) {
+				v, err := strconv.Atoi(s[3])
+				if err != nil {
+					return nil, err
+				}
+				index = append(index, uint32(v))
+				if s[4] != "" {
+					v, err = strconv.Atoi(s[4])
+					if err != nil {
+						return nil, err
+					}
+					index = append(index, uint32(v))
+				}
+			}
+			name = name[:strings.IndexRune(name, '[')]
+		} else {
+			index = []uint32{0, 0}
+		}
+	}
+	adatypes.Central.Log.Debugf("Search %s index: %#v", name, index)
+	return record.SearchValueIndex(name, index)
 }
 
 // SearchValueIndex search value in the tree with a given index

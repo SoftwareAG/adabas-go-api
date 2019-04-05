@@ -92,39 +92,42 @@ func prepareRecordDump(x interface{}, b interface{}) (adatypes.TraverseResult, e
 	return adatypes.Continue, nil
 }
 
-func dumpRecord(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
+func traverseDumpRecord(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	y := strings.Repeat(" ", int(adaValue.Type().Level()))
 
-	if x == nil {
-		brackets := ""
-		switch {
-		case adaValue.PeriodIndex() > 0 && adaValue.MultipleIndex() > 0:
-			brackets = fmt.Sprintf("[%02d,%02d]", adaValue.PeriodIndex(), adaValue.MultipleIndex())
-		case adaValue.PeriodIndex() > 0:
-			brackets = fmt.Sprintf("[%02d]", adaValue.PeriodIndex())
-		case adaValue.MultipleIndex() > 0:
-			brackets = fmt.Sprintf("[%02d]", adaValue.MultipleIndex())
-		default:
-		}
-
-		if adaValue.Type().IsStructure() {
-			structureValue := adaValue.(*adatypes.StructureValue)
-			fmt.Println(y+" "+adaValue.Type().Name()+brackets+" = [", structureValue.NrElements(), "]")
-		} else {
-			fmt.Printf("%s %s%s = > %s <\n", y, adaValue.Type().Name(), brackets, adaValue.String())
-		}
-	} else {
-		buffer := x.(*bytes.Buffer)
-		buffer.WriteString(fmt.Sprintln(y, adaValue.Type().Name(), "= >", adaValue.String(), "<"))
+	// if x == nil {
+	buffer := x.(*bytes.Buffer)
+	brackets := ""
+	switch {
+	case adaValue.PeriodIndex() > 0 && adaValue.MultipleIndex() > 0:
+		brackets = fmt.Sprintf("[%02d,%02d]", adaValue.PeriodIndex(), adaValue.MultipleIndex())
+	case adaValue.PeriodIndex() > 0:
+		brackets = fmt.Sprintf("[%02d]", adaValue.PeriodIndex())
+	case adaValue.MultipleIndex() > 0:
+		brackets = fmt.Sprintf("[%02d]", adaValue.MultipleIndex())
+	default:
 	}
+
+	if adaValue.Type().IsStructure() {
+		structureValue := adaValue.(*adatypes.StructureValue)
+		buffer.WriteString(fmt.Sprintf("%s %s%s = [ %d ]\n", y, adaValue.Type().Name(), brackets, structureValue.NrElements()))
+	} else {
+		buffer.WriteString(fmt.Sprintf("%s %s%s = > %s <\n", y, adaValue.Type().Name(), brackets, adaValue.String()))
+	}
+	// } else {
+	// 	buffer := x.(*bytes.Buffer)
+	// 	buffer.WriteString(fmt.Sprintln(y, adaValue.Type().Name(), "= >", adaValue.String(), "<"))
+	// }
 	return adatypes.Continue, nil
 }
 
 // DumpValues traverse through the tree of values calling a callback method
 func (Response *Response) DumpValues() (err error) {
+	var buffer bytes.Buffer
+	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump, EnterFunction: traverseDumpRecord}
+	_, err = Response.TraverseValues(t, &buffer)
 	fmt.Println("Dump all result values")
-	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump, EnterFunction: dumpRecord}
-	_, err = Response.TraverseValues(t, nil)
+	fmt.Println(buffer.String())
 	return
 }
 
@@ -156,7 +159,7 @@ func (Response *Response) TraverseValues(t adatypes.TraverserValuesMethods, x in
 
 func (Response *Response) String() string {
 	var buffer bytes.Buffer
-	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump, EnterFunction: dumpRecord}
+	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump, EnterFunction: traverseDumpRecord}
 	Response.TraverseValues(t, &buffer)
 	return buffer.String()
 }

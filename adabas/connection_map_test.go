@@ -1010,7 +1010,7 @@ func ExampleConnection_readLongMapIsn() {
 	var result *Response
 	fmt.Println("Read logigcal data:")
 	result, err = request.ReadISN(1)
-	result.DumpValues()
+	fmt.Println(result.String())
 	// Output:Read logigcal data:
 	// Dump all result values
 	// Record Isn: 0001
@@ -1094,6 +1094,16 @@ func ExampleConnection_readLongMapRange() {
 	var result *Response
 	fmt.Println("Read logigcal data:")
 	result, err = request.ReadLogicalWith("personnel-id=[50005800:50005801]")
+	for _, v := range result.Values {
+		f, e := v.SearchValue("creation_time")
+		f.SetValue(0)
+		f, e = v.SearchValue("Last_Updates[01]")
+		if err != nil || f == nil {
+			fmt.Println(e)
+			return
+		}
+		f.SetValue(0)
+	}
 	result.DumpValues()
 	// Output:Read logigcal data:
 	// Dump all result values
@@ -1144,9 +1154,9 @@ func ExampleConnection_readLongMapRange() {
 	//   last_update_--TIMX- = > 0 <
 	//   picture = >  <
 	//   documents = [ 0 ]
-	//   creation_time = > 1743368156493754199 <
+	//   creation_time = > 0 <
 	//   Last_Updates = [ 1 ]
-	//    Last_Updates[01] = > 1743368156493754579 <
+	//    Last_Updates[01] = > 0 <
 	// Record Isn: 1251
 	//   personnel-data = [ 1 ]
 	//    personnel-id = > 50005801 <
@@ -1198,9 +1208,9 @@ func ExampleConnection_readLongMapRange() {
 	//   last_update_--TIMX- = > 0 <
 	//   picture = >  <
 	//   documents = [ 0 ]
-	//   creation_time = > 1743368156493810305 <
+	//   creation_time = > 0 <
 	//   Last_Updates = [ 1 ]
-	//    Last_Updates[01] = > 1743368156493810306 <
+	//    Last_Updates[01] = > 0 <
 }
 
 func TestConnection_readAllMap(t *testing.T) {

@@ -45,7 +45,7 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 
 	Central.Log.Debugf("Start parsing value .... %s offset=%d/%X type=%s", adaValue.Type().Name(),
 		parameter.helper.offset, parameter.helper.offset, adaValue.Type().Type().name())
-	Central.Log.Debugf("Parse value .... second=%v need second=%v pe=%v",
+	Central.Log.Debugf("Parse value %s .... second=%v need second=%v pe=%v", adaValue.Type().Name(),
 		parameter.option.SecondCall, parameter.option.NeedSecondCall, adaValue.Type().HasFlagSet(FlagOptionPE))
 	// On second call, to collect MU fields in an PE group, skip all other parser tasks
 	if !(adaValue.Type().HasFlagSet(FlagOptionPE) && adaValue.Type().Type() == FieldTypeMultiplefield) {
@@ -55,7 +55,7 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 		}
 	}
 	result, err = adaValue.parseBuffer(parameter.helper, parameter.option)
-	Central.Log.Debugf("End Parseing value .... %s pos=%d need second=%v", 
+	Central.Log.Debugf("End Parseing value .... %s pos=%d need second=%v",
 		adaValue.Type().Name(), parameter.helper.offset, parameter.option.NeedSecondCall)
 	return
 }
@@ -99,7 +99,7 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 		parent = parentStructure.adatype.(*StructureType)
 	}
 	Central.Log.Debugf("================== Parse Buffer for IAdaTypes of %s -> value avail.=%v index=%d need second=%v",
-		parent.Name(), (parentStructure != nil), peIndex,option.NeedSecondCall)
+		parent.Name(), (parentStructure != nil), peIndex, option.NeedSecondCall)
 	var types []IAdaType
 	types = parent.SubTypes
 	var conditionMatrix []byte
@@ -119,8 +119,8 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 
 	// Create IAdaTypes until reference index or the end of the types
 	// if no reference index available
-	Central.Log.Debugf("Reference field index=%d length field index=%d need second=%v", refField, 
-	lengthFieldIndex,option.NeedSecondCall)
+	Central.Log.Debugf("Reference field index=%d length field index=%d need second=%v", refField,
+		lengthFieldIndex, option.NeedSecondCall)
 	for i := 0; i < refField+1; i++ {
 		Central.Log.Debugf("Parse type -> %s offset=%d", types[i].Name(), helper.offset)
 		var value IAdaValue
@@ -229,7 +229,7 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 	}
 
 	if Central.IsDebugLevel() {
-		Central.Log.Debugf("================== Ending Parse buffer for IAdaTypes of %v need second=%v", parent,option.NeedSecondCall)
+		Central.Log.Debugf("================== Ending Parse buffer for IAdaTypes of %v need second=%v", parent, option.NeedSecondCall)
 	}
 
 	return
