@@ -136,20 +136,24 @@ func dumpTypeEnterTrav(adaType IAdaType, parentType IAdaType, level int, x inter
 }
 
 // DumpTypes traverse through the tree of definition calling a callback method
-func (def *Definition) DumpTypes(doLog bool, activeTree bool) {
+func (def *Definition) DumpTypes(doLog bool, activeTree bool, msg ...string) {
 	var buffer bytes.Buffer
+	m := ""
+	if len(msg) > 0 {
+		m = "(" + msg[0] + ")"
+	}
 	if activeTree {
 		if def.activeFieldTree == nil {
 			Central.Log.Debugf("Type tree empty")
 			return
 		}
-		buffer.WriteString("Dump all active field types:\n")
+		buffer.WriteString(fmt.Sprintf("Dump all active field types%s:\n", m))
 	} else {
 		if def.fileFieldTree == nil {
 			Central.Log.Debugf("Type tree empty")
 			return
 		}
-		buffer.WriteString("Dump all file field types:\n")
+		buffer.WriteString(fmt.Sprintf("Dump all file field types%s:\n", m))
 	}
 	if !doLog || Central.IsDebugLevel() {
 		t := TraverserMethods{EnterFunction: dumpTypeEnterTrav}

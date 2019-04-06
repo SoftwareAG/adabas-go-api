@@ -363,7 +363,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 			return
 		}
 		definition.PutCache(cacheName)
-		// definition.DumpTypes(true, true)
+		 definition.DumpTypes(true, true,"FDT read")
 		adatypes.Central.Log.Debugf("Ready parse Format read field definition")
 	}
 	// Check response to indicate error reading field definition

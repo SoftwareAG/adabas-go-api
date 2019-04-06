@@ -261,32 +261,31 @@ func parseMap(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	return
 }
 
-// adaptType called per field of the Map and adapt fields the type of a Map to the correct type
+// traverseAdaptType called per field of the Map and adapt fields the type of a Map to the correct type
 // in case a DDM type is used
-func adaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, level int, x interface{}) error {
-	adatypes.Central.Log.Debugf("Adapt type %s", adaType.Name())
+func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, level int, x interface{}) error {
 	adabasMap := x.(*Map)
-	sn := adaType.Name()[0:2]
+	sn := adaType.ShortName()[0:2]
+	adatypes.Central.Log.Debugf("Adapt type %s %s", adaType.Name(), sn)
 	f := adabasMap.fieldMap[sn]
 	if f == nil {
 		adaType.AddFlag(adatypes.FlagOptionToBeRemoved)
-		adatypes.Central.Log.Debugf("Field map does not contain %s", adaType.Name())
+		adatypes.Central.Log.Debugf("Field %s flag to be removed", adaType.Name())
 		return nil
 	}
-	adatypes.Central.Log.Debugf("Field map does contains %s", f.LongName)
+	adatypes.Central.Log.Debugf("Field map does contains %s -> %s/%s", f.LongName, adaType.Name(), adaType.ShortName())
 	adaType.RemoveFlag(adatypes.FlagOptionToBeRemoved)
 	adaType.SetName(f.LongName)
 	if !adaType.IsStructure() {
 		if f.Length < 0 {
-			adatypes.Central.Log.Debugf("Set length to 0")
+			adatypes.Central.Log.Debugf("Set %s length to 0", adaType.Name())
 			adaType.SetLength(0)
-
 		} else {
 			adatypes.Central.Log.Debugf("Set %s length to %d", adaType.Name(), f.Length)
 			adaType.SetLength(uint32(f.Length))
 		}
 	}
-	adatypes.Central.Log.Debugf("Set long name %s for %s", f.LongName, adaType.Name())
+	adatypes.Central.Log.Debugf("Set long name %s for %s/%s", f.LongName, adaType.Name(), adaType.ShortName())
 	return nil
 }
 
@@ -295,13 +294,16 @@ func (adabasMap *Map) adaptFieldType(definition *adatypes.Definition) (err error
 	if definition == nil {
 		return adatypes.NewGenericError(19)
 	}
-	adatypes.Central.Log.Debugf("Adapt map long names to type definition %#v", adabasMap)
-	tm := adatypes.NewTraverserMethods(adaptType)
+	definition.DumpTypes(true, false, "before adapt field types")
+	adatypes.Central.Log.Debugf("Adapt map long names to type definition %#v", adabasMap.String())
+	tm := adatypes.NewTraverserMethods(traverseAdaptType)
 	err = definition.TraverseTypes(tm, true, adabasMap)
 	if err != nil {
 		return
 	}
+	definition.DumpTypes(true, false, "before restrict slice")
 	err = definition.RestrictFieldSlice(adabasMap.FieldNames())
+	definition.DumpTypes(true, false, "after restrict slice")
 	return
 }
 

@@ -238,24 +238,27 @@ func (def *Definition) RestrictFieldSlice(field []string) (err error) {
 // ShouldRestrictToFieldSlice Restrict the tree to contain only the given nodes
 func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	Central.Log.Debugf("Should restrict fields to %#v", field)
+	def.DumpTypes(true, false, "before restrict")
 	def.Values = nil
 	fieldMap, ferr := def.newFieldMap(field)
 	if ferr != nil {
 		err = ferr
 		return
 	}
+	def.DumpTypes(true, false, "enter restrict")
 	t := TraverserMethods{EnterFunction: removeFieldEnterTrav}
 	err = def.TraverseTypes(t, true, fieldMap)
 	if err != nil {
 		return
 	}
+	def.DumpTypes(true, false, "remove restrict restrict")
 
 	if len(fieldMap.set) > 0 {
 		for f := range fieldMap.set {
 			err = NewGenericError(50, f)
 			if Central.IsDebugLevel() {
 				Central.Log.Debugf("Error restict fieldMap ... %v", err)
-				def.DumpTypes(true, false)
+				def.DumpTypes(true, false, "error restrict 50")
 			}
 			return
 		}
@@ -268,7 +271,7 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	def.activeFieldTree = fieldMap.parentStructure
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Final restricted type tree .........")
-		def.DumpTypes(true, true)
+		def.DumpTypes(true, true, "final restricted")
 	}
 	return
 }

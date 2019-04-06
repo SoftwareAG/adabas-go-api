@@ -124,10 +124,10 @@ func CreateDefinitionByCache(reference string) *Definition {
 	definition.activeFieldTree = x
 	definition.fileFieldTree = definition.activeFieldTree
 	Central.Log.Debugf("ORIG %#v\n", e.fileFieldTree)
-	Central.Log.Debugf("COPY %#v\n", x)
+	Central.Log.Debugf("COPY TO %#v\n", x)
 	definition.InitReferences()
 	Central.Log.Debugf("Get copied cache entry: %s", reference)
-	definition.DumpTypes(true, false)
+	definition.DumpTypes(true, false, "copied cache")
 
 	return definition
 }
@@ -138,7 +138,7 @@ func (def *Definition) PutCache(reference string) {
 		return
 	}
 	Central.Log.Debugf("Put cache entry: %s", reference)
-	def.DumpTypes(true, false)
+	def.DumpTypes(true, false,"put cache")
 	definitionCache[reference] = &cacheEntry{timestamp: time.Now(), fileFieldTree: def.fileFieldTree}
 	Central.Log.Debugf("Done put cache entry: %s", reference)
 }
