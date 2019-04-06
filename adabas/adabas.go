@@ -254,7 +254,7 @@ func (adabas *Adabas) callRemoteAdabas() (err error) {
 	switch adabas.URL.Driver {
 	case "tcpip":
 		return adatypes.NewGenericError(68)
-	case "adatcp":
+	case "adatcp", "adatcps":
 		return adabas.sendTCP()
 	case "":
 		return adatypes.NewGenericError(49)
@@ -269,7 +269,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 	if adabas.transactions.connection == nil {
 		adatypes.Central.Log.Debugf("Establish new context for %p", adabas)
 
-		tcpConn, err = connect(fmt.Sprintf("%s:%d", adabas.URL.Host, adabas.URL.Port), Endian(), adabas.ID.AdaID.User,
+		tcpConn, err = connect(adabas.URL, Endian(), adabas.ID.AdaID.User,
 			adabas.ID.AdaID.Node, adabas.ID.AdaID.Pid, adabas.ID.AdaID.Timestamp)
 		if err != nil {
 			adabas.Acbx.Acbxrsp = AdaSysCe
@@ -363,7 +363,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 			return
 		}
 		definition.PutCache(cacheName)
-		 definition.DumpTypes(true, true,"FDT read")
+		definition.DumpTypes(true, true, "FDT read")
 		adatypes.Central.Log.Debugf("Ready parse Format read field definition")
 	}
 	// Check response to indicate error reading field definition

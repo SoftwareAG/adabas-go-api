@@ -4,7 +4,7 @@ ulimit -c unlimited
 
 ADABAS_ACCESS_HOME=`pwd`
 
-DYLD_LIBRARY_PATH=:/Volumes/SAG-Q/testenv/adav67/AdabasClient/lib:/lib:/usr/lib
+DYLD_LIBRARY_PATH=:/Volumes/SAG-Q/testenv/adav67d/AdabasClient/lib:/lib:/usr/lib
 export DYLD_LIBRARY_PATH
 ENABLE_DEBUG=${ENABLE_DEBUG:-0}
 LOGPATH=`pwd`/logs
@@ -19,9 +19,9 @@ if [ ! "$ACLDIR" == "" ]; then
   CGO_CFLAGS="-DCE_T${SAGTARGET} -I${ADABAS_ACCESS_HOME}/c/SAGENV -I${ADABAS_ACCESS_HOME}/c -I${ACLDIR}/inc"
   CGO_LDFLAGS="-L${ACLDIR}/lib -ladalnkx" 
   export CGO_CFLAGS CGO_LDFLAGS
-  go run -tags "$GO_TAGS" ${TESTS_RUN} -v tests/testsuite.go $*
+  go run -tags "$GO_TAGS" ${TESTS_RUN} -v tests/testsuite/main.go $*
 else
   GO_TAGS="release"
-  go run -tags "$GO_TAGS" ${TESTS_RUN} -v tests/testsuite.go $*
+  go run -tags "$GO_TAGS" ${TESTS_RUN} -v tests/testsuite/main.go $*
 fi
 

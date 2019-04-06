@@ -44,7 +44,7 @@ func (request *commonRequest) loadDefinition() (err error) {
 		}
 		if adatypes.Central.IsDebugLevel() {
 			adatypes.Central.Log.Debugf("Finish loading file definition ....")
-			request.definition.DumpTypes(true, false,"load definition")
+			request.definition.DumpTypes(true, false, "load definition")
 		}
 	}
 	return
@@ -121,7 +121,7 @@ func (request *commonRequest) commonOpen() (err error) {
 			return
 		}
 	}
-	request.definition.DumpTypes(true, true,"Database open")
+	request.definition.DumpTypes(true, true, "Database open")
 	adatypes.Central.Log.Debugf("Database open complete")
 	request.initialized = true
 

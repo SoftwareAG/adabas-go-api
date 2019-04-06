@@ -138,7 +138,7 @@ func (def *Definition) PutCache(reference string) {
 		return
 	}
 	Central.Log.Debugf("Put cache entry: %s", reference)
-	def.DumpTypes(true, false,"put cache")
+	def.DumpTypes(true, false, "put cache")
 	definitionCache[reference] = &cacheEntry{timestamp: time.Now(), fileFieldTree: def.fileFieldTree}
 	Central.Log.Debugf("Done put cache entry: %s", reference)
 }

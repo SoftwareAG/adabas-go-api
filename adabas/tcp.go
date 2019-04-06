@@ -21,7 +21,9 @@ package adabas
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"net"
 	"unsafe"
@@ -182,20 +184,38 @@ func Endian() binary.ByteOrder {
 }
 
 // Connect connect to remote TCP/IP Adabas nucleus
-func connect(url string, order binary.ByteOrder, user [8]byte, node [8]byte,
+func connect(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 	pid uint32, timestamp uint64) (connection *adatcp, err error) {
+	url := fmt.Sprintf("%s:%d", URL.Host, URL.Port)
+
 	connection = &adatcp{url: url, order: order}
 	adatypes.Central.Log.Debugf("Open TCP connection to %s", connection.url)
 	addr, _ := net.ResolveTCPAddr("tcp", connection.url)
-	tcpConn, tcpErr := net.DialTCP("tcp", nil, addr)
-	err = tcpErr
-	if err != nil {
-		adatypes.Central.Log.Debugf("Connect error : %v", err)
-		return
+	switch URL.Driver {
+	case "adatcp":
+		tcpConn, tcpErr := net.DialTCP("tcp", nil, addr)
+		err = tcpErr
+		if err != nil {
+			adatypes.Central.Log.Debugf("Connect error : %v", err)
+			return
+		}
+		adatypes.Central.Log.Debugf("Connect dial passed ...")
+		connection.connection = tcpConn
+		tcpConn.SetNoDelay(true)
+	case "adatcps":
+		//		config := tls.Config{Certificates: []tls.Certificate{cert}, InsecureSkipVerify: true}
+		config := tls.Config{InsecureSkipVerify: true}
+		tcpConn, tcpErr := tls.Dial("tcp", url, &config)
+		err = tcpErr
+		if err != nil {
+			adatypes.Central.Log.Debugf("Connect error : %v", err)
+			return
+		}
+		adatypes.Central.Log.Debugf("Connect dial passed ...")
+		connection.connection = tcpConn
+	default:
+		return nil, adatypes.NewGenericError(131)
 	}
-	adatypes.Central.Log.Debugf("Connect dial passed ...")
-	connection.connection = tcpConn
-	tcpConn.SetNoDelay(true)
 	var buffer bytes.Buffer
 	header := NewAdatcpHeader(ConnectRequest)
 	payload := AdaTCPConnectPayload{Charset: adatcpASCII8, Floatingpoint: adatcpFloatIEEE}
