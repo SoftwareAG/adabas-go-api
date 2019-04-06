@@ -211,7 +211,21 @@ func connect(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 			adatypes.Central.Log.Debugf("Connect error : %v", err)
 			return
 		}
-		adatypes.Central.Log.Debugf("Connect dial passed ...")
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("client: connected to: %v", tcpConn.RemoteAddr())
+			state := tcpConn.ConnectionState()
+			for _, v := range state.PeerCertificates {
+				adatypes.Central.Log.Debugf("Client: Server public key is:")
+				adatypes.Central.Log.Debugf("Remote Certificate Issuer: %v", v.Issuer.String())
+				//			x, _ := x509.MarshalPKIXPublicKey(v.PublicKey)
+				//			adatypes.Central.Log.Debugf("%s %v -> %v", v.Issuer.CommonName, x, pkerr)
+			}
+			adatypes.Central.Log.Debugf("client: handshake: %v", state.HandshakeComplete)
+			adatypes.Central.Log.Debugf("client: mutual: %v", state.NegotiatedProtocolIsMutual)
+
+			adatypes.Central.Log.Debugf("Connect dial passed ...")
+
+		}
 		connection.connection = tcpConn
 	default:
 		return nil, adatypes.NewGenericError(131)
