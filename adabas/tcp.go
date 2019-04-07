@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"unsafe"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -205,6 +206,18 @@ func connect(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 	case "adatcps":
 		//		config := tls.Config{Certificates: []tls.Certificate{cert}, InsecureSkipVerify: true}
 		config := tls.Config{InsecureSkipVerify: true}
+		if pair := searchCertificate(URL); pair != nil {
+			adatypes.Central.Log.Debugf("Load key pair")
+			cert, cerr := tls.LoadX509KeyPair(pair[0], pair[1])
+			if cerr != nil {
+				adatypes.Central.Log.Debugf("server: loadkeys: %s", cerr)
+				return nil, cerr
+			}
+			config.Certificates = []tls.Certificate{cert}
+			config.InsecureSkipVerify = false
+		} else {
+			adatypes.Central.Log.Debugf("No key pair defined")
+		}
 		tcpConn, tcpErr := tls.Dial("tcp", url, &config)
 		err = tcpErr
 		if err != nil {
@@ -293,6 +306,23 @@ func connect(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 	connection.databaseID = payload.DatabaseID
 
 	return
+}
+
+func searchCertificate(URL *URL) []string {
+	var pair []string
+	cert := os.Getenv("ADABAS_CLIENT_CERT")
+	if cert == "" {
+		return nil
+	}
+	adatypes.Central.Log.Debugf("Add certificate file %s", cert)
+	pair = append(pair, cert)
+	key := os.Getenv("ADABAS_CLIENT_KEY")
+	if key == "" {
+		return nil
+	}
+	adatypes.Central.Log.Debugf("Add key file %s", key)
+	pair = append(pair, key)
+	return pair
 }
 
 // Disconnect disconnect remote TCP/IP Adabas nucleus
