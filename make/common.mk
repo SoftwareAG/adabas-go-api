@@ -40,7 +40,7 @@ lib: $(LIBS) $(CEXEC)
 
 exec: $(EXECS)
 
-prepare: $(LOGPATH) $(CURLOGPATH) $(BIN)
+prepare: $(LOGPATH) $(BIN)
 	@echo "Build architecture ${GOARCH} ${GOOS} network=${WCPHOST} GOFLAGS=$(GO_FLAGS)"
 
 $(LIBS): ; $(info $(M) building libraries…) @ ## Build program binary
@@ -65,11 +65,9 @@ endif
 $(LOGPATH):
 	@mkdir -p $@
 
-$(CURLOGPATH):
-	@mkdir -p $@
-
 $(BIN):
 	@mkdir -p $@
+
 $(BIN)/%: $(BIN); $(info $(M) building $(REPOSITORY)…)
 	$Q tmp=$$(mktemp -d); \
 		(GO111MODULE=off GOPATH=$$tmp CGO_CFLAGS= CGO_LDFLAGS= \
