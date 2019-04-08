@@ -36,14 +36,28 @@ The remote Adabas TCP/IP connection does not use the Adabas client library. To a
 Adabas Go API can be download using the `go get` command:
 
 ```bash
-go get -u github.com/softwareag/adabas-go/adabas
+go get -u github.com/SoftwareAG/adabas-go-api/adabas
 ```
 
-You can compile it with the Adabas TCP/IP interface only or using Adabas local access with Adabas Client native libraries. By default the Adabas TCP/IP interface is compiled only. To enable Adabas Client native link to Adabas you need to provide the Go build tag `adalnk` and the CGO compile flags defining build flags for the Adabas Client library. If the Adabas environment is sourced, you can define CGO compile flags as following:
+To compile included query tools, use `git` to clone the complete repository
+
+```git
+git clone https://github.com/SoftwareAG/adabas-go-api.git
+```
+
+The API runtime can be compiled with the Adabas TCP/IP interface only or using Adabas local access with Adabas Client native libraries. By default the Adabas TCP/IP interface is compiled only. To enable Adabas Client native link to Adabas you need to provide the Go build tag `adalnk` and the CGO compile flags defining build flags for the Adabas Client library. If the Adabas environment is sourced, you can define CGO compile flags as following:
 
 ```Makefile
 CGO_CFLAGS = -I$(ACLDIR)/inc
 CGO_LDFLAGS = -L$(ACLDIR)/lib -ladalnkx -lsagsmp2 -lsagxts3 -ladazbuf
+```
+
+In the Adabas Go API sources a `Makefile` contains build environment for Linux environments.
+
+To compile start the `make` command. To compile the corresponding test tool, start `go` directly like
+
+```go
+go build -tag adalnk -o querm tests/querym/main.go
 ```
 
 ## Usage
@@ -62,6 +76,7 @@ If classic Adabas database id's reference is used, the new Adabas TCP/IP uses a 
 | "23" |  Local database 23 |
 | "23(tcpip://localhost:0)" |  Local database 23, port 0 indicate local usage |
 | "23(adatcp://hutzle:60001)" |  Adabas TCP/IP based connection to remote database 23 on host `hutzle` at port 60001 |
+| "23(adatcps://hutzle:62001)" |  Adabas SSL based connection to remote database 23 on host `hutzle` at port 62001 |
 
 ## Request types
 

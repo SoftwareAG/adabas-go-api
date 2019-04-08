@@ -4,10 +4,10 @@
 
 - [API Search concept](#api-search-concept)
 	- [Content](#content)
-	- [Search](#search)
-		- [Direct search](#direct-search)
-		- [Search ranges](#search-ranges)
-		- [Special searches](#special-searches)
+	- [Adabas Search](#adabas-search)
+	- [Direct search](#direct-search)
+	- [Search ranges](#search-ranges)
+	- [Special searches](#special-searches)
 
 <!-- /TOC -->
 
@@ -15,13 +15,13 @@
 
 This document describes the search capability of the Go Adabas API. The Go API uses one-to-one match of the Adabas capabilities.
 
-## Search
+## Adabas Search
 
-Enhanced Adabas API provide search queries based on Adabas queries. The search syntax is limited.
+Enhanced Adabas API provide search queries based on Adabas queries. The search syntax is limited. See Adabas documentation.
 
 Following search queries are possible.
 
-### Direct search
+## Direct search
 
 It is possible to search for a special value. For example this query will search for the field `PERSONNEL-ID` to be `40003001`.
 
@@ -65,7 +65,7 @@ Similar approach is to not equals. Here an example
 NUMBER!=10
 ```
 
-### Search ranges
+## Search ranges
 
 Adabas provides the possibily to search for ranges. Inside the API the range search is providing with or without first range start value. Corresponding it is with last range value. This example will search in the range of `40003001` to `40005001` including the two values.
 
@@ -91,7 +91,7 @@ Ranges can be combined with `AND` or `OR`:
 NAME='ADAM' AND NAME=['FR':'FRZ']
 ```
 
-### Special searches
+## Special searches
 
 Sometime it is needed to use special characters.
 Search using the hexadecimal value of a number:

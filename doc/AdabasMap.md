@@ -7,7 +7,6 @@
   - [Migration](#migration)
     - [Object of migration](#object-of-migration)
     - [New Map repository](#new-map-repository)
-    - [New Map repository](#new-map-repository-1)
   - [Adabas Data Designer](#adabas-data-designer)
     - [Design of the Adabas Map](#design-of-the-adabas-map)
     - [Adabas Map FDT](#adabas-map-fdt)
@@ -18,7 +17,7 @@
 
 ## Concept
 
-"the spirits that I called". In the more then thirty years of processing of Adabas the tool environment has evaluate different concepts. In the past metadata were expensive and so Adabas is designed to have only two-character field names. Short after that additional 4GL-based programming languages like Natural are worked out. Natural and the add-on Predict extend the two-character field names to long names.
+"The spirits that I called". In the more then fourthy years of processing of Adabas the tool environment has evaluate different concepts. In the past metadata were expensive and so Adabas is designed to have only two-character field names. Short after that additional 4GL-based programming languages like Natural are worked out. Natural and the add-on Predict extend the two-character field names to long names.
 
 Unfortunately customers uses the independent long name facility to provide different views of one database file. Therefore it is not very easy to integrate it into the database. In advance there were different storage places where the long name definition was rested.
 
@@ -48,28 +47,15 @@ To store all relevant data, metadata and bussiness data, inside the Adabas datab
 
 A backup strategy containing Maps and Adabas data, metadata and bussiness data respectively, could be established.
 
-### New Map repository
-
-It exists a number of mapping functionalities inside and outside Adabas
-
-- Natural DDM
-- Natural Predict defnitions
-- CONNX SQL long name mapping to SQL structures
-
-All these long to short name mapping techniques have different repositories where the mapping is defined. Except Predict, the Map definition is stored outside the database. A backup plan could not be provided.
-
-To store all relevant data, metadata and bussiness data, inside the Adabas database, the corresponding new Adabas Map file is created and a migration to the new Map for DDM's is provided. Natural Predict generates DDM. Natural provides export functionality (SYSTRANS) to migrate the DDM into the Map repository file.
-
-A backup strategy containing Maps and Adabas data, metadata and bussiness data respectively, could be established.
-
 ## Adabas Data Designer
 
-The Data Designer is a graphical tool to create and maintain an Adabas file that contains the Meta data and the Maps. In Adabas the Meta data are store in so-called Field Description Tables (FDT). The Maps are based on Adabas files (FDTs) extended by Long Names. The Data Designer is part of the Adabas Client for Java installation and is not part of the Go Adabas-API.
+The Data Designer is a graphical tool to create and maintain an Adabas file that contains the Meta data and the Maps. In Adabas the Meta data are stored in so-called Field Description Tables (FDT). The Maps are based on Adabas files (FDTs) extended by Long Names. The Data Designer is part of the Adabas Client for Java installation and is not part of the Go Adabas-API.
 
 Using the Adabas Data Designer it is possible to use available definitions. Both FDTs and Maps can be imported in different way
 
 - import Meta data from Adabas (FDT)
 - import Natural DDMs (SYSTRANS)
+- import JSON based configuration exchanged and adapted through the testing and production environments (see import/export functionality below)
 
 It is also possible to create Meta data from scratch or adapt Maps.
 

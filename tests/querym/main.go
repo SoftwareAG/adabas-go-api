@@ -151,18 +151,21 @@ func callAdabas(c caller) {
 		var result *adabas.Response
 		switch {
 		case c.search != "":
+			fmt.Println("Search for ", c.search)
 			result, err = readRequest.ReadLogicalWith(c.search)
 			if err != nil {
 				fmt.Printf("Error reading thread %d with %d loops: %v\n", c.threadNr, i, err)
 				return
 			}
 		case c.name != "":
+			fmt.Println("Order by ", c.name)
 			result, err = readRequest.ReadLogicalBy(c.name)
 			if err != nil {
 				fmt.Printf("Error reading thread %d with %d loops: %v\n", c.threadNr, i, err)
 				return
 			}
 		default:
+			fmt.Println("Physical read")
 			result, err = readRequest.ReadPhysicalSequence()
 			if err != nil {
 				fmt.Printf("Error reading thread %d with %d loops: %v\n", c.threadNr, i, err)
@@ -171,7 +174,7 @@ func callAdabas(c caller) {
 
 		}
 		if output {
-			fmt.Printf("Result of query search=%s descriptor=%s and fields=%s", c.search, c.name, c.fields)
+			fmt.Printf("Result of query search=%s descriptor=%s and fields=%s\n", c.search, c.name, c.fields)
 			result.DumpValues()
 		}
 		if close {
@@ -283,7 +286,7 @@ func main() {
 	for i := uint32(0); i < uint32(threadValue); i++ {
 		fmt.Printf("Start thread %d/%d\n", i+1, threadValue)
 		c := caller{mapName: args[0], counter: countValue, threadNr: i + 1,
-			name: names[int(i)%len(names)], limit: uint64(limit),
+			name: names[int(i)%len(names)], limit: uint64(limit), search: search,
 			fields: fields, credentials: credentials}
 		go callAdabas(c)
 
