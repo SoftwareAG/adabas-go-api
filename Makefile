@@ -31,7 +31,6 @@ TESTFILES     = $(CURDIR)/files
 OBJECTS       = adabas/*.go adatypes/*.go
 REFERENCES    = $(TESTFILES)/references
 MESSAGES      = $(CURDIR)/messages
-CURLOGPATH    = $(CURDIR)/logs
 
 # Test parameter
 WCPHOST      ?= wcphost:30011
