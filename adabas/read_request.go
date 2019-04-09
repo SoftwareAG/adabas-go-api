@@ -514,7 +514,10 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 		err = adatypes.NewGenericError(24, len(fields))
 		return
 	}
-	request.definition.ShouldRestrictToFieldSlice(fields)
+	err = request.definition.ShouldRestrictToFieldSlice(fields)
+	if err != nil {
+		return err
+	}
 	adatypes.Central.Log.Debugf("Before value creation --------")
 	adabasRequest, prepareErr := request.prepareRequest()
 	adatypes.Central.Log.Debugf("Prepare done --------")
@@ -591,7 +594,7 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	if !(request.adabasMap != nil && fieldq == "*") {
 		err = request.definition.ShouldRestrictToFields(fieldq)
 		if err != nil {
-			adatypes.Central.Log.Debugf("Restrict error", err)
+			adatypes.Central.Log.Debugf("Restrict error: %v", err)
 			return err
 		}
 	}

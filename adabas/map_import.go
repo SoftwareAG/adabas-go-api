@@ -104,7 +104,7 @@ func (repository *Repository) ImportMapRepository(adabas *Adabas, filter string,
 	defer file.Close()
 
 	if repository.MapNames == nil {
-		repository.LoadRepositoryMapsWithAdabas(adabas)
+		repository.LoadMapRepository(adabas)
 	}
 
 	suffixCheck := strings.ToLower(fileName)

@@ -265,7 +265,7 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 // readAdabasMap read Adabas map defined by repository and name
 func (repository *Repository) readAdabasMap(adabas *Adabas, name string) (adabasMap *Map, err error) {
 	request := NewReadRequestAdabas(adabas, repository.Fnr)
-	adatypes.Central.Log.Debugf("Repository %#v\n", *repository)
+	adatypes.Central.Log.Debugf("Read map %s in repository %#v\n", name, *repository)
 	adabasMap, err = repository.readAdabasMapWithRequest(&request.commonRequest, name)
 	return
 }
@@ -286,12 +286,14 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 	if adabas == nil {
 		return nil, adatypes.NewGenericError(64)
 	}
-	adatypes.Central.Log.Debugf("Search map: %s", mapName)
+	adatypes.Central.Log.Debugf("Search map in cache: %s", mapName)
 	if m, ok := repository.CachedMaps[mapName]; ok {
+		adatypes.Central.Log.Debugf("Found map in cache: %s", mapName)
 		adabasMap = m
 		return
 	}
 
+	adatypes.Central.Log.Debugf("Not found in cache read map: %s", mapName)
 	request := NewReadRequestAdabas(adabas, repository.Fnr)
 	request.Limit = 0
 	err = request.ReadLogicalWithWithParser(mapFieldName.fieldName()+"="+mapName, parseMaps, repository)
@@ -395,11 +397,6 @@ func GloablMaps(adabas *Adabas) (maps []*Map, err error) {
 	return
 }
 
-// LoadMapRepository create a new repository
-func (repository *Repository) LoadMapRepository(adabas *Adabas) (err error) {
-	return repository.LoadRepositoryMapsWithAdabas(adabas)
-}
-
 // parseMap Adabas read parser of the Map names used during read
 func parseMapNames(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	repository := x.(*Repository)
@@ -438,8 +435,8 @@ func parseMaps(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	return
 }
 
-// LoadRepositoryMapsWithAdabas read on index the names of all Adabas maps into memory
-func (repository *Repository) LoadRepositoryMapsWithAdabas(adabas *Adabas) (err error) {
+// LoadMapRepository read on index the names of all Adabas maps into memory
+func (repository *Repository) LoadMapRepository(adabas *Adabas) (err error) {
 	adatypes.Central.Log.Debugf("Read all data from dbid=%d(%s) of %s/%d\n",
 		adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.DatabaseURL.URL.String(), repository.Fnr)
 	repository.MapNames = make(map[string]adatypes.Isn)
