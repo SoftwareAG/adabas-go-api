@@ -450,7 +450,10 @@ func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, er
 		}
 		adabasRequest.Parser = parseRead
 		adabasRequest.Limit = request.Limit
-		adabasRequest.Descriptors = []string{descriptor}
+		adabasRequest.Descriptors, err = request.definition.Descriptors(descriptor)
+		if err != nil {
+			return
+		}
 		if request.cursoring != nil {
 			request.cursoring.adabasRequest = adabasRequest
 		}
