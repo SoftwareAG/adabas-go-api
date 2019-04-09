@@ -640,3 +640,29 @@ func TestMapRequestWithHistogramBy(t *testing.T) {
 		}
 	}
 }
+
+func TestMapRequestWithHistogramWith(t *testing.T) {
+	f := initTestLogWithFile(t, "request.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+
+	adabas, _ := NewAdabas(24)
+	request, err := NewMapReadRequestRepo("EMPLOYEES-NAT-DDM", adabas,
+		NewMapRepository(adabas, 4))
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer request.Close()
+	openErr := request.Open()
+	if assert.NoError(t, openErr) {
+		result, err := request.HistogramWith("DEPARTMENT=ADMA")
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		if result != nil {
+			assert.Equal(t, 13, len(result.Values))
+			assert.Equal(t, uint64(8), result.Values[0].Quantity)
+			assert.Equal(t, uint64(95), result.Values[12].Quantity)
+		}
+	}
+}
