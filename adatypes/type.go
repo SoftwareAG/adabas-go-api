@@ -70,6 +70,7 @@ type IAdaType interface {
 	IsSpecialDescriptor() bool
 	SetEndian(binary.ByteOrder)
 	Endian() binary.ByteOrder
+	SetFractional(uint32)
 }
 
 // AdaType data type structure for field types, no structures
@@ -224,6 +225,9 @@ func (adaType *AdaType) SetLength(length uint32) {
 // IsStructure return if it is an structure
 func (adaType *AdaType) IsStructure() bool {
 	return false
+}
+
+func (adaType *AdaType) SetFractional(x uint32) {
 }
 
 // Value return type specific value structure object
@@ -624,6 +628,9 @@ func (adaType *StructureType) Option() string {
 	return ""
 }
 
+func (adaType *StructureType) SetFractional(x uint32) {
+}
+
 // Value return type specific value structure object
 func (adaType *StructureType) Value() (adaValue IAdaValue, err error) {
 	Central.Log.Debugf("Create structure type of %v", adaType.fieldType.name())
@@ -785,6 +792,9 @@ func (adaType *AdaSuperType) SetLength(length uint32) {
 // Option string representation of all option of Sub or super descriptors
 func (adaType *AdaSuperType) Option() string {
 	return ""
+}
+
+func (adaType *AdaSuperType) SetFractional(x uint32) {
 }
 
 // String string representation of the sub or super descriptor

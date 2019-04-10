@@ -666,3 +666,31 @@ func TestMapRequestWithHistogramWith(t *testing.T) {
 		}
 	}
 }
+
+func TestMapRequestFractional(t *testing.T) {
+	f := initTestLogWithFile(t, "request.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+
+	adabas, _ := NewAdabas(23)
+	request, err := NewMapReadRequestRepo("FRACTIONAL", adabas,
+		NewMapRepository(adabas, 250))
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer request.Close()
+	openErr := request.Open()
+	if assert.NoError(t, openErr) {
+		result, err := request.ReadLogicalBy("FRACT1")
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		if result != nil {
+			assert.Equal(t, 7, len(result.Values))
+			result.DumpValues()
+			x, serr := result.Values[0].SearchValue("FRACT1")
+			assert.NoError(t, serr)
+			assert.Equal(t, "1.44", x.String())
+		}
+	}
+}

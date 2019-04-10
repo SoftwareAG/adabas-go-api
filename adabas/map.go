@@ -283,6 +283,25 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 		} else {
 			adatypes.Central.Log.Debugf("Set %s length to %d", adaType.Name(), f.Length)
 			adaType.SetLength(uint32(f.Length))
+			adatypes.Central.Log.Debugf("Check content type=%s", f.ContentType)
+			ct := strings.Split(f.ContentType, ",")
+			fmt.Println("ContentType entry", ct)
+			for _, c := range ct {
+				p := strings.Split(c, "=")
+				if len(p) > 1 {
+					fmt.Println(p[0], "=", p[1])
+					switch p[0] {
+					case "fractionalShift":
+						fs, ferr := strconv.Atoi(p[1])
+						if ferr != nil {
+							return ferr
+						}
+						adaType.SetFractional(uint32(fs))
+					default:
+						fmt.Println("Unknown paramteter", p[0])
+					}
+				}
+			}
 		}
 	}
 	adatypes.Central.Log.Debugf("Set long name %s for %s/%s", f.LongName, adaType.Name(), adaType.ShortName())
