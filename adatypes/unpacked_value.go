@@ -45,7 +45,12 @@ func (value *unpackedValue) ByteValue() byte {
 
 func (value *unpackedValue) String() string {
 	unpackedInt := value.unpackedToLong(false)
-	return strconv.FormatInt(unpackedInt, 10)
+	sv := strconv.FormatInt(unpackedInt, 10)
+	if value.Type().Fractional() > 0 {
+		sv = sv[:value.Type().Fractional()-1] + "." + sv[value.Type().Fractional()-1:]
+	}
+	return sv
+
 }
 
 func (value *unpackedValue) Value() interface{} {
@@ -168,20 +173,41 @@ func (value *unpackedValue) parseBuffer(helper *BufferHelper, option *BufferOpti
 }
 
 func (value *unpackedValue) Int32() (int32, error) {
+	if value.Type().Fractional() > 0 {
+		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
+	}
 	return int32(value.unpackedToLong(false)), nil
 }
 
 func (value *unpackedValue) UInt32() (uint32, error) {
+	if value.Type().Fractional() > 0 {
+		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
+	}
 	return uint32(value.unpackedToLong(false)), nil
 }
 func (value *unpackedValue) Int64() (int64, error) {
-	return int64(value.unpackedToLong(false)), nil
+	v := value.unpackedToLong(false)
+	if value.Type().Fractional() > 0 {
+		m := int64(fractional(value.Type().Fractional()))
+		if v-(v%m) == v {
+			return v / m, nil
+		}
+		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
+	}
+	return v, nil
 }
 func (value *unpackedValue) UInt64() (uint64, error) {
+	if value.Type().Fractional() > 0 {
+		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
+	}
 	return uint64(value.unpackedToLong(false)), nil
 }
 func (value *unpackedValue) Float() (float64, error) {
-	return float64(value.unpackedToLong(false)), nil
+	v := float64(value.unpackedToLong(false))
+	if value.Type().Fractional() > 0 {
+		v = v / float64(fractional(value.Type().Fractional()))
+	}
+	return v, nil
 }
 
 func (value *unpackedValue) unpackedToLong(ebcdic bool) int64 {

@@ -105,3 +105,46 @@ func TestUnpackedFormatBuffer(t *testing.T) {
 	assert.Equal(t, "UP,4,U", buffer.String())
 	assert.Equal(t, uint32(4), len)
 }
+
+func TestUnpackedCheckFractional(t *testing.T) {
+	f, err := initLogWithFile("packed.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	adaType := NewType(FieldTypeUnpacked, "UP")
+	adaType.length = 10
+	adaType.SetFractional(2)
+	pa := newUnpackedValue(adaType)
+	err = pa.SetValue(1.23)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, []byte{0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x31, 0x32, 0x33}, pa.value)
+	f64, ferr := pa.Float()
+	if !assert.NoError(t, ferr) {
+		return
+	}
+	assert.Equal(t, 1.23, f64)
+	assert.Equal(t, "1.23", pa.String())
+	_, err = pa.Int32()
+	if !assert.Error(t, err) {
+		return
+	}
+	assert.Equal(t, "ADG0000112: Integer representation of value UP is not possible because of fractional value 2", err.Error())
+	_, err = pa.Int64()
+	if !assert.Error(t, err) {
+		return
+	}
+	assert.Equal(t, "ADG0000112: Integer representation of value UP is not possible because of fractional value 2", err.Error())
+	err = pa.SetValue(1)
+	if !assert.NoError(t, err) {
+		return
+	}
+	i64, ierr := pa.Int64()
+	assert.NoError(t, ierr)
+	assert.Equal(t, int64(1), i64)
+
+}
