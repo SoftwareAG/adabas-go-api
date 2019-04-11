@@ -71,14 +71,16 @@ type IAdaType interface {
 	SetEndian(binary.ByteOrder)
 	Endian() binary.ByteOrder
 	SetFractional(uint32)
+	Fractional() uint32
 }
 
 // AdaType data type structure for field types, no structures
 type AdaType struct {
 	CommonType
-	SysField  byte
-	EditMask  byte
-	SubOption byte
+	SysField   byte
+	EditMask   byte
+	SubOption  byte
+	FractValue uint32
 }
 
 // FieldCondition field condition reference using for parser length management
@@ -227,7 +229,14 @@ func (adaType *AdaType) IsStructure() bool {
 	return false
 }
 
+// SetFractional set fractional part
 func (adaType *AdaType) SetFractional(x uint32) {
+	adaType.FractValue = x
+}
+
+// Fractional get fractional part
+func (adaType *AdaType) Fractional() uint32 {
+	return adaType.FractValue
 }
 
 // Value return type specific value structure object
@@ -628,7 +637,13 @@ func (adaType *StructureType) Option() string {
 	return ""
 }
 
+// SetFractional set fractional part
 func (adaType *StructureType) SetFractional(x uint32) {
+}
+
+// Fractional get fractional part
+func (adaType *StructureType) Fractional() uint32 {
+	return 0
 }
 
 // Value return type specific value structure object
@@ -794,7 +809,13 @@ func (adaType *AdaSuperType) Option() string {
 	return ""
 }
 
+// SetFractional set fractional part
 func (adaType *AdaSuperType) SetFractional(x uint32) {
+}
+
+// Fractional get fractional part
+func (adaType *AdaSuperType) Fractional() uint32 {
+	return 0
 }
 
 // String string representation of the sub or super descriptor

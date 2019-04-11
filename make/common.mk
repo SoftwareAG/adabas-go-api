@@ -169,9 +169,10 @@ test-coverage: fmt lint test-coverage-tools ; $(info $(M) running coverage tests
 
 .PHONY: lint
 lint: | $(GOLINT) ; $(info $(M) running golint…) @ ## Run golint
-	$Q cd $(CURDIR) && ret=0 && for pkg in $(PKGS); do \
-		test -z "$$($(GOLINT) $$pkg | tee /dev/stderr)" || ret=1 ; \
-	 done ; exit $$ret
+	$Q cd $(CURDIR) && $(GOLINT) -set_exit_status ./...
+#	$Q cd $(CURDIR) && ret=0 && for pkg in $(PKGS); do \
+#		test -z "$$($(GOLINT) $$pkg | tee /dev/stderr)" || ret=1 ; \
+#	 done ; exit $$ret
 
 .PHONY: fmt
 fmt: ; $(info $(M) running fmt…) @ ## Run go fmt on all source files
@@ -189,9 +190,9 @@ generate: ; $(info $(M) generating messages…) @ ## Generate message go code
 # Misc
 .PHONY: clean
 clean: cleanModules; $(info $(M) cleaning…)	@ ## Cleanup everything
-	@rm -rf $(GOPATH) $(CURDIR)/adabas/vendor
+	@rm -rf $(CURDIR)/adabas/vendor $(CURDIR)/vendor
 	@rm -rf $(CURDIR)/bin $(CURDIR)/pkg $(CURDIR)/logs $(CURDIR)/test
-	@rm -rf test/tests.* test/coverage.* $(CURDIR)/vendor
+	@rm -rf test/tests.* test/coverage.*
 	@rm -f $(CURDIR)/adabas.test $(CURDIR)/adatypes.test $(CURDIR)/*.log $(CURDIR)/*.output
 
 .PHONY: help

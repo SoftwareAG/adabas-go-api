@@ -838,6 +838,7 @@ var statisMessages = []struct {
 	{"ADG0000109", "en", "Cannot set byte array, length to small"},
 	{"ADG0000110", "en", "Invalid length of {0} for float value {1}"},
 	{"ADG0000111", "en", "Invalid length of {0} for fields of type {1} with name {3}"},
+	{"ADG0000112", "en", "Integer representation of value {0} is not possible because of fractional value {1}"},
 	{"ADG0000120", "en", "Allthough refernce value given, condition matrix missing"},
 	{"ADG0000121", "en", "Period group index missing"},
 	{"ADG0000122", "en", "Element index entry not available"},

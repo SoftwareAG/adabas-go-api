@@ -23,6 +23,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"math"
 	"reflect"
 	"strconv"
 	"unsafe"
@@ -297,6 +298,7 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 	Central.Log.Debugf("Convert common value %s %v %s", adavalue.Type().Name(), x, reflect.TypeOf(x).Name())
 	var val int64
+	multiplier := math.Pow(float64(10), float64(adavalue.Type().Fractional()))
 	switch x.(type) {
 	case string:
 		s := x.(string)
@@ -304,32 +306,32 @@ func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 		if err != nil {
 			return 0, err
 		}
-		val = int64(sval)
+		val = int64(sval) * int64(multiplier)
 	case int8:
 		v := x.(int8)
-		val = int64(v)
+		val = int64(v) * int64(multiplier)
 	case int16:
 		v := x.(int16)
-		val = int64(v)
+		val = int64(v) * int64(multiplier)
 	case int32:
 		v := x.(int32)
-		val = int64(v)
+		val = int64(v) * int64(multiplier)
 	case int64:
-		val = x.(int64)
+		val = x.(int64) * int64(multiplier)
 	case uint8:
 		v := x.(uint8)
-		val = int64(v)
+		val = int64(v) * int64(multiplier)
 	case uint16:
 		v := x.(uint16)
-		val = int64(v)
+		val = int64(v) * int64(multiplier)
 	case uint32:
 		v := x.(uint32)
-		val = int64(v)
+		val = int64(v) * int64(multiplier)
 	case uint64:
 		v := x.(uint64)
-		val = int64(v)
+		val = int64(v) * int64(multiplier)
 	case int:
-		val = int64(x.(int))
+		val = int64(x.(int)) * int64(multiplier)
 	case []byte:
 		v := x.([]byte)
 		switch len(v) {
@@ -369,6 +371,15 @@ func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 		}
 		Central.Log.Debugf("Error converting to byte slice: %v", x)
 		return 0, NewGenericError(104, len(v), adavalue.Type().Name())
+	case float64:
+		if adavalue.Type().Fractional() == 0 {
+			Central.Log.Debugf("Error converting %v", x)
+			return 0, NewGenericError(103, fmt.Sprintf("%T", x), adavalue.Type().Name())
+		}
+		fl := x.(float64)
+		//multiplier := math.Pow(float64(10), float64(adavalue.Type().Fractional()))
+		v := int64(fl * multiplier)
+		return v, nil
 	default:
 		Central.Log.Debugf("Error converting %v", x)
 		return 0, NewGenericError(103, fmt.Sprintf("%T", x), adavalue.Type().Name())

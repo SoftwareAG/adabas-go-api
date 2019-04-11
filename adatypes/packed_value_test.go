@@ -106,3 +106,42 @@ func TestPackedCheckValid(t *testing.T) {
 	}
 	assert.Equal(t, "9", pa.String())
 }
+
+func TestPackedCheckFractional(t *testing.T) {
+	f, err := initLogWithFile("packed.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	adaType := NewType(FieldTypePacked, "PA")
+	adaType.length = 10
+	adaType.SetFractional(2)
+	pa := newPackedValue(adaType)
+	err = pa.SetValue(1.23)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x12, 0x3c}, pa.value)
+	f64, ferr := pa.Float()
+	if !assert.NoError(t, ferr) {
+		return
+	}
+	assert.Equal(t, 1.23, f64)
+	assert.Equal(t, "1.23", pa.String())
+	_, err = pa.Int32()
+	assert.Error(t, err)
+	assert.Equal(t, "ADG0000112: Integer representation of value PA is not possible because of fractional value 2", err.Error())
+	_, err = pa.Int64()
+	assert.Error(t, err)
+	assert.Equal(t, "ADG0000112: Integer representation of value PA is not possible because of fractional value 2", err.Error())
+	err = pa.SetValue(1)
+	if !assert.NoError(t, err) {
+		return
+	}
+	i64, ierr := pa.Int64()
+	assert.NoError(t, ierr)
+	assert.Equal(t, int64(1), i64)
+
+}

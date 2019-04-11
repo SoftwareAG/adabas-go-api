@@ -46,7 +46,11 @@ func (value *packedValue) ByteValue() byte {
 
 func (value *packedValue) String() string {
 	packedInt := value.packedToLong()
-	return strconv.FormatInt(packedInt, 10)
+	sv := strconv.FormatInt(packedInt, 10)
+	if value.Type().Fractional() > 0 {
+		sv = sv[:value.Type().Fractional()-1] + "." + sv[value.Type().Fractional()-1:]
+	}
+	return sv
 }
 
 func (value *packedValue) Value() interface{} {
@@ -148,25 +152,53 @@ func (value *packedValue) parseBuffer(helper *BufferHelper, option *BufferOption
 }
 
 func (value *packedValue) Int32() (int32, error) {
+	if value.Type().Fractional() > 0 {
+		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
+	}
 	v := value.packedToLong()
 	return int32(v), nil
 }
 
 func (value *packedValue) UInt32() (uint32, error) {
+	if value.Type().Fractional() > 0 {
+		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
+	}
 	v := value.packedToLong()
 	return uint32(v), nil
 }
 func (value *packedValue) Int64() (int64, error) {
 	v := value.packedToLong()
+	if value.Type().Fractional() > 0 {
+		m := int64(fractional(value.Type().Fractional()))
+		if v-(v%m) == v {
+			return v / m, nil
+		}
+		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
+	}
 	return int64(v), nil
 }
 func (value *packedValue) UInt64() (uint64, error) {
+	if value.Type().Fractional() > 0 {
+		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
+	}
 	v := value.packedToLong()
 	return uint64(v), nil
 }
+
+func fractional(f uint32) uint32 {
+	x := uint32(1)
+	for i := uint32(0); i < f; i++ {
+		x *= 10
+	}
+	return x
+}
+
 func (value *packedValue) Float() (float64, error) {
-	v := value.packedToLong()
-	return float64(v), nil
+	v := float64(value.packedToLong())
+	if value.Type().Fractional() > 0 {
+		v = v / float64(fractional(value.Type().Fractional()))
+	}
+	return v, nil
 }
 
 func (value *packedValue) packedToLong() int64 {
@@ -201,11 +233,11 @@ func (value *packedValue) packedToLong() int64 {
 }
 
 func (value *packedValue) checkValidValue(intValue int64, len uint32) error {
-	maxValue := int64(1)
-	for i := uint32(0); i < (len*2)-1; i++ {
+	maxValue := uint64(1)
+	for i := uint64(0); i < (uint64(len)*2)-1; i++ {
 		maxValue *= 10
 	}
-	absValue := int64(math.Abs(float64(intValue)))
+	absValue := uint64(math.Abs(float64(intValue)))
 	Central.Log.Debugf("Check valid value absolute value %d < max %d", absValue, maxValue)
 	if absValue < maxValue {
 		return nil
