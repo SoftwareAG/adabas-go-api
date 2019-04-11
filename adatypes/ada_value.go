@@ -298,7 +298,7 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 	Central.Log.Debugf("Convert common value %s %v %s", adavalue.Type().Name(), x, reflect.TypeOf(x).Name())
 	var val int64
-	multiplier := math.Pow(float64(10), float64(adavalue.Type().Fractional()))
+	multiplier := math.Pow10(int(adavalue.Type().Fractional()))
 	switch x.(type) {
 	case string:
 		s := x.(string)
