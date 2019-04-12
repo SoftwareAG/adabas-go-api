@@ -373,7 +373,7 @@ func (value *SearchValue) orderBy() string {
 	Central.Log.Debugf("Order by %s", value.adaType.Name())
 	if value.value.Type().IsOption(FieldOptionDE) || value.value.Type().IsSpecialDescriptor() {
 		Central.Log.Debugf("Found descriptor %s", value.adaType.Name())
-		return value.value.Type().ShortName()
+		return value.value.Type().Name()
 	}
 	Central.Log.Debugf("Not a descriptor %s %T", value.adaType.Name(), value.value)
 	return ""

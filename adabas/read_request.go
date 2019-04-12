@@ -356,6 +356,7 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 		searchInfo.Definition = adabasRequest.Definition
 		adabasRequest.SearchTree = tree
 		adabasRequest.Descriptors = tree.OrderBy()
+		request.adaptDescriptorMap(adabasRequest)
 		if request.cursoring != nil {
 			request.cursoring.adabasRequest = adabasRequest
 		}
@@ -526,6 +527,7 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 	adatypes.Central.Log.Debugf("Prepare done --------")
 	adabasRequest.SearchTree = tree
 	adabasRequest.Descriptors = adabasRequest.SearchTree.OrderBy()
+	request.adaptDescriptorMap(adabasRequest)
 	if prepareErr != nil {
 		err = prepareErr
 		return
@@ -535,6 +537,15 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 
 	err = request.adabas.Histogram(request.repository.Fnr, adabasRequest, x)
 	return
+}
+
+func (request *ReadRequest) adaptDescriptorMap(adabasRequest *adatypes.Request) {
+	if request.adabasMap != nil {
+		for i := 0; i < len(adabasRequest.Descriptors); i++ {
+			v := request.definition.Search(adabasRequest.Descriptors[i])
+			adabasRequest.Descriptors[i] = v.Type().ShortName()
+		}
+	}
 }
 
 type evaluateFieldMap struct {
