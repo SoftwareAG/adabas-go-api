@@ -47,7 +47,19 @@ func (value *unpackedValue) String() string {
 	unpackedInt := value.unpackedToLong(false)
 	sv := strconv.FormatInt(unpackedInt, 10)
 	if value.Type().Fractional() > 0 {
-		sv = sv[:value.Type().Fractional()-1] + "." + sv[value.Type().Fractional()-1:]
+		l := uint32(len(sv))
+		if l <= value.Type().Fractional() {
+			var buffer bytes.Buffer
+			buffer.WriteString("0.")
+			for i := l; i < value.Type().Fractional(); i++ {
+				buffer.WriteRune('0')
+			}
+			buffer.WriteString(sv)
+			sv = buffer.String()
+		} else {
+			sv = sv[:l-value.Type().Fractional()] + "." + sv[l-value.Type().Fractional():]
+
+		}
 	}
 	return sv
 

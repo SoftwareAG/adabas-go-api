@@ -289,13 +289,18 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 				p := strings.Split(c, "=")
 				if len(p) > 1 {
 					adatypes.Central.Log.Debugf("%s=%s", p[0], p[1])
-					switch p[0] {
-					case "fractionalShift":
+					s := strings.ToLower(p[0])
+					switch s {
+					case "fractionalshift":
 						fs, ferr := strconv.Atoi(p[1])
 						if ferr != nil {
 							return ferr
 						}
 						adaType.SetFractional(uint32(fs))
+					case "charset":
+						// TODO implement charset support
+					case "formattype":
+					case "length":
 					default:
 						fmt.Println("Unknown paramteter", p[0])
 					}

@@ -143,5 +143,25 @@ func TestPackedCheckFractional(t *testing.T) {
 	i64, ierr := pa.Int64()
 	assert.NoError(t, ierr)
 	assert.Equal(t, int64(1), i64)
+	err = pa.SetValue(0.1)
+	if !assert.NoError(t, err) {
+		return
+	}
+	f64, ferr = pa.Float()
+	if !assert.NoError(t, ferr) {
+		return
+	}
+	assert.Equal(t, 0.1, f64)
+	assert.Equal(t, "0.10", pa.String())
+	err = pa.SetValue(0.01)
+	if !assert.NoError(t, err) {
+		return
+	}
+	f64, ferr = pa.Float()
+	if !assert.NoError(t, ferr) {
+		return
+	}
+	assert.Equal(t, 0.01, f64)
+	assert.Equal(t, "0.01", pa.String())
 
 }
