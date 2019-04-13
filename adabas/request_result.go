@@ -44,15 +44,6 @@ func createStoreRecordBuffer(adaValue adatypes.IAdaValue, x interface{}) (adatyp
 	return adatypes.Continue, err
 }
 
-func (record *Record) createRecordBuffer(helper *adatypes.BufferHelper) (err error) {
-	adatypes.Central.Log.Debugf("Create record buffer")
-	t := adatypes.TraverserValuesMethods{EnterFunction: createStoreRecordBuffer}
-	stRecTraverser := &storeRecordTraverserStructure{record: record, helper: helper}
-	_, err = record.traverse(t, stRecTraverser)
-	adatypes.Central.Log.Debugf("Create record buffer done len=%d", len(helper.Buffer()))
-	return
-}
-
 // Response contains the result information of the request
 type Response struct {
 	XMLName    xml.Name  `xml:"-" json:"-"`
@@ -212,86 +203,6 @@ func (Response *Response) MarshalXML(e *xml.Encoder, start xml.StartElement) err
 	return nil
 }
 
-func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
-	enc := x.(*xml.Encoder)
-	if adaValue.Type().IsStructure() {
-		switch adaValue.Type().Type() {
-		case adatypes.FieldTypePeriodGroup:
-			attrs := make([]xml.Attr, 0)
-			attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})
-			start := xml.StartElement{Name: xml.Name{Local: "Period"}, Attr: attrs}
-			enc.EncodeToken(start)
-		case adatypes.FieldTypeMultiplefield:
-			attrs := make([]xml.Attr, 0)
-			attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})
-			start := xml.StartElement{Name: xml.Name{Local: "Multiple"}, Attr: attrs}
-			enc.EncodeToken(start)
-		default:
-			start := xml.StartElement{Name: xml.Name{Local: adaValue.Type().Name()}}
-			enc.EncodeToken(start)
-		}
-	} else {
-		start := xml.StartElement{Name: xml.Name{Local: adaValue.Type().Name()}}
-		enc.EncodeToken(start)
-		enc.EncodeToken(xml.CharData([]byte(adaValue.String())))
-		enc.EncodeToken(start.End())
-	}
-	return adatypes.Continue, nil
-}
-
-func traverseMarshalXMLEnd2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
-	if adaValue.Type().IsStructure() {
-		enc := x.(*xml.Encoder)
-		sv := adaValue.(*adatypes.StructureValue)
-		if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup && sv.NrElements() > 0 {
-			//fmt.Println("E Entry", adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex())
-			end := xml.EndElement{Name: xml.Name{Local: "Entry"}}
-			enc.EncodeToken(end)
-		}
-		if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup {
-			end := xml.EndElement{Name: xml.Name{Local: "Period"}}
-			enc.EncodeToken(end)
-		}
-		if adaValue.Type().Type() == adatypes.FieldTypeMultiplefield {
-			end := xml.EndElement{Name: xml.Name{Local: "Multiple"}}
-			enc.EncodeToken(end)
-		}
-		end := xml.EndElement{Name: xml.Name{Local: adaValue.Type().Name()}}
-		enc.EncodeToken(end)
-	}
-	return adatypes.Continue, nil
-}
-
-func traverseMarshalXMLElement(adaValue adatypes.IAdaValue, nr, max int, x interface{}) (adatypes.TraverseResult, error) {
-	enc := x.(*xml.Encoder)
-	if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup {
-		if nr > 0 {
-			//fmt.Println("E Entry", adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex(), nr, max)
-			end := xml.EndElement{Name: xml.Name{Local: "Entry"}}
-			enc.EncodeToken(end)
-		}
-		//fmt.Println("S Entry", adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex(), nr, max)
-		start := xml.StartElement{Name: xml.Name{Local: "Entry"}}
-		enc.EncodeToken(start)
-	}
-	return adatypes.Continue, nil
-}
-
-// MarshalXML provide XML
-func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-	// x := xml.StartElement{Name: xml.Name{Local: "Response"}}
-	// e.EncodeToken(x)
-	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalXML2, LeaveFunction: traverseMarshalXMLEnd2, ElementFunction: traverseMarshalXMLElement}
-	rec := xml.StartElement{Name: xml.Name{Local: "Record"}}
-	rec.Attr = []xml.Attr{xml.Attr{Name: xml.Name{Local: "ISN"}, Value: strconv.Itoa(int(record.Isn))}}
-	e.EncodeToken(rec)
-	record.traverse(tm, e)
-	e.EncodeToken(rec.End())
-
-	// e.EncodeToken(x.End())
-	return nil
-}
-
 type dataValue struct {
 	Isn   adatypes.Isn `json:"ISN"`
 	Value map[string]string
@@ -303,6 +214,7 @@ type request struct {
 	stack          *adatypes.Stack
 	buffer         bytes.Buffer
 	structureArray []interface{}
+	special        bool
 }
 
 func evaluateValue(adaValue adatypes.IAdaValue) (interface{}, error) {
@@ -322,10 +234,10 @@ func evaluateValue(adaValue adatypes.IAdaValue) (interface{}, error) {
 }
 
 func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
+	req := x.(*request)
 	if !adaValue.Type().IsSpecialDescriptor() && !adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost) {
 		adatypes.Central.Log.Debugf("Marshal JSON level=%d %s -> type=%T MU ghost=%v", adaValue.Type().Level(),
 			adaValue.Type().Name(), adaValue, adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost))
-		req := x.(*request)
 		adatypes.Central.Log.Debugf("JSON stack size for %s->%d %T", adaValue.Type().Name(), req.stack.Size, adaValue)
 		if adaValue.Type().IsStructure() {
 			adatypes.Central.Log.Debugf("Structure Marshal JSON %s", adaValue.Type().Name())
@@ -372,6 +284,14 @@ func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 		}
 	} else {
 		adatypes.Central.Log.Debugf("Skip special descriptor Marshal JSON %s", adaValue.Type().Name())
+		if req.special {
+			v, err := evaluateValue(adaValue)
+			if err != nil {
+				adatypes.Central.Log.Debugf("JSON error %v", err)
+				return adatypes.EndTraverser, err
+			}
+			(*req.dataMap)[adaValue.Type().Name()] = v
+		}
 	}
 	return adatypes.Continue, nil
 }
@@ -419,7 +339,7 @@ func traverseMarshalJSONEnd(adaValue adatypes.IAdaValue, x interface{}) (adatype
 
 // MarshalJSON provide JSON
 func (Response *Response) MarshalJSON() ([]byte, error) {
-	req := &request{}
+	req := &request{special: true}
 	adatypes.Central.Log.Debugf("Marshal JSON go through records -> %d", len(Response.Values))
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalJSON, LeaveFunction: traverseMarshalJSONEnd,
 		ElementFunction: traverseElementMarshalJSON}
@@ -459,68 +379,3 @@ type rrecord struct {
 	buffer      bytes.Buffer
 	hasElements bool
 }
-
-// MarshalJSON provide JSON
-func (record *Record) MarshalJSON() ([]byte, error) {
-	adatypes.Central.Log.Debugf("Marshal JSON record: %d", record.Isn)
-	req := &request{}
-	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalJSON, LeaveFunction: traverseMarshalJSONEnd,
-		ElementFunction: traverseElementMarshalJSON}
-	req.stack = adatypes.NewStack()
-
-	dataMap := make(map[string]interface{})
-	req.dataMap = &dataMap
-	req.Values = append(req.Values, req.dataMap)
-	if record.Isn > 0 {
-		dataMap["ISN"] = record.Isn
-	}
-	if record.Quantity > 0 {
-		dataMap["Quantity"] = record.Quantity
-	}
-
-	// Traverse record generating JSON
-	_, err := record.traverse(tm, req)
-	if err != nil {
-		return nil, err
-	}
-	adatypes.Central.Log.Debugf("Go JSON response %v -> %s", err, req.buffer.String())
-
-	return json.Marshal(req.dataMap)
-}
-
-// UnmarshalJSON parse JSON
-// func (record *Record) UnmarshalJSON(b []byte) error {
-// 	var stuff map[string]interface{}
-// 	err := json.Unmarshal(b, &stuff)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if record.Value == nil {
-// 		if record.definition.Values == nil {
-// 			record.definition.CreateValues(false)
-// 		}
-// 		record.Value = record.definition.Values
-// 	}
-// 	for key, value := range stuff {
-// 		fmt.Println("JSON:", key, "=", value)
-// 		if key == "ISN" {
-// 			isn, ierr := strconv.Atoi(value.(string))
-// 			if ierr != nil {
-// 				return ierr
-// 			}
-// 			record.Isn = adatypes.Isn(isn)
-// 		} else {
-// 			switch value.(type) {
-// 			case map[string]interface{}:
-// 				fmt.Println("JSON:", key, "=", value)
-// 			default:
-// 				err = record.SetValue(key, value)
-// 				if err != nil {
-// 					fmt.Println("Error setting key:", key)
-// 					return err
-// 				}
-// 			}
-// 		}
-// 	}
-// 	return nil
-// }
