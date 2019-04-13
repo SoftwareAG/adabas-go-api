@@ -68,7 +68,7 @@ func NewMapDeleteRequest(adabas *Adabas, adabasMap *Map) (request *DeleteRequest
 	}
 	dataAdabas.Acbx.Acbxfnr = adabasMap.Data.Fnr
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
-	request = &DeleteRequest{commonRequest: commonRequest{mapName: mapName, adabas: dataAdabas, adabasMap: adabasMap,
+	request = &DeleteRequest{commonRequest: commonRequest{MapName: mapName, adabas: dataAdabas, adabasMap: adabasMap,
 		repository: dataRepository}}
 	adatypes.Central.Log.Debugf("Delete per map to %s/%d", request.adabas.String(), request.repository.Fnr)
 	return
@@ -91,7 +91,7 @@ func NewMapNameDeleteRequest(adabas *Adabas, mapName string) (request *DeleteReq
 	adatypes.Central.Log.Debugf("Delete: Adabas new map reference to %d", adabasMap.Data.Fnr)
 
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
-	request = &DeleteRequest{commonRequest: commonRequest{mapName: mapName, adabas: clonedAdabas, adabasMap: adabasMap,
+	request = &DeleteRequest{commonRequest: commonRequest{MapName: mapName, adabas: clonedAdabas, adabasMap: adabasMap,
 		repository: dataRepository}}
 	return
 }
@@ -113,7 +113,7 @@ func NewMapNameDeleteRequestRepo(mapName string, adabas *Adabas, mapRepository *
 	adatypes.Central.Log.Debugf("Delete: Adabas new map reference to %d", adabasMap.Data.Fnr)
 
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
-	request = &DeleteRequest{commonRequest: commonRequest{mapName: mapName, adabas: clonedAdabas, adabasMap: adabasMap,
+	request = &DeleteRequest{commonRequest: commonRequest{MapName: mapName, adabas: clonedAdabas, adabasMap: adabasMap,
 		repository: dataRepository}}
 	return
 }

@@ -25,7 +25,7 @@ import (
 
 type commonRequest struct {
 	adabas      *Adabas
-	mapName     string
+	MapName     string
 	adabasMap   *Map
 	repository  *Repository
 	definition  *adatypes.Definition
@@ -82,10 +82,10 @@ func (request *commonRequest) commonOpen() (err error) {
 	if request.initialized {
 		return
 	}
-	if request.mapName != "" {
-		adatypes.Central.Log.Debugf("Open Adabas with map %s for %d", request.mapName, request.repository.Fnr)
+	if request.MapName != "" {
+		adatypes.Central.Log.Debugf("Open Adabas with map %s for %d", request.MapName, request.repository.Fnr)
 		if request.adabasMap == nil {
-			request.adabasMap, err = request.repository.readAdabasMapWithRequest(request, request.mapName)
+			request.adabasMap, err = request.repository.readAdabasMapWithRequest(request, request.MapName)
 			if err != nil {
 				adatypes.Central.Log.Debugf("Error reading Adabas map request ", err)
 				return

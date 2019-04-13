@@ -58,7 +58,7 @@ func NewReadRequestCommon(commonRequest *commonRequest) *ReadRequest {
 	request := &ReadRequest{HoldRecords: adatypes.HoldNone}
 	request.commonRequest = *commonRequest
 	request.commonRequest.adabasMap = nil
-	request.commonRequest.mapName = ""
+	request.commonRequest.MapName = ""
 	return request
 }
 
@@ -83,7 +83,7 @@ func NewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Repositor
 	}
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
 	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
-		commonRequest: commonRequest{mapName: mapName, adabas: dataAdabas, adabasMap: adabasMap,
+		commonRequest: commonRequest{MapName: mapName, adabas: dataAdabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
 }
@@ -105,7 +105,7 @@ func NewMapReadRequest(adabas *Adabas, mapName string) (request *ReadRequest, er
 
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
 	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
-		commonRequest: commonRequest{mapName: mapName, adabas: adabas, adabasMap: adabasMap,
+		commonRequest: commonRequest{MapName: mapName, adabas: adabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
 }
@@ -122,7 +122,7 @@ func NewMapReadRequestByMap(adabas *Adabas, adabasMap *Map) (request *ReadReques
 
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
 	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
-		commonRequest: commonRequest{mapName: adabasMap.Name, adabas: cloneAdabas, adabasMap: adabasMap,
+		commonRequest: commonRequest{MapName: adabasMap.Name, adabas: cloneAdabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
 }

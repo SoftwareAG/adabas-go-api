@@ -230,7 +230,7 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 	request := NewReadRequestCommon(commonRequest)
 	// Reset map definition, because
 	request.commonRequest.adabasMap = nil
-	request.commonRequest.mapName = ""
+	request.commonRequest.MapName = ""
 	adatypes.Central.Log.Debugf("Before Read Repository %#v\n", *repository)
 
 	adatypes.Central.Log.Debugf("Search for Map with name=%s", name)
