@@ -272,7 +272,7 @@ func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 		case adatypes.FieldTypePeriodGroup:
 			attrs := make([]xml.Attr, 0)
 			attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})
-			peName = "Period"
+			peName := "Period"
 			if adaValue.Type().Name() != adaValue.Type().ShortName() {
 				peName = adaValue.Type().Name()
 			}
@@ -281,7 +281,7 @@ func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 		case adatypes.FieldTypeMultiplefield:
 			attrs := make([]xml.Attr, 0)
 			attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})
-			muName = "Multiple"
+			muName := "Multiple"
 			if adaValue.Type().Name() != adaValue.Type().ShortName() {
 				nuName = adaValue.Type().Name()
 			}
