@@ -256,7 +256,7 @@ func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 				}
 				(*req.dataMap)[adaValue.Type().Name()] = sa
 				adatypes.Central.Log.Debugf("Skip rest of MU Marshal JSON %s", adaValue.Type().Name())
-				// return adatypes.SkipStructure, nil
+				return adatypes.SkipTree, nil
 			case adatypes.FieldTypePeriodGroup:
 				// var sa []interface{}
 				// fmt.Println(adaValue.Type().Name(), (*req.dataMap)[adaValue.Type().Name()])

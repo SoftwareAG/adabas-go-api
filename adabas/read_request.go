@@ -429,6 +429,7 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 	if err != nil {
 		return
 	}
+	adabasRequest.Parameter = request.adabasMap
 
 	adatypes.Central.Log.Debugf("Read logical by ...%d", request.repository.Fnr)
 	err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, x)

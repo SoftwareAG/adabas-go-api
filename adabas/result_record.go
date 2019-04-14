@@ -272,12 +272,20 @@ func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 		case adatypes.FieldTypePeriodGroup:
 			attrs := make([]xml.Attr, 0)
 			attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})
-			start := xml.StartElement{Name: xml.Name{Local: "Period"}, Attr: attrs}
+			peName = "Period"
+			if adaValue.Type().Name() != adaValue.Type().ShortName() {
+				peName = adaValue.Type().Name()
+			}
+			start := xml.StartElement{Name: xml.Name{Local: peName}, Attr: attrs}
 			enc.EncodeToken(start)
 		case adatypes.FieldTypeMultiplefield:
 			attrs := make([]xml.Attr, 0)
 			attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})
-			start := xml.StartElement{Name: xml.Name{Local: "Multiple"}, Attr: attrs}
+			muName = "Multiple"
+			if adaValue.Type().Name() != adaValue.Type().ShortName() {
+				nuName = adaValue.Type().Name()
+			}
+			start := xml.StartElement{Name: xml.Name{Local: muName}, Attr: attrs}
 			enc.EncodeToken(start)
 		default:
 			start := xml.StartElement{Name: xml.Name{Local: adaValue.Type().Name()}}
