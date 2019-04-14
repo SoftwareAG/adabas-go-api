@@ -56,7 +56,8 @@ func (value *stringValue) ByteValue() byte {
 }
 
 func (value *stringValue) String() string {
-	return string(value.value)
+	b := bytes.Trim(value.value, "\x00")
+	return string(b)
 }
 
 func (value *stringValue) Value() interface{} {
