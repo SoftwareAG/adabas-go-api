@@ -283,7 +283,7 @@ func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 			attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})
 			muName := "Multiple"
 			if adaValue.Type().Name() != adaValue.Type().ShortName() {
-				nuName = adaValue.Type().Name()
+				muName = adaValue.Type().Name()
 			}
 			start := xml.StartElement{Name: xml.Name{Local: muName}, Attr: attrs}
 			enc.EncodeToken(start)
