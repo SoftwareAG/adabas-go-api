@@ -334,7 +334,9 @@ func traverseMarshalXMLElement(adaValue adatypes.IAdaValue, nr, max int, x inter
 
 // MarshalXML provide XML
 func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	adatypes.Central.Log.Debugf("Marshal XML record: %d", record.Isn)
 	var rec xml.StartElement
+	adatypes.Central.Log.Debugf("Map usage: %#v", record.adabasMap)
 	if record.adabasMap != nil {
 		rec = xml.StartElement{Name: xml.Name{Local: record.adabasMap.Name}}
 	} else {
@@ -350,6 +352,7 @@ func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalXML2, LeaveFunction: traverseMarshalXMLEnd2, ElementFunction: traverseMarshalXMLElement}
 	record.traverse(tm, e)
 	e.EncodeToken(rec.End())
+	adatypes.Central.Log.Debugf("Marshal XML record finished")
 
 	return nil
 }
@@ -357,7 +360,7 @@ func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 // MarshalJSON provide JSON
 func (record *Record) MarshalJSON() ([]byte, error) {
 	adatypes.Central.Log.Debugf("Marshal JSON record: %d", record.Isn)
-	req := &request{}
+	req := &request{special: true}
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalJSON, LeaveFunction: traverseMarshalJSONEnd,
 		ElementFunction: traverseElementMarshalJSON}
 	req.stack = adatypes.NewStack()

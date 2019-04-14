@@ -74,7 +74,6 @@ func NewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Repositor
 	}
 	adabasMap, serr := repository.SearchMap(adabas, mapName)
 	if serr != nil {
-		// err = adatypes.NewGenericError(21, mapName)
 		return nil, serr
 	}
 	dataAdabas, nerr := NewAdabasWithURL(&adabasMap.Data.URL, adabas.ID)
