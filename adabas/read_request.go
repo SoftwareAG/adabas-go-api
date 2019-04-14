@@ -173,7 +173,9 @@ func parseRead(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	if xerr != nil {
 		return xerr
 	}
-	record.adabasMap = adabasRequest.Parameter.(*Map)
+	if adabasRequest.Parameter != nil {
+		record.adabasMap = adabasRequest.Parameter.(*Map)
+	}
 	result.Values = append(result.Values, record)
 	record.fields = result.fields
 	adatypes.Central.Log.Debugf("Got ISN=%d Quantity=%d record", record.Isn, record.Quantity)
