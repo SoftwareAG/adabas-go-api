@@ -91,22 +91,49 @@ func NewClonedAdabas(clone *Adabas) *Adabas {
 }
 
 // NewAdabas create a new Adabas struct instance
-func NewAdabas(dbid Dbid) (*Adabas, error) {
-	ID := NewAdabasID()
-	adatypes.Central.Log.Debugf("Implicit created Adabas instance dbid with ID: %s", ID.String())
-	if (dbid < 1) || (dbid > MaxDatabasesID) {
-		err := adatypes.NewGenericError(67, dbid, 1, MaxDatabasesID)
+func NewAdabas(p ...interface{}) (ada *Adabas, err error) {
+	if len(p) == 0 {
+		return nil, adatypes.NewGenericError(0)
+	}
+	var url *URL
+	switch p[0].(type) {
+	case Dbid:
+		dbid := p[0].(Dbid)
+		if (dbid < 1) || (dbid > MaxDatabasesID) {
+			err = adatypes.NewGenericError(67, dbid, 1, MaxDatabasesID)
+			return
+		}
+		url = NewURLWithDbid(dbid)
+	case string:
+		url, err = NewURL(p[0].(string))
+		if err != nil {
+			return
+		}
+	default:
+		return nil, adatypes.NewGenericError(0)
+	}
+	var adaID *ID
+	if len(p) > 1 {
+		adaID = p[1].(*ID)
+	} else {
+		adaID = NewAdabasID()
+	}
+	adatypes.Central.Log.Debugf("Implicit created Adabas instance dbid with ID: %s", adaID.String())
+	if (url.Dbid < 1) || (url.Dbid > MaxDatabasesID) {
+		err = adatypes.NewGenericError(67, url.Dbid, 1, MaxDatabasesID)
 		return nil, err
 	}
-	acbx := newAcbx(dbid)
-	URL := NewURLWithDbid(dbid)
-	return &Adabas{
-		ID:           ID,
-		status:       ID.status(URL.String()),
-		URL:          URL,
+
+	acbx := newAcbx(url.Dbid)
+	ada = &Adabas{
+		ID:           adaID,
+		status:       adaID.status(url.String()),
+		URL:          url,
 		Acbx:         acbx,
 		transactions: &transactions{},
-	}, nil
+	}
+	return ada, nil
+
 }
 
 // NewAdabass create a new Adabas struct instance using string parameter
