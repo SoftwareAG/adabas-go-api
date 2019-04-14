@@ -57,6 +57,7 @@ type Request struct {
 	Isn                Isn
 	IsnQuantity        uint64
 	Option             *BufferOption
+	Parameter          interface{}
 }
 
 func (adabasRequest *Request) reset() {

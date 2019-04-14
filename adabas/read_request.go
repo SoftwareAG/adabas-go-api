@@ -173,6 +173,7 @@ func parseRead(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	if xerr != nil {
 		return xerr
 	}
+	record.adabasMap = adabasRequest.Parameter.(*Map)
 	result.Values = append(result.Values, record)
 	record.fields = result.fields
 	adatypes.Central.Log.Debugf("Got ISN=%d Quantity=%d record", record.Isn, record.Quantity)
@@ -229,6 +230,7 @@ func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes
 	} else {
 		adabasRequest.Multifetch = 1
 	}
+	adabasRequest.Parameter = request.adabasMap
 
 	err = request.adabas.ReadPhysical(request.repository.Fnr, adabasRequest, x)
 	return
@@ -262,6 +264,7 @@ func (request *ReadRequest) ReadISNWithParser(isn adatypes.Isn, resultParser ada
 	}
 	adabasRequest.Limit = 1
 	adabasRequest.Isn = isn
+	adabasRequest.Parameter = request.adabasMap
 	err = request.adabas.readISN(request.repository.Fnr, adabasRequest, x)
 	return
 }
@@ -457,6 +460,7 @@ func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, er
 		if request.cursoring != nil {
 			request.cursoring.adabasRequest = adabasRequest
 		}
+		adabasRequest.Parameter = request.adabasMap
 
 		Response := &Response{Definition: request.definition, fields: request.fields}
 
@@ -540,6 +544,7 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 
 func (request *ReadRequest) adaptDescriptorMap(adabasRequest *adatypes.Request) {
 	if request.adabasMap != nil {
+		adabasRequest.Parameter = request.adabasMap
 		for i := 0; i < len(adabasRequest.Descriptors); i++ {
 			v := request.definition.Search(adabasRequest.Descriptors[i])
 			adabasRequest.Descriptors[i] = v.Type().ShortName()
