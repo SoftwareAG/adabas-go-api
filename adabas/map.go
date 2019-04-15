@@ -85,15 +85,16 @@ func (cc mapField) fieldName() string {
 // In advance the DDM specific type formater like B for Boolean or
 // N for NATDATE are available
 type MapField struct {
-	ShortName   string `json:"ShortName"`
-	LongName    string `json:"LongName"`
-	Length      int32  `json:"FormatLength"`
-	ContentType string `json:"ContentType"`
-	FormatType  string `json:"FormatType"`
-	FieldType   string `json:"FieldType"`
-	Charset     string `json:"Charset"`
-	File        string `json:"File"`
-	Remarks     string
+	ShortName    string `json:"ShortName"`
+	LongName     string `json:"LongName"`
+	Length       int32  `json:"FormatLength"`
+	ContentType  string `json:"ContentType"`
+	FormatType   string `json:"FormatType"`
+	FieldType    string `json:"FieldType"`
+	Charset      string `json:"Charset"`
+	File         uint32 `json:"File"`
+	FormatLength uint32 `json:"FormatLength"`
+	Remarks      string
 }
 
 // Map Adabas map structure defining repository where the Map is stored at
