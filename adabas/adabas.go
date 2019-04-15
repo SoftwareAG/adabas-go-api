@@ -97,12 +97,11 @@ func NewAdabas(p ...interface{}) (ada *Adabas, err error) {
 	}
 	var url *URL
 	switch p[0].(type) {
+	case int:
+		dbid := p[0].(int)
+		url = NewURLWithDbid(Dbid(dbid))
 	case Dbid:
 		dbid := p[0].(Dbid)
-		if (dbid < 1) || (dbid > MaxDatabasesID) {
-			err = adatypes.NewGenericError(67, dbid, 1, MaxDatabasesID)
-			return
-		}
 		url = NewURLWithDbid(dbid)
 	case string:
 		url, err = NewURL(p[0].(string))

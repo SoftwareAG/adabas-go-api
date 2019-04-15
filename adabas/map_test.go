@@ -21,11 +21,12 @@ package adabas
 
 import (
 	"fmt"
-	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"os"
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"

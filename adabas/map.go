@@ -90,6 +90,9 @@ type MapField struct {
 	Length      int32  `json:"FormatLength"`
 	ContentType string `json:"ContentType"`
 	FormatType  string `json:"FormatType"`
+	FieldType   string `json:"FieldType"`
+	Charset     string `json:"Charset"`
+	File        string `json:"File"`
 	Remarks     string
 }
 
@@ -298,9 +301,15 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 						}
 						adaType.SetFractional(uint32(fs))
 					case "charset":
-						// TODO implement charset support
+						adaType.SetCharset(p[1])
 					case "formattype":
+						adaType.SetFormatType(p[1])
 					case "length":
+						fs, ferr := strconv.Atoi(p[1])
+						if ferr != nil {
+							return ferr
+						}
+						adaType.SetFormatLength(uint32(fs))
 					default:
 						fmt.Println("Unknown paramteter", p[0])
 					}

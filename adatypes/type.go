@@ -71,6 +71,9 @@ type IAdaType interface {
 	SetEndian(binary.ByteOrder)
 	Endian() binary.ByteOrder
 	SetFractional(uint32)
+	SetCharset(string)
+	SetFormatType(string)
+	SetFormatLength(uint32)
 	Fractional() uint32
 }
 
@@ -237,6 +240,21 @@ func (adaType *AdaType) SetFractional(x uint32) {
 // Fractional get fractional part
 func (adaType *AdaType) Fractional() uint32 {
 	return adaType.FractValue
+}
+
+// SetCharset set fractional part
+func (adaType *AdaType) SetCharset(x string) {
+	adaType.Charset = x
+}
+
+// SetFormatType set format type
+func (adaType *AdaType) SetFormatType(x string) {
+	adaType.FormatType = x
+}
+
+// SetFormatLength set format length
+func (adaType *AdaType) SetFormatLength(x uint32) {
+	adaType.FormatLength = x
 }
 
 // Value return type specific value structure object
@@ -646,6 +664,18 @@ func (adaType *StructureType) Fractional() uint32 {
 	return 0
 }
 
+// SetCharset set fractional part
+func (adaType *StructureType) SetCharset(x string) {
+}
+
+// SetFormatType set format type
+func (adaType *StructureType) SetFormatType(x string) {
+}
+
+// SetFormatLength set format length
+func (adaType *StructureType) SetFormatLength(x uint32) {
+}
+
 // Value return type specific value structure object
 func (adaType *StructureType) Value() (adaValue IAdaValue, err error) {
 	Central.Log.Debugf("Create structure type of %v", adaType.fieldType.name())
@@ -816,6 +846,18 @@ func (adaType *AdaSuperType) SetFractional(x uint32) {
 // Fractional get fractional part
 func (adaType *AdaSuperType) Fractional() uint32 {
 	return 0
+}
+
+// SetCharset set fractional part
+func (adaType *AdaSuperType) SetCharset(x string) {
+}
+
+// SetFormatType set format type
+func (adaType *AdaSuperType) SetFormatType(x string) {
+}
+
+// SetFormatLength set format length
+func (adaType *AdaSuperType) SetFormatLength(x uint32) {
 }
 
 // String string representation of the sub or super descriptor
