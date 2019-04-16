@@ -20,12 +20,13 @@ package adabas
 
 import (
 	"fmt"
-	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
+	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 func BenchmarkConnection_cached(b *testing.B) {
@@ -542,6 +543,64 @@ func ExampleConnection_readWithMap() {
 	//   FULL-NAME = [ 1 ]
 	//    FIRST-NAME = > ALFONS               <
 	//    NAME = > DORSCH               <
+}
+
+func ExampleConnection_readWithMapFormatted() {
+	f, err := initLogWithFile("connection_map.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if cerr != nil {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if rerr != nil {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err = request.QueryFields("NAME,FIRST-NAME,PERSONNEL-ID,BIRTH")
+	if err != nil {
+		return
+	}
+	request.Limit = 0
+	var result *Response
+	fmt.Println("Read logigcal data:")
+	result, err = request.ReadLogicalWith("PERSONNEL-ID=[11100314:11100317]")
+	result.DumpValues()
+	// Output:Read logigcal data:
+	// Dump all result values
+	// Record Isn: 0393
+	//   PERSONNEL-ID = > 11100314 <
+	//   FULL-NAME = [ 1 ]
+	//    FIRST-NAME = > WOLFGANG             <
+	//    NAME = > SCHMIDT              <
+	//   BIRTH = > 1953/08/18 <
+	// Record Isn: 0261
+	//   PERSONNEL-ID = > 11100315 <
+	//   FULL-NAME = [ 1 ]
+	//    FIRST-NAME = > GLORIA               <
+	//    NAME = > MERTEN               <
+	//   BIRTH = > 1949/11/02 <
+	// Record Isn: 0262
+	//   PERSONNEL-ID = > 11100316 <
+	//   FULL-NAME = [ 1 ]
+	//    FIRST-NAME = > HEINZ                <
+	//    NAME = > RAMSER               <
+	//   BIRTH = > 1978/12/23 <
+	// Record Isn: 0263
+	//   PERSONNEL-ID = > 11100317 <
+	//   FULL-NAME = [ 1 ]
+	//    FIRST-NAME = > ALFONS               <
+	//    NAME = > DORSCH               <
+	//   BIRTH = > 1948/02/29 <
 }
 
 func ExampleConnection_readFileDefinitionMapGroup() {

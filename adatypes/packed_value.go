@@ -52,7 +52,9 @@ func (value *packedValue) ByteValue() byte {
 }
 
 func (value *packedValue) String() string {
+	Central.Log.Debugf("Generate packed string, use format type %c", value.Type().FormatType())
 	packedInt := value.packedToLong()
+	Central.Log.Debugf("Got int %d", packedInt)
 	var sv string
 	switch value.Type().FormatType() {
 	case 'D':

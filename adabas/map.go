@@ -283,6 +283,10 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 	adatypes.Central.Log.Debugf("Field map does contains %s -> %s/%s", f.LongName, adaType.Name(), adaType.ShortName())
 	adaType.RemoveFlag(adatypes.FlagOptionToBeRemoved)
 	adaType.SetName(f.LongName)
+	if f.FormatType != "" {
+		adaType.SetFormatType([]rune(f.FormatType)[0])
+	}
+	adaType.SetFormatLength(uint32(f.Length))
 	if !adaType.IsStructure() {
 		if f.Length < 0 {
 			adatypes.Central.Log.Debugf("Set %s length to 0", adaType.Name())
