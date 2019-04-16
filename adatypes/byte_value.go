@@ -132,6 +132,12 @@ func (value *ubyteValue) ByteValue() byte {
 }
 
 func (value *ubyteValue) String() string {
+	if value.Type().FormatType() == 'L' {
+		if value.value == 0 {
+			return "false"
+		}
+		return "true"
+	}
 	return fmt.Sprintf("%d", value.value)
 }
 

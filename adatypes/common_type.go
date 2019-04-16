@@ -143,20 +143,20 @@ func (fieldType FieldType) FormatCharacter() string {
 
 // CommonType common data type structure defined for all types
 type CommonType struct {
-	fieldType    FieldType
-	name         string
-	shortName    string
-	length       uint32
-	level        uint8
-	flags        uint8
-	parentType   IAdaType
-	options      uint32
-	endian       binary.ByteOrder
-	peRange      AdaRange
-	muRange      AdaRange
-	Charset      string
-	FormatType   string
-	FormatLength uint32
+	fieldType           FieldType
+	name                string
+	shortName           string
+	length              uint32
+	level               uint8
+	flags               uint8
+	parentType          IAdaType
+	options             uint32
+	Charset             string
+	endian              binary.ByteOrder
+	peRange             AdaRange
+	muRange             AdaRange
+	FormatTypeCharacter rune
+	FormatLength        uint32
 }
 
 // Type returns field type of the field

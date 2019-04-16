@@ -85,16 +85,15 @@ func (cc mapField) fieldName() string {
 // In advance the DDM specific type formater like B for Boolean or
 // N for NATDATE are available
 type MapField struct {
-	ShortName    string `json:"ShortName"`
-	LongName     string `json:"LongName"`
-	Length       int32  `json:"FormatLength"`
-	ContentType  string `json:"ContentType"`
-	FormatType   string `json:"FormatType"`
-	FieldType    string `json:"FieldType"`
-	Charset      string `json:"Charset"`
-	File         uint32 `json:"File"`
-	FormatLength uint32 `json:"FormatLength"`
-	Remarks      string
+	ShortName   string `json:"ShortName"`
+	LongName    string `json:"LongName"`
+	Length      int32  `json:"FormatLength"`
+	ContentType string `json:"ContentType"`
+	FormatType  string `json:"FormatType"`
+	FieldType   string `json:"FieldType"`
+	Charset     string `json:"Charset"`
+	File        uint32 `json:"File"`
+	Remarks     string
 }
 
 // Map Adabas map structure defining repository where the Map is stored at
@@ -105,6 +104,7 @@ type Map struct {
 	Data       *DatabaseURL `json:"Data"`
 	Fields     []*MapField  `json:"Fields"`
 	// Time of last modification of the map
+	Generated        uint64
 	ModificationTime []uint64
 	fieldMap         map[string]*MapField
 }
@@ -179,9 +179,9 @@ func (adabasMap *Map) URL() *URL {
 	return &adabasMap.Data.URL
 }
 
-// extractMapField pass the field definitions of the Map to a Adabas record needed to
+// traverseExtractMapField pass the field definitions of the Map to a Adabas record needed to
 // write the definition into the Adabas Map repository file
-func extractMapField(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
+func traverseExtractMapField(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	adabasMap := x.(*Map)
 	adatypes.Central.Log.Debugf("Extract map field=%s >%s< pe index=%d", adaValue.Type().Name(), adaValue.String(), adaValue.PeriodIndex())
 	if adaValue.PeriodIndex() > 0 {
@@ -237,6 +237,9 @@ func extractMapField(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Trave
 		case mapFieldDataFnr.fieldName():
 			adabasMap.Data.Fnr = Fnr(adaValue.Value().(uint32))
 			adatypes.Central.Log.Debugf("Got data FNR=%d", adabasMap.Data.Fnr)
+		case mapFieldDate.fieldName():
+			adabasMap.Generated = adaValue.Value().(uint64)
+			adatypes.Central.Log.Debugf("Got date=%d", adabasMap.Generated)
 		case mapFieldModifyTime.fieldName():
 			if adaValue.Type().Type() != adatypes.FieldTypeMultiplefield {
 				adabasMap.ModificationTime = append(adabasMap.ModificationTime, adaValue.Value().(uint64))
@@ -260,7 +263,7 @@ func parseMap(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	adabasMap.Isn = isn
 
 	adatypes.Central.Log.Debugf("Got Map ISN %d record", isn)
-	tm := adatypes.TraverserValuesMethods{EnterFunction: extractMapField}
+	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseExtractMapField}
 	adabasRequest.Definition.TraverseValues(tm, adabasMap)
 	return
 }
@@ -304,7 +307,9 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 					case "charset":
 						adaType.SetCharset(p[1])
 					case "formattype":
-						adaType.SetFormatType(p[1])
+						if p[1] != "" {
+							adaType.SetFormatType(rune(p[1][0]))
+						}
 					case "length":
 						fs, ferr := strconv.Atoi(p[1])
 						if ferr != nil {

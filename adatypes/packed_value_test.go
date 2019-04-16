@@ -165,3 +165,69 @@ func TestPackedCheckFractional(t *testing.T) {
 	assert.Equal(t, "0.01", pa.String())
 
 }
+
+func TestPackedFormatterDate(t *testing.T) {
+	f, err := initLogWithFile("packed.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	adaType := NewType(FieldTypePacked, "PA")
+	adaType.length = 10
+	adaType.FormatTypeCharacter = 'D'
+	pa := newPackedValue(adaType)
+	pa.SetValue(712981)
+	assert.Equal(t, "1952/01/30", pa.String())
+	pa.SetValue("2019/10/30")
+	v, err := pa.Int64()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(737726), v)
+	assert.Equal(t, "2019/10/30", pa.String())
+}
+
+func TestPackedFormatterDateTime(t *testing.T) {
+	f, err := initLogWithFile("packed.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	adaType := NewType(FieldTypePacked, "PA")
+	adaType.length = 12
+	adaType.FormatTypeCharacter = 'T'
+	pa := newPackedValue(adaType)
+	pa.SetValue(635812935348)
+	assert.Equal(t, "2014/10/24 14:25:34.8", pa.String())
+	err = pa.SetValue("2019/04/16 14:25:34")
+	assert.NoError(t, err)
+	v, err := pa.Int64()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(637225575340), v)
+	assert.Equal(t, "2019/04/16 14:25:34.0", pa.String())
+	err = pa.SetValue("2019/01/16 22:33:34.123")
+	assert.NoError(t, err)
+	v, err = pa.Int64()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(637148108140), v)
+	err = pa.SetValue("2000/01/01 22:33:34.123")
+	assert.NoError(t, err)
+	v, err = pa.Int64()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(631138988140), v)
+	assert.Equal(t, "2000/01/01 22:33:34.0", pa.String())
+	err = pa.SetValue("2000/01/01 22:33:34.122")
+	assert.NoError(t, err)
+	v, err = pa.Int64()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(631138988140), v)
+	assert.Equal(t, "2000/01/01 22:33:34.0", pa.String())
+	err = pa.SetValue("2000/01/01 22:33:34.1")
+	assert.NoError(t, err)
+	v, err = pa.Int64()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(631138988140), v)
+	assert.Equal(t, "2000/01/01 22:33:34.0", pa.String())
+}

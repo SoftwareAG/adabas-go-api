@@ -21,8 +21,15 @@ package adatypes
 
 import (
 	"bytes"
+	"fmt"
 	"math"
+	"regexp"
 	"strconv"
+)
+
+const (
+	ratadie = 1721426
+	daysecs = 86400
 )
 
 type packedValue struct {
@@ -46,23 +53,75 @@ func (value *packedValue) ByteValue() byte {
 
 func (value *packedValue) String() string {
 	packedInt := value.packedToLong()
-	sv := strconv.FormatInt(packedInt, 10)
-	if value.Type().Fractional() > 0 {
-		l := uint32(len(sv))
-		if l <= value.Type().Fractional() {
-			var buffer bytes.Buffer
-			buffer.WriteString("0.")
-			for i := l; i < value.Type().Fractional(); i++ {
-				buffer.WriteRune('0')
+	var sv string
+	switch value.Type().FormatType() {
+	case 'D':
+		return natDateToString(packedInt)
+	case 'T':
+		return natTimeToString(packedInt)
+	default:
+		sv := strconv.FormatInt(packedInt, 10)
+		if value.Type().Fractional() > 0 {
+			l := uint32(len(sv))
+			if l <= value.Type().Fractional() {
+				var buffer bytes.Buffer
+				buffer.WriteString("0.")
+				for i := l; i < value.Type().Fractional(); i++ {
+					buffer.WriteRune('0')
+				}
+				buffer.WriteString(sv)
+				sv = buffer.String()
+			} else {
+				sv = sv[:l-value.Type().Fractional()] + "." + sv[l-value.Type().Fractional():]
 			}
-			buffer.WriteString(sv)
-			sv = buffer.String()
-		} else {
-			sv = sv[:l-value.Type().Fractional()] + "." + sv[l-value.Type().Fractional():]
-
 		}
 	}
 	return sv
+}
+
+func natTimeToString(nattime int64) string {
+	microsecs := (nattime - 365*daysecs*10) * 100000
+	microsec := microsecs % 1000000
+	i := microsecs / 1000000
+	second := i % 60
+	i /= 60
+	minute := i % 60
+	i /= 60
+	hour := i % 24
+	i /= 24
+	jdn := int(i + ratadie)
+	j := jdn + 32044
+
+	b := (4*j + 3) / 146097
+	c := j - b*146097/4
+
+	d := (4*c + 3) / 1461
+	e := c - 1461*d/4
+	m := (5*e + 2) / 153
+
+	day := e - (153*m+2)/5 + 1
+	month := m + 3 - 12*(m/10)
+	year := b*100 + d - 4800 + m/10
+	microsec /= 100000
+	return fmt.Sprintf("%4d/%02d/%02d %02d:%02d:%02d.%d", year, month,
+		day, hour, minute, second, microsec)
+}
+
+func natDateToString(jdn int64) string {
+	j := jdn + 1721426 - 365 + 32044
+
+	b := (4*j + 3) / 146097
+	c := j - b*146097/4
+
+	d := (4*c + 3) / 1461
+	e := c - 1461*d/4
+	m := (5*e + 2) / 153
+
+	day := e - (153*m+2)/5 + 1
+	month := m + 3 - 12*(m/10)
+	year := b*100 + d - 4800 + m/10
+
+	return fmt.Sprintf("%4d/%02d/%02d", year, month, day)
 }
 
 func (value *packedValue) Value() interface{} {
@@ -81,9 +140,10 @@ func (value *packedValue) SetStringValue(stValue string) {
 	}
 }
 
-func (value *packedValue) SetValue(v interface{}) error {
+func (value *packedValue) SetValue(v interface{}) (err error) {
 	Central.Log.Debugf("Set packed value to %v", v)
 	iLen := value.Type().Length()
+	var v64 int64
 	switch v.(type) {
 	case []byte:
 		bv := v.([]byte)
@@ -96,25 +156,83 @@ func (value *packedValue) SetValue(v interface{}) error {
 			value.value = bv
 		}
 		Central.Log.Debugf("Use byte array")
-	default:
-		v, err := value.commonInt64Convert(v)
-		if err != nil {
-			return err
-		}
-		Central.Log.Debugf("Got ... %v", v)
-		if iLen != 0 {
-			err = value.checkValidValue(v, value.Type().Length())
+		return nil
+	case string:
+		Central.Log.Debugf("String parse format type %v", value.Type().FormatType())
+		switch value.Type().FormatType() {
+		case 'T':
+			v64, err = parseDateTime(v)
 			if err != nil {
 				return err
 			}
-		} else {
-			iLen = value.createLength(v)
+		case 'D':
+			v64, err = parseDate(v)
+			if err != nil {
+				return err
+			}
+		default:
+			v64, err = value.commonInt64Convert(v)
+			if err != nil {
+				return err
+			}
 		}
-
-		value.LongToPacked(v, iLen)
-		Central.Log.Debugf("Packed value %s", value.String())
+		Central.Log.Debugf("String parse got %v", v64)
+	default:
+		v64, err = value.commonInt64Convert(v)
+		if err != nil {
+			return err
+		}
 	}
+	Central.Log.Debugf("Got ... %v", v64)
+	if iLen != 0 {
+		err = value.checkValidValue(v64, value.Type().Length())
+		if err != nil {
+			return err
+		}
+	} else {
+		iLen = value.createLength(v64)
+	}
+
+	value.LongToPacked(v64, iLen)
+	Central.Log.Debugf("Packed value %s", value.String())
 	return nil
+}
+
+func parseDate(v interface{}) (int64, error) {
+
+	var re = regexp.MustCompile(`(?m)(\d+)/(\d\d?)/(\d\d?)`)
+	match := re.FindAllStringSubmatch(v.(string), -1)
+	//fmt.Println(match)
+	m, merr := strconv.Atoi(match[0][2])
+	if merr != nil {
+		return 0, merr
+	}
+	y, yerr := strconv.Atoi(match[0][1])
+	if yerr != nil {
+		return 0, yerr
+	}
+	d, derr := strconv.Atoi(match[0][3])
+	if derr != nil {
+		return 0, derr
+	}
+	Central.Log.Debugf("day=%d,month=%d,year=%d", d, m, y)
+	return convertDate2NatDate(d, m, y), nil
+}
+
+func convertDate2NatDate(d, m, y int) int64 {
+	if m > 2 {
+		m = m - 3
+	} else {
+		m = m + 9
+		y = y - 1
+	}
+
+	c := int64(y / 100)
+	ya := int64(y) - 100*c
+	j := 146097*c/4 + 1461*ya/4 + (153*int64(m)+2)/5 + int64(d) + 1721119
+	result := j - ratadie + 365
+	Central.Log.Debugf("result->%d", result)
+	return result
 }
 
 func (value *packedValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
@@ -123,6 +241,59 @@ func (value *packedValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 		len = 15
 	}
 	return len
+}
+
+func parseDateTime(v interface{}) (res int64, err error) {
+	Central.Log.Debugf("Parse data time %v", v)
+	var re = regexp.MustCompile(`(?m)(\d+)/(\d\d?)/(\d\d?) (\d\d?):(\d\d?):?(\d\d?)?\.?(\d*)?`)
+	match := re.FindAllStringSubmatch(v.(string), -1)
+	//fmt.Println(match)
+	m, merr := strconv.Atoi(match[0][2])
+	if merr != nil {
+		Central.Log.Debugf("Error parsing minute")
+		return 0, merr
+	}
+	y, yerr := strconv.Atoi(match[0][1])
+	if yerr != nil {
+		Central.Log.Debugf("Error parsing year")
+		return 0, yerr
+	}
+	d, derr := strconv.Atoi(match[0][3])
+	if derr != nil {
+		Central.Log.Debugf("Error parsing day")
+		return 0, derr
+	}
+	hour, derr := strconv.Atoi(match[0][4])
+	if derr != nil {
+		Central.Log.Debugf("Error parsing hour")
+		return 0, derr
+	}
+	minute, derr := strconv.Atoi(match[0][5])
+	if derr != nil {
+		Central.Log.Debugf("Error parsing minute")
+		return 0, derr
+	}
+	seconds := 0
+	if match[0][6] != "" {
+		seconds, err = strconv.Atoi(match[0][6])
+		if err != nil {
+			Central.Log.Debugf("Error parsing seconds")
+			return 0, err
+		}
+	}
+	microsec := 0
+	if match[0][7] != "" {
+		microsec, err = strconv.Atoi(match[0][7])
+		if err != nil {
+			Central.Log.Debugf("Error parsing microsec %v", match[0][7])
+			return 0, err
+		}
+	}
+	Central.Log.Debugf("Evaluated %d.%d.%d %d:%d:%d.%d", d, m, y, hour, minute, seconds, microsec)
+	days := convertDate2NatDate(d, m, y)
+	nattime := int64(microsec) + int64(math.Pow(10, 6))*(int64(seconds)+60*int64(minute+60*hour)+int64(days)*daysecs)
+	res = (nattime / int64(math.Pow(10, 5))) // + 365 * DAYSECS * 10);
+	return
 }
 
 func (value *packedValue) StoreBuffer(helper *BufferHelper) error {

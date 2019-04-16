@@ -39,7 +39,7 @@ const OccNone = -10
 // OccSingle Occurence identifier indicating that the occurence single
 const OccSingle = -9
 
-// OccCapacity Occurence identifier indicating that the occurence capactity of MU or PE fields
+// OccCapacity Occurence identifier indicating that the occurence capactity of 2 or PE fields
 const OccCapacity = -8
 
 // NoReferenceField field out of range of given field possibilities
@@ -72,7 +72,8 @@ type IAdaType interface {
 	Endian() binary.ByteOrder
 	SetFractional(uint32)
 	SetCharset(string)
-	SetFormatType(string)
+	SetFormatType(rune)
+	FormatType() rune
 	SetFormatLength(uint32)
 	Fractional() uint32
 }
@@ -248,8 +249,13 @@ func (adaType *AdaType) SetCharset(x string) {
 }
 
 // SetFormatType set format type
-func (adaType *AdaType) SetFormatType(x string) {
-	adaType.FormatType = x
+func (adaType *AdaType) SetFormatType(x rune) {
+	adaType.FormatTypeCharacter = x
+}
+
+// FormatType get format type
+func (adaType *AdaType) FormatType() rune {
+	return adaType.FormatTypeCharacter
 }
 
 // SetFormatLength set format length
@@ -669,7 +675,12 @@ func (adaType *StructureType) SetCharset(x string) {
 }
 
 // SetFormatType set format type
-func (adaType *StructureType) SetFormatType(x string) {
+func (adaType *StructureType) SetFormatType(x rune) {
+}
+
+// FormatType get format type
+func (adaType *StructureType) FormatType() rune {
+	return adaType.FormatTypeCharacter
 }
 
 // SetFormatLength set format length
@@ -853,7 +864,12 @@ func (adaType *AdaSuperType) SetCharset(x string) {
 }
 
 // SetFormatType set format type
-func (adaType *AdaSuperType) SetFormatType(x string) {
+func (adaType *AdaSuperType) SetFormatType(x rune) {
+}
+
+// FormatType get format type
+func (adaType *AdaSuperType) FormatType() rune {
+	return adaType.FormatTypeCharacter
 }
 
 // SetFormatLength set format length
