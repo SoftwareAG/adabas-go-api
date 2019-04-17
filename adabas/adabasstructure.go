@@ -282,8 +282,8 @@ func (adaid *ID) AddCredential(user string, pwd string) {
 
 // String return string representation of Adabas ID
 func (adaid *ID) String() string {
-	return fmt.Sprintf("%s:%s [%d] %x", string(adaid.AdaID.Node[0:8]), string(adaid.AdaID.User[0:8]),
-		adaid.AdaID.Pid, adaid.AdaID.Timestamp)
+	return fmt.Sprintf("%s:%s [%d] %x/%d", string(adaid.AdaID.Node[0:8]), string(adaid.AdaID.User[0:8]),
+		adaid.AdaID.Pid, adaid.AdaID.Timestamp, adaid.AdaID.Timestamp)
 }
 
 func (adaid *ID) status(url string) *Status {

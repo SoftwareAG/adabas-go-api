@@ -59,11 +59,17 @@ func TestGlobalMapRepository(t *testing.T) {
 
 	ada2, _ := NewAdabas(1)
 	defer ada2.Close()
-	adabasMaps, err := GloablMaps(ada2)
+	adabasMaps, err := AllGlobalMaps(ada2)
 	assert.NoError(t, err)
 	assert.NotNil(t, adabasMaps)
 	for _, m := range adabasMaps {
 		fmt.Printf("%s -> %d\n", m.Name, m.Isn)
+	}
+	listMaps, lerr := AllGlobalMapNames(ada2)
+	assert.NoError(t, lerr)
+	assert.NotNil(t, listMaps)
+	for _, m := range listMaps {
+		fmt.Printf("%s\n", m)
 	}
 
 }
