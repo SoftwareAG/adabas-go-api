@@ -294,7 +294,7 @@ func TestRequestResultWithMU(t *testing.T) {
 	assert.Equal(t, "{\"AA\":0,\"B1\":0,\"GR\":{\"PA\":0},\"I2\":0,\"I8\":0,\"MU\":[],\"U4\":0,\"U8\":0,\"UB\":0}", string(j))
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
-	assert.Equal(t, "<Record ISN=\"0\"><AA>0</AA><B1>0</B1><UB>0</UB><I2>0</I2><U4>0</U4><U8>0</U8><Multiple sn=\"MU\"></Multiple><GR><PA>0</PA></GR><I8>0</I8></Record>", string(x))
+	assert.Equal(t, "<Record><AA>0</AA><B1>0</B1><UB>0</UB><I2>0</I2><U4>0</U4><U8>0</U8><Multiple sn=\"MU\"></Multiple><GR><PA>0</PA></GR><I8>0</I8></Record>", string(x))
 }
 
 func TestRequestResultWithMUWithContent(t *testing.T) {
@@ -343,7 +343,7 @@ func TestRequestResultWithMUWithContent(t *testing.T) {
 	assert.Equal(t, "{\"AA\":2,\"B1\":3,\"GR\":{\"PA\":1},\"I2\":0,\"I8\":0,\"MU\":[\"AAX001\",\"AAX002\",\"AAX003\",\"AAX004\",\"AAX005\"],\"U4\":0,\"U8\":0,\"UB\":0}", string(j))
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
-	assert.Equal(t, "<Record ISN=\"0\"><AA>2</AA><B1>3</B1><UB>0</UB><I2>0</I2><U4>0</U4><U8>0</U8><Multiple sn=\"MU\"><MU>AAX001    </MU><MU>AAX002    </MU><MU>AAX003    </MU><MU>AAX004    </MU><MU>AAX005    </MU></Multiple><GR><PA>1</PA></GR><I8>0</I8></Record>", string(x))
+	assert.Equal(t, "<Record><AA>2</AA><B1>3</B1><UB>0</UB><I2>0</I2><U4>0</U4><U8>0</U8><Multiple sn=\"MU\"><MU>AAX001</MU><MU>AAX002</MU><MU>AAX003</MU><MU>AAX004</MU><MU>AAX005</MU></Multiple><GR><PA>1</PA></GR><I8>0</I8></Record>", string(x))
 }
 
 func TestRequestResultWithPEMUWithoutContent(t *testing.T) {
@@ -368,7 +368,7 @@ func TestRequestResultWithPEMUWithoutContent(t *testing.T) {
 	assert.Equal(t, "{\"AA\":0,\"I8\":0,\"P2\":[],\"PE\":[],\"U8\":0}", string(j))
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
-	assert.Equal(t, "<Record ISN=\"0\"><AA>0</AA><Period sn=\"PE\"></Period><U8>0</U8><Period sn=\"P2\"></Period><I8>0</I8></Record>", string(x))
+	assert.Equal(t, "<Record><AA>0</AA><Period sn=\"PE\"></Period><U8>0</U8><Period sn=\"P2\"></Period><I8>0</I8></Record>", string(x))
 }
 
 func TestRequestResultWithPEMUWithContent(t *testing.T) {

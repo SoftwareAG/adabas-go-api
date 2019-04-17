@@ -286,7 +286,7 @@ func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 		}
 	} else {
 		adatypes.Central.Log.Debugf("Special descriptor Marshal JSON %s add=%v", adaValue.Type().Name(), req.special)
-		if req.special {
+		if req.special && !adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost) {
 			v, err := evaluateValue(adaValue)
 			if err != nil {
 				adatypes.Central.Log.Debugf("JSON error %v", err)

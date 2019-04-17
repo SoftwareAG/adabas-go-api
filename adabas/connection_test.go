@@ -768,7 +768,7 @@ func ExampleConnection_marhsalJSONComplete() {
 	// Output: Connection :  Adabas url=23 fnr=0
 	// Limit query data:
 	// Read logical data:
-	// {"Records":[{"A1":{"AI":["26 AVENUE RHIN ET DA"],"AJ":"JOIGNY","AK":"89300","AL":"F"},"A2":{"AM":"44864858","AN":"1033"},"A3":{"AU":19,"AV":5},"AA":"50005800","AB":{"AC":"SIMONE","AD":"","AE":"ADAM"},"AF":"M","AG":"F","AH":712981,"AO":"VENT59","AP":"CHEF DE SERVICE","AQ":[{"AR":"EUR","AS":963,"AT":[138]}],"AW":[{"AX":19990801,"AY":19990831}],"AZ":["FRE","ENG"],"ISN":1}]}
+	// {"Records":[{"A1":{"AI":["26 AVENUE RHIN ET DA"],"AJ":"JOIGNY","AK":"89300","AL":"F"},"A2":{"AM":"44864858","AN":"1033"},"A3":{"AU":19,"AV":5},"AA":"50005800","AB":{"AC":"SIMONE","AD":"","AE":"ADAM"},"AF":"M","AG":"F","AH":712981,"AO":"VENT59","AP":"CHEF DE SERVICE","AQ":[{"AR":"EUR","AS":963,"AT":[138]}],"AW":[{"AX":19990801,"AY":19990831}],"AZ":["FRE","ENG"],"H1":"1905","ISN":1,"PH":"","S1":"VENT","S2":"VENT59ADAM","S3":""}]}
 }
 
 func ExampleConnection_marhsalJSON() {
@@ -803,7 +803,7 @@ func ExampleConnection_marhsalJSON() {
 	// Output: Connection :  Adabas url=23 fnr=0
 	// Limit query data:
 	// Read logical data:
-	// {"Records":[{"A1":{"AI":["C/O H.KOERBER","AM DORNKAMP 20","4590 CLOPPENBURG"],"AJ":"CLOPPENBURG","AK":"4590","AL":"D"},"A2":{"AM":"3082","AN":"04471"},"A3":{"AU":33,"AV":4},"AA":"11222222","AB":{"AC":"ANTONIA","AD":"MARIA","AE":"MARTENS"},"AF":"S","AG":"F","AH":713104,"AO":"MGMT00","AP":"DATENSCHUTZBEAUFTRAGTE","AQ":[{"AR":"EUR","AS":29743,"AT":[4615,8000]},{"AR":"EUR","AS":22153,"AT":[3589,6000]},{"AR":"EUR","AS":20769,"AT":[1538]}],"AW":[{"AX":19980701,"AY":19980702},{"AX":19980811,"AY":19980812}],"AZ":["GER","TUR"],"ISN":250}]}
+	// {"Records":[{"A1":{"AI":["C/O H.KOERBER","AM DORNKAMP 20","4590 CLOPPENBURG"],"AJ":"CLOPPENBURG","AK":"4590","AL":"D"},"A2":{"AM":"3082","AN":"04471"},"A3":{"AU":33,"AV":4},"AA":"11222222","AB":{"AC":"ANTONIA","AD":"MARIA","AE":"MARTENS"},"AF":"S","AG":"F","AH":713104,"AO":"MGMT00","AP":"DATENSCHUTZBEAUFTRAGTE","AQ":[{"AR":"EUR","AS":29743,"AT":[4615,8000]},{"AR":"EUR","AS":22153,"AT":[3589,6000]},{"AR":"EUR","AS":20769,"AT":[1538]}],"AW":[{"AX":19980701,"AY":19980702},{"AX":19980811,"AY":19980812}],"AZ":["GER","TUR"],"H1":"3304","ISN":250,"PH":"","S1":"MGMT","S2":"MGMT00MARTENS","S3":""}]}
 }
 
 type testedValue struct {

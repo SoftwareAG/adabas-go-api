@@ -67,7 +67,7 @@ func ExampleConnection_periodGroup2() {
 	//    MIDDLE-I = > M <
 	//   MAR-STAT = > M <
 	//   SEX = > F <
-	//   BIRTH = > 716428 <
+	//   BIRTH = > 1961/07/08 <
 	//   FULL-ADDRESS = [ 1 ]
 	//    ADDRESS-LINE = [ 3 ]
 	//     ADDRESS-LINE[01] = > C/O CLAASEN          <
@@ -115,7 +115,7 @@ func ExampleConnection_periodGroup2() {
 	//    MIDDLE-I = > J <
 	//   MAR-STAT = > M <
 	//   SEX = > M <
-	//   BIRTH = > 709788 <
+	//   BIRTH = > 1943/05/04 <
 	//   FULL-ADDRESS = [ 1 ]
 	//    ADDRESS-LINE = [ 3 ]
 	//     ADDRESS-LINE[01] = > POSTFACH 67          <
