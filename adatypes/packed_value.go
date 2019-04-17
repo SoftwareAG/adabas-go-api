@@ -52,19 +52,21 @@ func (value *packedValue) ByteValue() byte {
 }
 
 func (value *packedValue) String() string {
-	Central.Log.Debugf("Generate packed string, use format type %c", value.Type().FormatType())
+	Central.Log.Debugf("Generate packed string for %s, use format type %c", value.Type().Name(), value.Type().FormatType())
 	packedInt := value.packedToLong()
-	Central.Log.Debugf("Got int %d", packedInt)
+	Central.Log.Debugf("Got int packed value %d", packedInt)
 	var sv string
 	switch value.Type().FormatType() {
 	case 'D':
-		return natDateToString(packedInt)
+		sv = natDateToString(packedInt)
 	case 'T':
-		return natTimeToString(packedInt)
+		sv = natTimeToString(packedInt)
 	default:
-		sv := strconv.FormatInt(packedInt, 10)
+		sv = strconv.FormatInt(packedInt, 10)
+		Central.Log.Debugf("In-between packed value %s fractional=%d", sv, value.Type().Fractional())
 		if value.Type().Fractional() > 0 {
 			l := uint32(len(sv))
+			Central.Log.Debugf("Fractional packed value %s", sv)
 			if l <= value.Type().Fractional() {
 				var buffer bytes.Buffer
 				buffer.WriteString("0.")
@@ -78,6 +80,7 @@ func (value *packedValue) String() string {
 			}
 		}
 	}
+	Central.Log.Debugf("Return packed value %s", sv)
 	return sv
 }
 
