@@ -36,15 +36,19 @@ type Definition struct {
 }
 
 type parserBufferTr struct {
+	// contains the helper buffer pointer reading the data from the record buffer
 	helper *BufferHelper
+	// buffer options used to define second call and others
 	option *BufferOption
+	// Prefix defines the reference prefix used for @references
+	prefix string
 }
 
 func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
 	parameter := x.(*parserBufferTr)
 
 	if adaValue.Type().HasFlagSet(FlagOptionReference) {
-		adaValue.SetValue(fmt.Sprintf(adaValue.Type().ShortName()))
+		adaValue.SetValue(parameter.prefix + adaValue.Type().ShortName())
 		return Continue, nil
 	}
 
@@ -66,13 +70,13 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 }
 
 // ParseBuffer method start parsing the definition
-func (def *Definition) ParseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
+func (def *Definition) ParseBuffer(helper *BufferHelper, option *BufferOption, prefix string) (res TraverseResult, err error) {
 	if def.Values == nil {
 		Central.Log.Debugf("Parse buffer types...")
 		def.Values, err = parseBufferTypes(helper, option, def.activeFieldTree, 0)
 	} else {
 		Central.Log.Debugf("Parse buffer values...")
-		x := parserBufferTr{helper: helper, option: option}
+		x := parserBufferTr{helper: helper, option: option, prefix: prefix}
 		t := TraverserValuesMethods{EnterFunction: parseBufferValues}
 		_, err = def.TraverseValues(t, &x)
 		if err != nil {

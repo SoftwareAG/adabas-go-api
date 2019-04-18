@@ -1364,6 +1364,29 @@ func TestConnection_readReference(t *testing.T) {
 			return
 		}
 		assert.Equal(t, "106-0670_IMG.JPG", v.String())
+		v, verr = result.Values[0].SearchValue("Thumbnail")
+		if !assert.NoError(t, verr) {
+			return
+		}
+		assert.Equal(t, "/image/db/24/202/1/DB", v.String())
+	}
+
+	result, err = request.ReadISN(2)
+	if !assert.NoError(t, err) {
+		return
+	}
+	result.DumpValues()
+	if assert.Equal(t, 1, len(result.Values)) {
+		v, verr := result.Values[0].SearchValue("Filename")
+		if !assert.NoError(t, verr) {
+			return
+		}
+		assert.Equal(t, "p1.jpg", v.String())
+		v, verr = result.Values[0].SearchValue("Thumbnail")
+		if !assert.NoError(t, verr) {
+			return
+		}
+		assert.Equal(t, "/image/db/24/202/2/DB", v.String())
 	}
 
 }

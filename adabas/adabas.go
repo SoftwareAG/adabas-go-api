@@ -381,7 +381,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 		helper := adatypes.NewHelper(adabas.AdabasBuffers[1].buffer, int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())
 		fdtDefinition := createFdtDefintion()
 		fdtDefinition.Values = nil
-		fdtDefinition.ParseBuffer(helper, adatypes.NewBufferOption(false, false))
+		fdtDefinition.ParseBuffer(helper, adatypes.NewBufferOption(false, false), "")
 		adatypes.Central.Log.Debugf("Format read field definition")
 		definition, err = createFieldDefinitionTable(fdtDefinition)
 		if err != nil {
@@ -708,7 +708,8 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 				}
 
 				adatypes.Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values == nil))
-				_, err = adabasRequest.Definition.ParseBuffer(adabasRequest.RecordBuffer, adabasRequest.Option)
+				prefix := fmt.Sprintf("/image/db/%d/%d/%d/", adabas.Acbx.Acbxdbid, adabas.Acbx.Acbxfnr, adabas.Acbx.Acbxisn)
+				_, err = adabasRequest.Definition.ParseBuffer(adabasRequest.RecordBuffer, adabasRequest.Option, prefix)
 				if err != nil {
 					return
 				}
@@ -771,7 +772,7 @@ func (adabas *Adabas) secondCall(adabasRequest *adatypes.Request, x interface{})
 			return
 		}
 		adatypes.Central.Log.Debugf("Parse buffer of temporary request")
-		_, err = tmpAdabasRequest.Definition.ParseBuffer(tmpAdabasRequest.RecordBuffer, tmpAdabasRequest.Option)
+		_, err = tmpAdabasRequest.Definition.ParseBuffer(tmpAdabasRequest.RecordBuffer, tmpAdabasRequest.Option, "")
 		if err != nil {
 			adatypes.Central.Log.Debugf("Parse buffer of temporary request ended with error: ", err)
 			return
