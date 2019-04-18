@@ -25,6 +25,7 @@ import (
 
 type fieldQuery struct {
 	name       string
+	reference  bool
 	fieldRange []*AdaRange
 }
 
@@ -202,20 +203,26 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 	if field != nil {
 		for _, f := range field {
 			if !strings.HasPrefix(f, "#ISN") {
-				b := strings.Index(f, "[")
 				fl := f
+				rf := false
+				if f[0] == '@' {
+					fl = f[1:]
+					rf = true
+				}
+				b := strings.Index(fl, "[")
 				var r *AdaRange
 				if b > 0 {
-					fl = f[:b]
-					e := strings.Index(f, "]")
-					r = NewRangeParser(f[b+1 : e])
+					fl = fl[:b]
+					e := strings.Index(fl, "]")
+					r = NewRangeParser(fl[b+1 : e])
 					if r == nil {
 						return nil, NewGenericError(129, f)
 					}
-					Central.Log.Debugf("Add to map: %s -> %s", fl, r.FormatBuffer())
-					fieldMap.set[fl] = &fieldQuery{name: fl, fieldRange: []*AdaRange{r}}
+					Central.Log.Debugf("Add to map: %s -> %s reference=%v", fl, r.FormatBuffer(), rf)
+					fieldMap.set[fl] = &fieldQuery{name: fl, fieldRange: []*AdaRange{r}, reference: rf}
 				} else {
-					fieldMap.set[fl] = &fieldQuery{name: fl}
+					Central.Log.Debugf("Add to map: %s reference=%v", fl, rf)
+					fieldMap.set[fl] = &fieldQuery{name: fl, reference: rf}
 				}
 			}
 		}
