@@ -330,6 +330,8 @@ const (
 	FlagOptionToBeRemoved
 	// FlagOptionSecondCall Field will need a second call to get the value
 	FlagOptionSecondCall
+	// FlagOptionReference Field will skip parsing value
+	FlagOptionReference
 )
 
 // Bit return the Bit of the option flag

@@ -150,7 +150,6 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 		} else {
 			Central.Log.Debugf("Current parent %d %s -> %d %s map=%v remove=%v", fieldMap.lastStructure.Level(), fieldMap.lastStructure.Name(),
 				adaType.Level(), adaType.Name(), ok, remove)
-
 			// Dependent on type create copy of field
 			switch adaType.Type() {
 			case FieldTypeSuperDesc:
@@ -168,6 +167,11 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 				newType := &AdaType{}
 				oldType := adaType.(*AdaType)
 				*newType = *oldType
+				if fq.reference {
+					newType.fieldType = FieldTypeString
+					newType.length = 0
+					newType.AddFlag(FlagOptionReference)
+				}
 				newType.SetParent(fieldMap.lastStructure)
 				newType.peRange = fieldMap.lastStructure.peRange
 				newType.muRange = fieldMap.lastStructure.muRange

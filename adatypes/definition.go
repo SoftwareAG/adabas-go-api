@@ -43,6 +43,11 @@ type parserBufferTr struct {
 func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
 	parameter := x.(*parserBufferTr)
 
+	if adaValue.Type().HasFlagSet(FlagOptionReference) {
+		adaValue.SetValue(fmt.Sprintf(adaValue.Type().ShortName()))
+		return Continue, nil
+	}
+
 	Central.Log.Debugf("Start parsing value .... %s offset=%d/%X type=%s", adaValue.Type().Name(),
 		parameter.helper.offset, parameter.helper.offset, adaValue.Type().Type().name())
 	Central.Log.Debugf("Parse value %s .... second=%v need second=%v pe=%v", adaValue.Type().Name(),

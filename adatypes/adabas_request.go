@@ -96,6 +96,9 @@ func (adabasRequest *Request) GetValue(name string) (IAdaValue, error) {
 // Traverser callback to create format buffer per field type
 func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
 	adabasRequest := x.(*Request)
+	if adaValue.Type().HasFlagSet(FlagOptionReference) {
+		return Continue, nil
+	}
 	Central.Log.Debugf("Add format buffer for %s", adaValue.Type().Name())
 	if adaValue.Type().IsStructure() {
 		// Reset if period group starts
@@ -141,6 +144,9 @@ func formatBufferTraverserLeave(adaValue IAdaValue, x interface{}) (TraverseResu
 func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
 	Central.Log.Debugf("Format Buffer Read traverser: %s-%s level=%d/%d", adaType.Name(), adaType.ShortName(),
 		adaType.Level(), level)
+	if adaType.HasFlagSet(FlagOptionReference) {
+		return nil
+	}
 	adabasRequest := x.(*Request)
 	Central.Log.Debugf("Curent Record Buffer length : %d", adabasRequest.RecordBufferLength)
 	buffer := &(adabasRequest.FormatBuffer)
