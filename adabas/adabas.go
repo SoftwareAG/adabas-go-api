@@ -710,12 +710,12 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 				adatypes.Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values == nil))
 				var prefix string
 				if adabasRequest.Parameter == nil {
-					prefix = fmt.Sprintf("/image/db/%d/%d/%d/", adabas.Acbx.Acbxdbid, adabas.Acbx.Acbxfnr, adabas.Acbx.Acbxisn)
+					prefix = fmt.Sprintf("/image/db/%d/%d/%d/", adabas.Acbx.Acbxdbid, adabas.Acbx.Acbxfnr, adabasRequest.Isn)
 				} else {
 					adabasMap := adabasRequest.Parameter.(*Map)
 					adatypes.Central.Log.Debugf("%v -> %#v\n", adabasRequest.Parameter, adabasMap)
 					if adabasMap != nil {
-						prefix = fmt.Sprintf("/image/map/%s/%d/", adabasMap.Name, adabas.Acbx.Acbxisn)
+						prefix = fmt.Sprintf("/image/map/%s/%d/", adabasMap.Name, adabasRequest.Isn)
 					}
 				}
 				_, err = adabasRequest.Definition.ParseBuffer(adabasRequest.RecordBuffer, adabasRequest.Option, prefix)

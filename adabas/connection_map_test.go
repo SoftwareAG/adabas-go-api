@@ -1390,3 +1390,71 @@ func TestConnection_readReference(t *testing.T) {
 	}
 
 }
+
+func TestConnection_readReferenceList(t *testing.T) {
+	f, err := initLogWithFile("connection_map.log")
+	if !assert.NoError(t, err) {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest("LOBPICTURE")
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err = request.QueryFields("Filename,@Thumbnail")
+	if !assert.NoError(t, err) {
+		return
+	}
+	request.Limit = 3
+	var result *Response
+	fmt.Println("Read logigcal data:")
+	result, err = request.ReadLogicalBy("Filename")
+	if !assert.NoError(t, err) {
+		return
+	}
+	result.DumpValues()
+	if assert.Equal(t, 3, len(result.Values)) {
+		v, verr := result.Values[0].SearchValue("Filename")
+		if !assert.NoError(t, verr) {
+			return
+		}
+		assert.Equal(t, "106-0670_IMG.JPG", v.String())
+		v, verr = result.Values[0].SearchValue("@Thumbnail")
+		if !assert.NoError(t, verr) {
+			return
+		}
+		assert.Equal(t, "/image/map/LOBPICTURE/1/Thumbnail", v.String())
+		v, verr = result.Values[1].SearchValue("Filename")
+		if !assert.NoError(t, verr) {
+			return
+		}
+		assert.Equal(t, "DSCF3544_2.JPG", v.String())
+		v, verr = result.Values[1].SearchValue("@Thumbnail")
+		if !assert.NoError(t, verr) {
+			return
+		}
+		assert.Equal(t, "/image/map/LOBPICTURE/27/Thumbnail", v.String())
+		v, verr = result.Values[2].SearchValue("Filename")
+		if !assert.NoError(t, verr) {
+			return
+		}
+		assert.Equal(t, "DSCN0529.JPG", v.String())
+		v, verr = result.Values[2].SearchValue("@Thumbnail")
+		if !assert.NoError(t, verr) {
+			return
+		}
+		assert.Equal(t, "/image/map/LOBPICTURE/26/Thumbnail", v.String())
+	}
+
+}
