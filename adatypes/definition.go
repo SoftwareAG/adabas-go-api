@@ -48,7 +48,14 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 	parameter := x.(*parserBufferTr)
 
 	if adaValue.Type().HasFlagSet(FlagOptionReference) {
-		adaValue.SetValue(parameter.prefix + adaValue.Type().Name())
+		name := adaValue.Type().Name()
+		if name[0] != '@' {
+			adaType := adaValue.Type().(*AdaType)
+			adaType.name = "@" + adaType.name
+		} else {
+			name = name[1:]
+		}
+		adaValue.SetValue(parameter.prefix + name)
 		return Continue, nil
 	}
 

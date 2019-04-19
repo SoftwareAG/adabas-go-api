@@ -80,6 +80,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 	var t IAdaType
 	t, err = def.SearchType(fieldName)
 	if err != nil {
+		Central.Log.Debugf("Search type error: %s", fieldName)
 		return
 	}
 
@@ -220,7 +221,7 @@ func (def *Definition) SearchType(fieldName string) (adaType IAdaType, err error
 	search := &search{name: fieldName}
 	level := 1
 	t := TraverserMethods{EnterFunction: traverserFindType}
-	if def.fileFieldTree == nil {
+	if def.activeFieldTree != nil {
 		err = def.activeFieldTree.Traverse(t, level+1, search)
 	} else {
 		err = def.fileFieldTree.Traverse(t, level+1, search)
