@@ -48,7 +48,7 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 	parameter := x.(*parserBufferTr)
 
 	if adaValue.Type().HasFlagSet(FlagOptionReference) {
-		adaValue.SetValue(parameter.prefix + adaValue.Type().ShortName())
+		adaValue.SetValue(parameter.prefix + adaValue.Type().Name())
 		return Continue, nil
 	}
 
