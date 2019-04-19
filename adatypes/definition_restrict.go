@@ -167,7 +167,7 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 				newType := &AdaType{}
 				oldType := adaType.(*AdaType)
 				*newType = *oldType
-				if fq.reference {
+				if fq != nil && fq.reference {
 					newType.fieldType = FieldTypeString
 					newType.length = 0
 					newType.AddFlag(FlagOptionReference)
