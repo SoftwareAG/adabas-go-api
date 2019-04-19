@@ -1368,7 +1368,7 @@ func TestConnection_readReference(t *testing.T) {
 		if !assert.NoError(t, verr) {
 			return
 		}
-		assert.Equal(t, "/image/db/24/202/1/DB", v.String())
+		assert.Equal(t, "/image/map/LOBPICTURE/1/DB", v.String())
 	}
 
 	result, err = request.ReadISN(2)
@@ -1386,7 +1386,7 @@ func TestConnection_readReference(t *testing.T) {
 		if !assert.NoError(t, verr) {
 			return
 		}
-		assert.Equal(t, "/image/db/24/202/2/DB", v.String())
+		assert.Equal(t, "/image/map/LOBPICTURE/2/DB", v.String())
 	}
 
 }
