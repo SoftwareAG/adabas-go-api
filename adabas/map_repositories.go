@@ -228,7 +228,7 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 	adatypes.Central.Log.Debugf("Before Prepare Repository %#v\n", *repository)
 	url := repository.DatabaseURL
 	adabasMap = &Map{Repository: &repository.DatabaseURL, Data: &url}
-	request := NewReadRequestCommon(commonRequest)
+	request, _ := NewReadRequest(commonRequest)
 	// Reset map definition, because
 	request.commonRequest.adabasMap = nil
 	request.commonRequest.MapName = ""
@@ -265,7 +265,7 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 
 // readAdabasMap read Adabas map defined by repository and name
 func (repository *Repository) readAdabasMap(adabas *Adabas, name string) (adabasMap *Map, err error) {
-	request := NewReadRequestAdabas(adabas, repository.Fnr)
+	request, _ := NewReadRequest(adabas, repository.Fnr)
 	adatypes.Central.Log.Debugf("Read map %s in repository %#v\n", name, *repository)
 	adabasMap, err = repository.readAdabasMapWithRequest(&request.commonRequest, name)
 	return
@@ -295,7 +295,7 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 	}
 
 	adatypes.Central.Log.Debugf("Not found in cache read map: %s", mapName)
-	request := NewReadRequestAdabas(adabas, repository.Fnr)
+	request, _ := NewReadRequest(adabas, repository.Fnr)
 	request.Limit = 0
 	err = request.ReadLogicalWithWithParser(mapFieldName.fieldName()+"="+mapName, parseMaps, repository)
 	if err != nil {
@@ -335,7 +335,7 @@ func (repository *Repository) LoadAllMaps(adabas *Adabas) (adabasMaps []*Map, er
 		return nil, adatypes.NewGenericError(64)
 	}
 	adatypes.Central.Log.Debugf("Load all maps")
-	request := NewReadRequestAdabas(adabas, repository.Fnr)
+	request, _ := NewReadRequest(adabas, repository.Fnr)
 	request.Limit = 0
 	err = request.ReadPhysicalSequenceWithParser(parseMaps, repository)
 	if err != nil {
@@ -464,7 +464,7 @@ func (repository *Repository) LoadMapRepository(adabas *Adabas) (err error) {
 	repository.MapNames = make(map[string]adatypes.Isn)
 
 	adabas.Acbx.Acbxdbid = repository.DatabaseURL.URL.Dbid
-	request := NewReadRequestAdabas(adabas, repository.Fnr)
+	request, _ := NewReadRequest(adabas, repository.Fnr)
 	request.Limit = 0
 	request.QueryFields(mapFieldName.fieldName())
 	err = request.ReadLogicalByWithParser(mapFieldName.fieldName(), parseMapNames, repository)

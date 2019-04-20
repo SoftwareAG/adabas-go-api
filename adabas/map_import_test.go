@@ -40,7 +40,7 @@ func TestMapImportPrepare(t *testing.T) {
 	deleteRequest, _ := NewDeleteRequest(adabasModDBIDs, 250)
 	defer deleteRequest.Close()
 
-	request := NewReadRequestAdabas(adabas, 250)
+	request, _ := NewReadRequest(adabas, 250)
 	request.Limit = 0
 	defer request.Close()
 	err := request.QueryFields("")

@@ -20,6 +20,7 @@
 package adabas
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -53,17 +54,58 @@ type ReadRequest struct {
 	cursoring         *Cursoring
 }
 
+// NewReadRequest create a request defined by another request (not even ReadRequest required)
+func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
+	if len(param) == 0 {
+		return nil, errors.New("Not enough parameters for NewReadRequest")
+	}
+	switch param[0].(type) {
+	case *commonRequest:
+		cr := param[0].(*commonRequest)
+		return createNewReadRequestCommon(cr)
+	case *Adabas:
+		ada := param[0].(*Adabas)
+		switch param[1].(type) {
+		case string:
+			mapName := param[1].(string)
+			return createNewMapReadRequest(mapName, ada)
+		case *Map:
+			m := param[1].(*Map)
+			return createNewMapPointerReadRequest(ada, m)
+		case Fnr:
+			file := param[1].(Fnr)
+			return createNewReadRequestAdabas(ada, file), nil
+		case int:
+			file := param[1].(int)
+			return createNewReadRequestAdabas(ada, Fnr(file)), nil
+		}
+	case string:
+		mapName := param[0].(string)
+		if len(param) < 2 {
+			return nil, errors.New("Not enough parameters for NewReadRequest")
+		}
+		ada := param[1].(*Adabas)
+		if len(param) == 2 {
+			return createNewMapReadRequest(mapName, ada)
+		}
+		rep := param[2].(*Repository)
+		return createNewMapReadRequestRepo(mapName, ada, rep)
+	default:
+	}
+	return nil, adatypes.NewGenericError(73)
+}
+
 // NewReadRequestCommon create a request defined by another request (not even ReadRequest required)
-func NewReadRequestCommon(commonRequest *commonRequest) *ReadRequest {
+func createNewReadRequestCommon(commonRequest *commonRequest) (*ReadRequest, error) {
 	request := &ReadRequest{HoldRecords: adatypes.HoldNone}
 	request.commonRequest = *commonRequest
 	request.commonRequest.adabasMap = nil
 	request.commonRequest.MapName = ""
-	return request
+	return request, nil
 }
 
-// NewMapReadRequestRepo create a new Request instance
-func NewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Repository) (request *ReadRequest, err error) {
+// createNewMapReadRequestRepo create a new Request instance
+func createNewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Repository) (request *ReadRequest, err error) {
 	if repository == nil {
 		err = adatypes.NewGenericError(20)
 		return
@@ -87,8 +129,8 @@ func NewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Repositor
 	return
 }
 
-// NewMapReadRequest create a new Request instance
-func NewMapReadRequest(adabas *Adabas, mapName string) (request *ReadRequest, err error) {
+// createNewMapReadRequest create a new Request instance
+func createNewMapReadRequest(mapName string, adabas *Adabas) (request *ReadRequest, err error) {
 	var adabasMap *Map
 	adabasMap, err = SearchMapRepository(adabas, mapName)
 	if err != nil {
@@ -109,8 +151,8 @@ func NewMapReadRequest(adabas *Adabas, mapName string) (request *ReadRequest, er
 	return
 }
 
-// NewMapReadRequestByMap create a new Request instance
-func NewMapReadRequestByMap(adabas *Adabas, adabasMap *Map) (request *ReadRequest, err error) {
+// createNewMapPointerReadRequest create a new Request instance
+func createNewMapPointerReadRequest(adabas *Adabas, adabasMap *Map) (request *ReadRequest, err error) {
 	if adabasMap == nil {
 		err = adatypes.NewGenericError(22, adabasMap.Name)
 		return
@@ -126,8 +168,8 @@ func NewMapReadRequestByMap(adabas *Adabas, adabasMap *Map) (request *ReadReques
 	return
 }
 
-// NewReadRequestAdabas create a new Request instance
-func NewReadRequestAdabas(adabas *Adabas, fnr Fnr) *ReadRequest {
+// createNewReadRequestAdabas create a new Request instance
+func createNewReadRequestAdabas(adabas *Adabas, fnr Fnr) *ReadRequest {
 	clonedAdabas := NewClonedAdabas(adabas)
 
 	return &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,

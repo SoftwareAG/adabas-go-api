@@ -145,7 +145,7 @@ func loadFile(fileName string, ada *adabas.Adabas) error {
 func validateUsingMap(a *adabas.Adabas, isn adatypes.Isn) {
 	fmt.Println("Validate using Map and ISN=", isn)
 	mapRepository := adabas.NewMapRepository(a.URL, 4)
-	request, err := adabas.NewMapReadRequestRepo("LOBEXAMPLE", a, mapRepository)
+	request, err := adabas.NewReadRequest("LOBEXAMPLE", a, mapRepository)
 	if err != nil {
 		fmt.Printf("New map request error %v\n", err)
 		return

@@ -303,7 +303,7 @@ func (connection *Connection) CreateReadRequest() (request *ReadRequest, err err
 	}
 	connection.fnr = connection.adabasMap.Data.Fnr
 	adatypes.Central.Log.Debugf("Map referenced : %#v", connection.adabasMap)
-	request, err = NewMapReadRequestByMap(connection.adabasToData, connection.adabasMap)
+	request, err = NewReadRequest(connection.adabasToData, connection.adabasMap)
 	return
 }
 
@@ -311,7 +311,7 @@ func (connection *Connection) CreateReadRequest() (request *ReadRequest, err err
 func (connection *Connection) CreateFileReadRequest(fnr Fnr) (*ReadRequest, error) {
 	adatypes.Central.Log.Debugf("Connection: %#v", connection)
 	adatypes.Central.Log.Debugf("Data referenced : %#v", connection.adabasToData)
-	return NewReadRequestAdabas(connection.adabasToData, fnr), nil
+	return NewReadRequest(connection.adabasToData, fnr)
 }
 
 // CreateMapReadRequest create a read request using a given map
@@ -322,7 +322,7 @@ func (connection *Connection) CreateMapReadRequest(mapName string) (request *Rea
 	}
 	connection.fnr = connection.adabasMap.Data.Fnr
 	adatypes.Central.Log.Debugf("Map referenced : %#v", connection.adabasMap)
-	request, err = NewMapReadRequestByMap(connection.adabasToData, connection.adabasMap)
+	request, err = NewReadRequest(connection.adabasToData, connection.adabasMap)
 	return
 }
 

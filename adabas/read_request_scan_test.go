@@ -19,7 +19,7 @@ func TestRequestLogicalWithQueryFieldsScan1(t *testing.T) {
 		fmt.Println("Error new adabas", err)
 		return
 	}
-	request := NewReadRequestAdabas(adabas, 11)
+	request, _ := NewReadRequest(adabas, 11)
 	if !assert.NotNil(t, request) {
 		fmt.Println("Error request nil")
 		return
@@ -96,7 +96,7 @@ func TestRequestLogicalWithQueryFieldsScan2(t *testing.T) {
 		fmt.Println("Error new adabas", err)
 		return
 	}
-	request := NewReadRequestAdabas(adabas, 9)
+	request, _ := NewReadRequest(adabas, 9)
 	if !assert.NotNil(t, request) {
 		fmt.Println("Error request nil")
 		return
@@ -136,7 +136,7 @@ func TestRequestLogicalWithQueryFieldsScan3(t *testing.T) {
 		fmt.Println("Error new adabas", err)
 		return
 	}
-	request := NewReadRequestAdabas(adabas, 11)
+	request, _ := NewReadRequest(adabas, 11)
 	if !assert.NotNil(t, request) {
 		fmt.Println("Error request nil")
 		return
@@ -172,7 +172,7 @@ func TestRequestLogicalWithQueryFieldsScan4(t *testing.T) {
 		fmt.Println("Error new adabas", err)
 		return
 	}
-	request := NewReadRequestAdabas(adabas, 11)
+	request, _ := NewReadRequest(adabas, 11)
 	if !assert.NotNil(t, request) {
 		fmt.Println("Error request nil")
 		return
@@ -213,7 +213,7 @@ func TestHistogramByQueryFieldsScan(t *testing.T) {
 		fmt.Println("Error new adabas", err)
 		return
 	}
-	request := NewReadRequestAdabas(adabas, 11)
+	request, _ := NewReadRequest(adabas, 11)
 	if !assert.NotNil(t, request) {
 		fmt.Println("Error request nil")
 		return
@@ -267,7 +267,7 @@ func TestHistogramWithQueryFieldsScan(t *testing.T) {
 		fmt.Println("Error new adabas", err)
 		return
 	}
-	request := NewReadRequestAdabas(adabas, 11)
+	request, _ := NewReadRequest(adabas, 11)
 	if !assert.NotNil(t, request) {
 		fmt.Println("Error request nil")
 		return
