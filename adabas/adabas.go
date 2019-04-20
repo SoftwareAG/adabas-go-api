@@ -515,6 +515,36 @@ func (adabas *Adabas) readISN(fileNr Fnr, adabasRequest *adatypes.Request, x int
 	return
 }
 
+// ReadISNOrder Read logical using a descriptor
+func (adabas *Adabas) ReadISNOrder(fileNr Fnr, adabasRequest *adatypes.Request, x interface{}) (err error) {
+	err = adabas.Open()
+	if err != nil {
+		return
+	}
+	adatypes.Central.Log.Debugf("Read ISN order ... %s dbid=%d multifetch=%d", l3.command(), adabas.Acbx.Acbxdbid, adabasRequest.Multifetch)
+	if adabasRequest.HoldRecords != adatypes.HoldNone {
+		adabas.Acbx.Acbxcmd = l4.code()
+	} else {
+		adabas.Acbx.Acbxcmd = l1.code()
+	}
+	adabas.Acbx.resetCop()
+	adabas.Acbx.Acbxcop[1] = 'I'
+	if adabasRequest.Multifetch > 1 {
+		adabas.Acbx.Acbxcop[0] = 'M'
+		adabas.Acbx.Acbxisl = uint64(adabasRequest.Multifetch)
+	}
+
+	adabas.Acbx.Acbxisn = adabasRequest.Isn
+	adabas.Acbx.Acbxisq = 0
+	adabas.Acbx.Acbxcid = [4]uint8{0xff, 0xff, 0xff, 0xff}
+
+	adabas.prepareBuffers(adabasRequest)
+	adabas.Acbx.Acbxfnr = fileNr
+
+	err = adabas.loopCall(adabasRequest, x)
+	return
+}
+
 // ReadLogicalWith Read logical using a descriptor
 func (adabas *Adabas) ReadLogicalWith(fileNr Fnr, adabasRequest *adatypes.Request, x interface{}) (err error) {
 	err = adabas.Open()
@@ -528,6 +558,7 @@ func (adabas *Adabas) ReadLogicalWith(fileNr Fnr, adabasRequest *adatypes.Reques
 		adabas.Acbx.Acbxcmd = l3.code()
 	}
 	adabas.Acbx.resetCop()
+	adabas.Acbx.Acbxisn = adabasRequest.Isn
 	adabas.Acbx.Acbxcop[1] = 'A'
 	if adabasRequest.Multifetch > 1 {
 		adabas.Acbx.Acbxcop[0] = 'M'
@@ -696,17 +727,26 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 					}
 					adatypes.Central.Log.Debugf("ISN %d", isn)
 					adabasRequest.Isn = adatypes.Isn(isn)
-					if adabas.Acbx.Acbxcmd != l2.code() {
+					switch adabas.Acbx.Acbxcmd {
+					case l1.code(), l4.code():
+						adabas.Acbx.Acbxisn = adatypes.Isn(isn)
+					case l2.code(), l5.code():
+					default:
 						adabas.Acbx.Acbxisn = adatypes.Isn(isn)
 					}
 					quantity, qerr := multifetchHelper.ReceiveUInt32()
 					if qerr != nil {
 						return
 					}
-					adatypes.Central.Log.Debugf("ISN quantity %d", quantity)
+					adatypes.Central.Log.Debugf("ISN quantity=%d", quantity)
 					adabasRequest.IsnQuantity = uint64(quantity)
 				}
 
+				switch adabas.Acbx.Acbxcmd {
+				case l1.code(), l4.code():
+					adabas.Acbx.Acbxisn++
+				default:
+				}
 				adatypes.Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values == nil))
 				var prefix string
 				if adabasRequest.Parameter == nil {

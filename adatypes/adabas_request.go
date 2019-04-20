@@ -39,6 +39,11 @@ const (
 	HoldResponse
 )
 
+const (
+	// DefaultMultifetchLimit default number of multifetch entries
+	DefaultMultifetchLimit = 10
+)
+
 // Request contains all relevant buffer and parameters for a Adabas call
 type Request struct {
 	FormatBuffer       bytes.Buffer
@@ -239,7 +244,8 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 
 // CreateAdabasRequest creates format buffer out of defined metadata tree
 func (def *Definition) CreateAdabasRequest(store bool, secondCall bool, mainframe bool) (adabasRequest *Request, err error) {
-	adabasRequest = &Request{FormatBuffer: bytes.Buffer{}, Option: NewBufferOption3(store, secondCall, mainframe)}
+	adabasRequest = &Request{FormatBuffer: bytes.Buffer{}, Option: NewBufferOption3(store, secondCall, mainframe),
+		Multifetch: DefaultMultifetchLimit}
 
 	Central.Log.Debugf("Create format buffer. Init Buffer: %s second=%v", adabasRequest.FormatBuffer.String(), secondCall)
 	if store || secondCall {

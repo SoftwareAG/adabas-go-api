@@ -27,8 +27,7 @@ import (
 )
 
 const (
-	maxReadRecordLimit     = 20
-	defaultMultifetchLimit = 10
+	maxReadRecordLimit = 20
 )
 
 type queryField struct {
@@ -44,6 +43,7 @@ type scanFields struct {
 // ReadRequest request instance handling field query information
 type ReadRequest struct {
 	commonRequest
+	Start             uint64
 	Limit             uint64
 	Multifetch        uint32
 	RecordBufferShift uint32
@@ -81,7 +81,7 @@ func NewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Repositor
 		return nil, nerr
 	}
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
-	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
+	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
 		commonRequest: commonRequest{MapName: mapName, adabas: dataAdabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
@@ -103,7 +103,7 @@ func NewMapReadRequest(adabas *Adabas, mapName string) (request *ReadRequest, er
 	adatypes.Central.Log.Debugf("Read: Adabas new map reference for %s to %d", mapName, adabasMap.Data.Fnr)
 
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
-	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
+	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
 		commonRequest: commonRequest{MapName: mapName, adabas: adabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
@@ -120,7 +120,7 @@ func NewMapReadRequestByMap(adabas *Adabas, adabasMap *Map) (request *ReadReques
 	cloneAdabas := NewClonedAdabas(adabas)
 
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
-	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
+	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
 		commonRequest: commonRequest{MapName: adabasMap.Name, adabas: cloneAdabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
@@ -130,7 +130,7 @@ func NewMapReadRequestByMap(adabas *Adabas, adabasMap *Map) (request *ReadReques
 func NewReadRequestAdabas(adabas *Adabas, fnr Fnr) *ReadRequest {
 	clonedAdabas := NewClonedAdabas(adabas)
 
-	return &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: defaultMultifetchLimit,
+	return &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
 		commonRequest: commonRequest{adabas: clonedAdabas,
 			repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}
 }
@@ -156,6 +156,10 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, e
 	adabasRequest.Definition = request.definition
 	adabasRequest.RecordBufferShift = request.RecordBufferShift
 	adabasRequest.HoldRecords = request.HoldRecords
+	if request.Limit < uint64(adabasRequest.Multifetch) {
+		adabasRequest.Multifetch = uint32(request.Limit)
+	}
+
 	return
 }
 
@@ -313,6 +317,16 @@ func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, er
 	return
 }
 
+// ReadByISN read records with a logical order given by a ISN sequence
+func (request *ReadRequest) ReadByISN() (result *Response, err error) {
+	result = &Response{Definition: request.definition, fields: request.fields}
+	err = request.ReadLogicalWithWithParser("", parseRead, result)
+	if err != nil {
+		return nil, err
+	}
+	return
+}
+
 // ReadLogicalWithWithParser read records with a logical order given by a search string
 func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParser adatypes.RequestParser, x interface{}) (err error) {
 
@@ -322,28 +336,32 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 			return
 		}
 		adatypes.Central.Log.Debugf("Read logical, open done ...%#v", request.adabas.ID.platform)
-		searchInfo := adatypes.NewSearchInfo(request.adabas.ID.platform(request.adabas.URL.String()), search)
-		adatypes.Central.Log.Debugf("New search info ... %#v", searchInfo)
+		var searchInfo *adatypes.SearchInfo
 		var tree *adatypes.SearchTree
-		if request.definition == nil {
-			adatypes.Central.Log.Debugf("Load Definition ...")
-			err = request.loadDefinition()
-			if err != nil {
-				return
-			}
-			searchInfo.Definition = request.definition
-			tree, err = searchInfo.GenerateTree()
-			if err != nil {
-				return
-			}
-		} else {
-			adatypes.Central.Log.Debugf("Use Definition ...")
-			searchInfo.Definition = request.definition
-			tree, err = searchInfo.GenerateTree()
-			if err != nil {
-				return
+		if search != "" {
+			searchInfo = adatypes.NewSearchInfo(request.adabas.ID.platform(request.adabas.URL.String()), search)
+			adatypes.Central.Log.Debugf("New search info ... %#v", searchInfo)
+			if request.definition == nil {
+				adatypes.Central.Log.Debugf("Load Definition ...")
+				err = request.loadDefinition()
+				if err != nil {
+					return
+				}
+				searchInfo.Definition = request.definition
+				tree, err = searchInfo.GenerateTree()
+				if err != nil {
+					return
+				}
+			} else {
+				adatypes.Central.Log.Debugf("Use Definition ...")
+				searchInfo.Definition = request.definition
+				tree, err = searchInfo.GenerateTree()
+				if err != nil {
+					return
+				}
 			}
 		}
+
 		adatypes.Central.Log.Debugf("Definition generated ...")
 		adabasRequest, prepareErr := request.prepareRequest()
 		if prepareErr != nil {
@@ -357,20 +375,27 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 			adabasRequest.Parser = resultParser
 		}
 		adabasRequest.Limit = request.Limit
-		searchInfo.Definition = adabasRequest.Definition
-		adabasRequest.SearchTree = tree
-		adabasRequest.Descriptors = tree.OrderBy()
+		//searchInfo.Definition = adabasRequest.Definition
+		if tree != nil {
+			adabasRequest.SearchTree = tree
+			adabasRequest.Descriptors = tree.OrderBy()
+		}
 		request.adaptDescriptorMap(adabasRequest)
 		if request.cursoring != nil {
 			request.cursoring.adabasRequest = adabasRequest
 		}
 
-		if searchInfo.NeedSearch {
-			adatypes.Central.Log.Debugf("search logical with ...%#v", adabasRequest.Descriptors)
-			err = request.adabas.SearchLogicalWith(request.repository.Fnr, adabasRequest, x)
+		if searchInfo == nil {
+			adabasRequest.Isn = adatypes.Isn(request.Start)
+			err = request.adabas.ReadISNOrder(request.repository.Fnr, adabasRequest, x)
 		} else {
-			adatypes.Central.Log.Debugf("read logical with ...%#v", adabasRequest.Descriptors)
-			err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, x)
+			if searchInfo.NeedSearch {
+				adatypes.Central.Log.Debugf("search logical with ...%#v", adabasRequest.Descriptors)
+				err = request.adabas.SearchLogicalWith(request.repository.Fnr, adabasRequest, x)
+			} else {
+				adatypes.Central.Log.Debugf("read logical with ...%#v", adabasRequest.Descriptors)
+				err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, x)
+			}
 		}
 	} else {
 		request.adabas.loopCall(request.cursoring.adabasRequest, x)

@@ -1458,3 +1458,116 @@ func TestConnection_readReferenceList(t *testing.T) {
 	}
 
 }
+
+func ExampleConnection_mapReadUnicode() {
+	f, err := initLogWithFile("connection.log")
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if cerr != nil {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if rerr != nil {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err = request.QueryFields("PERSONNEL-ID,FULL-NAME")
+	if err != nil {
+		return
+	}
+	request.Start = 1025
+	request.Limit = 3
+	var result *Response
+	fmt.Println("Read using ISN order:")
+	result, err = request.ReadByISN()
+	if err != nil {
+		fmt.Println("Error reading ISN order", err)
+		return
+	}
+	result.DumpValues()
+
+	// Output: Read using ISN order:
+	// Dump all result values
+	// Record Isn: 1025
+	//   PERSONNEL-ID = > 30021215 <
+	//   FULL-NAME = [ 1 ]
+	//    FIRST-NAME = > SYLVIA               <
+	//    NAME = > BURTON               <
+	//    MIDDLE-I = > J <
+	// Record Isn: 1026
+	//   PERSONNEL-ID = > 30021311 <
+	//   FULL-NAME = [ 1 ]
+	//    FIRST-NAME = > GERARD               <
+	//    NAME = > JOHNSTONE            <
+	//    MIDDLE-I = > E <
+	// Record Isn: 1027
+	//   PERSONNEL-ID = > 30021312 <
+	//   FULL-NAME = [ 1 ]
+	//    FIRST-NAME = > NORMA                <
+	//    NAME = > FRANCIS              <
+	//    MIDDLE-I = >   <
+}
+
+func ExampleConnection_mapReadUnicodeNew() {
+	f, err := initLogWithFile("connection.log")
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if cerr != nil {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest("EMPLOYEES")
+	if rerr != nil {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err = request.QueryFields("personnel-id,full-name")
+	if err != nil {
+		return
+	}
+	request.Start = 1250
+	request.Limit = 3
+	var result *Response
+	fmt.Println("Read using ISN order:")
+	result, err = request.ReadByISN()
+	if err != nil {
+		fmt.Println("Error reading ISN order", err)
+		return
+	}
+	result.DumpValues()
+
+	// Output: Read using ISN order:
+	// Dump all result values
+	// Record Isn: 1250
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 73002200 <
+	//   full-name = [ 1 ]
+	//    first-name = > Игорь <
+	//    middle-name = > Петрович <
+	//    name = > Михайлов <
+	// Record Isn: 1251
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 50005801 <
+	//   full-name = [ 1 ]
+	//    first-name = > वासुदेव <
+	//    middle-name = > मूर्ती <
+	//    name = > कुमार <
+	// Record Isn: 1252
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 50005501 <
+	//   full-name = [ 1 ]
+	//    first-name = > विनोद <
+	//    middle-name = > अभगे <
+	//    name = > अरविद <
+}
