@@ -206,8 +206,8 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 	fieldMap.stackStructure = NewStack()
 	if field != nil {
 		for _, f := range field {
-			if !strings.HasPrefix(f, "#ISN") {
-				fl := f
+			fl := strings.Trim(f, " ")
+			if fl != "" && !strings.HasPrefix(fl, "#ISN") {
 				rf := false
 				if f[0] == '@' {
 					fl = f[1:]
