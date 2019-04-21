@@ -817,6 +817,7 @@ var statisMessages = []struct {
 	{"ADG0000070", "en", "'{0}' is no valid database id"},
 	{"ADG0000071", "en", "Invalid URL given, need to be like <dbid>(<protocol>://<host>:<port>)"},
 	{"ADG0000072", "en", "'{0}' is no valid port number"},
+	{"ADG0000073", "en", "Internal Read Parameter constructor error (types invalid combination)"},
 	{"ADG0000080", "en", "Type {0} for {1} not supported for structure extraction"},
 	{"ADG0000081", "en", "No values in result list"},
 	{"ADG0000082", "en", "Error reading map {0} out of map repository"},
