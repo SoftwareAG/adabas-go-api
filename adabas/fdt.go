@@ -277,6 +277,7 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 			if adatypes.Central.IsDebugLevel() {
 				adatypes.Central.Log.Debugf("Current structure %v", lastStruct)
 			}
+			definition.Register(fieldType)
 		}
 		adatypes.Central.Log.Debugf("Field type DONE")
 	}

@@ -123,6 +123,7 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 	fq, ok := fieldMap.set[adaType.Name()]
 	if ok {
 		delete(fieldMap.set, adaType.Name())
+		fieldMap.definition.activeFields[adaType.Name()] = adaType
 	}
 	// Structure need to be copied each time because of tree to nodes of fields
 	if adaType.IsStructure() {
@@ -251,6 +252,8 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	Central.Log.Debugf("Should restrict fields to %#v", field)
 	def.DumpTypes(true, false, "before restrict")
 	def.Values = nil
+	def.activeFields = make(map[string]IAdaType)
+
 	fieldMap, ferr := def.newFieldMap(field)
 	if ferr != nil {
 		err = ferr
@@ -282,6 +285,7 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	def.activeFieldTree = fieldMap.parentStructure
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Final restricted type tree .........")
+		def.DumpTypes(true, false, "final restricted")
 		def.DumpTypes(true, true, "final restricted")
 	}
 	return

@@ -30,7 +30,9 @@ type Isn uint64
 
 // Definition struct defines main entry point for parser structure
 type Definition struct {
+	fileFields      map[string]IAdaType
 	fileFieldTree   *StructureType
+	activeFields    map[string]IAdaType
 	activeFieldTree *StructureType
 	Values          []IAdaValue
 }
@@ -74,6 +76,11 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 	Central.Log.Debugf("End Parseing value .... %s pos=%d need second=%v",
 		adaValue.Type().Name(), parameter.helper.offset, parameter.option.NeedSecondCall)
 	return
+}
+
+// Register Register field types
+func (def *Definition) Register(t IAdaType) {
+	def.fileFields[t.Name()] = t
 }
 
 // ParseBuffer method start parsing the definition
@@ -253,7 +260,7 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 
 // NewDefinition create new Definition instance
 func NewDefinition() *Definition {
-	def := &Definition{activeFieldTree: NewStructure()}
+	def := &Definition{fileFields: make(map[string]IAdaType), activeFieldTree: NewStructure()}
 	def.fileFieldTree = def.activeFieldTree
 	return def
 }

@@ -645,7 +645,7 @@ func (searchInfo *SearchInfo) searchFieldValue(searchValue *SearchValue, value s
 	Central.Log.Debugf("Search for type %s", searchValue.field)
 	searchValue.adaType, err = searchInfo.Definition.SearchType(searchValue.field)
 	if err != nil {
-		Central.Log.Debugf("Search error ", err)
+		Central.Log.Debugf("Search error: %v", err)
 		return
 	}
 	searchValue.value, err = searchValue.adaType.Value()

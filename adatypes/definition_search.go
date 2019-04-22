@@ -218,25 +218,29 @@ func traverserFindType(adaType IAdaType, parentType IAdaType, level int, x inter
 
 // SearchType search for a type definition in the tree
 func (def *Definition) SearchType(fieldName string) (adaType IAdaType, err error) {
-	search := &search{name: fieldName}
-	level := 1
-	t := TraverserMethods{EnterFunction: traverserFindType}
-	if def.activeFieldTree != nil {
-		err = def.activeFieldTree.Traverse(t, level+1, search)
-	} else {
-		err = def.fileFieldTree.Traverse(t, level+1, search)
+	Central.Log.Debugf("Search type %s", fieldName)
+	if af, ok := def.fileFields[fieldName]; ok {
+		return af, nil
 	}
-	if err == nil {
-		err = NewGenericError(41, fieldName)
-		return
-	}
-	err = nil
-	if search.adaType == nil {
-		Central.Log.Debugf("AdaType not found ", fieldName)
-		err = NewGenericError(42, fieldName)
-		return
-	}
-	Central.Log.Debugf("Found adaType for search field %s -> %s", fieldName, search.adaType)
-	adaType = search.adaType
+	// search := &search{name: fieldName}
+	// level := 1
+	// t := TraverserMethods{EnterFunction: traverserFindType}
+	// if def.activeFieldTree != nil {
+	// 	err = def.activeFieldTree.Traverse(t, level+1, search)
+	// } else {
+	// 	err = def.fileFieldTree.Traverse(t, level+1, search)
+	// }
+	// if err == nil {
+	// 	err = NewGenericError(41, fieldName)
+	// 	return
+	// }
+	// err = nil
+	// if search.adaType == nil {
+	// 	Central.Log.Debugf("AdaType not found ", fieldName)
+	err = NewGenericError(42, fieldName)
 	return
+	// }
+	// Central.Log.Debugf("Found adaType for search field %s -> %s", fieldName, search.adaType)
+	// adaType = search.adaType
+	// return
 }
