@@ -255,6 +255,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 		if err != nil {
 			return
 		}
+		adatypes.LogMultiLineString(adabas.Acbx.String())
 		if adabas.Acbx.Acbxrsp != 0 {
 			if adabas.Acbx.Acbxrsp == 60 {
 				fmt.Println(adabas.Acbx.String())
