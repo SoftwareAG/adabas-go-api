@@ -311,6 +311,7 @@ func (request *ReadRequest) ReadISNWithParser(isn adatypes.Isn, resultParser ada
 		adabasRequest.Parser = resultParser
 	}
 	adabasRequest.Limit = 1
+	adabasRequest.Multifetch = 1
 	adabasRequest.Isn = isn
 	adabasRequest.Parameter = request.adabasMap
 	err = request.adabas.readISN(request.repository.Fnr, adabasRequest, x)

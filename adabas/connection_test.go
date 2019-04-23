@@ -1824,7 +1824,7 @@ func TestConnection_NewConnectionError(t *testing.T) {
 
 }
 
-func TestConnectionLob(t *testing.T) {
+func TestConnectionLobADATCP(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
@@ -1859,7 +1859,7 @@ func TestConnectionLob(t *testing.T) {
 	assert.Equal(t, ea.String(), fmt.Sprintf("%x", h.Sum(nil)))
 }
 
-func TestConnectionLobCheckAll(t *testing.T) {
+func TestConnectionLobCheckAllIPC(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}

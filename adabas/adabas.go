@@ -1154,10 +1154,10 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 				}
 			}
 		}
-		adatypes.Central.Log.Debugf("Parse %d ABD buffers headers Number of current ABDS=%d len=%d", nCalBuf, len(adabas.AdabasBuffers), buffer.Len())
+		adatypes.Central.Log.Debugf("Got nCalBuf=%d Number of current ABDS=%d len=%d", nCalBuf, len(adabas.AdabasBuffers), buffer.Len())
 		for index, abd := range adabas.AdabasBuffers {
 			if adatypes.Central.IsDebugLevel() {
-				adatypes.Central.Log.Debugf("Parse %d.ABD got %c len=%d\n", index, abd.abd.Abdid, buffer.Len())
+				adatypes.Central.Log.Debugf("Parse %d.ABD got %c rest len=%d\n", index, abd.abd.Abdid, buffer.Len())
 				adatypes.LogMultiLineString(adatypes.FormatBytes("Rest ABD:", buffer.Bytes(), buffer.Len(), 8))
 			}
 			err = binary.Read(buffer, Endian(), &abd.abd)
