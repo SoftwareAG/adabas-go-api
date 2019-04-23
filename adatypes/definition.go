@@ -43,7 +43,8 @@ type parserBufferTr struct {
 	// buffer options used to define second call and others
 	option *BufferOption
 	// Prefix defines the reference prefix used for @references
-	prefix string
+	prefix     string
+	definition *Definition
 }
 
 func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
@@ -53,7 +54,9 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 		name := adaValue.Type().Name()
 		if name[0] != '@' {
 			adaType := adaValue.Type().(*AdaType)
+			delete(parameter.definition.activeFields, adaType.name)
 			adaType.name = "@" + adaType.name
+			parameter.definition.activeFields[adaType.name] = adaType
 		} else {
 			name = name[1:]
 		}
@@ -90,7 +93,7 @@ func (def *Definition) ParseBuffer(helper *BufferHelper, option *BufferOption, p
 		def.Values, err = parseBufferTypes(helper, option, def.activeFieldTree, 0)
 	} else {
 		Central.Log.Debugf("Parse buffer values...")
-		x := parserBufferTr{helper: helper, option: option, prefix: prefix}
+		x := parserBufferTr{helper: helper, option: option, prefix: prefix, definition: def}
 		t := TraverserValuesMethods{EnterFunction: parseBufferValues}
 		_, err = def.TraverseValues(t, &x)
 		if err != nil {
