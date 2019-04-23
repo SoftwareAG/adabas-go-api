@@ -287,7 +287,7 @@ func initFieldHash(def *Definition, types []IAdaType) {
 	for _, v := range types {
 		def.fileFields[v.Name()] = v
 		def.activeFields[v.Name()] = v
-		if v.IsStructure() {
+		if v.IsStructure() && v.Type() != FieldTypeMultiplefield {
 			sv := v.(*StructureType)
 			initFieldHash(def, sv.SubTypes)
 		}
