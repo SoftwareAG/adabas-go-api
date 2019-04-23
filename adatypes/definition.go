@@ -274,8 +274,11 @@ func NewDefinitionWithTypes(types []IAdaType) *Definition {
 		refField:         NoReferenceField}
 	def.fileFieldTree = def.activeFieldTree
 	def.InitReferences()
+	def.activeFields = make(map[string]IAdaType)
 	for _, v := range types {
 		v.SetParent(def.activeFieldTree)
+		def.fileFields[v.Name()] = v
+		def.activeFields[v.Name()] = v
 	}
 	Central.Log.Debugf("Ready creation of definition with types")
 	return def
