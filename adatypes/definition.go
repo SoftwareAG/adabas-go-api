@@ -277,11 +277,21 @@ func NewDefinitionWithTypes(types []IAdaType) *Definition {
 	def.activeFields = make(map[string]IAdaType)
 	for _, v := range types {
 		v.SetParent(def.activeFieldTree)
-		def.fileFields[v.Name()] = v
-		def.activeFields[v.Name()] = v
 	}
+	initFieldHash(def, types)
 	Central.Log.Debugf("Ready creation of definition with types")
 	return def
+}
+
+func initFieldHash(def *Definition, types []IAdaType) {
+	for _, v := range types {
+		def.fileFields[v.Name()] = v
+		def.activeFields[v.Name()] = v
+		if v.IsStructure() {
+			sv := v.(*StructureType)
+			initFieldHash(def, sv.SubTypes)
+		}
+	}
 }
 
 // Adapt parent reference to inherit flags
