@@ -518,6 +518,12 @@ func tDefinition() *Definition {
 	layout[7].AddOption(FieldOptionDE)
 
 	testDefinition := NewDefinitionWithTypes(layout)
+	for _, t := range layout {
+		testDefinition.Register(t)
+	}
+	for _, t := range groupLayout {
+		testDefinition.Register(t)
+	}
 	return testDefinition
 }
 
