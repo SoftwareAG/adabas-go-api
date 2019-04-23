@@ -222,6 +222,9 @@ func (def *Definition) SearchType(fieldName string) (adaType IAdaType, err error
 	if af, ok := def.fileFields[fieldName]; ok {
 		return af, nil
 	}
+	if af, ok := def.activeFields[fieldName]; ok {
+		return af, nil
+	}
 	// search := &search{name: fieldName}
 	// level := 1
 	// t := TraverserMethods{EnterFunction: traverserFindType}
