@@ -244,6 +244,7 @@ func (def *Definition) RestrictFieldSlice(field []string) (err error) {
 		return
 	}
 	def.fileFieldTree = def.activeFieldTree
+	def.fileFields = def.activeFields
 	return nil
 }
 
