@@ -609,7 +609,7 @@ func TestSearchExtractOr2BindingError(t *testing.T) {
 	searchInfo.Definition = tDefinition()
 	_, err = searchInfo.GenerateTree()
 	assert.Error(t, err)
-	assert.Equal(t, "ADG0000041: No field CC found in file definition", err.Error())
+	assert.Equal(t, "ADG0000042: No field type CC found in file definition", err.Error())
 }
 
 func TestSearchMixedValue(t *testing.T) {
