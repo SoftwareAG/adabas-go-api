@@ -230,35 +230,35 @@ func TestHistogramByQueryFieldsScan(t *testing.T) {
 	var id int
 	err = nil
 	i := 0
-	checked [4]bool
+	var checked [4]bool
 	for err == nil {
 		var x string
 		err = request.Scan(&x, &id)
 		if err == nil {
 			switch x {
 			case "SMITH":
-				if !assert.False(t,checked[0]) {
+				if !assert.False(t, checked[0]) {
 					return
 				}
 				checked[0] = true
 				assert.Equal(t, 19, id)
 				fmt.Printf("%d. Scan result quantity=%d AA=%s\n", i, id, x)
 			case "WOOD":
-				if !assert.False(t,checked[1]) {
+				if !assert.False(t, checked[1]) {
 					return
 				}
 				checked[1] = true
 				assert.Equal(t, 2, id)
 				fmt.Printf("%d. Scan result quantity=%d AA=%s\n", i, id, x)
 			case "JONES":
-				if !assert.False(t,checked[2]) {
+				if !assert.False(t, checked[2]) {
 					return
 				}
 				checked[2] = true
 				assert.Equal(t, 9, id)
 				fmt.Printf("%d. Scan result quantity=%d AA=%s\n", i, id, x)
 			case "FERNANDEZ":
-				if !assert.False(t,checked[3]) {
+				if !assert.False(t, checked[3]) {
 					return
 				}
 				checked[3] = true
