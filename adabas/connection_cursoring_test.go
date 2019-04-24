@@ -20,6 +20,8 @@ package adabas
 
 import (
 	"fmt"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func ExampleReadRequest_ReadLogicalWithCursoring() {
@@ -51,6 +53,7 @@ func ExampleReadRequest_ReadLogicalWithCursoring() {
 		return
 	}
 	fmt.Println("Read next cursor record...")
+	counter := 0
 	for col.HasNextRecord() {
 		record, rerr := col.NextRecord()
 		if record == nil {
@@ -64,6 +67,10 @@ func ExampleReadRequest_ReadLogicalWithCursoring() {
 		fmt.Println("Record received:")
 		record.DumpValues()
 		fmt.Println("Read next cursor record...")
+		i++
+		if !assert.True(t, i < 100, "Error index about 100") {
+			return
+		}
 	}
 	fmt.Println("Last cursor record read")
 

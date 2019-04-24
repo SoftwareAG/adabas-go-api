@@ -266,7 +266,7 @@ func TestHistogramByQueryFieldsScan(t *testing.T) {
 				fmt.Printf("%d. Scan result quantity=%d AA=%s\n", i, id, x)
 			default:
 			}
-			if !assert.True(t, id > 0 && i < 805, fmt.Sprintf("Quantity is %d", id)) {
+			if !assert.True(t, id > 0 && i < 805, fmt.Sprintf("Quantity is %d counter=%d", id, i)) {
 				return
 			}
 			i++
