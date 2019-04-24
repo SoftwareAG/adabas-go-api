@@ -99,6 +99,7 @@ func (request *ReadRequest) HistogramWithCursoring(search string) (cursor *Curso
 
 // HasNextRecord check cursoring if a next record exist in the query
 func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
+	adatypes.Central.Log.Debugf("Check next record: %v offset=%d values=%d", hasNext, cursor.offset+1, len(cursor.result.Values))
 	if cursor.offset+1 > uint32(len(cursor.result.Values)) {
 		if cursor.adabasRequest == nil || cursor.adabasRequest.Response != AdaNormal {
 			adatypes.Central.Log.Debugf("Error adabas request empty of not normal response, may be EOF %#v\n", cursor.adabasRequest)
@@ -115,6 +116,7 @@ func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 	} else {
 		hasNext = true
 	}
+	adatypes.Central.Log.Debugf("Has next record: %v", hasNext)
 	return
 }
 
@@ -122,9 +124,10 @@ func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 // the chunk is not in memory, the next chunk is read in memory
 func (cursor *Cursoring) NextRecord() (record *Record, err error) {
 	if cursor.err != nil {
+		adatypes.Central.Log.Debugf("Error next record: %v", err)
 		return nil, cursor.err
 	}
-	adatypes.Central.Log.Debugf("offset=%d/%d\n", cursor.offset, len(cursor.result.Values))
+	adatypes.Central.Log.Debugf("Get next record offset=%d/%d\n", cursor.offset, len(cursor.result.Values))
 	if cursor.offset+1 > uint32(len(cursor.result.Values)) {
 		if !cursor.HasNextRecord() {
 			return nil, nil

@@ -713,10 +713,12 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 					adatypes.Central.Log.Debugf("Record length %d", recordLength)
 					responseCode, err = multifetchHelper.ReceiveUInt32()
 					if err != nil {
+						adatypes.Central.Log.Debugf("Response parser error in MF %v", err)
 						return
 					}
 					if responseCode != AdaNormal {
-						adabasRequest.Response = adabas.Acbx.Acbxrsp
+						adabasRequest.Response = uint16(responseCode) // adabas.Acbx.Acbxrsp
+						adatypes.Central.Log.Debugf("Response code in MF %v", adabasRequest.Response)
 						break
 					}
 					adatypes.Central.Log.Debugf("Response code %d", responseCode)
