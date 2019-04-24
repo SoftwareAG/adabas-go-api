@@ -1894,3 +1894,39 @@ func TestConnectionLobCheckAllIPC(t *testing.T) {
 		assert.Equal(t, ea.String(), fmt.Sprintf("%x", h.Sum(nil)))
 	}
 }
+
+func TestConnectionLobCheckAllADATCP(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	f := initTestLogWithFile(t, "connection.log")
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("ada;target=24(adatcp://localhost:60024)")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	connection.Open()
+	readRequest, rErr := connection.CreateFileReadRequest(202)
+	assert.NoError(t, rErr)
+	err = readRequest.QueryFields("DC,EC")
+	assert.NoError(t, err)
+	result, rerr := readRequest.ReadLogicalBy("BB")
+	assert.NoError(t, rerr)
+
+	for _, v := range result.Values {
+		dc, serr := v.SearchValue("DC")
+		assert.NoError(t, serr)
+		assert.NotNil(t, dc)
+		h := sha1.New()
+		h.Write(dc.Bytes())
+		ea, eerr := v.SearchValue("EC")
+		assert.NoError(t, eerr)
+		assert.NotNil(t, ea)
+		fmt.Printf("SHA ALL: %x\n", h.Sum(nil))
+		assert.Equal(t, ea.String(), fmt.Sprintf("%x", h.Sum(nil)))
+	}
+}
