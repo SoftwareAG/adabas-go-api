@@ -217,14 +217,14 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 				b := strings.Index(fl, "[")
 				var r *AdaRange
 				if b > 0 {
-					fl = fl[:b]
+					fn := fl[:b]
 					e := strings.Index(fl, "]")
 					r = NewRangeParser(fl[b+1 : e])
 					if r == nil {
 						return nil, NewGenericError(129, f)
 					}
-					Central.Log.Debugf("Add to map: %s -> %s reference=%v", fl, r.FormatBuffer(), rf)
-					fieldMap.set[fl] = &fieldQuery{name: fl, fieldRange: []*AdaRange{r}, reference: rf}
+					Central.Log.Debugf("Add to map: %s -> %s reference=%v", fn, r.FormatBuffer(), rf)
+					fieldMap.set[fn] = &fieldQuery{name: fn, fieldRange: []*AdaRange{r}, reference: rf}
 				} else {
 					Central.Log.Debugf("Add to map: %s reference=%v", fl, rf)
 					fieldMap.set[fl] = &fieldQuery{name: fl, reference: rf}
