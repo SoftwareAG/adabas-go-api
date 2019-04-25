@@ -204,13 +204,25 @@ func ExampleConnection_readNoMaximumMainframe() {
 	fmt.Println("Connection : ", connection)
 
 	fmt.Println("Limit query data:")
-	request.QueryFields("AA,AB")
+	err = request.QueryFields("AA,AB")
+	if err != nil {
+		fmt.Println("Error query fields : ", err)
+		return
+	}
 	request.Limit = 2
 	fmt.Println("Read logical data:")
 	var result *Response
 	result, err = request.ReadLogicalWith("AA=[1100301:11100303)")
 	if err != nil {
 		fmt.Println("Error reading", err)
+		return
+	}
+	if result != nil {
+		fmt.Println("Result empty")
+		return
+	}
+	if result.Values != nil {
+		fmt.Println("Values empty")
 		return
 	}
 	fmt.Println("Result data:")
