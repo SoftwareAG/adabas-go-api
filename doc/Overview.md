@@ -39,7 +39,7 @@ Actually not compulsory for an interface, but worth to mention, the interface fu
 
 ## Feature set
 
-Software AG does not guarantee support if there are issues with the Go Adabas API. 
+Software AG does not guarantee support if there are issues with the Go Adabas API.
 All current Adabas database versions are accessible. On Adabas Mainframe there might be some issues. Current features include
 
 - Read, insert, update or delete records. Reference data in Adabas fields with Adabas short name or logical field names defined in Adabas maps

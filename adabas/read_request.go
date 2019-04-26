@@ -429,6 +429,7 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 		}
 
 		if searchInfo == nil {
+			adatypes.Central.Log.Debugf("read in ISN order ...from %d", request.Start)
 			adabasRequest.Isn = adatypes.Isn(request.Start)
 			err = request.adabas.ReadISNOrder(request.repository.Fnr, adabasRequest, x)
 		} else {
@@ -441,9 +442,10 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 			}
 		}
 	} else {
-		request.adabas.loopCall(request.cursoring.adabasRequest, x)
+		adatypes.Central.Log.Debugf("read logical with ...cursoring")
+		err = request.adabas.loopCall(request.cursoring.adabasRequest, x)
 	}
-
+	adatypes.Central.Log.Debugf("Read finished")
 	return
 }
 

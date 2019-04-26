@@ -641,13 +641,17 @@ func (adabas *Adabas) SearchLogicalWith(fileNr Fnr, adabasRequest *adatypes.Requ
 	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxcop[1] = ' '
 	adabas.Acbx.Acbxcop[1] = 'N'
+	if adabasRequest.Multifetch > 1 {
+		adabas.Acbx.Acbxcop[0] = 'M'
+		adabas.Acbx.Acbxisl = uint64(adabasRequest.Multifetch)
+	}
 	err = adabas.loopCall(adabasRequest, x)
 	return
 }
 
 // Loop call used to read a sequence of records
 func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (err error) {
-
+	adatypes.Central.Log.Debugf("Loop call records")
 	count := uint64(0)
 	var responseCode uint32
 	for responseCode == 0 {
@@ -681,7 +685,8 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())
 		adabasRequest.Isn = adatypes.Isn(adabas.Acbx.Acbxisn)
 		adabasRequest.IsnQuantity = adabas.Acbx.Acbxisq
-		adatypes.Central.Log.Debugf("ISN= %d ISN quantity=%d", adabasRequest.Isn, adabasRequest.IsnQuantity)
+		adatypes.Central.Log.Debugf("ISN= %d ISN quantity=%d multifetch=%d", adabasRequest.Isn, adabasRequest.IsnQuantity,
+			adabasRequest.Multifetch)
 
 		// If parser is available, use the parser to extract content
 		if adabasRequest.Parser != nil {
@@ -789,9 +794,11 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 
 		adatypes.Central.Log.Debugf("Limit=%d count=%d", adabasRequest.Limit, count)
 		if (adabasRequest.Limit > 0) && (count >= adabasRequest.Limit) {
+			adatypes.Central.Log.Debugf("Limit reached")
 			break
 		}
 	}
+	adatypes.Central.Log.Debugf("End loop call records")
 
 	return
 }
@@ -847,13 +854,13 @@ func (adabas *Adabas) Histogram(fileNr Fnr, adabasRequest *adatypes.Request, x i
 	}
 	adatypes.Central.Log.Debugf("Descriptor read file %s", l9.command())
 	adabas.Acbx.Acbxcmd = l9.code()
-	adabas.Acbx.resetCop()
-	adabas.Acbx.Acbxcop[1] = 'A'
 	adabas.Acbx.Acbxisn = 0
 	adabas.Acbx.Acbxisl = 0
 	adabas.Acbx.Acbxisq = 0
 	adabas.Acbx.Acbxcid = [4]uint8{0xff, 0xff, 0xff, 0xff}
 
+	adabas.Acbx.resetCop()
+	adabas.Acbx.Acbxcop[1] = 'A'
 	if adabasRequest.Multifetch > 1 {
 		adabas.Acbx.Acbxcop[0] = 'M'
 		adabas.Acbx.Acbxisl = uint64(adabasRequest.Multifetch)
