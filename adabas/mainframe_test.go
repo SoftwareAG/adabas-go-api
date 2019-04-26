@@ -217,11 +217,11 @@ func ExampleConnection_readNoMaximumMainframe() {
 		fmt.Println("Error reading", err)
 		return
 	}
-	if result != nil {
+	if result == nil {
 		fmt.Println("Result empty")
 		return
 	}
-	if result.Values != nil {
+	if result.Values == nil {
 		fmt.Println("Values empty")
 		return
 	}
