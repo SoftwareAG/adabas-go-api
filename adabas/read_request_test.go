@@ -673,9 +673,9 @@ func TestMapRequestFractional(t *testing.T) {
 
 	log.Infof("TEST: %s", t.Name())
 
-	adabas, _ := NewAdabas(23)
-	request, err := NewReadRequest("FRACTIONAL", adabas,
-		NewMapRepository(adabas, 250))
+	adabas, _ := NewAdabas(24)
+	request, err := NewReadRequest("Fractional", adabas,
+		NewMapRepository(adabas, 4))
 	if !assert.NoError(t, err) {
 		return
 	}
