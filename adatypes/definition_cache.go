@@ -50,9 +50,10 @@ func FinitDefinitionCache() {
 }
 
 func traverseCacheCopy(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
-	st := x.(*StructureType)
-	f := st.fieldMap[parentType.Name()]
-	cst := st
+	definition := x.(*Definition)
+
+	f := definition.activeFieldTree.fieldMap[parentType.Name()]
+	cst := definition.activeFieldTree
 	if f != nil {
 		cst = f.(*StructureType)
 	}
@@ -85,6 +86,7 @@ func traverseCacheCopy(adaType IAdaType, parentType IAdaType, level int, x inter
 		newNode = nat
 	}
 	cst.AddField(newNode)
+	definition.activeFields[newNode.Name()]=newNode
 	switch adaType.(type) {
 	case *StructureType:
 		nst := newNode.(*StructureType)
@@ -116,12 +118,11 @@ func CreateDefinitionByCache(reference string) *Definition {
 	}
 	Central.Log.Debugf("Get cache entry: %s", reference)
 	definition := NewDefinition()
-	//	definition.activeFieldTree = &StructureType{}
 	x := &StructureType{fieldMap: make(map[string]IAdaType)}
-	t := TraverserMethods{EnterFunction: traverseCacheCopy}
-	e.fileFieldTree.Traverse(t, 0, x)
-	//	definition.activeFieldTree = e.fileFieldTree
 	definition.activeFieldTree = x
+	definition.activeFields = make(map[string]IAdaType)
+	t := TraverserMethods{EnterFunction: traverseCacheCopy}
+	e.fileFieldTree.Traverse(t, 0, definition)
 	definition.fileFieldTree = definition.activeFieldTree
 	Central.Log.Debugf("ORIG %#v\n", e.fileFieldTree)
 	Central.Log.Debugf("COPY TO %#v\n", x)
