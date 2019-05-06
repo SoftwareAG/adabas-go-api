@@ -86,7 +86,7 @@ func traverseCacheCopy(adaType IAdaType, parentType IAdaType, level int, x inter
 		newNode = nat
 	}
 	cst.AddField(newNode)
-	definition.activeFields[newNode.Name()]=newNode
+	definition.activeFields[newNode.Name()] = newNode
 	switch adaType.(type) {
 	case *StructureType:
 		nst := newNode.(*StructureType)
