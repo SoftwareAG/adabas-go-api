@@ -99,7 +99,7 @@ $(TESTOUTPUT):
 	mkdir $(TESTOUTPUT)
 
 test-build: $(OBJECTS) ; $(info $(M) building $(NAME:%=% )tests…) @ ## Build tests
-	$Q cd $(CURDIR) && for pkg in $(TESTDIR); do echo "Build $$pkg in $(CURDIR)"; \
+	$Q cd $(CURDIR) && for pkg in $(TESTPKGSDIR); do echo "Build $$pkg in $(CURDIR)"; \
 	LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 		DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
