@@ -545,9 +545,11 @@ func (repository *Repository) writeAdabasMapsWithAdabas(adabas *Adabas, adabasMa
 	return
 }
 
-func (repository *Repository) reset(mapName string) (err error) {
+// RemoveMap remove map from hash
+func (repository *Repository) RemoveMap(mapName string) (err error) {
 	repository.Lock()
 	defer repository.Unlock()
 
-	repository.mapNames[m.Name] = 0
+	repository.mapNames[mapName] = 0
+	return nil
 }

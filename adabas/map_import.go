@@ -133,7 +133,7 @@ func (repository *Repository) ImportMapRepository(adabas *Adabas, filter string,
 	for _, m := range maps {
 		m.Repository = &repository.DatabaseURL
 		m.Data = &dataRepository.DatabaseURL
-		repository.Reset(m.Name)
+		repository.RemoveMap(m.Name)
 		repository.CachedMaps[m.Name] = m
 	}
 
