@@ -1604,5 +1604,20 @@ func TestConnection_readGroup(t *testing.T) {
 		return
 	}
 	result.DumpValues()
+	v, verr := result.Values[0].SearchValue("CITY")
+	if !assert.NoError(t, verr) {
+		return
+	}
+	assert.Equal(t, "JOIGNY              ", v.String())
+	v, verr = result.Values[0].SearchValue("ZIP")
+	if !assert.NoError(t, verr) {
+		return
+	}
+	assert.Equal(t, "89300     ", v.String())
+	v, verr = result.Values[0].SearchValue("COUNTRY")
+	if !assert.NoError(t, verr) {
+		return
+	}
+	assert.Equal(t, "F  ", v.String())
 
 }
