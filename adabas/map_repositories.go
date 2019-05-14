@@ -275,6 +275,7 @@ func (repository *Repository) readAdabasMap(adabas *Adabas, name string) (adabas
 
 // SearchMap search map name in specific map repository
 func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasMap *Map, err error) {
+	adatypes.Central.Log.Debugf("Search map %s in repository", mapName)
 	if repository.mapNames == nil {
 		err = repository.LoadMapRepository(adabas)
 		if err != nil {
@@ -468,7 +469,7 @@ func parseMaps(adabasRequest *adatypes.Request, x interface{}) (err error) {
 
 // LoadMapRepository read an index for names of all Adabas maps in the repository into memory
 func (repository *Repository) LoadMapRepository(adabas *Adabas) (err error) {
-	if repository.mapNames == nil {
+	if repository.mapNames != nil {
 		return nil
 	}
 	adatypes.Central.Log.Debugf("Read all data from dbid=%d(%s) of %s/%d\n",

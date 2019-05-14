@@ -1571,3 +1571,38 @@ func ExampleConnection_mapReadUnicodeNew() {
 	//    middle-name = > अभगे <
 	//    name = > अरविद <
 }
+
+func TestConnection_readGroup(t *testing.T) {
+	f, err := initLogWithFile("connection_map.log")
+	if !assert.NoError(t, err) {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+
+	log.Infof("TEST: %s", t.Name())
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err = request.QueryFields("FULL-ADDRESS")
+	if !assert.NoError(t, err) {
+		return
+	}
+	var result *Response
+	fmt.Println("Read logigcal data:")
+	result, err = request.ReadISN(1)
+	if !assert.NoError(t, err) {
+		return
+	}
+	result.DumpValues()
+
+}
