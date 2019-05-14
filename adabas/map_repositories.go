@@ -25,6 +25,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -44,8 +45,9 @@ func (repURL *DatabaseURL) dbid() (dbid Dbid, err error) {
 
 // Repository Adabas Map repository container
 type Repository struct {
+	sync.Mutex
 	DatabaseURL
-	MapNames   map[string]adatypes.Isn
+	mapNames   map[string]adatypes.Isn
 	CachedMaps map[string]*Map
 }
 
@@ -167,14 +169,14 @@ func DumpGlobalMapRepositories() {
 	id := NewAdabasID()
 	for _, r := range repositories {
 		fmt.Printf("Repository at %s map file=%d:\n", r.URL, r.Fnr)
-		if r.MapNames == nil || len(r.MapNames) == 0 {
+		if r.mapNames == nil || len(r.mapNames) == 0 {
 			if a, err := NewAdabasWithURL(&r.DatabaseURL.URL, id); err == nil {
 				r.LoadMapRepository(a)
 			} else {
 				fmt.Println("    Map repository is empty or not initiated already", err)
 			}
 		}
-		for m := range r.MapNames {
+		for m := range r.mapNames {
 			fmt.Printf("    %s\n", m)
 		}
 
@@ -273,16 +275,19 @@ func (repository *Repository) readAdabasMap(adabas *Adabas, name string) (adabas
 
 // SearchMap search map name in specific map repository
 func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasMap *Map, err error) {
-	if repository.MapNames == nil {
+	if repository.mapNames == nil {
 		err = repository.LoadMapRepository(adabas)
 		if err != nil {
 			return
 		}
 	}
-	if _, ok := repository.MapNames[mapName]; !ok {
+	repository.Lock()
+	if _, ok := repository.mapNames[mapName]; !ok {
 		err = adatypes.NewGenericError(14, mapName)
+		repository.Unlock()
 		return
 	}
+	repository.Unlock()
 	// Need a Adabas instance to work with corresponding ID, else return error
 	if adabas == nil {
 		return nil, adatypes.NewGenericError(64)
@@ -321,7 +326,7 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 
 // LoadAllMaps load all map out of specific map repository
 func (repository *Repository) LoadAllMaps(adabas *Adabas) (adabasMaps []*Map, err error) {
-	if repository.MapNames == nil {
+	if repository.mapNames == nil {
 		err = repository.LoadMapRepository(adabas)
 		if err != nil {
 			return
@@ -405,13 +410,13 @@ func AllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
 		adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
 		adatypes.Central.Log.Debugf("Read in repository using Adabas %s for %s/%03d in %s",
 			adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr, mn)
-		if mr.MapNames == nil {
+		if mr.mapNames == nil {
 			err = mr.LoadMapRepository(adabas)
 			if err != nil {
 				continue
 			}
 		}
-		for mn := range mr.MapNames {
+		for mn := range mr.mapNames {
 			maps = append(maps, mn)
 		}
 		adatypes.Central.Log.Debugf("Found %d map names in repository using Adabas %s/%03d", len(maps), adabas.URL.String(), mr.Fnr)
@@ -424,7 +429,9 @@ func parseMapNames(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	repository := x.(*Repository)
 	v := adabasRequest.Definition.Search(mapFieldName.fieldName())
 	name := v.String()
-	repository.MapNames[name] = adabasRequest.Isn
+	repository.Lock()
+	defer repository.Unlock()
+	repository.mapNames[name] = adabasRequest.Isn
 	return
 }
 
@@ -453,15 +460,20 @@ func parseMaps(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	adabasMap.createFieldMap()
 
 	repository.CachedMaps[adabasMap.Name] = adabasMap
-	repository.MapNames[adabasMap.Name] = adabasRequest.Isn
+	repository.Lock()
+	defer repository.Unlock()
+	repository.mapNames[adabasMap.Name] = adabasRequest.Isn
 	return
 }
 
 // LoadMapRepository read an index for names of all Adabas maps in the repository into memory
 func (repository *Repository) LoadMapRepository(adabas *Adabas) (err error) {
+	if repository.mapNames == nil {
+		return nil
+	}
 	adatypes.Central.Log.Debugf("Read all data from dbid=%d(%s) of %s/%d\n",
 		adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.DatabaseURL.URL.String(), repository.Fnr)
-	repository.MapNames = make(map[string]adatypes.Isn)
+	repository.mapNames = make(map[string]adatypes.Isn)
 
 	adabas.Acbx.Acbxdbid = repository.DatabaseURL.URL.Dbid
 	request, _ := NewReadRequest(adabas, repository.Fnr)
@@ -531,4 +543,11 @@ func (repository *Repository) writeAdabasMapsWithAdabas(adabas *Adabas, adabasMa
 	}
 	err = request.EndTransaction()
 	return
+}
+
+func (repository *Repository) reset(mapName string) (err error) {
+	repository.Lock()
+	defer repository.Unlock()
+
+	repository.mapNames[m.Name] = 0
 }

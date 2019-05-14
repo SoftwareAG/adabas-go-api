@@ -103,9 +103,7 @@ func (repository *Repository) ImportMapRepository(adabas *Adabas, filter string,
 	}
 	defer file.Close()
 
-	if repository.MapNames == nil {
-		repository.LoadMapRepository(adabas)
-	}
+	repository.LoadMapRepository(adabas)
 
 	suffixCheck := strings.ToLower(fileName)
 	switch {
@@ -135,7 +133,7 @@ func (repository *Repository) ImportMapRepository(adabas *Adabas, filter string,
 	for _, m := range maps {
 		m.Repository = &repository.DatabaseURL
 		m.Data = &dataRepository.DatabaseURL
-		repository.MapNames[m.Name] = 0
+		repository.Reset(m.Name)
 		repository.CachedMaps[m.Name] = m
 	}
 
