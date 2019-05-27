@@ -615,14 +615,24 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 	return
 }
 
-func (request *ReadRequest) adaptDescriptorMap(adabasRequest *adatypes.Request) {
+func (request *ReadRequest) adaptDescriptorMap(adabasRequest *adatypes.Request) error {
 	if request.adabasMap != nil {
 		adabasRequest.Parameter = request.adabasMap
 		for i := 0; i < len(adabasRequest.Descriptors); i++ {
-			v := request.definition.Search(adabasRequest.Descriptors[i])
-			adabasRequest.Descriptors[i] = v.Type().ShortName()
+			t, err := request.definition.SearchType(adabasRequest.Descriptors[i])
+			if err != nil {
+				return err
+			}
+			adatypes.Central.Log.Debugf("Found search descriptor %s and got %#v", adabasRequest.Descriptors[i], t)
+			if t == nil {
+				request.definition.DumpTypes(false, false, "Global Tree")
+				request.definition.DumpTypes(false, false, "Active Tree")
+				panic("Search error")
+			}
+			adabasRequest.Descriptors[i] = t.ShortName()
 		}
 	}
+	return nil
 }
 
 type evaluateFieldMap struct {

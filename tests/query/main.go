@@ -274,7 +274,7 @@ func main() {
 	wg.Add(threadValue)
 	for i := uint32(0); i < uint32(threadValue); i++ {
 		fmt.Printf("Start thread %d/%d\n", i+1, threadValue)
-		c := caller{url: args[0], counter: countValue, threadNr: i + 1,
+		c := caller{url: args[0], counter: countValue, threadNr: i + 1, search: search,
 			name: names[int(i)%len(names)], file: uint32(file), limit: uint64(limit),
 			fields: fields, credentials: credentials}
 		go callAdabas(c)

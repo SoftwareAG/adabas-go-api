@@ -98,6 +98,9 @@ func NewMapRepositoryWithURL(url DatabaseURL) *Repository {
 
 func extractReference(reference string) (url *URL, fnr Fnr, err error) {
 	v := strings.Split(reference, ",")
+	if len(v) < 2 {
+		return nil, 0, adatypes.NewGenericError(132)
+	}
 	url, err = NewURL(v[0])
 	if err != nil {
 		return

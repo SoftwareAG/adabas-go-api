@@ -852,5 +852,6 @@ var statisMessages = []struct {
 	{"ADG0000129", "en", "Invalid range used: {0}"},
 	{"ADG0000130", "en", "End of cursor"},
 	{"ADG0000131", "en", "Driver not supported"},
+	{"ADG0000132", "en", "Incorrect repository reference, use comma separated definition like <dbid>,<fnr>"},
 	{"ADG0000150", "en", "Cannot scan value for type {0}"},
 }

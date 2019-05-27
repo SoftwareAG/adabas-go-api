@@ -257,7 +257,7 @@ func main() {
 	flag.BoolVar(&close, "C", false, "Close Adabas connection in each loop")
 	flag.Parse()
 	args := flag.Args()
-	if len(args) < 1 {
+	if !showMaps && len(args) < 1 {
 		fmt.Printf("Usage: %s <url>\n", os.Args[0])
 		flag.PrintDefaults()
 		return
@@ -276,10 +276,17 @@ func main() {
 
 	names := strings.Split(name, ",")
 
-	adabas.AddGlobalMapRepositoryReference(repository)
+	err = adabas.AddGlobalMapRepositoryReference(repository)
+	if err != nil {
+		fmt.Println(err.Error())
+		log.Fatal("Error repository:", err)
+	}
 
 	if showMaps {
 		adabas.DumpGlobalMapRepositories()
+		if len(args) < 1 {
+			return
+		}
 	}
 
 	wg.Add(threadValue)
