@@ -239,26 +239,28 @@ func main() {
 	var search string
 	var fields string
 	var showMaps bool
+	var showMap bool
 	var credentials string
 	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 	var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
 	//flag.StringVar(&gopherType, "gopher_type", defaultGopher, usage)
-	flag.IntVar(&countValue, "c", 1, "Number of loops")
-	flag.IntVar(&threadValue, "t", 1, "Number of threads")
-	flag.IntVar(&limit, "l", 10, "Number of records maximal read")
+	flag.IntVar(&countValue, "c", 1, "Number of loops [default 1]")
+	flag.IntVar(&threadValue, "t", 1, "Number of threads [default 1]")
+	flag.IntVar(&limit, "l", 10, "Number of records maximal read  [default 10]")
 	flag.StringVar(&name, "n", "", "Read descriptor order")
-	flag.StringVar(&search, "s", "", "Search request")
+	flag.StringVar(&search, "s", "", "Search request like 'name=SMITH'")
 	flag.StringVar(&credentials, "p", "", "Define user and password credentials of type 'user:password'")
-	flag.StringVar(&fields, "d", "", "Query field list")
-	flag.StringVar(&repository, "r", "", "Adabas map repository used for search")
+	flag.StringVar(&fields, "d", "", "Query field list like 'name,personnel-id', '*' queries all fields, [default is '']")
+	flag.StringVar(&repository, "r", "", "Adabas map repository used for search. Need to be defined using '<db target>,fnr'")
 	flag.BoolVar(&output, "o", false, "display output")
 	flag.BoolVar(&showMaps, "M", false, "List all maps available")
+	flag.BoolVar(&showMap, "m", false, "List all map fields of given map")
 	flag.BoolVar(&close, "C", false, "Close Adabas connection in each loop")
 	flag.Parse()
 	args := flag.Args()
 	if !showMaps && len(args) < 1 {
-		fmt.Printf("Usage: %s <url>\n", os.Args[0])
+		fmt.Printf("Usage: %s <map name>\n", os.Args[0])
 		flag.PrintDefaults()
 		return
 	}
@@ -287,6 +289,15 @@ func main() {
 		if len(args) < 1 {
 			return
 		}
+	}
+	if showMap {
+		ada, _ := adabas.NewAdabas(1)
+		m, merr := adabas.SearchMapRepository(ada, args[0])
+		if merr != nil {
+			fmt.Println("Searched map not found", merr)
+			return
+		}
+		fmt.Println(m.String())
 	}
 
 	wg.Add(threadValue)

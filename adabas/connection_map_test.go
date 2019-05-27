@@ -1621,3 +1621,54 @@ func TestConnection_readGroup(t *testing.T) {
 	assert.Equal(t, "F  ", v.String())
 
 }
+
+func ExampleConnection_mapReadDisjunctSearch() {
+	f, err := initLogWithFile("connection.log")
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if cerr != nil {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest("EMPLOYEES")
+	if rerr != nil {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err = request.QueryFields("personnel-id")
+	if err != nil {
+		return
+	}
+	request.Limit = 0
+	var result *Response
+	fmt.Println("Read using ISN order:")
+	result, err = request.ReadLogicalWith("name=SMITH")
+	if err != nil {
+		fmt.Println("Error reading ISN order", err)
+		return
+	}
+	result.DumpValues()
+
+	// Output: Read using ISN order:
+	// Dump all result values
+	// Record Isn: 0579
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 20009300 <
+	// Record Isn: 0634
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 20015400 <
+	// Record Isn: 0670
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 20018800 <
+	// Record Isn: 0727
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 20025200 <
+	// Record Isn: 0787
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 20000400 <
+}
