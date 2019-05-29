@@ -94,6 +94,9 @@ $(BIN)/go2xunit: REPOSITORY=github.com/tebeka/go2xunit
 COBERTURA = $(BIN)/gocover-cobertura
 $(BIN)/gocover-cobertura: REPOSITORY=github.com/t-yuki/gocover-cobertura
 
+GOJUNITREPORT = $(BIN)/go-junit-report
+$(BIN)/go-junit-report: REPOSITORY=github.com/jstemmer/go-junit-report
+
 # Tests
 $(TESTOUTPUT):
 	mkdir $(TESTOUTPUT)
@@ -127,7 +130,7 @@ TEST_XML_TARGETS := test-xml-bench
 test-xml-bench:     ARGS=-run=__absolutelynothing__ -bench=. ## Run benchmarks
 $(TEST_XML_TARGETS): NAME=$(MAKECMDGOALS:test-xml-%=%)
 $(TEST_XML_TARGETS): test-xml
-test-xml: prepare fmt lint $(TESTOUTPUT) | $(GO2XUNIT) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
+test-xml: prepare fmt lint $(TESTOUTPUT) | $(GO2XUNIT) $(GOJUNITREPORT) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
 	sh $(CURDIR)/sh/evaluateQueues.sh
 	$Q cd $(CURDIR) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
 	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
@@ -135,7 +138,8 @@ test-xml: prepare fmt lint $(TESTOUTPUT) | $(GO2XUNIT) ; $(info $(M) running $(N
 	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
 	    $(GO) test -timeout $(TIMEOUT)s -count=1 $(GO_FLAGS) -v $(ARGS) ./... | tee $(TESTOUTPUT)/tests.$(HOST).output
 	sh $(CURDIR)/sh/evaluateQueues.sh
-	$(GO2XUNIT) -input $(TESTOUTPUT)/tests.$(HOST).output -output $(TESTOUTPUT)/tests.$(HOST).xml
+#	$(GO2XUNIT) -input $(TESTOUTPUT)/tests.$(HOST).output -output $(TESTOUTPUT)/tests.$(HOST).xml
+	$(GOJUNITREPORT) > $(TESTOUTPUT)/tests.$(HOST).xml
 
 COVERAGE_MODE = atomic
 COVERAGE_PROFILE = $(COVERAGE_DIR)/profile.out
