@@ -3,7 +3,7 @@
 echo "Adabas status:"
 call C:\SAG\103oct2018_SIC\Adabas\INSTALL\adaenv.bat
 
-FOR %%D IN (23,24,25) DO (
+FOR %%D IN (23,24) DO (
    adaopr db=%%D disp=uq
    adaopr db=%%D disp=com
    adaopr db=%%D reset=com
