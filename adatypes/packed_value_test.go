@@ -199,7 +199,7 @@ func TestPackedFormatterDateTime(t *testing.T) {
 	adaType.length = 12
 	adaType.FormatTypeCharacter = 'T'
 	pa := newPackedValue(adaType)
-	pa.SetValue(635812935348)
+	pa.SetValue(int64(635812935348))
 	assert.Equal(t, "2014/10/24 14:25:34.8", pa.String())
 	err = pa.SetValue("2019/04/16 14:25:34")
 	assert.NoError(t, err)
