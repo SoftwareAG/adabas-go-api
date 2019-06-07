@@ -27,11 +27,10 @@ import (
 )
 
 func TestStructureValueGroup(t *testing.T) {
-	f, err := initLogWithFile("structure_value.log")
+	err := initLogWithFile("structure_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
@@ -77,11 +76,10 @@ func TestStructureValueGroup(t *testing.T) {
 }
 
 func TestStructureValuePeriod(t *testing.T) {
-	f, err := initLogWithFile("structure_value.log")
+	err := initLogWithFile("structure_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	groupLayout := []IAdaType{
 		NewTypeWithLength(FieldTypeCharacter, "GC", 1),
@@ -134,11 +132,10 @@ func TestStructureValuePeriod(t *testing.T) {
 }
 
 func TestStructureValuePeriodMU(t *testing.T) {
-	f, err := initLogWithFile("structure_value.log")
+	err := initLogWithFile("structure_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
@@ -227,11 +224,10 @@ func TestStructureValuePeriodMU(t *testing.T) {
 }
 
 func TestStructureValuePeriodLast(t *testing.T) {
-	f, err := initLogWithFile("structure_value.log")
+	err := initLogWithFile("structure_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	groupLayout := []IAdaType{
 		NewTypeWithLength(FieldTypeCharacter, "GC", 1),

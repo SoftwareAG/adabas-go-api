@@ -24,7 +24,7 @@ import (
 	"strings"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -329,7 +329,7 @@ func TestConnectionPEMUMfMap(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
 		fmt.Println("Mainframe database not defined")
@@ -340,7 +340,7 @@ func TestConnectionPEMUMfMap(t *testing.T) {
 		return
 	}
 	defer connection.Close()
-	log.Debug("Created connection : ", connection)
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
 	if assert.NoError(t, err) {
 		fmt.Println("Limit query data:")
@@ -371,7 +371,7 @@ func TestConnectionPEShiftMfMap(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
 		fmt.Println("Mainframe database not defined")
@@ -382,7 +382,7 @@ func TestConnectionPEShiftMfMap(t *testing.T) {
 		return
 	}
 	defer connection.Close()
-	log.Debug("Created connection : ", connection)
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
 	if assert.NoError(t, err) {
 		fmt.Println("Limit query data:")
@@ -410,7 +410,7 @@ func TestConnectionAllMfMap(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
 		fmt.Println("Mainframe database not defined")
@@ -421,7 +421,7 @@ func TestConnectionAllMfMap(t *testing.T) {
 		return
 	}
 	defer connection.Close()
-	log.Debug("Created connection : ", connection)
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
 	if assert.NoError(t, err) {
 		fmt.Println("Limit query data:")

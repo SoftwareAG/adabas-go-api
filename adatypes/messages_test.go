@@ -27,12 +27,11 @@ import (
 )
 
 func TestMessage(t *testing.T) {
-	f, ferr := initLogWithFile("messages.log")
+	ferr := initLogWithFile("messages.log")
 	if ferr != nil {
 		fmt.Println(ferr)
 		return
 	}
-	defer f.Close()
 
 	err := NewGenericError(02, "XX")
 	assert.Equal(t, "ADG0000002: Invalid Adabas command send: XX", err.Error())
@@ -41,12 +40,11 @@ func TestMessage(t *testing.T) {
 }
 
 func ExampleNewGenericError_print() {
-	f, ferr := initLogWithFile("messages.log")
+	ferr := initLogWithFile("messages.log")
 	if ferr != nil {
 		fmt.Println(ferr)
 		return
 	}
-	defer f.Close()
 
 	err := NewGenericError(02, "XX")
 	fmt.Println(err)

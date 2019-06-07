@@ -27,8 +27,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // ConstantIndicator constant indicator is replaced with constants
@@ -717,7 +715,7 @@ func appendNumericValue(buffer *bytes.Buffer, v string) {
 			dst := make([]byte, hex.DecodedLen(len(src)))
 			n, err := hex.Decode(dst, src)
 			if err != nil {
-				log.Fatal(err)
+				Central.Log.Fatal(err)
 			}
 
 			Central.Log.Debugf("Byte value %v\n", dst[:n])
@@ -725,7 +723,7 @@ func appendNumericValue(buffer *bytes.Buffer, v string) {
 		} else {
 			va, err := strconv.Atoi(v)
 			if err != nil {
-				log.Fatal(err)
+				Central.Log.Fatal(err)
 			}
 
 			buffer.WriteByte(byte(va))

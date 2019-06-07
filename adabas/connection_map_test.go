@@ -25,7 +25,6 @@ import (
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -299,7 +298,7 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 	if !assert.NoError(t, cerr) {
 		return
 	}
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if !assert.NoError(t, cerr) {
 		return
@@ -358,7 +357,7 @@ func TestConnectionMapPointingToRemote(t *testing.T) {
 		return
 	}
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4];auth=NONE,user=TCMapPoin,id=4,host=REMOTE")
 	if !assert.NoError(t, cerr) {
 		return
@@ -429,7 +428,7 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 	f := initTestLogWithFile(t, "connection_map.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	cErr := clearFile(16)
 	if !assert.NoError(t, cErr) {
 		return
@@ -499,7 +498,7 @@ func ExampleConnection_readWithMap() {
 	}
 	defer f.Close()
 
-	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+	adatypes.Central.Log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -553,7 +552,7 @@ func ExampleConnection_readWithMapFormatted() {
 	}
 	defer f.Close()
 
-	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+	adatypes.Central.Log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -745,7 +744,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	f := initTestLogWithFile(t, "connection_map.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	cErr := clearFile(16)
 	if !assert.NoError(t, cErr) {
@@ -756,7 +755,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 		return
 	}
 
-	log.Infof("Prepare create test map")
+	adatypes.Central.Log.Infof("Prepare create test map")
 	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
 	if !assert.NoError(t, perr) {
@@ -769,7 +768,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 		return
 	}
 
-	log.Infof("Create connection...")
+	adatypes.Central.Log.Infof("Create connection...")
 	connection, err := NewConnection("acj;map;config=[" + adabasModDBIDs + ",250]")
 	if !assert.NoError(t, err) {
 		return
@@ -816,7 +815,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	connection.EndTransaction()
 	fmt.Println("Check stored data")
 
-	log.Infof("Check stored data")
+	adatypes.Central.Log.Infof("Check stored data")
 	checkStoreByFile(t, adabasModDBIDs, 16, multipleTransactionRefName)
 	checkStoreByFile(t, adabasModDBIDs, 19, multipleTransactionRefName2)
 
@@ -847,7 +846,7 @@ func ExampleConnection_mapStore() {
 		return
 	}
 
-	log.Infof("Create connection...")
+	adatypes.Central.Log.Infof("Create connection...")
 	connection, err := NewConnection("acj;map;config=[" + adabasModDBIDs + ",250]")
 	if err != nil {
 		return
@@ -989,7 +988,7 @@ func ExampleConnection_readShortMap() {
 	}
 	defer f.Close()
 
-	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+	adatypes.Central.Log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -1047,7 +1046,7 @@ func ExampleConnection_readLongMapIsn() {
 	}
 	defer f.Close()
 
-	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+	adatypes.Central.Log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -1142,7 +1141,7 @@ func ExampleConnection_readLongMapRange() {
 	}
 	defer f.Close()
 
-	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+	adatypes.Central.Log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -1290,7 +1289,7 @@ func TestConnection_readAllMap(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if !assert.NoError(t, cerr) {
@@ -1333,7 +1332,7 @@ func TestConnection_readReference(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if !assert.NoError(t, cerr) {
@@ -1399,7 +1398,7 @@ func TestConnection_readReferenceList(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if !assert.NoError(t, cerr) {
@@ -1580,7 +1579,7 @@ func TestConnection_readGroup(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if !assert.NoError(t, cerr) {

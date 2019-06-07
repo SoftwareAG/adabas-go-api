@@ -28,7 +28,6 @@ import (
 	"time"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
 )
 
 // BuildDate build date
@@ -394,7 +393,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 	}
 	// Check response to indicate error reading field definition
 	if adabas.Acbx.Acbxrsp != 0 {
-		log.Info("Error reading definition: ", adabas.getAdabasMessage())
+		adatypes.Central.Log.Infof("Error reading definition: %s", adabas.getAdabasMessage())
 		adatypes.LogMultiLineString(adabas.Acbx.String())
 		err = NewError(adabas)
 	}
@@ -677,7 +676,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 		}
 		// Error received from Adabas
 		if adabas.Acbx.Acbxrsp != AdaNormal {
-			log.Errorf("Error reading data: %s", adabas.getAdabasMessage())
+			adatypes.Central.Log.Errorf("Error reading data: %s", adabas.getAdabasMessage())
 			err = NewError(adabas)
 			return
 		}
@@ -922,7 +921,7 @@ func (adabas *Adabas) Store(fileNr Fnr, adabasRequest *adatypes.Request) (err er
 	adatypes.Central.Log.Debugf("Store ISN rsp=%d ... %d", adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxisn)
 	// Error received from Adabas
 	if adabas.Acbx.Acbxrsp != AdaNormal {
-		log.Errorf("Error storing data: %s", adabas.getAdabasMessage())
+		adatypes.Central.Log.Errorf("Error storing data: %s", adabas.getAdabasMessage())
 		err = NewError(adabas)
 		adatypes.Central.Log.Debugf("%v", err)
 		return
@@ -973,7 +972,7 @@ func (adabas *Adabas) Update(fileNr Fnr, adabasRequest *adatypes.Request) (err e
 	adatypes.Central.Log.Debugf("Update ISN rsp=%d ... %d", adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxisn)
 	// Error received from Adabas
 	if adabas.Acbx.Acbxrsp != AdaNormal {
-		log.Errorf("Error updating data: %s", adabas.getAdabasMessage())
+		adatypes.Central.Log.Errorf("Error updating data: %s", adabas.getAdabasMessage())
 		err = NewError(adabas)
 		adatypes.Central.Log.Debugf("%v", err)
 		return
@@ -1014,8 +1013,8 @@ func (adabas *Adabas) DeleteIsn(fileNr Fnr, isn adatypes.Isn) (err error) {
 		adabas.ID.transactions(adabas.URL.String()), adabas)
 	// Error received from Adabas
 	if adabas.Acbx.Acbxrsp != AdaNormal {
-		log.Errorf("Error reading data: %s", adabas.getAdabasMessage())
-		log.Errorf("CB: %s", adabas.Acbx.String())
+		adatypes.Central.Log.Errorf("Error reading data: %s", adabas.getAdabasMessage())
+		adatypes.Central.Log.Errorf("CB: %s", adabas.Acbx.String())
 		err = NewError(adabas)
 		return
 	}
@@ -1038,8 +1037,8 @@ func (adabas *Adabas) BackoutTransaction() (err error) {
 
 	// Error received from Adabas
 	if adabas.Acbx.Acbxrsp != AdaNormal {
-		log.Errorf("Error reading data: %s", adabas.getAdabasMessage())
-		log.Errorf("CB: %s", adabas.Acbx.String())
+		adatypes.Central.Log.Errorf("Error reading data: %s", adabas.getAdabasMessage())
+		adatypes.Central.Log.Errorf("CB: %s", adabas.Acbx.String())
 		err = NewError(adabas)
 		return
 	}
@@ -1068,8 +1067,8 @@ func (adabas *Adabas) EndTransaction() (err error) {
 	adatypes.Central.Log.Debugf("End of transaction rsp ... rsp=%d", adabas.Acbx.Acbxrsp)
 	// Error received from Adabas
 	if adabas.Acbx.Acbxrsp != AdaNormal {
-		log.Errorf("Error end transaction: %s", adabas.getAdabasMessage())
-		log.Errorf("CB: %s", adabas.Acbx.String())
+		adatypes.Central.Log.Errorf("Error end transaction: %s", adabas.getAdabasMessage())
+		adatypes.Central.Log.Errorf("CB: %s", adabas.Acbx.String())
 		err = NewError(adabas)
 		return
 	}

@@ -26,7 +26,6 @@ import (
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -42,7 +41,7 @@ func TestAdabasFailure(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(0)
 	assert.Nil(t, adabas)
 	assert.Error(t, err)
@@ -66,15 +65,15 @@ func TestAdabasFailure(t *testing.T) {
 	}
 	assert.Error(t, retb)
 
-	log.Debug("acbx ver=", adabas.Acbx.Acbxver)
-	log.Debug("acbx cmd=", adabas.Acbx.Acbxcmd)
-	log.Debug("acbx len=", adabas.Acbx.Acbxlen)
+	adatypes.Central.Log.Debugf("acbx ver=%v", adabas.Acbx.Acbxver)
+	adatypes.Central.Log.Debugf("acbx cmd=%v", adabas.Acbx.Acbxcmd)
+	adatypes.Central.Log.Debugf("acbx len=%v", adabas.Acbx.Acbxlen)
 
 	adabas.Acbx.Acbxcmd = cl.code()
 
-	log.Debug("acbx ver=", adabas.Acbx.Acbxver)
-	log.Debug("acbx cmd=", adabas.Acbx.Acbxcmd)
-	log.Debug("acbx len=", adabas.Acbx.Acbxlen)
+	adatypes.Central.Log.Debugf("acbx ver=%v", adabas.Acbx.Acbxver)
+	adatypes.Central.Log.Debugf("acbx cmd=%v", adabas.Acbx.Acbxcmd)
+	adatypes.Central.Log.Debugf("acbx len=%v", adabas.Acbx.Acbxlen)
 
 	retb = adabas.CallAdabas()
 	if retb == nil {
@@ -96,7 +95,7 @@ func TestAdabasOk(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 
 	var abds []*Buffer
@@ -152,7 +151,7 @@ func TestAdabasOpen(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 
 	var abds []*Buffer
@@ -191,7 +190,7 @@ func TestAdabasFdt(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
 
@@ -499,7 +498,7 @@ func TestAdabasFdtNewEmployee(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("newempl")
 
@@ -532,7 +531,7 @@ func TestAdabasFdtHyperexit(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("hyper")
 	defer adabas.Close()
@@ -564,9 +563,9 @@ func TestAdabasFdtNewEmployeeRemote(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
-	log.Debug("Network location ", entireNetworkLocation())
+	adatypes.Central.Log.Debugf("Network location %s", entireNetworkLocation())
 	url := "201(tcpip://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
 	ID := NewAdabasID()
@@ -608,9 +607,9 @@ func TestAdabasUnknownDriver(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
-	log.Debug("Network location ", entireNetworkLocation())
+	adatypes.Central.Log.Debugf("Network location %s", entireNetworkLocation())
 	url := "201(abc://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
 	ID := NewAdabasID()
@@ -660,7 +659,7 @@ func TestAdabasReadPhysical(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	err := adabas.Open()
@@ -688,7 +687,7 @@ func TestAdabasReadLogical(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	err := adabas.Open()
@@ -716,7 +715,7 @@ func TestAdabasReadIsn(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	err := adabas.Open()
@@ -742,7 +741,7 @@ func TestAdabasSearchLogical(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	err := adabas.Open()
@@ -779,7 +778,7 @@ func TestAdabasCloned(t *testing.T) {
 	f := initTestLogWithFile(t, "adabas.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	clonedAdabas := NewClonedAdabas(adabas)

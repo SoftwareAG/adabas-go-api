@@ -25,7 +25,6 @@ import (
 	"regexp"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,13 +32,12 @@ var mainframe = NewPlatform(0x00)
 var opensystem = NewPlatform(0x20)
 
 func TestSearchSimpleTree(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA='XXXXX' AND BC='2'")
 	assert.Equal(t, "XXXXX", searchInfo.constants[0])
@@ -50,13 +48,12 @@ func TestSearchSimpleTree(t *testing.T) {
 }
 
 func TestSearchExtraTree(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA='XX\\'XXX' AND BC='2'")
 	assert.Equal(t, "XX\\'XXX", searchInfo.constants[0])
@@ -67,13 +64,12 @@ func TestSearchExtraTree(t *testing.T) {
 }
 
 func TestSearchSecondTree(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 AND BC='12342'")
 	searchValue := &SearchValue{}
@@ -91,13 +87,12 @@ func TestSearchSecondTree(t *testing.T) {
 }
 
 func TestSearchExtractAndBinding(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 AND BC=2")
 	searchInfo.Definition = tDefinition()
@@ -110,13 +105,12 @@ func TestSearchExtractAndBinding(t *testing.T) {
 }
 
 func TestSearchExtractOrBinding(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 OR BC=2")
 	searchInfo.Definition = tDefinition()
@@ -129,13 +123,12 @@ func TestSearchExtractOrBinding(t *testing.T) {
 }
 
 func TestSearchStringValue(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AD='ABCDEF' AND BC=2")
 	searchInfo.Definition = tDefinition()
@@ -154,13 +147,12 @@ func TestSearchStringValue(t *testing.T) {
 }
 
 func TestSearchVarStringValue(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AD='ABCDEF' AND BC=2")
 	searchInfo.Definition = tDefinition()
@@ -179,13 +171,12 @@ func TestSearchVarStringValue(t *testing.T) {
 }
 
 func TestSearchTwoStringValue(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AE='ABCDEF' AND AD='X123'")
 	searchInfo.Definition = tDefinition()
@@ -205,13 +196,12 @@ func TestSearchTwoStringValue(t *testing.T) {
 }
 
 func TestSearchFails(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "ABCDEF")
 	searchInfo.Definition = tDefinition()
@@ -221,13 +211,12 @@ func TestSearchFails(t *testing.T) {
 }
 
 func TestSearchRange(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=[12:44]")
 	searchInfo.Definition = tDefinition()
@@ -247,13 +236,12 @@ func TestSearchRange(t *testing.T) {
 }
 
 func TestSearchRangeMf(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "AA=[12:44]")
 	searchInfo.Definition = tDefinition()
@@ -276,13 +264,12 @@ func TestSearchRangeMf(t *testing.T) {
 }
 
 func TestSearchRangeMfNoLower(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "AA=(12:44]")
 	searchInfo.Definition = tDefinition()
@@ -306,13 +293,12 @@ func TestSearchRangeMfNoLower(t *testing.T) {
 }
 
 func TestSearchRangeMfNoHigher(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "AA=[12:44)")
 	searchInfo.Definition = tDefinition()
@@ -336,13 +322,12 @@ func TestSearchRangeMfNoHigher(t *testing.T) {
 }
 
 func TestSearchRangeAlpha(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "SA=[10111011:10111101]")
 	searchInfo.Definition = tDefinition()
@@ -364,13 +349,12 @@ func TestSearchRangeAlpha(t *testing.T) {
 }
 
 func TestSearchRangeMfNoHigherAlpha(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "SA=[10111011:10111013)")
 	searchInfo.Definition = tDefinition()
@@ -394,13 +378,12 @@ func TestSearchRangeMfNoHigherAlpha(t *testing.T) {
 }
 
 func TestSearchRangeMfNoBorder(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "AA=(12:44)")
 	searchInfo.Definition = tDefinition()
@@ -428,13 +411,12 @@ func TestSearchRangeMfNoBorder(t *testing.T) {
 }
 
 func TestSearchValue(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=123")
 	searchInfo.Definition = tDefinition()
@@ -464,11 +446,10 @@ func TestSearchValue(t *testing.T) {
 }
 
 func TestSearchFields(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	searchInfo := NewSearchInfo(opensystem, "AA=123 AND BC=1")
 	searchInfo.Definition = tDefinition()
@@ -542,13 +523,12 @@ AA=ABC AND BB=XDE AND CC='123' OR AA=[123:123]`
 }
 
 func TestSearchComplex(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=(12:44] AND AD='SMITH'")
 	searchInfo.Definition = tDefinition()
@@ -576,13 +556,12 @@ func TestSearchComplex(t *testing.T) {
 }
 
 func TestSearchExtractOr2Binding(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 OR BC=2 OR AC=1")
 	searchInfo.Definition = tDefinition()
@@ -597,13 +576,12 @@ func TestSearchExtractOr2Binding(t *testing.T) {
 }
 
 func TestSearchExtractOr2BindingError(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 OR BC=2 OR CC=1 OR  DD=2")
 	searchInfo.Definition = tDefinition()
@@ -613,13 +591,12 @@ func TestSearchExtractOr2BindingError(t *testing.T) {
 }
 
 func TestSearchMixedValue(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=0x00'ABCD'0")
 	searchValue := &SearchValue{}

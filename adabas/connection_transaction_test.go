@@ -25,14 +25,14 @@ import (
 	"testing"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
 )
 
 var vehicleMapName = mapVehicles + "Go"
 
 func prepareStoreAndHold(t *testing.T, c chan bool) {
-	log.Infof("Create connection...")
+	adatypes.Central.Log.Infof("Create connection...")
 	connection, err := NewConnection("acj;map;config=[" + adabasModDBIDs + ",250]")
 	if !assert.NoError(t, err) {
 		c <- false
@@ -101,7 +101,7 @@ func TestConnectionTransaction(t *testing.T) {
 	f := initTestLogWithFile(t, "connection_transaction.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	cErr := clearFile(16)
 	if !assert.NoError(t, cErr) {
@@ -112,7 +112,7 @@ func TestConnectionTransaction(t *testing.T) {
 		return
 	}
 
-	log.Infof("Prepare create test map")
+	adatypes.Central.Log.Infof("Prepare create test map")
 	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
 	if !assert.NoError(t, perr) {
@@ -152,7 +152,7 @@ func TestConnectionTransaction(t *testing.T) {
 	x = <-c
 
 	fmt.Println("Check stored data", x)
-	log.Infof("Check stored data")
+	adatypes.Central.Log.Infof("Check stored data")
 	checkStoreByFile(t, adabasModDBIDs, 16, multipleTransactionRefName)
 	checkStoreByFile(t, adabasModDBIDs, 19, multipleTransactionRefName2)
 

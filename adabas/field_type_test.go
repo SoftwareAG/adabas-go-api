@@ -27,7 +27,6 @@ import (
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -193,7 +192,7 @@ func TestFieldTypeRead(t *testing.T) {
 	f := initTestLogWithFile(t, "field_type.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, cerr) {
 		return

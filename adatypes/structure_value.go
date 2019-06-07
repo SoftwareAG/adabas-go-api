@@ -23,8 +23,6 @@ import (
 	"bytes"
 	"fmt"
 	"math"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type structureElement struct {
@@ -566,7 +564,7 @@ func (value *StructureValue) Bytes() []byte {
 
 // SetStringValue set the string value of the value
 func (value *StructureValue) SetStringValue(stValue string) {
-	log.Fatal("Structure set string, not implement yet")
+	Central.Log.Fatal("Structure set string, not implement yet")
 }
 
 // SetValue set value for structure

@@ -30,8 +30,6 @@ import (
 	"unsafe"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-
-	log "github.com/sirupsen/logrus"
 )
 
 /*
@@ -267,7 +265,6 @@ func (adabas *Adabas) CallAdabas() (err error) {
 	} else {
 		adatypes.Central.Log.Debugf("Call Adabas using native link: %v", adatypes.Central.IsDebugLevel())
 		pabdArray := C.create_abd(C.int(len(adabas.AdabasBuffers)))
-		adatypes.Central.Log.Debugf("Create ABD : %v", log.GetLevel())
 		for index := range adabas.AdabasBuffers {
 			adabas.AdabasBuffers[index].abd.Abdrecv = adabas.AdabasBuffers[index].abd.Abdsize
 			adabas.AdabasBuffers[index].createCAbd(pabdArray, index)

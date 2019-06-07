@@ -23,17 +23,15 @@ import (
 	"bytes"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestByteArray(t *testing.T) {
-	f, err := initLogWithFile("byte_array.log")
+	err := initLogWithFile("byte_array.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeByteArray, "XX")
 	barray := newByteArrayValue(adaType)
 	assert.Equal(t, []byte{0x0}, barray.value)
@@ -50,12 +48,11 @@ func TestByteArray(t *testing.T) {
 }
 
 func TestByteArraySet(t *testing.T) {
-	f, err := initLogWithFile("byte_array.log")
+	err := initLogWithFile("byte_array.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewTypeWithLength(FieldTypeByteArray, "XX", 0)
 	barray := newByteArrayValue(adaType)
 	assert.Equal(t, uint32(0), adaType.Length())

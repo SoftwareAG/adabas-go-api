@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -31,7 +31,7 @@ func TestMapRepository(t *testing.T) {
 	f := initTestLogWithFile(t, "map_repositories.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	ada, _ := NewAdabas(24)
 	defer ada.Close()
 	AddGlobalMapRepositoryReference("24,4")
@@ -48,7 +48,7 @@ func TestGlobalMapRepository(t *testing.T) {
 	f := initTestLogWithFile(t, "map_repositories.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	ada, _ := NewAdabas(23)
 	defer ada.Close()
 	AddGlobalMapRepository(ada.URL, 4)
@@ -78,7 +78,7 @@ func TestMapRepositoryReadAll(t *testing.T) {
 	f := initTestLogWithFile(t, "map_repositories.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
 	defer adabas.Close()
 	mr := NewMapRepository(adabas, 4)
@@ -95,7 +95,7 @@ func TestGlobalMapConnectionString(t *testing.T) {
 	f := initTestLogWithFile(t, "map_repositories.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	ada, _ := NewAdabas(24)
 	defer ada.Close()
 	AddGlobalMapRepository(ada.URL, 4)
@@ -123,7 +123,7 @@ func TestGlobalMapConnectionDirect(t *testing.T) {
 	f := initTestLogWithFile(t, "map_repositories.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	ada, _ := NewAdabas(24)
 	defer ada.Close()
 	AddGlobalMapRepository(ada.URL, 4)

@@ -23,12 +23,12 @@ import (
 	"fmt"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestABD(t *testing.T) {
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabasBuffer := NewBuffer(AbdAQFb)
 	assert.Equal(t, uint8('F'), adabasBuffer.abd.Abdid)
 	adabasBuffer.Allocate(10)
@@ -46,7 +46,7 @@ func TestABD(t *testing.T) {
 }
 
 func TestAcbxReset(t *testing.T) {
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	var acbx Acbx
 	// fmt.Println(acbx)
 	assert.Equal(t, [2]byte{0, 0}, acbx.Acbxver)

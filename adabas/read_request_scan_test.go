@@ -24,7 +24,6 @@ import (
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,7 +31,7 @@ func TestRequestLogicalWithQueryFieldsScan1(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(adabasStatDBID)
 	if !assert.NoError(t, err) {
 		fmt.Println("Error new adabas", err)
@@ -109,7 +108,7 @@ func TestRequestLogicalWithQueryFieldsScan2(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(adabasStatDBID)
 	if !assert.NoError(t, err) {
 		fmt.Println("Error new adabas", err)
@@ -149,7 +148,7 @@ func TestRequestLogicalWithQueryFieldsScan3(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(adabasStatDBID)
 	if !assert.NoError(t, err) {
 		fmt.Println("Error new adabas", err)
@@ -185,7 +184,7 @@ func TestRequestLogicalWithQueryFieldsScan4(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(adabasStatDBID)
 	if !assert.NoError(t, err) {
 		fmt.Println("Error new adabas", err)
@@ -226,7 +225,7 @@ func TestHistogramByQueryFieldsScan(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(adabasStatDBID)
 	if !assert.NoError(t, err) {
 		fmt.Println("Error new adabas", err)
@@ -299,7 +298,7 @@ func TestHistogramWithQueryFieldsScan(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(adabasStatDBID)
 	if !assert.NoError(t, err) {
 		fmt.Println("Error new adabas", err)
@@ -357,7 +356,7 @@ func TestConnectionSimpleScan(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs + ";auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
 	if !assert.NoError(t, err) {
 		return
@@ -397,7 +396,7 @@ func TestConnectionSimpleScanGroupReference(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs + ";auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
 	if !assert.NoError(t, err) {
 		return
@@ -437,7 +436,7 @@ func TestConnectionSimpleScanGroupAndField(t *testing.T) {
 	f := initTestLogWithFile(t, "request.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs + ";auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
 	if !assert.NoError(t, err) {
 		return

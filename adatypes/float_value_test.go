@@ -26,11 +26,10 @@ import (
 )
 
 func TestFloating32(t *testing.T) {
-	f, err := initLogWithFile("float.log")
+	err := initLogWithFile("float.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	adaType := NewType(FieldTypeFloat, "FL")
 	adaType.length = 4
 	fl := newFloatValue(adaType)

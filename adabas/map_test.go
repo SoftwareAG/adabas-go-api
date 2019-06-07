@@ -28,7 +28,6 @@ import (
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,7 +35,7 @@ func TestMapFieldFieldName(t *testing.T) {
 	f := initTestLogWithFile(t, "map.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	tests := []struct {
 		name string
 		cc   mapField
@@ -59,12 +58,12 @@ func TestMapFields(t *testing.T) {
 	f := initTestLogWithFile(t, "map.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
 	defer adabas.Close()
 
 	mr := NewMapRepository(adabas, 4)
-	log.Debugf("Repository %#v\n", *mr)
+	adatypes.Central.Log.Debugf("Repository %#v\n", *mr)
 	m, err := mr.readAdabasMap(adabas, "EMPLOYEES-NAT-DDM")
 	if !assert.NoError(t, err) {
 		fmt.Println("Error found", err)
@@ -101,7 +100,7 @@ func TestMaps(t *testing.T) {
 	f := initTestLogWithFile(t, "map.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 
@@ -127,7 +126,7 @@ func TestMapCreate(t *testing.T) {
 	f := initTestLogWithFile(t, "map.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 
@@ -149,7 +148,7 @@ func TestMapFieldsMainframe(t *testing.T) {
 	f := initTestLogWithFile(t, "map.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
 		fmt.Println("Mainframe database not defined")
@@ -164,7 +163,7 @@ func TestMapFieldsMainframe(t *testing.T) {
 	defer adabas.Close()
 
 	mr := NewMapRepository(adabas, 4)
-	log.Debugf("Repository %#v\n", *mr)
+	adatypes.Central.Log.Debugf("Repository %#v\n", *mr)
 	m, err := mr.readAdabasMap(adabas, "EMPLOYEES-NAT-MF")
 	if !assert.NoError(t, err) {
 		fmt.Println("Error found", err)

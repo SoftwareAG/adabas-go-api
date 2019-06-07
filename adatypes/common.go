@@ -23,14 +23,36 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
+
+type nilLogger struct {
+}
+
+func lognil() *nilLogger {
+	return &nilLogger{}
+}
+
+func (*nilLogger) Debugf(format string, args ...interface{}) {
+	return
+}
+
+func (*nilLogger) Infof(format string, args ...interface{}) {
+	return
+}
+
+func (*nilLogger) Errorf(format string, args ...interface{}) {
+	return
+}
+
+func (*nilLogger) Fatal(args ...interface{}) {
+}
 
 // Log defines the log interface to manage other Log output frameworks
 type Log interface {
 	Debugf(format string, args ...interface{})
 	Infof(format string, args ...interface{})
+	Errorf(format string, args ...interface{})
+	Fatal(args ...interface{})
 }
 
 // centralOptions central structure containing the current log reference
@@ -40,7 +62,7 @@ type centralOptions struct {
 }
 
 // Central central configuration
-var Central = centralOptions{Log: logrus.New(), debug: false}
+var Central = centralOptions{Log: lognil(), debug: false}
 
 func (log *centralOptions) IsDebugLevel() bool {
 	return log.debug

@@ -26,7 +26,6 @@ import (
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -112,7 +111,7 @@ var hyperExitEmployeeFdt = []byte{88, 2, 0, 0, 0, 0, 35, 0, 139, 14, 54, 235, 16
 func TestFdtDefinition(t *testing.T) {
 	f := initTestLogWithFile(t, "fdt.log")
 	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	assert.Equal(t, byte('F'), fieldIdentifierField.code())
 	assert.Equal(t, byte('S'), fieldIdentifierSub.code())
 	assert.Equal(t, byte('T'), fieldIdentifierSuper.code())
@@ -131,7 +130,7 @@ func TestFdtParse(t *testing.T) {
 	f := initTestLogWithFile(t, "fdt.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	fmt.Println("Parse FDT structure")
 	helper := adatypes.NewHelper(employeeFdt, len(employeeFdt), binary.LittleEndian)
 	option := adatypes.NewBufferOption(false, false)
@@ -147,7 +146,7 @@ func TestFdtStructure(t *testing.T) {
 	f := initTestLogWithFile(t, "fdt.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	fmt.Println("Test FDT structure")
 	helper := adatypes.NewHelper(employeeFdt, len(employeeFdt), binary.LittleEndian)
 	option := adatypes.NewBufferOption(false, false)
@@ -162,7 +161,7 @@ func TestFdtStructureNewEmployee(t *testing.T) {
 	f := initTestLogWithFile(t, "fdt.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	fmt.Println("Test FDT structure")
 	helper := adatypes.NewHelper(newEmployeeFdt, len(newEmployeeFdt), binary.LittleEndian)
 	option := adatypes.NewBufferOption(false, false)
@@ -177,7 +176,7 @@ func TestFdtStructureHyperExitEmployee(t *testing.T) {
 	f := initTestLogWithFile(t, "fdt.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	fmt.Println("Test FDT structure")
 	helper := adatypes.NewHelper(hyperExitEmployeeFdt, len(hyperExitEmployeeFdt), binary.LittleEndian)
 	fdtDefinition := createFdtDefintion()

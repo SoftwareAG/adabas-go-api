@@ -24,18 +24,16 @@ import (
 	"fmt"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPackedData(t *testing.T) {
-	f, err := initLogWithFile("packed.log")
+	err := initLogWithFile("packed.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypePacked, "PA")
 	adaType.length = 4
 	pa := newPackedValue(adaType)
@@ -84,13 +82,12 @@ func TestPackedData(t *testing.T) {
 }
 
 func TestPackedCheckValid(t *testing.T) {
-	f, err := initLogWithFile("packed.log")
+	err := initLogWithFile("packed.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypePacked, "PA")
 	adaType.length = 1
 	pa := newPackedValue(adaType)
@@ -108,13 +105,12 @@ func TestPackedCheckValid(t *testing.T) {
 }
 
 func TestPackedCheckFractional(t *testing.T) {
-	f, err := initLogWithFile("packed.log")
+	err := initLogWithFile("packed.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypePacked, "PA")
 	adaType.length = 10
 	adaType.SetFractional(2)
@@ -167,13 +163,12 @@ func TestPackedCheckFractional(t *testing.T) {
 }
 
 func TestPackedFormatterDate(t *testing.T) {
-	f, err := initLogWithFile("packed.log")
+	err := initLogWithFile("packed.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypePacked, "PA")
 	adaType.length = 10
 	adaType.FormatTypeCharacter = 'D'
@@ -188,13 +183,12 @@ func TestPackedFormatterDate(t *testing.T) {
 }
 
 func TestPackedFormatterDateTime(t *testing.T) {
-	f, err := initLogWithFile("packed.log")
+	err := initLogWithFile("packed.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypePacked, "PA")
 	adaType.length = 12
 	adaType.FormatTypeCharacter = 'T'

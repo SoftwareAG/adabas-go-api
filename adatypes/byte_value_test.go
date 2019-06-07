@@ -24,17 +24,15 @@ import (
 	"math"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestIntByte(t *testing.T) {
-	f, err := initLogWithFile("byte.log")
+	err := initLogWithFile("byte.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeByte, "XX")
 	int2 := newByteValue(adaType)
 	assert.Equal(t, int8(0), int2.value)
@@ -95,12 +93,11 @@ func convert(b byte) int8 {
 }
 
 func TestUIntByte(t *testing.T) {
-	f, err := initLogWithFile("byte.log")
+	err := initLogWithFile("byte.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUByte, "XX")
 	int2 := newUByteValue(adaType)
 	assert.Equal(t, uint8(0), int2.value)

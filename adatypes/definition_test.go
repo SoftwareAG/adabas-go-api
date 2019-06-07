@@ -23,18 +23,16 @@ import (
 	"fmt"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDefinitionGroup(t *testing.T) {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if !assert.NoError(t, err) {
 		return
 	}
 
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	groupLayout := []IAdaType{
 		NewType(FieldTypeCharacter, "G1"),
@@ -60,13 +58,12 @@ func TestDefinitionGroup(t *testing.T) {
 }
 
 func TestDefinitionPeriodic(t *testing.T) {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if !assert.NoError(t, err) {
 		return
 	}
 
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	groupLayout := []IAdaType{
 		NewType(FieldTypeCharacter, "GC"),
@@ -96,12 +93,11 @@ func TestDefinitionPeriodic(t *testing.T) {
 }
 
 func TestDefinitionMultiple(t *testing.T) {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
@@ -133,13 +129,12 @@ func TestDefinitionMultiple(t *testing.T) {
 }
 
 func TestDefinitionQuerySimple(t *testing.T) {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if !assert.NoError(t, err) {
 		return
 	}
 
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
@@ -172,12 +167,11 @@ func TestDefinitionQuerySimple(t *testing.T) {
 }
 
 func TestDefinitionQueryGroupField(t *testing.T) {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
@@ -218,12 +212,11 @@ func TestDefinitionQueryGroupField(t *testing.T) {
 }
 
 func TestDefinitionQueryGroupFieldTwice(t *testing.T) {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
@@ -290,12 +283,11 @@ func TestDefinitionQueryGroupFieldTwice(t *testing.T) {
 }
 
 func TestDefinitionQueryWithLongname(t *testing.T) {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	multipleLayout := []IAdaType{
 		NewLongNameType(FieldTypePacked, "Packed", "PA"),
@@ -328,12 +320,11 @@ func TestDefinitionQueryWithLongname(t *testing.T) {
 }
 
 func TestDefinitionCreateValues(t *testing.T) {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
@@ -390,12 +381,11 @@ func TestDefinitionCreateValues(t *testing.T) {
 }
 
 func TestDefinitionQueryMultipleField(t *testing.T) {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "GM"),
@@ -433,14 +423,14 @@ func TestDefinitionQueryMultipleField(t *testing.T) {
 	// testDefinition.DumpTypes(false, true)
 	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
-	log.Debug(" ------------------------ after create adabas request 0 0")
+	Central.Log.Debugf(" ------------------------ after create adabas request 0 0")
 	assert.Equal(t, "U4,4,B,GMC,4,B,GM1-N,1,P,GS,1,A.",
 		request.FormatBuffer.String())
 
 	request, err = testDefinition.CreateAdabasRequest(true, false, false)
 	assert.Nil(t, err)
 
-	log.Debug(" ------------------------ after create adabas request 1 0")
+	Central.Log.Debugf(" ------------------------ after create adabas request 1 0")
 	testDefinition.DumpValues(false)
 
 	assert.Equal(t, "U4,4,B,GS,1,A.",
@@ -455,11 +445,11 @@ func TestDefinitionQueryMultipleField(t *testing.T) {
 	sv.addValue(muV, 0)
 
 	testDefinition.DumpValues(false)
-	log.Debug(" ------------------------ before create adabas request 0 0")
+	Central.Log.Debugf(" ------------------------ before create adabas request 0 0")
 
 	request, err = testDefinition.CreateAdabasRequest(false, true, false)
 	assert.Nil(t, err)
-	log.Debug(" ------------------------ after create adabas request 0 1")
+	Central.Log.Debugf(" ------------------------ after create adabas request 0 1")
 
 	assert.Equal(t, ".",
 		request.FormatBuffer.String())
@@ -503,11 +493,10 @@ func createPeriodGroupMultiplerField() *Definition {
 }
 
 func ExampleDefinition_dumpValues() {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if err != nil {
 		return
 	}
-	defer f.Close()
 	testDefinition := createPeriodGroupMultiplerField()
 	testDefinition.DumpTypes(false, false)
 	testDefinition.DumpValues(false)
@@ -536,11 +525,10 @@ func ExampleDefinition_dumpValues() {
 }
 
 func ExampleDefinition_search() {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if err != nil {
 		return
 	}
-	defer f.Close()
 	testDefinition := createPeriodGroupMultiplerField()
 	testDefinition.DumpTypes(false, false)
 
@@ -628,11 +616,10 @@ func ExampleDefinition_search() {
 }
 
 func ExampleDefinition_addValue() {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if err != nil {
 		return
 	}
-	defer f.Close()
 	testDefinition := createPeriodGroupMultiplerField()
 	testDefinition.DumpTypes(false, false)
 
@@ -675,12 +662,11 @@ func ExampleDefinition_addValue() {
 }
 
 func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	testDefinition := createPeriodGroupMultiplerField()
 	testDefinition.DumpTypes(false, false)
@@ -688,7 +674,7 @@ func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
 	request, err := testDefinition.CreateAdabasRequest(false, false, false)
 	assert.Nil(t, err)
 	testDefinition.DumpValues(false)
-	log.Debug(" ------------------------ after create adabas request 0 0")
+	Central.Log.Debugf(" ------------------------ after create adabas request 0 0")
 	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,GRC,4,B,GC1-N,1,A,GS1-N,1,A,GP1-N,1,P,I8,8,B.",
 		request.FormatBuffer.String())
 
@@ -696,7 +682,7 @@ func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
 	request, err = testDefinition.CreateAdabasRequest(true, false, false)
 	assert.Nil(t, err)
 
-	log.Debug(" ------------------------ after create adabas request 1 0")
+	Central.Log.Debugf(" ------------------------ after create adabas request 1 0")
 	testDefinition.DumpValues(false)
 
 	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,I8,8,B.",
@@ -716,20 +702,20 @@ func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
 	// sv.addValue(muV, 1)
 
 	// Generate format buffer for first store call with PE/MU field data
-	log.Debug(" ------------------------ before create adabas request with data 1 0")
+	Central.Log.Debugf(" ------------------------ before create adabas request with data 1 0")
 	request, err = testDefinition.CreateAdabasRequest(true, false, false)
 	assert.Nil(t, err)
-	log.Debug(" ------------------------ after create adabas request with data 1 0")
+	Central.Log.Debugf(" ------------------------ after create adabas request with data 1 0")
 	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,GC1,1,A,GM1(1),5,P,GS1,1,A,GP1,1,P,I8,8,B.",
 		request.FormatBuffer.String(), "Wrong store format buffer with PE/MU data")
 
 	testDefinition.DumpValues(false)
-	log.Debug(" ------------------------ before create adabas request 0 0")
+	Central.Log.Debugf(" ------------------------ before create adabas request 0 0")
 
 	// Generate format buffer for second read call with missing PE/MU field data
 	request, err = testDefinition.CreateAdabasRequest(false, true, false)
 	assert.Nil(t, err)
-	log.Debug(" ------------------------ after create adabas request 0 1")
+	Central.Log.Debugf(" ------------------------ after create adabas request 0 1")
 
 	assert.Equal(t, "GM1C,4,B,GM1(1-N),5.",
 		request.FormatBuffer.String())
@@ -737,13 +723,12 @@ func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
 }
 
 func TestDefinitionRestrictPeriodic(t *testing.T) {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if !assert.NoError(t, err) {
 		return
 	}
 
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	groupLayout := []IAdaType{
 		NewType(FieldTypeCharacter, "GC"),
@@ -823,13 +808,12 @@ func createLayoutWithPEandMU() *Definition {
 }
 
 func TestDefinitionRestrictPeriodicWithMU(t *testing.T) {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if !assert.NoError(t, err) {
 		return
 	}
 
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	testDefinition := createLayoutWithPEandMU()
 	testDefinition.DumpValues(false)
@@ -843,12 +827,11 @@ func TestDefinitionRestrictPeriodicWithMU(t *testing.T) {
 }
 
 func ExampleDefinition_dumpValuesAll() {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if err != nil {
 		fmt.Println("Error init log ", err)
 		return
 	}
-	defer f.Close()
 
 	testDefinition := createLayout()
 
@@ -883,12 +866,11 @@ func ExampleDefinition_dumpValuesAll() {
 }
 
 func ExampleDefinition_dumpValuesRestrict() {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if err != nil {
 		fmt.Println("Error init log ", err)
 		return
 	}
-	defer f.Close()
 
 	testDefinition := createLayout()
 

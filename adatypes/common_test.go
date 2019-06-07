@@ -20,24 +20,24 @@
 package adatypes
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"testing"
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
-func initTestLogWithFile(t *testing.T, fileName string) *os.File {
-	file, err := initLogWithFile(fileName)
+func initTestLogWithFile(t *testing.T, fileName string) {
+	err := initLogWithFile(fileName)
 	if err != nil {
 		t.Fatalf("error opening file: %v", err)
-		return nil
 	}
-	return file
 }
 
-func initLogWithFile(fileName string) (file *os.File, err error) {
+func initLogWithFile(fileName string) (err error) {
 	level := log.ErrorLevel
 	ed := os.Getenv("ENABLE_DEBUG")
 	if ed == "1" {
@@ -47,32 +47,43 @@ func initLogWithFile(fileName string) (file *os.File, err error) {
 	return initLogLevelWithFile(fileName, level)
 }
 
-func initLogLevelWithFile(fileName string, level log.Level) (file *os.File, err error) {
-	p := os.Getenv("LOGPATH")
-	if p == "" {
-		p = "."
-	}
-	name := p + string(os.PathSeparator) + fileName
-	file, err = os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		return
-	}
-	myLog := log.New()
-	myLog.SetLevel(level)
-	myLog.Out = file
+func initLogLevelWithFile(fileName string, level log.Level) (err error) {
 
-	// log.SetOutput(file)
-	Central.Log = myLog
-	return
+	rawJSON := []byte(`{
+	"level": "debug",
+	"encoding": "console",
+	"outputPaths": [ "/tmp/logs"],
+	"errorOutputPaths": ["stderr"],
+	"initialFields": {"foo": "bar"},
+	"encoderConfig": {
+	  "messageKey": "message",
+	  "levelKey": "level",
+	  "levelEncoder": "lowercase"
+	}
+  }`)
+
+	var cfg zap.Config
+	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
+		panic(err)
+	}
+	logger, err := cfg.Build()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
+
+	sugar := logger.Sugar()
+
+	sugar.Infof("logger construction succeeded %s", "xx")
+	return nil
 }
 
 func TestLog(t *testing.T) {
-	f, err := initLogWithFile("log.log")
+	err := initLogWithFile("adatypes.Central.Log.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	defer TimeTrack(time.Now(), "Time Track Unit test ")
 

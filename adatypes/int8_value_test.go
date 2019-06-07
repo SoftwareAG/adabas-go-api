@@ -25,30 +25,27 @@ import (
 	"math"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInt8Nil(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	up := newInt8Value(nil)
 	assert.Nil(t, up)
 }
 
 func TestInt8(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt8, "I8")
 	up := newInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
@@ -107,13 +104,12 @@ func TestInt8(t *testing.T) {
 }
 
 func TestInt8Variable(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt8, "U8")
 	adaType.SetLength(0)
 	up := newInt8Value(adaType)
@@ -139,12 +135,11 @@ func checkValueInt64(t *testing.T, up IAdaValue, input []byte, expect int64) {
 }
 
 func ExampleIAdaType_setValue() {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if err != nil {
 		fmt.Println("Error enable log")
 		return
 	}
-	defer f.Close()
 
 	adaType := NewType(FieldTypeInt8, "I8")
 	up := newInt8Value(adaType)
@@ -240,13 +235,12 @@ func ExampleIAdaType_setValue() {
 }
 
 func TestInt8FormatBuffer(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt8, "I8")
 	up := newInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
@@ -258,13 +252,12 @@ func TestInt8FormatBuffer(t *testing.T) {
 }
 
 func TestInt8ParseBuffer(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt8, "I8")
 	up := newInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
@@ -283,25 +276,23 @@ func TestInt8ParseBuffer(t *testing.T) {
 }
 
 func TestUInt8Nil(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	up := newUInt8Value(nil)
 	assert.Nil(t, up)
 }
 
 func TestUInt8(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt8, "I8")
 	up := newUInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
@@ -354,13 +345,12 @@ func TestUInt8(t *testing.T) {
 }
 
 func TestUInt8Variable(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt8, "I8")
 	adaType.SetLength(0)
 	up := newUInt8Value(adaType)
@@ -384,12 +374,11 @@ func checkValueUInt64(t *testing.T, up IAdaValue, input []byte, expect uint64) {
 }
 
 func ExampleIAdaType_uint8SetValue() {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if err != nil {
 		fmt.Println("Error enable log")
 		return
 	}
-	defer f.Close()
 
 	adaType := NewType(FieldTypeUInt8, "U8")
 	up := newUInt8Value(adaType)
@@ -489,13 +478,12 @@ func ExampleIAdaType_uint8SetValue() {
 }
 
 func TestUInt8FormatBuffer(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt8, "U8")
 	up := newUInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)

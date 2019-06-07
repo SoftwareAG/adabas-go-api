@@ -25,17 +25,15 @@ import (
 	"fmt"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInt2Byte(t *testing.T) {
-	f, err := initLogWithFile("int2.log")
+	err := initLogWithFile("int2.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt2, "XX")
 	int2 := newInt2Value(adaType)
 	assert.Equal(t, int16(0), int2.value)
@@ -65,12 +63,11 @@ func TestInt2Byte(t *testing.T) {
 }
 
 func TestUInt2Byte(t *testing.T) {
-	f, err := initLogWithFile("int2.log")
+	err := initLogWithFile("int2.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt2, "XX")
 	int2 := newUInt2Value(adaType)
 	assert.Equal(t, uint16(0), int2.value)
@@ -107,18 +104,17 @@ func TestUInt2Byte(t *testing.T) {
 }
 
 func TestInt2Variable(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	res := int16(-2)
 	var buf bytes.Buffer
 	binary.Write(&buf, binary.LittleEndian, res)
 	fmt.Println(buf.Bytes(), buf)
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt2, "I2")
 	adaType.SetLength(0)
 	up := newInt2Value(adaType)
@@ -130,13 +126,12 @@ func TestInt2Variable(t *testing.T) {
 }
 
 func TestUInt2Variable(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt2, "I2")
 	adaType.SetLength(0)
 	up := newUInt2Value(adaType)

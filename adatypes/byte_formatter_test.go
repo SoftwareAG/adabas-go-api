@@ -24,12 +24,11 @@ import (
 )
 
 func ExampleFormatBytes() {
-	f, err := initLogWithFile("formatter.log")
+	err := initLogWithFile("formatter.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	b := [5]byte{23, 44, 12, 33, 45}
 	fmt.Println(FormatBytes("XXX : ", b[:], 4, -1))
@@ -47,12 +46,11 @@ func ExampleFormatBytes() {
 }
 
 func ExampleFormatBytes_x() {
-	f, err := initLogWithFile("formatter.log")
+	err := initLogWithFile("formatter.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	s := []byte("ABCDEFGHIJKLMNOPQRSTUVWXYT")
 	fmt.Println(FormatBytes("ABC :", s, 4, 8))
@@ -65,12 +63,11 @@ func ExampleFormatBytes_x() {
 }
 
 func ExampleFormatBytes_omitDoubles() {
-	f, err := initLogWithFile("formatter.log")
+	err := initLogWithFile("formatter.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	s := []byte("ABCDEFGHABCDEFGHABCDEFGHABCDEFGH")
 	fmt.Println(FormatBytes("ABC :", s, 4, 8))
@@ -82,12 +79,11 @@ func ExampleFormatBytes_omitDoubles() {
 }
 
 func ExampleFormatByteBuffer_output() {
-	f, err := initLogWithFile("formatter.log")
+	err := initLogWithFile("formatter.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	s := []byte("ABCDEFGHABCDEFGHABCDEFGHABCDEFGH")
 	fmt.Println(FormatByteBuffer("ABC :", s))

@@ -27,11 +27,10 @@ import (
 )
 
 func TestDouble(t *testing.T) {
-	f, err := initLogWithFile("double.log")
+	err := initLogWithFile("double.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	adaType := NewType(FieldTypeDouble, "DL")
 	adaType.length = 8
@@ -47,11 +46,10 @@ func TestDouble(t *testing.T) {
 }
 
 func TestDoubleCheck(t *testing.T) {
-	f, err := initLogWithFile("double.log")
+	err := initLogWithFile("double.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	adaType := NewType(FieldTypeDouble, "FL")
 	adaType.length = 8

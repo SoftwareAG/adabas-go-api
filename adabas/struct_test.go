@@ -25,7 +25,7 @@ import (
 	"reflect"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -90,7 +90,7 @@ func TestStructStore(t *testing.T) {
 		return
 	}
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	initEmployees(t)
 	connection, err := NewConnection("acj;map;config=[23,249]")
 	if !assert.NoError(t, err) {
@@ -117,7 +117,7 @@ func TestStructSimple(t *testing.T) {
 	}
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	ierr := initEmployees(t)
 	if !assert.NoError(t, ierr) {
 		return

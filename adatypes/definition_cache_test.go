@@ -24,12 +24,12 @@ import (
 )
 
 func ExampleDefinition_ShouldRestrictToFields() {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if err != nil {
 		fmt.Println("Init log error:", err)
 		return
 	}
-	defer f.Close()
+
 	InitDefinitionCache()
 	testDefinition := createPeriodGroupMultiplerField()
 	testDefinition.PutCache("AA")

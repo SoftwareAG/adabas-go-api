@@ -25,17 +25,15 @@ import (
 	"math"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInt4Byte(t *testing.T) {
-	f, err := initLogWithFile("int4.log")
+	err := initLogWithFile("int4.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt4, "XX")
 	int4 := newInt4Value(adaType)
 	assert.Equal(t, int32(0), int4.value)
@@ -76,13 +74,12 @@ func TestInt4Byte(t *testing.T) {
 }
 
 func TestInt4Variable(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt4, "I4")
 	adaType.SetLength(0)
 	up := newInt4Value(adaType)
@@ -97,13 +94,12 @@ func TestInt4Variable(t *testing.T) {
 }
 
 func TestUInt4Variable(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt4, "I4")
 	adaType.SetLength(0)
 	up := newUInt8Value(adaType)
@@ -127,12 +123,11 @@ func TestInt4Max(t *testing.T) {
 }
 
 func TestUInt4Byte(t *testing.T) {
-	f, err := initLogWithFile("int4.log")
+	err := initLogWithFile("int4.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt4, "XX")
 	int4 := newUInt4Value(adaType)
 	assert.Equal(t, uint32(0), int4.value)

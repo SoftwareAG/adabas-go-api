@@ -94,7 +94,6 @@ func initLogLevelWithFile(fileName string, level log.Level) (file *os.File, err 
 
 	myLog.Infof("Set debug level to %s", level)
 
-	// log.SetOutput(file)
 	adatypes.Central.Log = myLog
 
 	return
@@ -113,7 +112,7 @@ func parseTestConnection(adabasRequest *adatypes.Request, x interface{}) (err er
 		panic("Parse test structure empty test instance")
 	}
 	if !assert.NotNil(parseTestStructure.t, adabasRequest.Definition.Values) {
-		log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values == nil))
+		adatypes.Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values == nil))
 		return fmt.Errorf("Data value empty")
 	}
 	storeRequest := parseTestStructure.storeRequest
@@ -142,7 +141,7 @@ func parseTestConnection(adabasRequest *adatypes.Request, x interface{}) (err er
 	}
 	fmt.Println("Store record:")
 	// storeRecord.DumpValues()
-	//log.Println("Store record =====================================")
+	//adatypes.Central.Log.Println("Store record =====================================")
 	err = storeRequest.Store(storeRecord)
 	fmt.Println("ISN: ", storeRecord.Isn, " -> ", err)
 	return
@@ -162,7 +161,7 @@ func TestConnectionSimpleTypes(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("ada;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
@@ -189,7 +188,7 @@ func TestConnectionSimpleTypes(t *testing.T) {
 		return
 	}
 
-	log.Debug("Loaded Definition in Tests")
+	adatypes.Central.Log.Debugf("Loaded Definition in Tests")
 	request.definition.DumpTypes(false, false)
 
 	storeRequest, sErr := connection.CreateStoreRequest(16)
@@ -215,7 +214,7 @@ func TestConnectionOpenOpen(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
@@ -244,7 +243,7 @@ func TestConnectionOpenFail(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=222")
 	if !assert.NoError(t, err) {
 		return
@@ -262,7 +261,7 @@ func TestConnectionMultipleFields(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
@@ -303,7 +302,7 @@ func TestConnectionStorePeriodFields(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
@@ -319,7 +318,7 @@ func TestConnectionStorePeriodFields(t *testing.T) {
 	readRequest.Limit = 0
 	err = readRequest.ReadPhysicalSequenceWithParser(deleteRecords, deleteRequest)
 	fmt.Println("Delete done, call end of transaction")
-	log.Debug("Delete done, call end of transaction")
+	adatypes.Central.Log.Debugf("Delete done, call end of transaction")
 	deleteRequest.EndTransaction()
 
 	fmt.Println("Call Read to 11")
@@ -347,7 +346,7 @@ func TestConnectionMultifetch(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
@@ -380,7 +379,7 @@ func TestConnectionNoMultifetch(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
@@ -412,7 +411,7 @@ func TestConnectionPeriodAndMultipleField(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
@@ -443,7 +442,7 @@ func TestConnectionRemote(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := "201(tcpip://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url + ")")
@@ -465,7 +464,7 @@ func TestConnectionWithMap(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;map;config=[24,4]")
 	if !assert.NoError(t, err) {
 		return
@@ -502,13 +501,13 @@ func TestConnectionAllMap(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;map;config=[24,4]")
 	if !assert.NoError(t, cerr) {
 		return
 	}
 	defer connection.Close()
-	log.Debug("Created connection : ", connection)
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
 	if assert.NoError(t, err) {
 		fmt.Println("Limit query data:")
@@ -848,7 +847,7 @@ func TestConnectionReadMap(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;target=24")
 	if !assert.NoError(t, cerr) {
 		return
@@ -1018,7 +1017,7 @@ func TestConnectionADATCPSimpleRemote(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	url := adabasTCPLocation()
 	fmt.Println("Connect to ", url)
@@ -1122,7 +1121,7 @@ func TestConnectionReadAllLocal(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
@@ -1157,7 +1156,7 @@ func TestConnectionReadSpecialLocal(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
@@ -1192,7 +1191,7 @@ func TestConnectionADATCPReadRemote(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasTCPLocation()
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=177(adatcp://" + url + ")")
@@ -1227,7 +1226,7 @@ func TestConnectionReadUnicode(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
@@ -1275,7 +1274,7 @@ func TestConnectionReadDeepPEFields(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
@@ -1320,7 +1319,7 @@ func TestConnectionReadAllFields9(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
@@ -1354,7 +1353,7 @@ func TestConnectionReadAllPEFields9(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
@@ -1391,7 +1390,7 @@ func TestConnectionReadOnlyPEFields9(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
@@ -1426,7 +1425,7 @@ func TestConnectionADIS(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasTCPLocation()
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=177(adatcp://" + url + ")")
@@ -1443,7 +1442,7 @@ func TestConnectionNotConnected(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := "111(adatcp://xxx:60001)"
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url + ")")
@@ -1643,7 +1642,7 @@ func TestConnectionSimpleMultipleStore(t *testing.T) {
 		return
 	}
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
@@ -1807,7 +1806,7 @@ func TestConnection_NewConnectionError(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("xxx;target=" + url)
@@ -1831,7 +1830,7 @@ func TestConnectionLobADATCP(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("ada;target=24(adatcp://localhost:60024)")
 	if !assert.NoError(t, err) {
 		return
@@ -1866,7 +1865,7 @@ func TestConnectionLobCheckAllIPC(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("ada;target=" + adabasStatDBIDs)
 	if !assert.NoError(t, err) {
 		return
@@ -1902,7 +1901,7 @@ func TestConnectionLobCheckAllADATCP(t *testing.T) {
 	f := initTestLogWithFile(t, "connection.log")
 	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("ada;target=24(adatcp://localhost:60024)")
 	if !assert.NoError(t, err) {
 		return
