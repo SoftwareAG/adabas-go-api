@@ -26,7 +26,6 @@ import (
 	"testing"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"go.uber.org/zap"
 )
 
@@ -38,19 +37,19 @@ func initTestLogWithFile(t *testing.T, fileName string) {
 }
 
 func initLogWithFile(fileName string) (err error) {
-	level := log.ErrorLevel
+	level := "error"
 	ed := os.Getenv("ENABLE_DEBUG")
 	if ed == "1" {
-		level = log.DebugLevel
+		level = "debug"
 		Central.SetDebugLevel(true)
 	}
 	return initLogLevelWithFile(fileName, level)
 }
 
-func initLogLevelWithFile(fileName string, level log.Level) (err error) {
+func initLogLevelWithFile(fileName string, level string) (err error) {
 
 	rawJSON := []byte(`{
-	"level": "debug",
+	"level": level,
 	"encoding": "console",
 	"outputPaths": [ "/tmp/logs"],
 	"errorOutputPaths": ["stderr"],
