@@ -43,8 +43,7 @@ const (
 )
 
 func TestStoreAdabasFields(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -124,8 +123,7 @@ func prepareCreateTestMap(mapName string, fileName string, dataRepository *Datab
 }
 
 func TestStoreFailMapFieldsCheck(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
 	fmt.Println("Start : TestStoreFailMapFieldsCheck")
 
@@ -164,8 +162,7 @@ func TestStoreFailMapFieldsCheck(t *testing.T) {
 }
 
 func TestStoreMapFields(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -303,8 +300,7 @@ func clearMap(t *testing.T, adabas *Adabas, mapName string) error {
 }
 
 func TestStoreMapFieldsPeriods(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -365,8 +361,7 @@ func TestStoreMapFieldsPeriods(t *testing.T) {
 }
 
 func TestStoreUpdateMapField(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -465,8 +460,7 @@ func checkUpdateCorrectReadNumber(t *testing.T, value string, isns []adatypes.Is
 }
 
 func TestStoreWithMapLobFile(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -650,8 +644,7 @@ func validateUsingMap(t *testing.T, isn adatypes.Isn) {
 }
 
 func TestStoreMapMissing(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -674,8 +667,7 @@ func TestStoreMapMissing(t *testing.T) {
 }
 
 func TestStorePeriod(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -749,8 +741,7 @@ func TestStorePeriod(t *testing.T) {
 }
 
 func TestStoreEndTransaction(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -817,8 +808,7 @@ func TestStoreEndTransaction(t *testing.T) {
 }
 
 func TestStoreCloseWithBackout(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -885,8 +875,7 @@ func TestStoreCloseWithBackout(t *testing.T) {
 }
 
 func TestStoreBackout(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 

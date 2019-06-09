@@ -38,8 +38,7 @@ const (
 )
 
 func TestAdabasFailure(t *testing.T) {
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(0)
@@ -92,8 +91,7 @@ func TestAdabasOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -148,8 +146,7 @@ func TestAdabasOpen(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -187,8 +184,7 @@ func TestAdabasFdt(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -217,12 +213,11 @@ func TestAdabasFdt(t *testing.T) {
 }
 
 func ExampleAdabas_readFileDefinitionFile11() {
-	f, err := initLogWithFile("adabas.log")
+	err := initLogWithFile("adabas.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
@@ -289,12 +284,11 @@ func ExampleAdabas_readFileDefinitionFile11() {
 }
 
 func ExampleAdabas_readFileDefinition9() {
-	f, err := initLogWithFile("adabas.log")
+	err := initLogWithFile("adabas.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
@@ -395,12 +389,11 @@ func ExampleAdabas_readFileDefinition9() {
 }
 
 func ExampleAdabas_readFileDefinition9RestrictF0() {
-	f, err := initLogWithFile("adabas.log")
+	err := initLogWithFile("adabas.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
@@ -445,12 +438,11 @@ func ExampleAdabas_readFileDefinition9RestrictF0() {
 }
 
 func ExampleAdabas_readFileDefinition9Restricted() {
-	f, err := initLogWithFile("adabas.log")
+	err := initLogWithFile("adabas.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
@@ -495,8 +487,7 @@ func TestAdabasFdtNewEmployee(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -528,8 +519,7 @@ func TestAdabasFdtHyperexit(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -560,8 +550,7 @@ func TestAdabasFdtNewEmployeeRemote(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -604,8 +593,7 @@ func TestAdabasUnknownDriver(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -656,8 +644,7 @@ func TestAdabasReadPhysical(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -684,8 +671,7 @@ func TestAdabasReadLogical(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -712,8 +698,7 @@ func TestAdabasReadIsn(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -738,8 +723,7 @@ func TestAdabasSearchLogical(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -775,8 +759,7 @@ func TestAdabasCloned(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 

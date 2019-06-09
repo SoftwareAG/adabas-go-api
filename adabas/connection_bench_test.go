@@ -27,12 +27,11 @@ import (
 )
 
 func BenchmarkConnection_noMultifetch(b *testing.B) {
-	f, ferr := initLogWithFile("connection_bench.log")
+	ferr := initLogWithFile("connection_bench.log")
 	if ferr != nil {
 		fmt.Println("Error creating log")
 		return
 	}
-	defer f.Close()
 
 	adatypes.Central.Log.Infof("TEST: %s", b.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
@@ -59,12 +58,11 @@ func BenchmarkConnection_noMultifetch(b *testing.B) {
 }
 
 func BenchmarkConnection_Multifetch(b *testing.B) {
-	f, ferr := initLogWithFile("connection_bench.log")
+	ferr := initLogWithFile("connection_bench.log")
 	if ferr != nil {
 		fmt.Println("Error creating log")
 		return
 	}
-	defer f.Close()
 
 	adatypes.Central.Log.Infof("TEST: %s", b.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)

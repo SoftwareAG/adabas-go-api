@@ -32,8 +32,7 @@ import (
 )
 
 func TestMapFieldFieldName(t *testing.T) {
-	f := initTestLogWithFile(t, "map.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	tests := []struct {
@@ -55,8 +54,7 @@ func TestMapFieldFieldName(t *testing.T) {
 }
 
 func TestMapFields(t *testing.T) {
-	f := initTestLogWithFile(t, "map.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
@@ -97,8 +95,7 @@ func TestMapFields(t *testing.T) {
 }
 
 func TestMaps(t *testing.T) {
-	f := initTestLogWithFile(t, "map.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -123,8 +120,7 @@ func TestMaps(t *testing.T) {
 }
 
 func TestMapCreate(t *testing.T) {
-	f := initTestLogWithFile(t, "map.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -145,8 +141,7 @@ func TestMapCreate(t *testing.T) {
 }
 
 func TestMapFieldsMainframe(t *testing.T) {
-	f := initTestLogWithFile(t, "map.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")

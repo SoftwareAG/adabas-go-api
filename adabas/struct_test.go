@@ -79,11 +79,10 @@ func initEmployees(t *testing.T) error {
 }
 
 func TestStructStore(t *testing.T) {
-	f, lErr := initLogWithFile("structure.log")
+	lErr := initLogWithFile("structure.log")
 	if !assert.NoError(t, lErr) {
 		return
 	}
-	defer f.Close()
 
 	cErr := clearFile(16)
 	if !assert.NoError(t, cErr) {
@@ -111,11 +110,10 @@ func TestStructStore(t *testing.T) {
 }
 
 func TestStructSimple(t *testing.T) {
-	f, lErr := initLogWithFile("structure.log")
+	lErr := initLogWithFile("structure.log")
 	if !assert.NoError(t, lErr) {
 		return
 	}
-	defer f.Close()
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	ierr := initEmployees(t)

@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func initTestLogWithFile(t *testing.T, fileName string) {
@@ -37,21 +38,26 @@ func initTestLogWithFile(t *testing.T, fileName string) {
 }
 
 func initLogWithFile(fileName string) (err error) {
-	level := "error"
+	level := zap.ErrorLevel
 	ed := os.Getenv("ENABLE_DEBUG")
 	if ed == "1" {
-		level = "debug"
+		level = zap.DebugLevel
 		Central.SetDebugLevel(true)
 	}
 	return initLogLevelWithFile(fileName, level)
 }
 
-func initLogLevelWithFile(fileName string, level string) (err error) {
+func initLogLevelWithFile(fileName string, level zapcore.Level) (err error) {
+	p := os.Getenv("LOGPATH")
+	if p == "" {
+		p = "."
+	}
+	name := p + string(os.PathSeparator) + fileName
 
 	rawJSON := []byte(`{
-	"level": level,
+	"level": "error",
 	"encoding": "console",
-	"outputPaths": [ "/tmp/logs"],
+	"outputPaths": [ "XXX"],
 	"errorOutputPaths": ["stderr"],
 	"initialFields": {"foo": "bar"},
 	"encoderConfig": {
@@ -65,6 +71,8 @@ func initLogLevelWithFile(fileName string, level string) (err error) {
 	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
 		panic(err)
 	}
+	cfg.Level.SetLevel(level)
+	cfg.OutputPaths = []string{name}
 	logger, err := cfg.Build()
 	if err != nil {
 		panic(err)

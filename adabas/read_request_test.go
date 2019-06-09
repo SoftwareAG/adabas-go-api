@@ -25,14 +25,12 @@ import (
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRequestPhysicalSimpleTypes(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -46,8 +44,7 @@ func TestRequestPhysicalSimpleTypes(t *testing.T) {
 }
 
 func TestRequestPhysicalMultipleField(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -68,8 +65,7 @@ func TestRequestPhysicalMultipleField(t *testing.T) {
 }
 
 func TestRequestLogicalWithQueryFields(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -87,8 +83,7 @@ func TestRequestLogicalWithQueryFields(t *testing.T) {
 }
 
 func TestRequestLogicalWithFields(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -105,8 +100,7 @@ func TestRequestLogicalWithFields(t *testing.T) {
 }
 
 func TestReadRequestLogicalBy(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -123,8 +117,7 @@ func TestReadRequestLogicalBy(t *testing.T) {
 }
 
 func TestReadRequestLogicalByAll(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -155,8 +148,7 @@ func TestReadRequestLogicalByAll(t *testing.T) {
 }
 
 func TestRequestRemoteLogicalByAll(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := "201(tcpip://" + entireNetworkLocation() + ")"
@@ -176,12 +168,11 @@ func TestRequestRemoteLogicalByAll(t *testing.T) {
 }
 
 func ExampleReadRequest_ReadLogicalBy() {
-	f, err := initLogWithFile("request.log")
+	err := initLogWithFile("request.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 11)
@@ -211,8 +202,7 @@ func ExampleReadRequest_ReadLogicalBy() {
 }
 
 func TestReadRequestLogicalBySuperDescriptor(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -229,8 +219,7 @@ func TestReadRequestLogicalBySuperDescriptor(t *testing.T) {
 }
 
 func TestReadRequestAllJson(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -252,8 +241,7 @@ func TestReadRequestAllJson(t *testing.T) {
 }
 
 func TestReadRequestHistogramDescriptorField(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -275,8 +263,7 @@ func TestReadRequestHistogramDescriptorField(t *testing.T) {
 }
 
 func TestReadRequestHistogramSuperDescriptor(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -304,12 +291,11 @@ func TestReadRequestHistogramSuperDescriptor(t *testing.T) {
 }
 
 func ExampleReadRequest_histogramWith() {
-	f, err := initLogWithFile("request.log")
+	err := initLogWithFile("request.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 11)
@@ -331,8 +317,7 @@ func ExampleReadRequest_histogramWith() {
 }
 
 func TestReadRequestReadMap(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
@@ -354,8 +339,7 @@ func TestReadRequestReadMap(t *testing.T) {
 }
 
 func TestReadRequestMissingFile(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
@@ -375,8 +359,7 @@ func dumpStream(record *Record, x interface{}) error {
 }
 
 func TestReadRequestWithStream(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
@@ -393,12 +376,11 @@ func TestReadRequestWithStream(t *testing.T) {
 }
 
 func ExampleReadRequest_histogramWithStream() {
-	f, err := initLogWithFile("request.log")
+	err := initLogWithFile("request.log")
 	if err != nil {
 		fmt.Println("Error init log", err)
 		return
 	}
-	defer f.Close()
 
 	adabas, _ := NewAdabas(24)
 	request, _ := NewReadRequest(adabas, 11)
@@ -425,8 +407,7 @@ func ExampleReadRequest_histogramWithStream() {
 }
 
 func TestReadRequestPhysicalStream(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
@@ -444,8 +425,7 @@ func TestReadRequestPhysicalStream(t *testing.T) {
 }
 
 func BenchmarkReadRequest_Small(b *testing.B) {
-	f, err := initLogLevelWithFile("request-bench.log", log.ErrorLevel)
-	defer f.Close()
+	err := initLogLevelWithFile("request-bench.log", "error")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -466,8 +446,7 @@ func BenchmarkReadRequest_Small(b *testing.B) {
 	}
 }
 func BenchmarkReadRequest(b *testing.B) {
-	f, err := initLogLevelWithFile("request-bench.log", log.ErrorLevel)
-	defer f.Close()
+	err := initLogLevelWithFile("request-bench.log", "error")
 
 	assert.NoError(b, err)
 
@@ -489,11 +468,10 @@ func BenchmarkReadRequest(b *testing.B) {
 
 func TestRequestWithMapLogicalBy(t *testing.T) {
 	//	f, err := initLogLevelWithFile("request.log", adatypes.Central.Log.DebugLevel)
-	f, err := initLogWithFile("request.log")
+	err := initLogWithFile("request.log")
 	if err != nil {
 		return
 	}
-	defer f.Close()
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
@@ -532,8 +510,7 @@ func traverseFieldCounter(IAdaType adatypes.IAdaType, parentType adatypes.IAdaTy
 }
 
 func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	ada, _ := NewAdabas(24)
@@ -573,8 +550,7 @@ func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
 }
 
 func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -601,8 +577,7 @@ func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
 }
 
 func TestReadMaps(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 	ada, _ := NewAdabas(24)
 	request, _ := NewReadRequest(ada, 4)
 	request.Limit = 0
@@ -616,8 +591,7 @@ func TestReadMaps(t *testing.T) {
 }
 
 func TestMapRequestWithHistogramBy(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -642,8 +616,7 @@ func TestMapRequestWithHistogramBy(t *testing.T) {
 }
 
 func TestMapRequestWithHistogramWith(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -668,8 +641,7 @@ func TestMapRequestWithHistogramWith(t *testing.T) {
 }
 
 func TestMapRequestFractional(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 

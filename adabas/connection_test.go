@@ -30,18 +30,18 @@ import (
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
-func initTestLogWithFile(t *testing.T, fileName string) *os.File {
-	file, err := initLogWithFile(fileName)
+func initTestLogWithFile(t *testing.T, fileName string) {
+	err := initLogWithFile(fileName)
 	if err != nil {
 		t.Fatalf("error opening file: %v", err)
-		return nil
+		return
 	}
-	return file
 }
 
 func entireNetworkLocation() string {
@@ -60,43 +60,64 @@ func adabasTCPLocation() string {
 	return network
 }
 
-func initLogWithFile(fileName string) (file *os.File, err error) {
-	level := log.ErrorLevel
+func initLogWithFile(fileName string) (err error) {
+	level := "error"
 	ed := os.Getenv("ENABLE_DEBUG")
 	switch ed {
 	case "1":
-		level = log.DebugLevel
+		level = "debug"
 		adatypes.Central.SetDebugLevel(true)
 	case "2":
-		level = log.InfoLevel
+		level = "info"
 	default:
-		level = log.ErrorLevel
 	}
 	return initLogLevelWithFile(fileName, level)
 }
 
-func initLogLevelWithFile(fileName string, level log.Level) (file *os.File, err error) {
+func initLogLevelWithFile(fileName string, level string) (err error) {
 	p := os.Getenv("LOGPATH")
 	if p == "" {
 		p = "."
 	}
 	name := p + string(os.PathSeparator) + fileName
-	file, err = os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		return
+
+	rawJSON := []byte(`{
+	"level": "error",
+	"encoding": "console",
+	"outputPaths": [ "/tmp/logs"],
+	"errorOutputPaths": ["stderr"],
+	"initialFields": {"foo": "bar"},
+	"encoderConfig": {
+	  "messageKey": "message",
+	  "levelKey": "level",
+	  "levelEncoder": "lowercase"
 	}
-	log.SetLevel(level)
+  }`)
 
-	log.SetOutput(file)
-	myLog := log.New()
-	myLog.SetLevel(level)
-	myLog.Out = file
+	var cfg zap.Config
+	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
+		panic(err)
+	}
+	l := zapcore.ErrorLevel
+	switch level {
+	case "debug":
+		l = zapcore.DebugLevel
+	case "info":
+		l = zapcore.InfoLevel
+	default:
+	}
+	cfg.Level.SetLevel(l)
+	cfg.OutputPaths = []string{name}
+	logger, err := cfg.Build()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
 
-	myLog.Infof("Set debug level to %s", level)
+	sugar := logger.Sugar()
 
-	adatypes.Central.Log = myLog
-
-	return
+	sugar.Infof("logger construction succeeded %s", "xx")
+	return nil
 }
 
 type parseTestStructure struct {
@@ -158,8 +179,7 @@ func TestConnectionSimpleTypes(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("ada;target=" + adabasModDBIDs)
@@ -211,8 +231,7 @@ func TestConnectionOpenOpen(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
@@ -240,8 +259,7 @@ func TestConnectionOpenFail(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=222")
@@ -258,8 +276,7 @@ func TestConnectionMultipleFields(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
@@ -299,8 +316,7 @@ func TestConnectionStorePeriodFields(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
@@ -343,8 +359,7 @@ func TestConnectionMultifetch(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
@@ -376,8 +391,7 @@ func TestConnectionNoMultifetch(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
@@ -408,8 +422,7 @@ func TestConnectionPeriodAndMultipleField(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
@@ -439,8 +452,7 @@ func TestConnectionRemote(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := "201(tcpip://" + entireNetworkLocation() + ")"
@@ -461,8 +473,7 @@ func TestConnectionWithMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;map;config=[24,4]")
@@ -498,8 +509,7 @@ func TestConnectionAllMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;map;config=[24,4]")
@@ -844,8 +854,7 @@ func TestConnectionReadMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;target=24")
@@ -1014,8 +1023,7 @@ func TestConnectionADATCPSimpleRemote(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -1032,12 +1040,11 @@ func TestConnectionADATCPSimpleRemote(t *testing.T) {
 }
 
 func ExampleReadRequest_readISN() {
-	f, err := initLogWithFile("connection.log")
+	err := initLogWithFile("connection.log")
 	if err != nil {
 		fmt.Println("Log init error", err)
 		return
 	}
-	defer f.Close()
 
 	url := adabasModDBIDs
 	connection, cerr := NewConnection("acj;target=" + url)
@@ -1118,8 +1125,7 @@ func TestConnectionReadAllLocal(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
@@ -1153,8 +1159,7 @@ func TestConnectionReadSpecialLocal(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
@@ -1188,8 +1193,7 @@ func TestConnectionADATCPReadRemote(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasTCPLocation()
@@ -1223,8 +1227,7 @@ func TestConnectionReadUnicode(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
@@ -1271,8 +1274,7 @@ func TestConnectionReadDeepPEFields(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
@@ -1316,8 +1318,7 @@ func TestConnectionReadAllFields9(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
@@ -1350,8 +1351,7 @@ func TestConnectionReadAllPEFields9(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
@@ -1387,8 +1387,7 @@ func TestConnectionReadOnlyPEFields9(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
@@ -1422,8 +1421,7 @@ func TestConnectionADIS(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasTCPLocation()
@@ -1439,8 +1437,7 @@ func TestConnectionADIS(t *testing.T) {
 }
 
 func TestConnectionNotConnected(t *testing.T) {
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := "111(adatcp://xxx:60001)"
@@ -1456,11 +1453,10 @@ func TestConnectionNotConnected(t *testing.T) {
 }
 
 func ExampleConnection_endTransaction() {
-	f, lerr := initLogWithFile("connection.log")
+	lerr := initLogWithFile("connection.log")
 	if lerr != nil {
 		return
 	}
-	defer f.Close()
 
 	fmt.Println("Example for EndTransaction()")
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
@@ -1630,8 +1626,7 @@ func TestConnectionSimpleMultipleStore(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	cErr := clearFile(16)
 	if !assert.NoError(t, cErr) {
@@ -1687,11 +1682,10 @@ func TestConnectionSimpleMultipleStore(t *testing.T) {
 }
 
 func ExampleConnection_store() {
-	f, err := initLogWithFile("connection.log")
+	err := initLogWithFile("connection.log")
 	if err != nil {
 		return
 	}
-	defer f.Close()
 
 	if cErr := clearFile(16); cErr != nil {
 		return
@@ -1803,8 +1797,7 @@ func TestConnection_NewConnectionError(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := adabasModDBIDs
@@ -1827,8 +1820,7 @@ func TestConnectionLobADATCP(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("ada;target=24(adatcp://localhost:60024)")
@@ -1862,8 +1854,7 @@ func TestConnectionLobCheckAllIPC(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("ada;target=" + adabasStatDBIDs)
@@ -1898,8 +1889,7 @@ func TestConnectionLobCheckAllADATCP(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("ada;target=24(adatcp://localhost:60024)")

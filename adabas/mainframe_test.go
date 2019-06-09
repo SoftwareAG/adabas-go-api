@@ -250,8 +250,7 @@ func ExampleConnection_readNoMaximumMainframe() {
 }
 
 func ExampleConnection_periodGroupMfPart() {
-	f, _ := initLogWithFile("connection.log")
-	defer f.Close()
+	initLogWithFile("connection.log")
 
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
@@ -326,8 +325,7 @@ func TestConnectionPEMUMfMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
@@ -368,8 +366,7 @@ func TestConnectionPEShiftMfMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
@@ -407,8 +404,7 @@ func TestConnectionAllMfMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")

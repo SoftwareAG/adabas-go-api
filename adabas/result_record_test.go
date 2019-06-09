@@ -31,8 +31,7 @@ import (
 )
 
 func TestRecord(t *testing.T) {
-	f := initTestLogWithFile(t, "Record.log")
-	defer f.Close()
+	initTestLogWithFile(t, "Record.log")
 
 	resultNil, err := NewRecord(nil)
 	assert.Error(t, err)
@@ -80,8 +79,7 @@ func TestRecord(t *testing.T) {
 }
 
 func TestRecord_MarshalXML(t *testing.T) {
-	f := initTestLogWithFile(t, "Record.log")
-	defer f.Close()
+	initTestLogWithFile(t, "Record.log")
 
 	resultNil, err := NewRecord(nil)
 	assert.Error(t, err)

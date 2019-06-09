@@ -23,12 +23,11 @@ import (
 )
 
 func ExampleReadRequest_ReadLogicalWithCursoring() {
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println("Error initializing log", err)
 		return
 	}
-	defer f.Close()
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
 	if cerr != nil {
@@ -117,12 +116,11 @@ func ExampleReadRequest_ReadLogicalWithCursoring() {
 }
 
 func ExampleReadRequest_readLogicalWithCursoringLimit() {
-	f, ferr := initLogWithFile("connection_map.log")
+	ferr := initLogWithFile("connection_map.log")
 	if ferr != nil {
 		fmt.Println("Error initializing log", ferr)
 		return
 	}
-	defer f.Close()
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
 	if cerr != nil {

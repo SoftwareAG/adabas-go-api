@@ -33,8 +33,7 @@ import (
 const recordNamePrefix = "FIELD-TYPE-TEST"
 
 func TestFieldTypeStore(t *testing.T) {
-	f := initTestLogWithFile(t, "field_type.log")
-	defer f.Close()
+	initTestLogWithFile(t, "field_type.log")
 
 	cErr := clearFile(270)
 	if !assert.NoError(t, cErr) {
@@ -189,8 +188,7 @@ func TestFieldTypeRead(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "field_type.log")
-	defer f.Close()
+	initTestLogWithFile(t, "field_type.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
@@ -306,12 +304,11 @@ func dumpFieldTypeValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 }
 
 func ExampleConnection_fieldType() {
-	f, err := initLogWithFile("field_type.log")
+	err := initLogWithFile("field_type.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 	url := "23"
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)

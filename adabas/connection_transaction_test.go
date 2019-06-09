@@ -98,8 +98,7 @@ func TestConnectionTransaction(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection_transaction.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection_transaction.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 

@@ -30,8 +30,7 @@ func TestConnectionComplexSearch(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection_descriptor.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection_descriptor.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("ada;target=" + adabasModDBIDs + ";auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
@@ -58,8 +57,7 @@ func TestConnectionSuperDescriptor(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection_descriptor.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection_descriptor.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=24")
@@ -86,8 +84,7 @@ func TestConnectionSuperDescSearch(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection_descriptor.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection_descriptor.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs + ";auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")

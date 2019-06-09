@@ -93,8 +93,7 @@ func TestDeleteRequestByMapNameCommonRepo(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "delete.log")
-	defer f.Close()
+	initTestLogWithFile(t, "delete.log")
 
 	mapName := storeEmployeesMap
 	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
@@ -156,8 +155,7 @@ func TestDeleteRequestByMapNameRepository(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "delete.log")
-	defer f.Close()
+	initTestLogWithFile(t, "delete.log")
 
 	mapName := storeEmployeesMap
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -239,8 +237,7 @@ func TestDeleteRequestRefreshFile16(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "delete.log")
-	defer f.Close()
+	initTestLogWithFile(t, "delete.log")
 
 	cErr := clearFile(16)
 	assert.NoError(t, cErr)

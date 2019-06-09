@@ -31,8 +31,7 @@ func TestConnectionSecure_fail(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection_secure.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection_secure.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=25;auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
@@ -54,8 +53,7 @@ func TestConnectionSecure_pwd(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection_secure.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection_secure.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=25;auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")

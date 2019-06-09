@@ -28,8 +28,7 @@ import (
 )
 
 func TestMapRepository(t *testing.T) {
-	f := initTestLogWithFile(t, "map_repositories.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map_repositories.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	ada, _ := NewAdabas(24)
@@ -45,8 +44,7 @@ func TestMapRepository(t *testing.T) {
 }
 
 func TestGlobalMapRepository(t *testing.T) {
-	f := initTestLogWithFile(t, "map_repositories.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map_repositories.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	ada, _ := NewAdabas(23)
@@ -75,8 +73,7 @@ func TestGlobalMapRepository(t *testing.T) {
 }
 
 func TestMapRepositoryReadAll(t *testing.T) {
-	f := initTestLogWithFile(t, "map_repositories.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map_repositories.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
@@ -92,8 +89,7 @@ func TestMapRepositoryReadAll(t *testing.T) {
 }
 
 func TestGlobalMapConnectionString(t *testing.T) {
-	f := initTestLogWithFile(t, "map_repositories.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map_repositories.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	ada, _ := NewAdabas(24)
@@ -120,8 +116,7 @@ func TestGlobalMapConnectionString(t *testing.T) {
 }
 
 func TestGlobalMapConnectionDirect(t *testing.T) {
-	f := initTestLogWithFile(t, "map_repositories.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map_repositories.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	ada, _ := NewAdabas(24)

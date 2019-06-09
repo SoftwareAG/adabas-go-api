@@ -109,8 +109,7 @@ var hyperExitEmployeeFdt = []byte{88, 2, 0, 0, 0, 0, 35, 0, 139, 14, 54, 235, 16
 	65, 65, 65, 67, 65, 73, 65, 70}
 
 func TestFdtDefinition(t *testing.T) {
-	f := initTestLogWithFile(t, "fdt.log")
-	defer f.Close()
+	initTestLogWithFile(t, "fdt.log")
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	assert.Equal(t, byte('F'), fieldIdentifierField.code())
 	assert.Equal(t, byte('S'), fieldIdentifierSub.code())
@@ -127,8 +126,7 @@ func traverseOutput(IAdaType adatypes.IAdaType, parentType adatypes.IAdaType, le
 }
 
 func TestFdtParse(t *testing.T) {
-	f := initTestLogWithFile(t, "fdt.log")
-	defer f.Close()
+	initTestLogWithFile(t, "fdt.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	fmt.Println("Parse FDT structure")
@@ -143,8 +141,7 @@ func TestFdtParse(t *testing.T) {
 }
 
 func TestFdtStructure(t *testing.T) {
-	f := initTestLogWithFile(t, "fdt.log")
-	defer f.Close()
+	initTestLogWithFile(t, "fdt.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	fmt.Println("Test FDT structure")
@@ -158,8 +155,7 @@ func TestFdtStructure(t *testing.T) {
 }
 
 func TestFdtStructureNewEmployee(t *testing.T) {
-	f := initTestLogWithFile(t, "fdt.log")
-	defer f.Close()
+	initTestLogWithFile(t, "fdt.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	fmt.Println("Test FDT structure")
@@ -173,8 +169,7 @@ func TestFdtStructureNewEmployee(t *testing.T) {
 }
 
 func TestFdtStructureHyperExitEmployee(t *testing.T) {
-	f := initTestLogWithFile(t, "fdt.log")
-	defer f.Close()
+	initTestLogWithFile(t, "fdt.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	fmt.Println("Test FDT structure")

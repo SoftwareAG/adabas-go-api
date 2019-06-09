@@ -29,8 +29,7 @@ import (
 )
 
 func TestMapImportPrepare(t *testing.T) {
-	f := initTestLogWithFile(t, "mapimport.log")
-	defer f.Close()
+	initTestLogWithFile(t, "mapimport.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -59,8 +58,7 @@ func TestMapImportPrepare(t *testing.T) {
 }
 
 func TestMapImport(t *testing.T) {
-	f := initTestLogWithFile(t, "mapimport.log")
-	defer f.Close()
+	initTestLogWithFile(t, "mapimport.log")
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	defer adabas.Close()
@@ -89,8 +87,7 @@ func TestMapImport(t *testing.T) {
 }
 
 func TestMapImportMassLoad(t *testing.T) {
-	f := initTestLogWithFile(t, "mapimport.log")
-	defer f.Close()
+	initTestLogWithFile(t, "mapimport.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
