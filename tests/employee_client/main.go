@@ -22,6 +22,7 @@ package main
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -32,8 +33,8 @@ import (
 
 	"github.com/SoftwareAG/adabas-go-api/adabas"
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type caller struct {
@@ -151,44 +152,62 @@ func callAdabas(c caller) {
 
 }
 
-func initLogLevelWithFile(fileName string, level log.Level) (file *os.File, err error) {
+func initLogLevelWithFile(fileName string, level zapcore.Level) (err error) {
 	p := os.Getenv("LOGPATH")
 	if p == "" {
 		p = "."
 	}
 	name := p + string(os.PathSeparator) + fileName
-	file, err = os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		return
+
+	rawJSON := []byte(`{
+		"level": "error",
+		"encoding": "console",
+		"outputPaths": [ "XXX"],
+		"errorOutputPaths": ["stderr"],
+		"encoderConfig": {
+		  "messageKey": "message",
+		  "levelKey": "level",
+		  "levelEncoder": "lowercase"
+		}
+	  }`)
+
+	var cfg zap.Config
+	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
+		panic(err)
 	}
-	log.SetLevel(level)
+	cfg.Level.SetLevel(level)
+	cfg.OutputPaths = []string{name}
+	logger, err := cfg.Build()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
 
-	log.SetOutput(file)
-	myLog := log.New()
-	myLog.SetLevel(level)
-	myLog.Out = file
+	sugar := logger.Sugar()
 
-	// log.SetOutput(file)
-	adatypes.Central.Log = myLog
+	sugar.Infof("Start logging with level", level)
+	adatypes.Central.Log = sugar
 
 	return
 }
 
 func main() {
-	level := log.InfoLevel
+	level := zapcore.ErrorLevel
 	ed := os.Getenv("ENABLE_DEBUG")
-	if ed == "1" {
-		level = log.DebugLevel
+	switch ed {
+	case "1":
+		level = zapcore.DebugLevel
 		adatypes.Central.SetDebugLevel(true)
+	case "2":
+		level = zapcore.InfoLevel
 	}
 
-	f, err := initLogLevelWithFile("employee_client.log", level)
+	err := initLogLevelWithFile("employee_client.log", level)
 	if err != nil {
 		fmt.Printf("Error opening log file: %v\n", err)
 		return
 	}
-	defer f.Close()
-	defer TimeTrack(time.Now(), "Done employee test")
+	defer TimeTrack(time.Now(), "Finished employee test and ")
 
 	var countValue int
 	var threadValue int
@@ -202,12 +221,12 @@ func main() {
 	flag.Parse()
 	args := flag.Args()
 	if len(args) < 1 {
-		fmt.Printf("Usage: %s <url>\n", args[0])
+		fmt.Printf("Usage: %s <url>\n", os.Args[0])
 		flag.PrintDefaults()
 		return
 	}
 
-	fmt.Println("Start employee test")
+	fmt.Printf("Start employee test, connection to %s...\n", args[0])
 
 	names := strings.Split(name, ",")
 

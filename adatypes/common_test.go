@@ -82,6 +82,7 @@ func initLogLevelWithFile(fileName string, level zapcore.Level) (err error) {
 	sugar := logger.Sugar()
 
 	sugar.Infof("logger construction succeeded %s", "xx")
+	Central.Log = sugar
 	return nil
 }
 

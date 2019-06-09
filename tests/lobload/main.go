@@ -22,6 +22,7 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"image"
@@ -34,48 +35,65 @@ import (
 	"github.com/SoftwareAG/adabas-go-api/adabas"
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/nfnt/resize"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var hostname string
 
 func init() {
 	hostname, _ = os.Hostname()
-	level := log.ErrorLevel
+	level := zapcore.ErrorLevel
 	ed := os.Getenv("ENABLE_DEBUG")
 	switch ed {
 	case "1":
-		level = log.DebugLevel
+		level = zapcore.DebugLevel
 		adatypes.Central.SetDebugLevel(true)
 	case "2":
-		level = log.InfoLevel
-	default:
-		level = log.ErrorLevel
+		level = zapcore.InfoLevel
 	}
-	initLogLevelWithFile("lobload.log", level)
+
+	err := initLogLevelWithFile("query.log", level)
+	if err != nil {
+		panic(err)
+	}
 }
 
-func initLogLevelWithFile(fileName string, level log.Level) (file *os.File, err error) {
+func initLogLevelWithFile(fileName string, level zapcore.Level) (err error) {
 	p := os.Getenv("LOGPATH")
 	if p == "" {
 		p = "."
 	}
 	name := p + string(os.PathSeparator) + fileName
-	file, err = os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		return
+
+	rawJSON := []byte(`{
+		"level": "error",
+		"encoding": "console",
+		"outputPaths": [ "XXX"],
+		"errorOutputPaths": ["stderr"],
+		"encoderConfig": {
+		  "messageKey": "message",
+		  "levelKey": "level",
+		  "levelEncoder": "lowercase"
+		}
+	  }`)
+
+	var cfg zap.Config
+	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
+		panic(err)
 	}
-	log.SetLevel(level)
+	cfg.Level.SetLevel(level)
+	cfg.OutputPaths = []string{name}
+	logger, err := cfg.Build()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
 
-	log.SetOutput(file)
-	myLog := log.New()
-	myLog.SetLevel(level)
-	myLog.Out = file
+	sugar := logger.Sugar()
 
-	myLog.Infof("Set debug level to %s", level)
-
-	// log.SetOutput(file)
-	adatypes.Central.Log = myLog
+	sugar.Infof("Start logging with level", level)
+	adatypes.Central.Log = sugar
 
 	return
 }

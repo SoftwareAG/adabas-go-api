@@ -115,8 +115,10 @@ func initLogLevelWithFile(fileName string, level string) (err error) {
 	defer logger.Sync()
 
 	sugar := logger.Sugar()
+	adatypes.Central.Log = sugar
 
 	sugar.Infof("logger construction succeeded %s", "xx")
+
 	return nil
 }
 

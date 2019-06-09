@@ -20,19 +20,20 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"runtime"
 	"runtime/pprof"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/SoftwareAG/adabas-go-api/adabas"
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type caller struct {
@@ -97,13 +98,8 @@ func callAdabas(c caller) {
 	maxTime := 1.0
 
 	last := time.Now()
-	tid := strconv.Itoa(int(c.threadNr))
 
 	for i := 0; i < c.counter; i++ {
-		l := adatypes.Central.Log.(*log.Logger)
-		l.WithFields(log.Fields{
-			"thread": tid,
-		}).Debugf("Start counter")
 		if close {
 			connection, err = c.createConnection()
 			if err != nil {
@@ -184,48 +180,63 @@ func callAdabas(c caller) {
 
 }
 
-func initLogLevelWithFile(fileName string, level log.Level) (file *os.File, err error) {
+func initLogLevelWithFile(fileName string, level zapcore.Level) (err error) {
 	p := os.Getenv("LOGPATH")
 	if p == "" {
 		p = "."
 	}
 	name := p + string(os.PathSeparator) + fileName
-	file, err = os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		return
+
+	rawJSON := []byte(`{
+		"level": "error",
+		"encoding": "console",
+		"outputPaths": [ "XXX"],
+		"errorOutputPaths": ["stderr"],
+		"encoderConfig": {
+		  "messageKey": "message",
+		  "levelKey": "level",
+		  "levelEncoder": "lowercase"
+		}
+	  }`)
+
+	var cfg zap.Config
+	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
+		panic(err)
 	}
-	log.SetLevel(level)
+	cfg.Level.SetLevel(level)
+	cfg.OutputPaths = []string{name}
+	logger, err := cfg.Build()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
 
-	log.SetOutput(file)
-	myLog := log.New()
-	myLog.SetLevel(level)
-	myLog.Out = file
+	sugar := logger.Sugar()
 
-	// log.SetOutput(file)
-	adatypes.Central.Log = myLog
+	sugar.Infof("Start logging with level", level)
+	adatypes.Central.Log = sugar
 
 	return
 }
 
 func main() {
-	level := log.ErrorLevel
 	ed := os.Getenv("ENABLE_DEBUG")
-	switch ed {
-	case "1":
-		level = log.DebugLevel
-		adatypes.Central.SetDebugLevel(true)
-	case "2":
-		level = log.InfoLevel
-	default:
-		level = log.ErrorLevel
-	}
+	if ed != "" {
+		level := zapcore.ErrorLevel
+		switch ed {
+		case "1":
+			level = zapcore.DebugLevel
+			adatypes.Central.SetDebugLevel(true)
+		case "2":
+			level = zapcore.InfoLevel
+		}
 
-	f, err := initLogLevelWithFile("query.log", level)
-	if err != nil {
-		fmt.Printf("Error opening log file: %v\n", err)
-		return
+		err := initLogLevelWithFile("query.log", level)
+		if err != nil {
+			fmt.Printf("Error opening log file: %v\n", err)
+			return
+		}
 	}
-	defer f.Close()
 	defer TimeTrack(time.Now(), "Done testsuite test")
 
 	var countValue int
@@ -261,10 +272,10 @@ func main() {
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
 		if err != nil {
-			log.Fatal("could not create CPU profile: ", err)
+			panic("could not create CPU profile: " + err.Error())
 		}
 		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatal("could not start CPU profile: ", err)
+			panic("could not start CPU profile: " + err.Error())
 		}
 		defer pprof.StopCPUProfile()
 	}
@@ -284,11 +295,11 @@ func main() {
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
 		if err != nil {
-			log.Fatal("could not create memory profile: ", err)
+			panic("could not create memory profile: " + err.Error())
 		}
 		runtime.GC() // get up-to-date statistics
 		if err := pprof.WriteHeapProfile(f); err != nil {
-			log.Fatal("could not write memory profile: ", err)
+			panic("could not write memory profile: " + err.Error())
 		}
 		defer f.Close()
 		fmt.Println("Start testsuite test")
