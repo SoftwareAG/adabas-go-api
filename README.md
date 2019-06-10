@@ -109,7 +109,8 @@ Independent of the used environment of Docker (like Kubernetes or others), it de
 ## Log output
 
 To enable logging output in example executables, please set `ENABLE_DEBUG` environment variable to 1. This will enable the logging.
-In advance you can enable logging in your logging framework setting the log instance with
+
+To use logging in your code with the Adabas API, you can enable logging by setting the log instance with your `logger` instances with
 
 ```go
 	adatypes.Central.Log = logger
