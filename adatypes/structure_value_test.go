@@ -46,7 +46,7 @@ func TestStructureValueGroup(t *testing.T) {
 	}
 	sl := NewStructureList(FieldTypeGroup, "GR", OccByte, groupLayout)
 	assert.Equal(t, "GR", sl.Name())
-	assert.Equal(t, " 1, GR  ; GR  PE=false MU=false REMOVE=true", sl.String())
+	assert.Equal(t, " 1, GR  ; GR
 	v, err := sl.Value()
 	vsl := v.(*StructureValue)
 	vsl.initSubValues(0, 0, true)
@@ -88,7 +88,7 @@ func TestStructureValuePeriod(t *testing.T) {
 	}
 	sl := NewStructureList(FieldTypePeriodGroup, "PE", OccByte, groupLayout)
 	assert.Equal(t, "PE", sl.Name())
-	assert.Equal(t, " 1, PE ,PE ; PE  PE=true MU=false REMOVE=true PE=1-N", sl.String())
+	assert.Equal(t, " 1, PE ,PE ; PE
 	v, err := sl.Value()
 	assert.NoError(t, err)
 	vsl := v.(*StructureValue)
@@ -164,7 +164,7 @@ func TestStructureValuePeriodMU(t *testing.T) {
 	sl.AddFlag(FlagOptionMUGhost)
 	sl.AddFlag(FlagOptionMU)
 	assert.Equal(t, "PE", sl.Name())
-	assert.Equal(t, " 1, PE ,PE ; PE  PE=true MU=true REMOVE=true PE=1-N", sl.String())
+	assert.Equal(t, " 1, PE ,PE ; PE
 	v, err := sl.Value()
 	assert.NoError(t, err)
 	vsl := v.(*StructureValue)
@@ -237,7 +237,7 @@ func TestStructureValuePeriodLast(t *testing.T) {
 	sl := NewStructureList(FieldTypePeriodGroup, "PE", OccByte, groupLayout)
 	sl.SetRange(NewRange(1, 2))
 	assert.Equal(t, "PE", sl.Name())
-	assert.Equal(t, " 1, PE ,PE ; PE  PE=true MU=false REMOVE=true PE=1-2", sl.String())
+	assert.Equal(t, " 1, PE ,PE ; PE
 	v, err := sl.Value()
 	assert.NoError(t, err)
 	vsl := v.(*StructureValue)

@@ -168,13 +168,6 @@ func NewLongNameTypeWithLength(fType FieldType, name string, shortName string, l
 	return t
 }
 
-func (commonType *CommonType) flagString() string {
-	flags := fmt.Sprintf(" PE=%v MU=%v REMOVE=%v%s", commonType.HasFlagSet(FlagOptionPE),
-		commonType.HasFlagSet(FlagOptionMU), commonType.HasFlagSet(FlagOptionToBeRemoved),
-		commonType.rangeString())
-	return flags
-}
-
 func (commonType *CommonType) rangeString() string {
 	pe := commonType.peRange.FormatBuffer()
 	r := ""
@@ -195,16 +188,10 @@ func (adaType *AdaType) String() string {
 	y := strings.Repeat(" ", int(adaType.level))
 	options := adaType.Option()
 	if options != "" {
-		options = "," + options
+		options = "," + strings.Replace(options, " ", ",", -1)
 	}
-	return fmt.Sprintf("%s%d, %s, %d, %s %s ; %s %s", y, adaType.level, adaType.shortName, adaType.length,
-		adaType.fieldType.FormatCharacter(), options, adaType.name, adaType.flagString())
-	// if adaType.shortName == adaType.name {
-	// 	return fmt.Sprintf("%s%d %s %d %s %s -> %s", y, adaType.level, adaType.shortName, adaType.length,
-	// 		adaType.fieldType.FormatCharacter(), adaType.Option(), adaType.flagString())
-	// }
-	// return fmt.Sprintf("%s%d %s %s %d %s %s -> %s", y, adaType.level, adaType.name, adaType.shortName, adaType.length,
-	// 	adaType.fieldType.FormatCharacter(), adaType.Option(), adaType.flagString())
+	return fmt.Sprintf("%s%d, %s, %d, %s %s ; %s", y, adaType.level, adaType.shortName, adaType.length,
+		adaType.fieldType.FormatCharacter(), options, adaType.name)
 }
 
 // Length return the length of the field
@@ -540,16 +527,16 @@ func (adaType *StructureType) String() string {
 		if len(adaType.SubTypes) == 0 {
 			return fmt.Sprintf("%s%d %s deleted", y, adaType.level, adaType.shortName)
 		}
-		return fmt.Sprintf("%s%d, %s, %d, %s %s,MU; %s %s", y, adaType.level, adaType.shortName, adaType.SubTypes[0].Length(),
-			adaType.SubTypes[0].Type().FormatCharacter(), adaType.SubTypes[0].Option(), adaType.name, adaType.flagString())
+		return fmt.Sprintf("%s%d, %s, %d, %s %s,MU; %s", y, adaType.level, adaType.shortName, adaType.SubTypes[0].Length(),
+			adaType.SubTypes[0].Type().FormatCharacter(), adaType.SubTypes[0].Option(), adaType.name)
 
 	}
 	options := adaType.Option()
 	if options != "" {
 		options = "," + options
 	}
-	return fmt.Sprintf("%s%d, %s %s ; %s %s", y, adaType.level, adaType.shortName, options,
-		adaType.name, adaType.flagString())
+	return fmt.Sprintf("%s%d, %s %s ; %s", y, adaType.level, adaType.shortName, options,
+		adaType.name)
 }
 
 // Length returns the length of the field
@@ -890,7 +877,7 @@ func (adaType *AdaSuperType) String() string {
 		}
 		buffer.WriteString(fmt.Sprintf("%s(%d-%d)", s.Name, s.From, s.To))
 	}
-	buffer.WriteString(fmt.Sprintf(" ; %s %s", adaType.name, adaType.flagString()))
+	buffer.WriteString(fmt.Sprintf(" ; %s", adaType.name))
 	return buffer.String()
 }
 
@@ -920,7 +907,7 @@ func NewPhoneticType(name string, descriptorLength uint16, parentName string) *A
 
 // String string representation of the phonetic type
 func (fieldType *AdaPhoneticType) String() string {
-	return fmt.Sprintf("%s=PHON(%s) ; %s %s", fieldType.shortName, fieldType.parentName, fieldType.name, fieldType.flagString())
+	return fmt.Sprintf("%s=PHON(%s) ; %s", fieldType.shortName, fieldType.parentName, fieldType.name)
 }
 
 // AdaCollationType data type structure for field types, no structures
@@ -957,8 +944,8 @@ func (fieldType *AdaCollationType) String() string {
 	if fieldType.IsOption(FieldOptionUQ) {
 		options = ",UQ"
 	}
-	return fmt.Sprintf("%s%s=COLLATING(%s,%s) ; %s %s", fieldType.shortName, options, fieldType.parentName,
-		fieldType.collAttribute, fieldType.name, fieldType.flagString())
+	return fmt.Sprintf("%s%s=COLLATING(%s,%s) ; %s", fieldType.shortName, options, fieldType.parentName,
+		fieldType.collAttribute, fieldType.name)
 }
 
 // AdaHyperExitType data type structure for field types, no structures
@@ -990,8 +977,8 @@ func (fieldType *AdaHyperExitType) String() string {
 		}
 		parents += p
 	}
-	return fmt.Sprintf("%s %d %c%s=HYPER(%d,%s) ; %s %s", fieldType.shortName, fieldType.length, fieldType.fdtFormat,
-		options, fieldType.nr, parents, fieldType.name, fieldType.flagString())
+	return fmt.Sprintf("%s %d %c%s=HYPER(%d,%s) ; %s", fieldType.shortName, fieldType.length, fieldType.fdtFormat,
+		options, fieldType.nr, parents, fieldType.name)
 }
 
 // AdaReferentialType data type structure for referential integrity types, no structures
@@ -1034,6 +1021,6 @@ func (fieldType *AdaReferentialType) String() string {
 		buffer.WriteString(",UN")
 	}
 	buffer.WriteString(")")
-	buffer.WriteString(fmt.Sprintf(" ; %s %s", fieldType.name, fieldType.flagString()))
+	buffer.WriteString(fmt.Sprintf(" ; %s", fieldType.name))
 	return buffer.String()
 }

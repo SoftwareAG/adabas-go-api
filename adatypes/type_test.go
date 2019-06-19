@@ -47,12 +47,12 @@ func TestTypeOptions(t *testing.T) {
 	assert.Equal(t, "UQ NU HF NB", adaType.Option())
 	adaType.SetLevel(1)
 
-	assert.Equal(t, " 1, AB, 1, A ,UQ NU HF NB ; AB  PE=false MU=false REMOVE=true", adaType.String())
+	assert.Equal(t, " 1, AB, 1, A ,UQ NU HF NB ; AB
 	adaType.length = 20
 	adaType.fieldType = FieldTypeUInt2
-	assert.Equal(t, " 1, AB, 20, B ,UQ NU HF NB ; AB  PE=false MU=false REMOVE=true", adaType.String())
+	assert.Equal(t, " 1, AB, 20, B ,UQ NU HF NB ; AB
 	adaType.fieldType = FieldTypeInt2
-	assert.Equal(t, " 1, AB, 20, F ,UQ NU HF NB ; AB  PE=false MU=false REMOVE=true", adaType.String())
+	assert.Equal(t, " 1, AB, 20, F ,UQ NU HF NB ; AB
 
 }
 
@@ -74,11 +74,11 @@ func TestTypeReferential(t *testing.T) {
 	}
 	Central.Log.Infof("TEST: %s", t.Name())
 	refType := NewReferentialType("RE", 1, [2]string{"PK", "FK"}, 1, 2, 1)
-	assert.Equal(t, "RE=REFINT(FK,1,PK/DC,UN) ; RE  PE=false MU=false REMOVE=true", refType.String())
+	assert.Equal(t, "RE=REFINT(FK,1,PK/DC,UN) ; RE
 	refType = NewReferentialType("RE", 1, [2]string{"PK", "FK"}, 1, 1, 2)
-	assert.Equal(t, "RE=REFINT(FK,1,PK/DN,UC) ; RE  PE=false MU=false REMOVE=true", refType.String())
+	assert.Equal(t, "RE=REFINT(FK,1,PK/DN,UC) ; RE
 	refType = NewReferentialType("RX", 1, [2]string{"PK", "FK"}, 1, 0, 0)
-	assert.Equal(t, "RX=REFINT(FK,1,PK/DX,UX) ; RX  PE=false MU=false REMOVE=true", refType.String())
+	assert.Equal(t, "RX=REFINT(FK,1,PK/DX,UX) ; RX
 }
 
 func TestTypeLongName(t *testing.T) {
@@ -90,12 +90,12 @@ func TestTypeLongName(t *testing.T) {
 	ty := NewLongNameType(FieldTypeByte, "ABC", "XX")
 	assert.Equal(t, "ABC", ty.Name())
 	assert.Equal(t, "XX", ty.ShortName())
-	assert.Equal(t, " 1, XX, 1, F  ; ABC  PE=false MU=false REMOVE=true", ty.String())
+	assert.Equal(t, " 1, XX, 1, F  ; ABC
 
 	ty = NewLongNameType(FieldTypeString, "STRING", "ST")
 	assert.Equal(t, "STRING", ty.Name())
 	assert.Equal(t, "ST", ty.ShortName())
-	assert.Equal(t, " 1, ST, 1, A  ; STRING  PE=false MU=false REMOVE=true", ty.String())
+	assert.Equal(t, " 1, ST, 1, A  ; STRING
 
 }
 
