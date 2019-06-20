@@ -36,6 +36,9 @@ type storeRecordTraverserStructure struct {
 }
 
 func createStoreRecordBuffer(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
+	if adaValue.Type().HasFlagSet(FlagOptionReadOnly) {
+		return adatypes.Continue, nil
+	}
 	record := x.(*storeRecordTraverserStructure)
 	adatypes.Central.Log.Debugf("Store record buffer for %s current helper position is %d/%x",
 		adaValue.Type().Name(), record.helper.Offset(), record.helper.Offset())
