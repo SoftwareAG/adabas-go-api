@@ -880,7 +880,7 @@ func (adaType *AdaSuperType) String() string {
 		if index > 0 {
 			buffer.WriteByte(',')
 		}
-		buffer.WriteString(fmt.Sprintf("%s(%d-%d)", s.Name, s.From, s.To))
+		buffer.WriteString(fmt.Sprintf("%s(%d,%d)", s.Name, s.From, s.To))
 	}
 	buffer.WriteString(fmt.Sprintf(" ; %s", adaType.name))
 	return buffer.String()

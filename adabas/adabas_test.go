@@ -276,10 +276,10 @@ func ExampleAdabas_readFileDefinitionFile11() {
 	//   1, AZ, 3, A ,NU,DE,MU; AZ
 	//     2, AZ, 3, A ,NU,DE,MU ; AZ
 	//  PH=PHON(AE) ; PH
-	//  H1=AU(1-2),AV(1-2) ; H1
-	//  S1=AO(1-4) ; S1
-	//  S2=AO(1-6),AE(1-20) ; S2
-	//  S3=AR(1-3),AS(1-9) ; S3
+	//  H1=AU(1,2),AV(1,2) ; H1
+	//  S1=AO(1,4) ; S1
+	//  S2=AO(1,6),AE(1,20) ; S2
+	//  S3=AR(1,3),AS(1,9) ; S3
 
 }
 
@@ -378,13 +378,13 @@ func ExampleAdabas_readFileDefinition9() {
 	//     2, SC, 0, A ,NU,NV,NB,MU; SC
 	//       3, SC, 0, A ,NU,NV,NB,MU ; SC
 	//   1, TC, 20, U ,SY=TIME,DT=E(TIMESTAMP) ; TC
-	//   1, TU, 20, U ,MU,SY=TIME,DT=E(TIMESTAMP),MU; TU
+	//   1, TU, 20, U ,MU,SY=TIME,DT=E(TIMESTAMP); TU
 	//     2, TU, 20, U ,MU,SY=TIME,DT=E(TIMESTAMP) ; TU
 	//  CN,HE=COLLATING(BC,'de@collation=phonebook',PRIMAR) ; CN
-	//  H1=NA(1-2),NB(1-3) ; H1
-	//  S1=JA(1-2) ; S1
-	//  S2=JA(1-6),BC(1-40) ; S2
-	//  S3=LA(1-3),LB(1-6) ; S3
+	//  H1=NA(1,2),NB(1,3) ; H1
+	//  S1=JA(1,2) ; S1
+	//  S2=JA(1,6),BC(1,40) ; S2
+	//  S3=LA(1,3),LB(1,6) ; S3
 	//  HO=REFINT(A,12,A/DC) ; HO
 }
 
