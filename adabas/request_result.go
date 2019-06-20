@@ -36,7 +36,7 @@ type storeRecordTraverserStructure struct {
 }
 
 func createStoreRecordBuffer(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
-	if adaValue.Type().HasFlagSet(FlagOptionReadOnly) {
+	if adaValue.Type().HasFlagSet(adatypes.FlagOptionReadOnly) {
 		return adatypes.Continue, nil
 	}
 	record := x.(*storeRecordTraverserStructure)
