@@ -528,7 +528,9 @@ func (adaType *StructureType) String() string {
 			return fmt.Sprintf("%s%d %s deleted", y, adaType.level, adaType.shortName)
 		}
 		options := adaType.SubTypes[0].Option()
-		if options != "" {
+		if options == "" {
+			options = ",MU"
+		} else {
 			options = "," + strings.Replace(options, " ", ",", -1)
 		}
 
