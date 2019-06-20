@@ -47,12 +47,12 @@ func TestTypeOptions(t *testing.T) {
 	assert.Equal(t, "UQ NU HF NB", adaType.Option())
 	adaType.SetLevel(1)
 
-	assert.Equal(t, " 1, AB, 1, A ,UQ NU HF NB ; AB", adaType.String())
+	assert.Equal(t, " 1, AB, 1, A ,UQ,NU,HF,NB ; AB", adaType.String())
 	adaType.length = 20
 	adaType.fieldType = FieldTypeUInt2
-	assert.Equal(t, " 1, AB, 20, B ,UQ NU HF NB ; AB", adaType.String())
+	assert.Equal(t, " 1, AB, 20, B ,UQ,NU,HF,NB ; AB", adaType.String())
 	adaType.fieldType = FieldTypeInt2
-	assert.Equal(t, " 1, AB, 20, F ,UQ NU HF NB ; AB", adaType.String())
+	assert.Equal(t, " 1, AB, 20, F ,UQ,NU,HF,NB ; AB", adaType.String())
 
 }
 
