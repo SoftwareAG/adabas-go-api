@@ -532,7 +532,7 @@ func (adaType *StructureType) String() string {
 			options = "," + strings.Replace(options, " ", ",", -1)
 		}
 
-		return fmt.Sprintf("%s%d, %s, %d, %s %s,MU; %s", y, adaType.level, adaType.shortName, adaType.SubTypes[0].Length(),
+		return fmt.Sprintf("%s%d, %s, %d, %s %s; %s", y, adaType.level, adaType.shortName, adaType.SubTypes[0].Length(),
 			adaType.SubTypes[0].Type().FormatCharacter(), options, adaType.name)
 
 	}
