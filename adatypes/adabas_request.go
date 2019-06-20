@@ -101,7 +101,7 @@ func (adabasRequest *Request) GetValue(name string) (IAdaValue, error) {
 // Traverser callback to create format buffer per field type
 func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
 	adabasRequest := x.(*Request)
-	if adaValue.Type().HasFlagSet(FlagOptionReference) {
+	if adaValue.Type().HasFlagSet(FlagOptionReadOnly) || adaValue.Type().HasFlagSet(FlagOptionReference) {
 		return Continue, nil
 	}
 	Central.Log.Debugf("Add format buffer for %s", adaValue.Type().Name())

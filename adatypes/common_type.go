@@ -332,6 +332,8 @@ const (
 	FlagOptionSecondCall
 	// FlagOptionReference Field will skip parsing value
 	FlagOptionReference
+	// FlagOptionReadOnly read only field
+	FlagOptionReadOnly
 )
 
 // Bit return the Bit of the option flag
