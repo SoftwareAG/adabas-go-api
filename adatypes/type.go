@@ -527,13 +527,18 @@ func (adaType *StructureType) String() string {
 		if len(adaType.SubTypes) == 0 {
 			return fmt.Sprintf("%s%d %s deleted", y, adaType.level, adaType.shortName)
 		}
+		options := adaType.SubTypes[0].Option()
+		if options != "" {
+			options = "," + strings.Replace(options, " ", ",", -1)
+		}
+
 		return fmt.Sprintf("%s%d, %s, %d, %s %s,MU; %s", y, adaType.level, adaType.shortName, adaType.SubTypes[0].Length(),
-			adaType.SubTypes[0].Type().FormatCharacter(), adaType.SubTypes[0].Option(), adaType.name)
+			adaType.SubTypes[0].Type().FormatCharacter(), options, adaType.name)
 
 	}
 	options := adaType.Option()
 	if options != "" {
-		options = "," + options
+		options = "," + strings.Replace(options, " ", ",", -1)
 	}
 	return fmt.Sprintf("%s%d, %s %s ; %s", y, adaType.level, adaType.shortName, options,
 		adaType.name)
@@ -968,7 +973,7 @@ func NewHyperExitType(name string, length uint32, fdtFormat byte, nr uint8, pare
 func (fieldType *AdaHyperExitType) String() string {
 	options := fieldType.Option()
 	if len(options) > 0 {
-		options = "," + options
+		options = "," + strings.Replace(options, " ", ",", -1)
 	}
 	parents := ""
 	for _, p := range fieldType.parentNames {

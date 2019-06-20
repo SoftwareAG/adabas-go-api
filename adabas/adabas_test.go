@@ -243,38 +243,38 @@ func ExampleAdabas_readFileDefinitionFile11() {
 	// Output: Open database
 	// Read file definition
 	// Dump all file field types:
-	//   1, AA, 8, A ,UQ DE ; AA
+	//   1, AA, 8, A ,UQ,DE ; AA
 	//   1, AB  ; AB
 	//     2, AC, 20, A ,NU ; AC
 	//     2, AE, 20, A ,DE ; AE
 	//     2, AD, 20, A ,NU ; AD
 	//   1, AF, 1, A ,FI ; AF
 	//   1, AG, 1, A ,FI ; AG
-	//   1, AH, 4, P ,DE NC ; AH
+	//   1, AH, 4, P ,DE,NC ; AH
 	//   1, A1  ; A1
-	//     2, AI, 20, A NU MU,MU; AI
-	//       3, AI, 20, A ,NU MU ; AI
-	//     2, AJ, 20, A ,NU DE ; AJ
+	//     2, AI, 20, A ,NU,MU,MU; AI
+	//       3, AI, 20, A ,NU,MU ; AI
+	//     2, AJ, 20, A ,NU,DE ; AJ
 	//     2, AK, 10, A ,NU ; AK
 	//     2, AL, 3, A ,NU ; AL
 	//   1, A2  ; A2
 	//     2, AN, 6, A ,NU ; AN
 	//     2, AM, 15, A ,NU ; AM
 	//   1, AO, 6, A ,DE ; AO
-	//   1, AP, 25, A ,NU DE ; AP
+	//   1, AP, 25, A ,NU,DE ; AP
 	//   1, AQ ,PE ; AQ
 	//     2, AR, 3, A ,NU ; AR
 	//     2, AS, 5, P ,NU ; AS
-	//     2, AT, 5, P NU MU,MU; AT
-	//       3, AT, 5, P ,NU MU ; AT
+	//     2, AT, 5, P ,NU,MU,MU; AT
+	//       3, AT, 5, P ,NU,MU ; AT
 	//   1, A3  ; A3
 	//     2, AU, 2, U  ; AU
 	//     2, AV, 2, U ,NU ; AV
 	//   1, AW ,PE ; AW
 	//     2, AX, 8, U ,NU ; AX
 	//     2, AY, 8, U ,NU ; AY
-	//   1, AZ, 3, A NU DE MU,MU; AZ
-	//     2, AZ, 3, A ,NU DE MU ; AZ
+	//   1, AZ, 3, A ,NU,DE,MU,MU; AZ
+	//     2, AZ, 3, A ,NU,DE,MU ; AZ
 	//  PH=PHON(AE) ; PH
 	//  H1=AU(1-2),AV(1-2) ; H1
 	//  S1=AO(1-4) ; S1
@@ -315,22 +315,22 @@ func ExampleAdabas_readFileDefinition9() {
 	// Read file definition
 	// Dump all file field types:
 	//   1, A0  ; A0
-	//     2, AA, 8, A ,UQ DE NC NN ; AA
+	//     2, AA, 8, A ,UQ,DE,NC,NN ; AA
 	//     2, AB  ; AB
 	//       3, AC, 4, F ,DE ; AC
-	//       3, AD, 8, B ,NU HF ; AD
-	//       3, AE, 0, A ,NU NV NB ; AE
+	//       3, AD, 8, B ,NU,HF ; AD
+	//       3, AE, 0, A ,NU,NV,NB ; AE
 	//   1, B0  ; B0
 	//     2, BA, 40, W ,NU ; BA
 	//     2, BB, 40, W ,NU ; BB
-	//     2, BC, 50, W ,NU DE ; BC
+	//     2, BC, 50, W ,NU,DE ; BC
 	//   1, CA, 1, A ,FI ; CA
 	//   1, DA, 1, A ,FI ; DA
-	//   1, EA, 4, P ,DE NC ; EA
+	//   1, EA, 4, P ,DE,NC ; EA
 	//   1, F0 ,PE ; F0
-	//     2, FA, 60, W NU MU,MU; FA
-	//       3, FA, 60, W ,NU MU ; FA
-	//     2, FB, 40, W ,NU DE ; FB
+	//     2, FA, 60, W ,NU,MU,MU; FA
+	//       3, FA, 60, W ,NU,MU ; FA
+	//     2, FB, 40, W ,NU,DE ; FB
 	//     2, FC, 10, A ,NU ; FC
 	//     2, FD, 3, A ,NU ; FD
 	//     2, F1  ; F1
@@ -338,12 +338,12 @@ func ExampleAdabas_readFileDefinition9() {
 	//       3, FF, 15, A ,NU ; FF
 	//       3, FG, 15, A ,NU ; FG
 	//       3, FH, 15, A ,NU ; FH
-	//       3, FI, 80, A NU DE MU,MU; FI
-	//         4, FI, 80, A ,NU DE MU ; FI
+	//       3, FI, 80, A ,NU,DE,MU,MU; FI
+	//         4, FI, 80, A ,NU,DE,MU ; FI
 	//   1, I0 ,PE ; I0
-	//     2, IA, 40, W NU MU,MU; IA
-	//       3, IA, 40, W ,NU MU ; IA
-	//     2, IB, 40, W ,NU DE ; IB
+	//     2, IA, 40, W ,NU,MU,MU; IA
+	//       3, IA, 40, W ,NU,MU ; IA
+	//     2, IB, 40, W ,NU,DE ; IB
 	//     2, IC, 10, A ,NU ; IC
 	//     2, ID, 3, A ,NU ; ID
 	//     2, IE, 5, A ,NU ; IE
@@ -352,34 +352,34 @@ func ExampleAdabas_readFileDefinition9() {
 	//       3, IG, 15, A ,NU ; IG
 	//       3, IH, 15, A ,NU ; IH
 	//       3, II, 15, A ,NU ; II
-	//       3, IJ, 80, A NU DE MU,MU; IJ
-	//         4, IJ, 80, A ,NU DE MU ; IJ
+	//       3, IJ, 80, A ,NU,DE,MU,MU; IJ
+	//         4, IJ, 80, A ,NU,DE,MU ; IJ
 	//   1, JA, 6, A ,DE ; JA
-	//   1, KA, 66, W ,NU DE ; KA
+	//   1, KA, 66, W ,NU,DE ; KA
 	//   1, L0 ,PE ; L0
 	//     2, LA, 3, A ,NU ; LA
 	//     2, LB, 6, P ,NU ; LB
-	//     2, LC, 6, P NU DE MU,MU; LC
-	//       3, LC, 6, P ,NU DE MU ; LC
+	//     2, LC, 6, P ,NU,DE,MU,MU; LC
+	//       3, LC, 6, P ,NU,DE,MU ; LC
 	//   1, MA, 4, G ,NU ; MA
 	//   1, N0  ; N0
 	//     2, NA, 2, U  ; NA
 	//     2, NB, 3, U ,NU ; NB
 	//   1, O0 ,PE ; O0
-	//     2, OA, 8, U ,NU DT=E(DATE) ; OA
-	//     2, OB, 8, U ,NU DT=E(DATE) ; OB
-	//   1, PA, 3, A NU DE MU,MU; PA
-	//     2, PA, 3, A ,NU DE MU ; PA
+	//     2, OA, 8, U ,NU,DT=E(DATE) ; OA
+	//     2, OB, 8, U ,NU,DT=E(DATE) ; OB
+	//   1, PA, 3, A ,NU,DE,MU,MU; PA
+	//     2, PA, 3, A ,NU,DE,MU ; PA
 	//   1, QA, 7, P  ; QA
-	//   1, RA, 0, A ,NU NV NB ; RA
+	//   1, RA, 0, A ,NU,NV,NB ; RA
 	//   1, S0 ,PE ; S0
 	//     2, SA, 80, W ,NU ; SA
 	//     2, SB, 3, A ,NU ; SB
-	//     2, SC, 0, A NU NV NB MU,MU; SC
-	//       3, SC, 0, A ,NU NV NB MU ; SC
-	//   1, TC, 20, U ,SY=TIME DT=E(TIMESTAMP) ; TC
-	//   1, TU, 20, U MU SY=TIME DT=E(TIMESTAMP),MU; TU
-	//     2, TU, 20, U ,MU SY=TIME DT=E(TIMESTAMP) ; TU
+	//     2, SC, 0, A ,NU,NV,NB,MU,MU; SC
+	//       3, SC, 0, A ,NU,NV,NB,MU ; SC
+	//   1, TC, 20, U ,SY=TIME,DT=E(TIMESTAMP) ; TC
+	//   1, TU, 20, U ,MU,SY=TIME,DT=E(TIMESTAMP),MU; TU
+	//     2, TU, 20, U ,MU,SY=TIME,DT=E(TIMESTAMP) ; TU
 	//  CN,HE=COLLATING(BC,'de@collation=phonebook',PRIMAR) ; CN
 	//  H1=NA(1-2),NB(1-3) ; H1
 	//  S1=JA(1-2) ; S1
@@ -421,11 +421,11 @@ func ExampleAdabas_readFileDefinition9RestrictF0() {
 	// Read file definition
 	// Dump all active field types:
 	//   1, A0  ; A0
-	//     2, AA, 8, A ,UQ DE NC NN ; AA
+	//     2, AA, 8, A ,UQ,DE,NC,NN ; AA
 	//   1, F0 ,PE ; F0
-	//     2, FA, 60, W NU MU,MU; FA
-	//       3, FA, 60, W ,NU MU ; FA
-	//     2, FB, 40, W ,NU DE ; FB
+	//     2, FA, 60, W ,NU,MU,MU; FA
+	//       3, FA, 60, W ,NU,MU ; FA
+	//     2, FB, 40, W ,NU,DE ; FB
 	//     2, FC, 10, A ,NU ; FC
 	//     2, FD, 3, A ,NU ; FD
 	//     2, F1  ; F1
@@ -433,8 +433,8 @@ func ExampleAdabas_readFileDefinition9RestrictF0() {
 	//       3, FF, 15, A ,NU ; FF
 	//       3, FG, 15, A ,NU ; FG
 	//       3, FH, 15, A ,NU ; FH
-	//       3, FI, 80, A NU DE MU,MU; FI
-	//         4, FI, 80, A ,NU DE MU ; FI
+	//       3, FI, 80, A ,NU,DE,MU,MU; FI
+	//         4, FI, 80, A ,NU,DE,MU ; FI
 }
 
 func ExampleAdabas_readFileDefinition9Restricted() {
@@ -470,17 +470,17 @@ func ExampleAdabas_readFileDefinition9Restricted() {
 	// Read file definition
 	// Dump all active field types:
 	//   1, A0  ; A0
-	//     2, AA, 8, A ,UQ DE NC NN ; AA
+	//     2, AA, 8, A ,UQ,DE,NC,NN ; AA
 	//     2, AB  ; AB
 	//       3, AC, 4, F ,DE ; AC
-	//       3, AD, 8, B ,NU HF ; AD
-	//       3, AE, 0, A ,NU NV NB ; AE
+	//       3, AD, 8, B ,NU,HF ; AD
+	//       3, AE, 0, A ,NU,NV,NB ; AE
 	//   1, DA, 1, A ,FI ; DA
 	//   1, L0 ,PE ; L0
 	//     2, LA, 3, A ,NU ; LA
 	//     2, LB, 6, P ,NU ; LB
-	//     2, LC, 6, P NU DE MU,MU; LC
-	//       3, LC, 6, P ,NU DE MU ; LC
+	//     2, LC, 6, P ,NU,DE,MU,MU; LC
+	//       3, LC, 6, P ,NU,DE,MU ; LC
 }
 
 func TestAdabasFdtNewEmployee(t *testing.T) {
