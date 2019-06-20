@@ -22,6 +22,7 @@ package adatypes
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 )
@@ -217,7 +218,15 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 	}
 
 	fieldLength := value.adatype.Length()
-	if fieldLength == 0 {
+	switch fieldLength {
+	case math.MaxUint32:
+		length, errh := helper.ReceiveUInt8()
+		if errh != nil {
+			return EndTraverser, errh
+		}
+		fieldLength = uint32(length)
+
+	case 0:
 		switch value.adatype.Type() {
 		case FieldTypeLAString:
 			length, errh := helper.ReceiveUInt16()
@@ -244,8 +253,9 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 			}
 			fieldLength = uint32(length - 1)
 		}
+	default:
 	}
-	Central.Log.Debugf("%s length set to %d", value.Type().Name(), fieldLength)
+	Central.Log.Debugf("Alpha %s length set to %d", value.Type().Name(), fieldLength)
 
 	value.value, err = helper.ReceiveBytes(fieldLength)
 	if err != nil {

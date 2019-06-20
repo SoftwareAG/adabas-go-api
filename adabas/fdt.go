@@ -21,6 +21,7 @@ package adabas
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
@@ -127,7 +128,7 @@ var fdt = []adatypes.IAdaType{
 	adatypes.NewType(adatypes.FieldTypeString, "colParentName"),
 	adatypes.NewType(adatypes.FieldTypeUInt2, "colInternalLength"),
 	adatypes.NewType(adatypes.FieldTypeUByte, "colOption2"),
-	adatypes.NewTypeWithLength(adatypes.FieldTypeString, "colAttribute", 0), // 25
+	adatypes.NewTypeWithLength(adatypes.FieldTypeString, "colAttribute", math.MaxUint32), // 25
 	adatypes.NewType(adatypes.FieldTypeUInt2, "hyperLength"),
 	adatypes.NewType(adatypes.FieldTypeUByte, "hyperFExit"),
 	adatypes.NewType(adatypes.FieldTypeUByte, "hyperOption2"),
@@ -210,7 +211,7 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 				return
 			}
 		case fieldIdentifierCollation.code():
-			adatypes.Central.Log.Debugf("Found Super/Sub field %c\n", value.Value().(byte))
+			adatypes.Central.Log.Debugf("Found Collation field %c\n", value.Value().(byte))
 			fieldType, err = createCollationType(fdt, index)
 			if err != nil {
 				return
@@ -222,7 +223,7 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 				return
 			}
 		case fieldIdentifierReferential.code():
-			adatypes.Central.Log.Debugf("Found HyperExit field %c\n", value.Value().(byte))
+			adatypes.Central.Log.Debugf("Found Referential field %c\n", value.Value().(byte))
 			fieldType, err = createReferential(fdt, index)
 			if err != nil {
 				return
