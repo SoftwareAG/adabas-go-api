@@ -93,7 +93,11 @@ func TestStructureValuePeriod(t *testing.T) {
 	assert.NoError(t, err)
 	vsl := v.(*StructureValue)
 	b := make([]byte, 100)
-	b[0] = 2
+	if bigEndian() {
+		b[3] = 2
+	} else {
+		b[0] = 2
+	}
 	b[4] = 'X'
 	b[5] = 0x1c
 	helper := NewHelper(b, 100, endian())
@@ -169,7 +173,11 @@ func TestStructureValuePeriodMU(t *testing.T) {
 	assert.NoError(t, err)
 	vsl := v.(*StructureValue)
 	b := make([]byte, 100)
-	b[0] = 2
+	if bigEndian() {
+		b[3] = 2
+	} else {
+		b[0] = 2
+	}
 	b[4] = 'X'
 	b[5] = 0x1c
 	helper := NewHelper(b, 100, endian())
@@ -242,7 +250,11 @@ func TestStructureValuePeriodLast(t *testing.T) {
 	assert.NoError(t, err)
 	vsl := v.(*StructureValue)
 	b := make([]byte, 100)
-	b[0] = 2
+	if bigEndian() {
+		b[3] = 2
+	} else {
+		b[0] = 2
+	}
 	b[4] = 'X'
 	b[5] = 0x1c
 	helper := NewHelper(b, 100, endian())
