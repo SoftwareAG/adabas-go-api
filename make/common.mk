@@ -141,6 +141,22 @@ test-xml: prepare fmt lint $(TESTOUTPUT) | $(GO2XUNIT) $(GOJUNITREPORT) ; $(info
 #	$(GO2XUNIT) -input $(TESTOUTPUT)/tests.$(HOST).output -output $(TESTOUTPUT)/tests.$(HOST).xml
 	cat $(TESTOUTPUT)/tests.$(HOST).output | $(GOJUNITREPORT) > $(TESTOUTPUT)/tests.$(HOST).xml
 
+test-adatypes-pprof: prepare fmt lint $(TESTOUTPUT) | $(GO2XUNIT) $(GOJUNITREPORT) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
+	$Q cd $(CURDIR) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
+	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
+	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
+	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
+	    $(GO) test -timeout $(TIMEOUT)s -count=1 -memprofile adatypes-memprofile.out -cpuprofile adatypes-profile.out $(GO_FLAGS) -v $(ARGS) ./adatypes 2>&1 | tee $(TESTOUTPUT)/tests.$(HOST).output
+
+test-adabas-pprof: prepare fmt lint $(TESTOUTPUT) | $(GO2XUNIT) $(GOJUNITREPORT) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
+	$Q cd $(CURDIR) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
+	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
+	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
+	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
+	    $(GO) test -timeout $(TIMEOUT)s -count=1 -memprofile adabas-memprofile.out -cpuprofile adabas-profile.out $(GO_FLAGS) -v $(ARGS) ./adabas 2>&1 | tee $(TESTOUTPUT)/tests.$(HOST).output
+
+test-pprof: test-adatypes-pprof test-adabas-pprof
+
 COVERAGE_MODE = atomic
 COVERAGE_PROFILE = $(COVERAGE_DIR)/profile.out
 COVERAGE_XML = $(COVERAGE_DIR)/coverage.xml
