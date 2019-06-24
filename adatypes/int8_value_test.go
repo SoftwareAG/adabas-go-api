@@ -126,7 +126,7 @@ func TestInt8Variable(t *testing.T) {
 }
 
 func checkValueInt64(t *testing.T, up IAdaValue, input []byte, expect int64) {
-	helper := NewDynamicHelper(binary.LittleEndian)
+	helper := NewDynamicHelper(endian())
 	helper.putBytes(input)
 	helper.offset = 0
 	option := &BufferOption{}
@@ -266,13 +266,13 @@ func TestInt8ParseBuffer(t *testing.T) {
 	up := newInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
 	option := &BufferOption{}
-	helper := &BufferHelper{order: binary.LittleEndian, buffer: []byte{0x5, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}}
+	helper := &BufferHelper{order: endian(), buffer: []byte{0x5, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}}
 	var res TraverseResult
 	res, err = up.parseBuffer(helper, option)
 	assert.NoError(t, err)
 	assert.Equal(t, TraverseResult(0), res)
 	assert.Equal(t, int64(5), up.Value())
-	helper = &BufferHelper{order: binary.LittleEndian, buffer: []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5}}
+	helper = &BufferHelper{order: endian(), buffer: []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5}}
 	res, err = up.parseBuffer(helper, option)
 	assert.NoError(t, err)
 	assert.Equal(t, TraverseResult(0), res)

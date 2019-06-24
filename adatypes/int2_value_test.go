@@ -119,7 +119,7 @@ func TestInt2Variable(t *testing.T) {
 
 	res := int16(-2)
 	var buf bytes.Buffer
-	binary.Write(&buf, binary.LittleEndian, res)
+	binary.Write(&buf, endian(), res)
 	fmt.Println(buf.Bytes(), buf)
 
 	Central.Log.Infof("TEST: %s", t.Name())

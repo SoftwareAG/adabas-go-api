@@ -44,7 +44,12 @@ func TestInt4Byte(t *testing.T) {
 	assert.Equal(t, 4, len(bint4))
 	int4.SetValue(math.MaxInt32)
 	assert.Equal(t, int32(math.MaxInt32), int4.value)
-	maxBuffer := []byte{0xff, 0xff, 0xff, 0x7f}
+	var maxBuffer []byte
+	if bigEndian() {
+		maxBuffer = []byte{0x7f, 0xff, 0xff, 0xff}
+	} else {
+		maxBuffer = []byte{0xff, 0xff, 0xff, 0x7f}
+	}
 	assert.Equal(t, maxBuffer, int4.Bytes())
 	int4.SetStringValue("2000")
 	assert.Equal(t, int32(2000), int4.value)

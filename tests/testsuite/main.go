@@ -54,7 +54,7 @@ func displayResult(isn adatypes.Isn, buffer []byte, received uint64) {
 	if !output {
 		return
 	}
-	helper := adatypes.NewHelper(buffer, int(received), binary.LittleEndian)
+	helper := adatypes.NewHelper(buffer, int(received), adabas.Endian())
 	aa, err := helper.ReceiveString(8)
 	if err != nil {
 		fmt.Println("Error receiving AA", err)

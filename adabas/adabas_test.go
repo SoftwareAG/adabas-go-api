@@ -659,7 +659,6 @@ func TestAdabasReadPhysical(t *testing.T) {
 	req := &adatypes.Request{Option: &adatypes.BufferOption{}, Definition: simpleDefinition(),
 		FormatBuffer: fb, Multifetch: 1, RecordBufferLength: 200, Parser: testParser, Limit: 5}
 	counter := uint32(0)
-	//, RecordBuffer: adatypes.NewHelper(make([]byte, 199), 200, binary.LittleEndian)}
 	rerr := adabas.ReadPhysical(11, req, &counter)
 	if !assert.NoError(t, rerr) {
 		return

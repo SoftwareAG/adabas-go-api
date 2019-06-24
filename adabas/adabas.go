@@ -1140,7 +1140,7 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 		return
 	}
 	adatypes.Central.Log.Debugf("Read buffer, read  ACBX: ")
-	err = binary.Read(buffer, binary.LittleEndian, adabas.Acbx)
+	err = binary.Read(buffer, Endian(), adabas.Acbx)
 	if err != nil {
 		adatypes.Central.Log.Debugf("ACBX read error : %v", err)
 		return
