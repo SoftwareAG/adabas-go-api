@@ -59,7 +59,6 @@ func initLogLevelWithFile(fileName string, level zapcore.Level) (err error) {
 	"encoding": "console",
 	"outputPaths": [ "XXX"],
 	"errorOutputPaths": ["stderr"],
-	"initialFields": {"foo": "bar"},
 	"encoderConfig": {
 	  "messageKey": "message",
 	  "levelKey": "level",

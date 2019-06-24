@@ -227,8 +227,13 @@ func TestSearchRange(t *testing.T) {
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
 	fmt.Println(valueBuffer)
-	assert.Equal(t, uint8(12), valueBuffer[0])
-	assert.Equal(t, uint8(44), valueBuffer[8])
+	if bigEndian() {
+		assert.Equal(t, uint8(12), valueBuffer[8])
+		assert.Equal(t, uint8(44), valueBuffer[0])
+	} else {
+		assert.Equal(t, uint8(12), valueBuffer[0])
+		assert.Equal(t, uint8(44), valueBuffer[8])
+	}
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)
 	assert.False(t, searchInfo.NeedSearch)
@@ -255,8 +260,13 @@ func TestSearchRangeMf(t *testing.T) {
 	if !assert.Len(t, valueBuffer, 16) {
 		return
 	}
-	assert.Equal(t, uint8(12), valueBuffer[0])
-	assert.Equal(t, uint8(44), valueBuffer[8])
+	if bigEndian() {
+		assert.Equal(t, uint8(12), valueBuffer[8])
+		assert.Equal(t, uint8(44), valueBuffer[0])
+	} else {
+		assert.Equal(t, uint8(12), valueBuffer[0])
+		assert.Equal(t, uint8(44), valueBuffer[8])
+	}
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)
 	assert.True(t, searchInfo.NeedSearch)
@@ -431,7 +441,11 @@ func TestSearchValue(t *testing.T) {
 	fmt.Println("Value Buffer: ", valueBuffer)
 	assert.Equal(t, 8, len(valueBuffer))
 	if len(valueBuffer) == 8 {
-		assert.Equal(t, uint8(123), valueBuffer[0])
+		if bigEndian() {
+			assert.Equal(t, uint8(123), valueBuffer[8])
+		} else {
+			assert.Equal(t, uint8(123), valueBuffer[0])
+		}
 	}
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)

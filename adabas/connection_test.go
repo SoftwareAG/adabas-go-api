@@ -86,7 +86,6 @@ func initLogLevelWithFile(fileName string, level string) (err error) {
 	"encoding": "console",
 	"outputPaths": [ "/tmp/logs"],
 	"errorOutputPaths": ["stderr"],
-	"initialFields": {"foo": "bar"},
 	"encoderConfig": {
 	  "messageKey": "message",
 	  "levelKey": "level",
@@ -1920,4 +1919,52 @@ func TestConnectionLobCheckAllADATCP(t *testing.T) {
 		fmt.Printf("SHA ALL: %x\n", h.Sum(nil))
 		assert.Equal(t, ea.String(), fmt.Sprintf("%x", h.Sum(nil)))
 	}
+}
+
+func TestConnectionFile9Isn242(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("ada;target=24")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	connection.Open()
+	readRequest, rErr := connection.CreateFileReadRequest(9)
+	assert.NoError(t, rErr)
+	err = readRequest.QueryFields("*")
+	assert.NoError(t, err)
+	result, rerr := readRequest.ReadISN(242)
+	assert.NoError(t, rerr)
+
+	fmt.Println(result.String())
+}
+
+func TestConnectionFile9Isn297(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("ada;target=24")
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	connection.Open()
+	readRequest, rErr := connection.CreateFileReadRequest(9)
+	assert.NoError(t, rErr)
+	err = readRequest.QueryFields("*")
+	assert.NoError(t, err)
+	result, rerr := readRequest.ReadISN(297)
+	assert.NoError(t, rerr)
+
+	fmt.Println(result.String())
 }

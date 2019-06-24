@@ -60,7 +60,11 @@ func TestByteArraySet(t *testing.T) {
 	barray.SetStringValue("0x1010")
 	assert.Equal(t, []byte{0x10, 0x10}, barray.value)
 	barray.SetStringValue("1010")
-	assert.Equal(t, "[242 3 0 0 0 0 0 0]", barray.String())
+	if bigEndian() {
+		assert.Equal(t, "[0 0 0 0 0 0 3 242]", barray.String())
+	} else {
+		assert.Equal(t, "[242 3 0 0 0 0 0 0]", barray.String())
+	}
 
 	adaType = NewTypeWithLength(FieldTypeByteArray, "XX", 2)
 	barray = newByteArrayValue(adaType)
@@ -71,8 +75,13 @@ func TestByteArraySet(t *testing.T) {
 	assert.Equal(t, []byte{0x10, 0x10}, barray.value)
 	assert.Equal(t, "[16 16]", barray.String())
 	barray.SetStringValue("1010")
-	assert.Equal(t, []byte{0xf2, 0x03}, barray.value)
-	assert.Equal(t, "[242 3]", barray.String())
+	if bigEndian() {
+		assert.Equal(t, []byte{0x03, 0xf2}, barray.value)
+		assert.Equal(t, "[3 242]", barray.String())
+	} else {
+		assert.Equal(t, []byte{0xf2, 0x03}, barray.value)
+		assert.Equal(t, "[242 3]", barray.String())
+	}
 
 	adaType = NewTypeWithLength(FieldTypeByteArray, "XX", 8)
 	barray = newByteArrayValue(adaType)
@@ -83,7 +92,12 @@ func TestByteArraySet(t *testing.T) {
 	assert.Equal(t, []byte{0x10, 0x10, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, barray.value)
 	assert.Equal(t, "[16 16 0 0 0 0 0 0]", barray.String())
 	barray.SetStringValue("1010")
-	assert.Equal(t, []byte{0xf2, 0x3, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, barray.value)
-	assert.Equal(t, "[242 3 0 0 0 0 0 0]", barray.String())
+	if bigEndian() {
+		assert.Equal(t, []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3, 0xf2}, barray.value)
+		assert.Equal(t, "[0 0 0 0 0 0 3 242]", barray.String())
+	} else {
+		assert.Equal(t, []byte{0xf2, 0x3, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, barray.value)
+		assert.Equal(t, "[242 3 0 0 0 0 0 0]", barray.String())
+	}
 
 }
