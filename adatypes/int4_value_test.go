@@ -92,10 +92,17 @@ func TestInt4Variable(t *testing.T) {
 	checkValueInt64(t, up, []byte{2, 255}, -1)
 	checkValueInt64(t, up, []byte{3, 1, 1}, 0x101)
 	checkValueInt64(t, up, []byte{4, 1, 1, 1}, 65793)
-	checkValueInt64(t, up, []byte{4, 255, 1, 1}, 66047)
-	checkValueInt64(t, up, []byte{4, 1, 1, 255}, 16711937)
-	checkValueInt64(t, up, []byte{5, 1, 1, 255, 255}, -65279)
-	checkValueInt64(t, up, []byte{4, 0, 0, 255}, 16711680)
+	if bigEndian() {
+		checkValueInt64(t, up, []byte{4, 1, 1, 255}, 66047)
+		checkValueInt64(t, up, []byte{4, 255, 1, 1}, 16711937)
+		checkValueInt64(t, up, []byte{5, 255, 255, 1, 1}, -65279)
+		checkValueInt64(t, up, []byte{4, 255, 0, 0}, 16711680)
+	} else {
+		checkValueInt64(t, up, []byte{4, 255, 1, 1}, 66047)
+		checkValueInt64(t, up, []byte{4, 1, 1, 255}, 16711937)
+		checkValueInt64(t, up, []byte{5, 1, 1, 255, 255}, -65279)
+		checkValueInt64(t, up, []byte{4, 0, 0, 255}, 16711680)
+	}
 }
 
 func TestUInt4Variable(t *testing.T) {
