@@ -20,7 +20,6 @@
 package adabas
 
 import (
-	"encoding/binary"
 	"strconv"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
