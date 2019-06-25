@@ -138,8 +138,7 @@ test-xml: prepare fmt lint $(TESTOUTPUT) | $(GO2XUNIT) $(GOJUNITREPORT) ; $(info
 	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
 	    $(GO) test -timeout $(TIMEOUT)s -count=1 $(GO_FLAGS) -v $(ARGS) ./... 2>&1 | tee $(TESTOUTPUT)/tests.$(HOST).output
 	sh $(CURDIR)/sh/evaluateQueues.sh
-#	$(GO2XUNIT) -input $(TESTOUTPUT)/tests.$(HOST).output -output $(TESTOUTPUT)/tests.$(HOST).xml
-	cat $(TESTOUTPUT)/tests.$(HOST).output | $(GOJUNITREPORT) > $(TESTOUTPUT)/tests.$(HOST).xml
+	cat $(TESTOUTPUT)/tests.$(HOST).output | $(GOJUNITREPORT) > $(TESTOUTPUT)/tests.xml
 
 test-adatypes-pprof: prepare | ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
 	$Q cd $(CURDIR) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
