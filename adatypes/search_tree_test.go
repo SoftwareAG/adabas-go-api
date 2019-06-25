@@ -494,6 +494,7 @@ func tDefinition() *Definition {
 		NewStructureList(FieldTypeGroup, "AB", OccNone, groupLayout),
 		NewTypeWithLength(FieldTypeString, "SA", 8),
 		NewType(FieldTypeUInt8, "AA"),
+		NewTypeWithLength(FieldTypeSuperDesc, "S1", 6),
 	}
 	layout[7].AddOption(FieldOptionUQ)
 	layout[7].AddOption(FieldOptionDE)
@@ -610,4 +611,24 @@ func TestSearchMixedValue(t *testing.T) {
 	assert.Equal(t, []byte{0, 65, 66, 67, 68, 0}, searchValue.value.Bytes())
 	assert.NoError(t, xerr)
 
+}
+
+func TestSuperDescriptor(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "S1=EMPL")
+	searchInfo.Definition = tDefinition()
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
+	assert.NoError(t, err)
+	Central.Log.Debugf(tree.String())
+	assert.Equal(t, "AA,8,B,EQ,R,BC,1,B,EQ,R,AC,1,P,EQ.", tree.SearchBuffer())
+	assert.True(t, searchInfo.NeedSearch)
 }

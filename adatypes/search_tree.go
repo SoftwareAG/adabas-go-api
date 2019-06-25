@@ -153,6 +153,7 @@ func (tree *SearchTree) ValueBuffer(buffer *bytes.Buffer) {
 	}
 	var intBuffer []byte
 	helper := NewHelper(intBuffer, math.MaxInt8, endian())
+	helper.search = true
 	Central.Log.Debugf("Tree value value buffer %s", tree.value.value.String())
 	tree.value.value.StoreBuffer(helper)
 	buffer.Write(helper.buffer)

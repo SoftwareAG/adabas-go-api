@@ -421,20 +421,22 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.Request) {
 	adabas.AdabasBuffers[0].abd.Abdsize = uint64(adabasRequest.FormatBuffer.Len())
 	adabas.AdabasBuffers[0].abd.Abdsend = adabas.AdabasBuffers[0].abd.Abdsize
 	adabas.AdabasBuffers[0].abd.Abdrecv = 0
-	adatypes.Central.Log.Debugf("ABD init 0 %p\n", adabas.AdabasBuffers[0])
+	adatypes.Central.Log.Debugf("ABD init F send %d\n", adabas.AdabasBuffers[0].abd.Abdsend)
 
 	// Create record buffer for the call
 	adabas.AdabasBuffers[1] = NewBufferWithSize(AbdAQRb,
 		multifetch*(adabasRequest.RecordBufferLength+adabasRequest.RecordBufferShift))
 	adabas.AdabasBuffers[1].abd.Abdsend = 0
 	adabas.AdabasBuffers[1].abd.Abdrecv = adabas.AdabasBuffers[0].abd.Abdsize
-	adatypes.Central.Log.Debugf("ABD init 1 %p\n", adabas.AdabasBuffers[1])
+	adatypes.Central.Log.Debugf("ABD init R send %d\n", adabas.AdabasBuffers[1].abd.Abdsend)
 
 	// Define search and value buffer to search
 	if adabasRequest.SearchTree != nil {
 		adatypes.Central.Log.Debugf("Search logical added")
 		adabas.AdabasBuffers[2] = SearchAdabasBuffer(adabasRequest.SearchTree)
+		adatypes.Central.Log.Debugf("ABD init S send %d\n", adabas.AdabasBuffers[2].abd.Abdsend)
 		adabas.AdabasBuffers[3] = ValueAdabasBuffer(adabasRequest.SearchTree)
+		adatypes.Central.Log.Debugf("ABD init V send %d\n", adabas.AdabasBuffers[3].abd.Abdsend)
 	}
 	if adabasRequest.Multifetch > 1 {
 		adatypes.Central.Log.Debugf("Create multifetch buffer for %d multifetch entries", adabasRequest.Multifetch)
