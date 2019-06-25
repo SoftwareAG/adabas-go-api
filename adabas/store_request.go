@@ -128,7 +128,7 @@ func (request *StoreRequest) Store(storeRecord *Record) error {
 		return prepareErr
 	}
 	//	storeRecord
-	helper := adatypes.NewDynamicHelper(binary.LittleEndian)
+	helper := adatypes.NewDynamicHelper(Endian())
 	err := storeRecord.createRecordBuffer(helper)
 	if err != nil {
 		return err
@@ -165,7 +165,7 @@ func (request *StoreRequest) Exchange(storeRecord *Record) error {
 // update update a record
 func (request *StoreRequest) update(adabasRequest *adatypes.Request, storeRecord *Record) error {
 	//	storeRecord
-	helper := adatypes.NewDynamicHelper(binary.LittleEndian)
+	helper := adatypes.NewDynamicHelper(Endian())
 	err := storeRecord.createRecordBuffer(helper)
 	if err != nil {
 		return err

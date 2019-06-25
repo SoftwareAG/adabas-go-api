@@ -79,7 +79,11 @@ func TestUInt2Byte(t *testing.T) {
 	int2.SetStringValue("2000")
 	assert.Equal(t, uint16(2000), int2.value)
 
-	int2.SetValue([]byte{0x18, 0xfc})
+	if bigEndian() {
+		int2.SetValue([]byte{0xfc, 0x18})
+	} else {
+		int2.SetValue([]byte{0x18, 0xfc})
+	}
 	assert.Equal(t, uint16(64536), int2.value)
 
 	int2.SetValue(1024)
@@ -99,7 +103,11 @@ func TestUInt2Byte(t *testing.T) {
 
 	int2.SetValue(64536)
 	assert.Equal(t, uint16(64536), int2.value)
-	assert.Equal(t, []byte{0x18, 0xfc}, int2.Bytes())
+	if bigEndian() {
+		assert.Equal(t, []byte{0xfc, 0x18}, int2.Bytes())
+	} else {
+		assert.Equal(t, []byte{0x18, 0xfc}, int2.Bytes())
+	}
 
 }
 
@@ -111,7 +119,7 @@ func TestInt2Variable(t *testing.T) {
 
 	res := int16(-2)
 	var buf bytes.Buffer
-	binary.Write(&buf, binary.LittleEndian, res)
+	binary.Write(&buf, endian(), res)
 	fmt.Println(buf.Bytes(), buf)
 
 	Central.Log.Infof("TEST: %s", t.Name())

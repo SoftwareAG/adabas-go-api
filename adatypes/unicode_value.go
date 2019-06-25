@@ -185,6 +185,8 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 			return
 		}
 	}
+	Central.Log.Debugf("Start parsing value unicode .... %s offset=%d/%X type=%s", value.Type().Name(),
+		helper.offset, helper.offset, value.Type().Type().name())
 
 	fieldLength := value.adatype.Length()
 	if fieldLength == 0 {

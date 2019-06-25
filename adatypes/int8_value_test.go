@@ -64,7 +64,11 @@ func TestInt8(t *testing.T) {
 	assert.Equal(t, int64(-1), up.Value())
 	up.SetValue(0)
 	assert.Equal(t, int64(0), up.Value())
-	v = []byte{0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
+	if bigEndian() {
+		v = []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1}
+	} else {
+		v = []byte{0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
+	}
 	up.SetValue(v)
 	assert.Equal(t, int64(1), up.Value())
 	up.SetValue(1024)
@@ -122,7 +126,7 @@ func TestInt8Variable(t *testing.T) {
 }
 
 func checkValueInt64(t *testing.T, up IAdaValue, input []byte, expect int64) {
-	helper := NewDynamicHelper(binary.LittleEndian)
+	helper := NewDynamicHelper(endian())
 	helper.putBytes(input)
 	helper.offset = 0
 	option := &BufferOption{}
@@ -262,13 +266,13 @@ func TestInt8ParseBuffer(t *testing.T) {
 	up := newInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
 	option := &BufferOption{}
-	helper := &BufferHelper{order: binary.LittleEndian, buffer: []byte{0x5, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}}
+	helper := &BufferHelper{order: endian(), buffer: []byte{0x5, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}}
 	var res TraverseResult
 	res, err = up.parseBuffer(helper, option)
 	assert.NoError(t, err)
 	assert.Equal(t, TraverseResult(0), res)
 	assert.Equal(t, int64(5), up.Value())
-	helper = &BufferHelper{order: binary.LittleEndian, buffer: []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5}}
+	helper = &BufferHelper{order: endian(), buffer: []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5}}
 	res, err = up.parseBuffer(helper, option)
 	assert.NoError(t, err)
 	assert.Equal(t, TraverseResult(0), res)
@@ -318,7 +322,12 @@ func TestUInt8(t *testing.T) {
 	assert.NoError(t, flerr)
 	assert.Equal(t, 1024.0, fl)
 
-	v := []byte{0x00, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
+	var v []byte
+	if bigEndian() {
+		v = []byte{0x00, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0}
+	} else {
+		v = []byte{0x00, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
+	}
 	assert.Equal(t, v, up.Bytes())
 	assert.Equal(t, "1024", up.String())
 
