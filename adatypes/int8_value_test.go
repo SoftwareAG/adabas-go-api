@@ -127,6 +127,11 @@ func TestInt8Variable(t *testing.T) {
 
 func checkValueInt64(t *testing.T, up IAdaValue, input []byte, expect int64) {
 	helper := NewDynamicHelper(endian())
+	if bigEndian() {
+		for i, j := 0, len(input)-1; i < j; i, j = i+1, j-1 {
+			input[i], input[j] = input[j], input[i]
+		}
+	}
 	helper.putBytes(input)
 	helper.offset = 0
 	option := &BufferOption{}
