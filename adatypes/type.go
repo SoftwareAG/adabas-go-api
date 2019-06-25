@@ -362,6 +362,8 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 		adaValue = newFillerValue(adaType)
 	case FieldTypePhonetic:
 		adaValue = newPhoneticValue(adaType)
+	case FieldTypeSuperDesc:
+		adaValue = newSuperDescriptorValue(adaType)
 	// Should not come here for structure types
 	//	case FieldTypeStructure,FieldTypeGroup:
 	//		Central.Log.Debugf("Return Structure value")

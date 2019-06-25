@@ -518,6 +518,10 @@ func tDefinition() *Definition {
 		NewTypeWithLength(FieldTypeString, "AD", 6),
 		NewType(FieldTypePacked, "AC"),
 	}
+	st := NewSuperType("S1", 0)
+	st.AddSubEntry("AD", 1, 2)
+	st.FdtFormat = 'A'
+
 	layout := []IAdaType{
 		NewType(FieldTypeUInt4, "U4"),
 		NewType(FieldTypeByte, "B1"),
@@ -527,7 +531,7 @@ func tDefinition() *Definition {
 		NewStructureList(FieldTypeGroup, "AB", OccNone, groupLayout),
 		NewTypeWithLength(FieldTypeString, "SA", 8),
 		NewType(FieldTypeUInt8, "AA"),
-		NewTypeWithLength(FieldTypeSuperDesc, "S1", 6),
+		st,
 	}
 	layout[7].AddOption(FieldOptionUQ)
 	layout[7].AddOption(FieldOptionDE)
@@ -662,6 +666,9 @@ func TestSuperDescriptor(t *testing.T) {
 	}
 	assert.NoError(t, err)
 	Central.Log.Debugf(tree.String())
-	assert.Equal(t, "AA,8,B,EQ,R,BC,1,B,EQ,R,AC,1,P,EQ.", tree.SearchBuffer())
-	assert.True(t, searchInfo.NeedSearch)
+	assert.Equal(t, "S1,4,A,EQ.", tree.SearchBuffer())
+	var buffer bytes.Buffer
+	tree.ValueBuffer(&buffer)
+	assert.Equal(t, "EMPL", buffer.String())
+	assert.False(t, searchInfo.NeedSearch)
 }
