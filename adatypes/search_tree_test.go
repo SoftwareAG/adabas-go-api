@@ -497,7 +497,11 @@ func TestSearchFields(t *testing.T) {
 	fmt.Println(valueBuffer)
 	assert.Equal(t, 9, len(valueBuffer))
 	if len(valueBuffer) == 9 {
-		assert.Equal(t, uint8(123), valueBuffer[0])
+		if bigEndian() {
+			assert.Equal(t, uint8(123), valueBuffer[7])
+		} else {
+			assert.Equal(t, uint8(123), valueBuffer[0])
+		}
 	}
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)
@@ -583,8 +587,13 @@ func TestSearchComplex(t *testing.T) {
 	if !assert.Len(t, valueBuffer, 22) {
 		return
 	}
-	assert.Equal(t, uint8(12), valueBuffer[0])
-	assert.Equal(t, uint8(44), valueBuffer[8])
+	if bigEndian() {
+		assert.Equal(t, uint8(12), valueBuffer[7])
+		assert.Equal(t, uint8(44), valueBuffer[15])
+	} else {
+		assert.Equal(t, uint8(12), valueBuffer[0])
+		assert.Equal(t, uint8(44), valueBuffer[8])
+	}
 	assert.Equal(t, "SMITH ", string(valueBuffer[16:]))
 	descriptors := tree.OrderBy()
 	assert.Equal(t, 1, len(descriptors))

@@ -266,13 +266,18 @@ func TestInt8ParseBuffer(t *testing.T) {
 	up := newInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
 	option := &BufferOption{}
-	helper := &BufferHelper{order: endian(), buffer: []byte{0x5, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}}
+	helper := &BufferHelper{order: binary.LittleEndian, buffer: []byte{0x5, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}}
 	var res TraverseResult
 	res, err = up.parseBuffer(helper, option)
 	assert.NoError(t, err)
 	assert.Equal(t, TraverseResult(0), res)
 	assert.Equal(t, int64(5), up.Value())
-	helper = &BufferHelper{order: endian(), buffer: []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5}}
+	helper = &BufferHelper{order: binary.BigEndian, buffer: []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5}}
+	res, err = up.parseBuffer(helper, option)
+	assert.NoError(t, err)
+	assert.Equal(t, TraverseResult(0), res)
+	assert.Equal(t, int64(5), up.Value())
+	helper = &BufferHelper{order: binary.LittleEndian, buffer: []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5}}
 	res, err = up.parseBuffer(helper, option)
 	assert.NoError(t, err)
 	assert.Equal(t, TraverseResult(0), res)
@@ -456,13 +461,21 @@ func ExampleIAdaType_uint8SetValue() {
 		return
 	}
 	fmt.Printf("Integer 254 (1-byte array) value : %d %T\n", up.value, up.value)
-	err = up.SetValue([]byte{0x50, 0x2})
+	if bigEndian() {
+		err = up.SetValue([]byte{0x2, 0x50})
+	} else {
+		err = up.SetValue([]byte{0x50, 0x2})
+	}
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Printf("Integer 592 (2-byte array) value : %d %T\n", up.value, up.value)
-	err = up.SetValue([]byte{0x50, 0x2, 0x3, 0x4})
+	if bigEndian() {
+		err = up.SetValue([]byte{0x4, 0x3, 0x2, 0x50})
+	} else {
+		err = up.SetValue([]byte{0x50, 0x2, 0x3, 0x4})
+	}
 	if err != nil {
 		fmt.Println(err)
 		return
