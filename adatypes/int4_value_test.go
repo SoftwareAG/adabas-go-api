@@ -114,7 +114,7 @@ func TestUInt4Variable(t *testing.T) {
 	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt4, "I4")
 	adaType.SetLength(0)
-	up := newUInt8Value(adaType)
+	up := newUInt4Value(adaType)
 	checkValueUInt64(t, up, []byte{2, 1}, 1)
 	checkValueUInt64(t, up, []byte{3, 1, 1}, 0x101)
 	checkValueUInt64(t, up, []byte{4, 1, 1, 1}, 0x10101)
