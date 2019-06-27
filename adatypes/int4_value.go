@@ -232,7 +232,7 @@ func (value *int32Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 			}
 			v4 := make([]byte, 4)
 			if bigEndian() {
-				copy(v4[int8(len(vba))-rbLen:], vba[:])
+				copy(v4[4-rbLen:], vba[:])
 			} else {
 				copy(v4[:rbLen], vba[:])
 			}
