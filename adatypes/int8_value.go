@@ -257,7 +257,7 @@ func (value *int64Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 			}
 			v8 := make([]byte, 8)
 			if bigEndian() {
-				copy(v8[rbLen-uint8(len(vba))-1:], vba[:])
+				copy(v8[uint8(len(vba))-rblen:], vba[:])
 			} else {
 				copy(v8[:rbLen], vba[:])
 			}
