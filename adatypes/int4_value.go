@@ -108,7 +108,7 @@ func (value *uint32Value) parseBuffer(helper *BufferHelper, option *BufferOption
 			for i := range vba {
 				ei := i
 				if bigEndian() {
-					ei = 4 - i
+					ei = 3 - i
 				}
 				value.value = value.value + uint32(vba[ei])<<(uint32(i)*8)
 			}
