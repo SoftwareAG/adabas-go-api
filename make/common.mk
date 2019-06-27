@@ -214,6 +214,9 @@ clean: cleanModules; $(info $(M) cleaning…)	@ ## Cleanup everything
 	@rm -rf $(CURDIR)/bin $(CURDIR)/pkg $(CURDIR)/logs $(CURDIR)/test
 	@rm -rf test/tests.* test/coverage.*
 	@rm -f $(CURDIR)/adabas.test $(CURDIR)/adatypes.test $(CURDIR)/*.log $(CURDIR)/*.output
+	$Q cd $(CURDIR) &&  \
+	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" $(GO) clean -testcache
+
 
 .PHONY: help
 help:
