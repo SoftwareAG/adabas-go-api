@@ -99,13 +99,7 @@ func (value *uint32Value) parseBuffer(helper *BufferHelper, option *BufferOption
 				return EndTraverser, verr
 			}
 			value.value = uint32(vba)
-		case 4:
-			vba, verr := helper.ReceiveUInt32()
-			if verr != nil {
-				return EndTraverser, verr
-			}
-			value.value = uint32(vba)
-		default:
+		case 3:
 			vba, verr := helper.ReceiveBytes(uint32(rbLen))
 			if verr != nil {
 				return EndTraverser, verr
@@ -114,10 +108,18 @@ func (value *uint32Value) parseBuffer(helper *BufferHelper, option *BufferOption
 			for i := range vba {
 				ei := i
 				if bigEndian() {
-					ei = len(vba) - i
+					ei = 4 - i
 				}
 				value.value = value.value + uint32(vba[ei])<<(uint32(i)*8)
 			}
+		case 4:
+			vba, verr := helper.ReceiveUInt32()
+			if verr != nil {
+				return EndTraverser, verr
+			}
+			value.value = uint32(vba)
+		default:
+			return EndTraverser, NewGenericError(0)
 		}
 	} else {
 		value.value, err = helper.ReceiveUInt32()
