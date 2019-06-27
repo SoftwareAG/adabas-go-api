@@ -114,7 +114,7 @@ func (value *uint32Value) parseBuffer(helper *BufferHelper, option *BufferOption
 			for i := range vba {
 				ei := i
 				if bigEndian() {
-					ei = len(vba)-i
+					ei = len(vba) - i
 				}
 				value.value = value.value + uint32(vba[ei])<<(uint32(i)*8)
 			}
@@ -232,7 +232,7 @@ func (value *int32Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 			}
 			v4 := make([]byte, 4)
 			if bigEndian() {
-				copy(v4[int8(len(vba))-rblen:], vba[:])
+				copy(v4[int8(len(vba))-rbLen:], vba[:])
 			} else {
 				copy(v4[:rbLen], vba[:])
 			}
