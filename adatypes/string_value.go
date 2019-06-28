@@ -139,10 +139,10 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 		}
 		// If LOB field is read, use part
 		if option.SecondCall {
-			if value.lobSize > PartialLobSize {				
-			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), PartialLobSize+1, value.lobSize-PartialLobSize))
-			len = value.lobSize - PartialLobSize
-		}
+			if value.lobSize > PartialLobSize {
+				buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), PartialLobSize+1, value.lobSize-PartialLobSize))
+				len = value.lobSize - PartialLobSize
+			}
 		} else {
 			buffer.WriteString(fmt.Sprintf("%sL,4,%s(0,%d)", value.Type().ShortName(), value.Type().ShortName(), PartialLobSize))
 			len = 4 + PartialLobSize
@@ -279,7 +279,7 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 				value.value = make([]byte, 0)
 			}
 		case value.lobSize > PartialLobSize:
-			Central.Log.Debugf("Due to lobSize is bigger then partial size, need secand call (lob) for %s", value.Type().Name())
+			Central.Log.Debugf("Due to lobSize is bigger then partial size, need second call (lob) for %s", value.Type().Name())
 			option.NeedSecondCall = true
 		default:
 		}
