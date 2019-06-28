@@ -114,14 +114,18 @@ func TestInt8Variable(t *testing.T) {
 	}
 
 	Central.Log.Infof("TEST: %s", t.Name())
-	adaType := NewType(FieldTypeUInt8, "U8")
+	adaType := NewType(FieldTypeInt8, "I8")
 	adaType.SetLength(0)
 	up := newInt8Value(adaType)
 	checkValueInt64(t, up, []byte{2, 1}, 1)
 	checkValueInt64(t, up, []byte{2, 255}, -1)
 	checkValueInt64(t, up, []byte{3, 1, 1}, 0x101)
 	checkValueInt64(t, up, []byte{4, 1, 1, 1}, 65793)
-	checkValueInt64(t, up, []byte{4, 0, 0, 255}, 16711680)
+	if bigEndian() {
+		checkValueInt64(t, up, []byte{4, 255, 0, 0}, 16711680)
+	} else {
+		checkValueInt64(t, up, []byte{4, 0, 0, 255}, 16711680)
+	}
 	checkValueInt64(t, up, []byte{5, 1, 1, 1, 1}, 0x1010101)
 }
 
