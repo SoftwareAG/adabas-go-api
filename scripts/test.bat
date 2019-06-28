@@ -11,6 +11,10 @@ set LOGPATH=%DIR%\logs
 echo "Work in %DIR"
 cd %DIR%
 
+if not exist test mkdir test
+if not exist %LOGPATH% mkdir %LOGPATH%
+
+
 mkdir test
 go test -timeout 100s -count 1 -tags adalnk -v  github.com/SoftwareAG/adabas-go-api/adabas github.com/SoftwareAG/adabas-go-api/adatypes >test.output
 
