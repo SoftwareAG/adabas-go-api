@@ -139,8 +139,8 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 		}
 		// If LOB field is read, use part
 		if option.SecondCall {
-			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), PartialLobSize+1, value.lobSize))
-			len = value.lobSize // - PartialLobSize
+			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), PartialLobSize+1, value.lobSize-PartialLobSize))
+			len = value.lobSize - PartialLobSize
 		} else {
 			buffer.WriteString(fmt.Sprintf("%sL,4,%s(0,%d)", value.Type().ShortName(), value.Type().ShortName(), PartialLobSize))
 			len = 4 + PartialLobSize
@@ -198,6 +198,7 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 	if option.SecondCall {
 		Central.Log.Debugf("Old size of lob data %d of %d offset=%d/%X", len(value.value), value.lobSize, helper.offset, helper.offset)
 		if value.Type().Type() == FieldTypeLBString && uint32(len(value.value)) < value.lobSize {
+			Central.Log.Debugf("Read bytes : %d", value.lobSize-uint32(len(value.value)))
 			data, rErr := helper.ReceiveBytes(value.lobSize - uint32(len(value.value)))
 			if rErr != nil {
 				err = rErr
