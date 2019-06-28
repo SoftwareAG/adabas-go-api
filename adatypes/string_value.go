@@ -139,8 +139,10 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 		}
 		// If LOB field is read, use part
 		if option.SecondCall {
+			if value.lobSize > PartialLobSize {				
 			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), PartialLobSize+1, value.lobSize-PartialLobSize))
 			len = value.lobSize - PartialLobSize
+		}
 		} else {
 			buffer.WriteString(fmt.Sprintf("%sL,4,%s(0,%d)", value.Type().ShortName(), value.Type().ShortName(), PartialLobSize))
 			len = 4 + PartialLobSize
