@@ -20,6 +20,7 @@
 package adabas
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -31,18 +32,41 @@ type StoreRequest struct {
 }
 
 // NewStoreRequest create a new store Request instance
-func NewStoreRequest(url string, fnr Fnr) (*StoreRequest, error) {
-	var adabas *Adabas
-	if dbid, err := strconv.Atoi(url); err == nil {
-		adabas, err = NewAdabas(Dbid(dbid))
-		if err != nil {
-			return nil, err
+func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
+	switch param[0].(type) {
+	case string:
+		if len(param) > 0 {
+			url := param[0].(string)
+			switch param[1].(type) {
+			case Fnr:
+				fnr := param[1].(Fnr)
+				var adabas *Adabas
+				if dbid, err := strconv.Atoi(url); err == nil {
+					adabas, err = NewAdabas(Dbid(dbid))
+					if err != nil {
+						return nil, err
+					}
+				} else {
+					return nil, err
+				}
+				return &StoreRequest{commonRequest: commonRequest{adabas: adabas,
+					repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}, nil
+			case *Adabas:
+				ada := param[1].(*Adabas)
+				repo := param[2].(*Repository)
+				adaMap, err := repo.SearchMapInRepository(ada, url)
+				if err != nil {
+					return nil, err
+				}
+				request := &StoreRequest{commonRequest: commonRequest{MapName: url,
+					adabas: ada, adabasMap: adaMap, repository: repo}}
+				return request, nil
+			default:
+			}
 		}
-	} else {
-		return nil, err
+	default:
 	}
-	return &StoreRequest{commonRequest: commonRequest{adabas: adabas,
-		repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}, nil
+	return nil, fmt.Errorf("XXXX")
 }
 
 // NewStoreRequestAdabas create a new Request instance

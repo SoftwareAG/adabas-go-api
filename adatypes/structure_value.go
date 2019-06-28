@@ -166,7 +166,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 	}
 	Central.Log.Debugf("%s/%s parse buffer for MU in PE/first call", value.Type().Name(), value.Type().ShortName())
 	var occNumber int
-	// In the second call the occurrence is available 
+	// In the second call the occurrence is available
 	if option.SecondCall {
 		occNumber = value.NrElements()
 		Central.Log.Debugf("Second call use available occurrence %d", occNumber)
