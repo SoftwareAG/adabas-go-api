@@ -166,13 +166,17 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 	}
 	Central.Log.Debugf("%s/%s parse buffer for MU in PE/first call", value.Type().Name(), value.Type().ShortName())
 	var occNumber int
-	// TODO
-	//	if option.SecondCall {
-	occNumber, err = value.evaluateOccurrence(helper)
-	//	} else {
-	//		occNumber = value.NrElements()
-	//	}
-	Central.Log.Debugf("PE occurence %s has %d entries pos=%d", value.Type().Name(), occNumber, helper.offset)
+	// In the second call the occurrence is available 
+	if option.SecondCall {
+		occNumber = value.NrElements()
+		Central.Log.Debugf("Second call use available occurrence %d", occNumber)
+	} else {
+		occNumber, err = value.evaluateOccurrence(helper)
+		if err != nil {
+			return
+		}
+	}
+	Central.Log.Debugf("PE occurrence %s has %d entries pos=%d", value.Type().Name(), occNumber, helper.offset)
 	if occNumber > 0 {
 		lastNumber := uint32(occNumber)
 		if adaType.peRange.multiplier() != allEntries {
@@ -180,8 +184,8 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		}
 		Central.Log.Debugf("%s read %d entries", value.Type().Name(), occNumber)
 		if occNumber > 10000 {
-			Central.Log.Debugf("Too many occurences")
-			panic("Too many occurence entries")
+			Central.Log.Debugf("Too many occurrences")
+			panic("Too many occurrence entries")
 		}
 		peIndex := value.peIndex
 		muIndex := uint32(0)
@@ -200,7 +204,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		}
 		return value.parsePeriodGroup(helper, option, occNumber)
 	}
-	Central.Log.Debugf("No occurence, check shift of PE empty part %v need second=%v pos=%d", option.Mainframe,
+	Central.Log.Debugf("No occurrence, check shift of PE empty part %v need second=%v pos=%d", option.Mainframe,
 		option.NeedSecondCall, helper.offset)
 	if option.Mainframe {
 		Central.Log.Debugf("Are on mainframe, shift PE empty part")
@@ -226,7 +230,7 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 		Central.Log.Debugf("Parse start of name : %s offset=%d/%X need second=%v", n, helper.offset,
 			helper.offset, option.NeedSecondCall)
 		for i := 0; i < occNumber; i++ {
-			Central.Log.Debugf("Get occurence : %d -> %d", (i + 1), value.NrElements())
+			Central.Log.Debugf("Get occurrence : %d -> %d", (i + 1), value.NrElements())
 			v := value.Get(n, i+1)
 			//v.setPeriodIndex(uint32(i + 1))
 			if v.Type().IsStructure() {
@@ -313,7 +317,7 @@ func (value *StructureValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 	return value.parseBufferWithoutMUPE(helper, option)
 }
 
-// Evaluate the occurence of the structure
+// Evaluate the occurrence of the structure
 func (value *StructureValue) evaluateOccurrence(helper *BufferHelper) (occNumber int, err error) {
 	subStructureType := value.adatype.(*StructureType)
 	occNumber = math.MaxInt32
@@ -352,14 +356,19 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 	Central.Log.Debugf("Parse Buffer structure without MUPE name=%s offset=%d remaining=%d length=%d value length=%d type=%d", value.Type().Name(),
 		helper.offset, helper.Remaining(), len(helper.buffer), len(value.Elements), value.Type().Type())
 	var occNumber int
-	occNumber, err = value.evaluateOccurrence(helper)
-	if err != nil {
-		return
+	if option.SecondCall {
+		occNumber = value.NrElements()
+		Central.Log.Debugf("Second call use available occurrence %d", occNumber)
+	} else {
+		occNumber, err = value.evaluateOccurrence(helper)
+		if err != nil {
+			return
+		}
 	}
 	Central.Log.Debugf("Occurrence %d period index=%d", occNumber, value.peIndex)
 	switch value.Type().Type() {
 	case FieldTypePeriodGroup:
-		Central.Log.Debugf("Init period group values occurence=%d mainframe=%v", occNumber, option.Mainframe)
+		Central.Log.Debugf("Init period group values occurrence=%d mainframe=%v", occNumber, option.Mainframe)
 		if occNumber == 0 {
 			if option.Mainframe {
 				value.shiftPeriod(helper)

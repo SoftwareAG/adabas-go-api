@@ -123,7 +123,7 @@ func (helper *BufferHelper) putByte(data byte) (err error) {
 	return
 }
 
-// ReceiveBytesOcc receive bytes using a specific occurence
+// ReceiveBytesOcc receive bytes using a specific occurrence
 func (helper *BufferHelper) ReceiveBytesOcc(occ int) (res []byte, err error) {
 	var length uint32
 	switch occ {

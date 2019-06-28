@@ -119,7 +119,7 @@ func (value *uint32Value) parseBuffer(helper *BufferHelper, option *BufferOption
 			}
 			value.value = uint32(vba)
 		default:
-			return EndTraverser, NewGenericError(0)
+			return EndTraverser, NewGenericError(89)
 		}
 	} else {
 		value.value, err = helper.ReceiveUInt32()

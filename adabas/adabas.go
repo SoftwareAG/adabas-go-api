@@ -92,7 +92,7 @@ func NewClonedAdabas(clone *Adabas) *Adabas {
 // NewAdabas create a new Adabas struct instance
 func NewAdabas(p ...interface{}) (ada *Adabas, err error) {
 	if len(p) == 0 {
-		return nil, adatypes.NewGenericError(0)
+		return nil, adatypes.NewGenericError(86)
 	}
 	var url *URL
 	switch p[0].(type) {
@@ -108,7 +108,7 @@ func NewAdabas(p ...interface{}) (ada *Adabas, err error) {
 			return
 		}
 	default:
-		return nil, adatypes.NewGenericError(0)
+		return nil, adatypes.NewGenericError(87)
 	}
 	var adaID *ID
 	if len(p) > 1 {

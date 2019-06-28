@@ -27,19 +27,19 @@ import (
 	"strings"
 )
 
-// OccByte Occurence identifier indicating that the occurence is defined as byte
+// OccByte Occurrence identifier indicating that the occurrence is defined as byte
 const OccByte = -12
 
-// OccUInt2 Occurence identifier indicating that the occurence is defined as uint32
+// OccUInt2 Occurrence identifier indicating that the occurrence is defined as uint32
 const OccUInt2 = -11
 
-// OccNone Occurence identifier indicating that the occurence is not used
+// OccNone Occurrence identifier indicating that the occurrence is not used
 const OccNone = -10
 
-// OccSingle Occurence identifier indicating that the occurence single
+// OccSingle Occurrence identifier indicating that the occurrence single
 const OccSingle = -9
 
-// OccCapacity Occurence identifier indicating that the occurence capactity of 2 or PE fields
+// OccCapacity Occurrence identifier indicating that the occurrence capactity of 2 or PE fields
 const OccCapacity = -8
 
 // NoReferenceField field out of range of given field possibilities
