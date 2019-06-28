@@ -131,13 +131,13 @@ test-xml-bench:     ARGS=-run=__absolutelynothing__ -bench=. ## Run benchmarks
 $(TEST_XML_TARGETS): NAME=$(MAKECMDGOALS:test-xml-%=%)
 $(TEST_XML_TARGETS): test-xml
 test-xml: prepare fmt lint $(TESTOUTPUT) | $(GO2XUNIT) $(GOJUNITREPORT) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
-	sh $(CURDIR)/sh/evaluateQueues.sh
+	sh $(CURDIR)/scripts/evaluateQueues.sh
 	$Q cd $(CURDIR) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
 	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
 	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
 	    $(GO) test -timeout $(TIMEOUT)s -count=1 $(GO_FLAGS) -v $(ARGS) ./... 2>&1 | tee $(TESTOUTPUT)/tests.$(HOST).output
-	sh $(CURDIR)/sh/evaluateQueues.sh
+	sh $(CURDIR)/scripts/evaluateQueues.sh
 	cat $(TESTOUTPUT)/tests.$(HOST).output | $(GOJUNITREPORT) > $(TESTOUTPUT)/tests.xml
 
 test-adatypes-pprof: prepare | ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
