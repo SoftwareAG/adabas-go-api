@@ -35,22 +35,9 @@ type StoreRequest struct {
 func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 	switch param[0].(type) {
 	case string:
-		if len(param) > 0 {
+		if len(param) > 1 {
 			url := param[0].(string)
 			switch param[1].(type) {
-			case Fnr:
-				fnr := param[1].(Fnr)
-				var adabas *Adabas
-				if dbid, err := strconv.Atoi(url); err == nil {
-					adabas, err = NewAdabas(Dbid(dbid))
-					if err != nil {
-						return nil, err
-					}
-				} else {
-					return nil, err
-				}
-				return &StoreRequest{commonRequest: commonRequest{adabas: adabas,
-					repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}, nil
 			case *Adabas:
 				ada := param[1].(*Adabas)
 				repo := param[2].(*Repository)
@@ -62,11 +49,44 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 					adabas: ada, adabasMap: adaMap, repository: repo}}
 				return request, nil
 			default:
+				fnr, err := evaluateFnr(param[1])
+				if err != nil {
+					return nil, err
+				}
+				var adabas *Adabas
+				if dbid, aerr := strconv.Atoi(url); aerr == nil {
+					adabas, err = NewAdabas(Dbid(dbid))
+					if err != nil {
+						return nil, err
+					}
+				} else {
+					return nil, aerr
+				}
+				return &StoreRequest{commonRequest: commonRequest{adabas: adabas,
+					repository: &Repository{DatabaseURL: DatabaseURL{Fnr: Fnr(fnr)}}}}, nil
 			}
 		}
 	default:
 	}
 	return nil, fmt.Errorf("XXXX")
+}
+
+func evaluateFnr(p interface{}) (Fnr, error) {
+	switch p.(type) {
+	case int:
+		i := p.(int)
+		return Fnr(i), nil
+	case int32:
+		i := p.(int32)
+		return Fnr(i), nil
+	case int64:
+		i := p.(int64)
+		return Fnr(i), nil
+	case Fnr:
+		return p.(Fnr), nil
+	default:
+	}
+	return 0, fmt.Errorf("Cannot evaluate Fnr")
 }
 
 // NewStoreRequestAdabas create a new Request instance
