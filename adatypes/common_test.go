@@ -22,7 +22,10 @@ package adatypes
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -47,12 +50,24 @@ func initLogWithFile(fileName string) (err error) {
 	return initLogLevelWithFile(fileName, level)
 }
 
+func newWinFileSink(u *url.URL) (zap.Sink, error) {
+	// Remove leading slash left by url.Parse()
+	return os.OpenFile(u.Path[1:], os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+}
+
 func initLogLevelWithFile(fileName string, level zapcore.Level) (err error) {
 	p := os.Getenv("LOGPATH")
 	if p == "" {
 		p = "."
 	}
-	name := p + string(os.PathSeparator) + fileName
+	var name string
+	if runtime.GOOS == "windows" {
+		zap.RegisterSink("winfile", newWinFileSink)
+		//		OutputPaths: []string{"stdout", "winfile:///" + filepath.Join(GlobalConfigDir.Path, "info.log.json")},
+		name = "winfile:///" + p + string(os.PathSeparator) + fileName
+	} else {
+		name = "file://" + filepath.ToSlash(p+string(os.PathSeparator)+fileName)
+	}
 
 	rawJSON := []byte(`{
 	"level": "error",
