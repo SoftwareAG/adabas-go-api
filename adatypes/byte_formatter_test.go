@@ -31,11 +31,11 @@ func ExampleFormatBytes() {
 	}
 
 	b := [5]byte{23, 44, 12, 33, 45}
-	fmt.Println(FormatBytes("XXX : ", b[:], 4, -1))
+	fmt.Println(FormatBytes("XXX : ", b[:], len(b[:]), 4, -1, false))
 	s := []byte("ABCDEFGHIC")
-	fmt.Println(FormatBytes("ABC : ", s, 0, -1))
+	fmt.Println(FormatBytes("ABC : ", s, len(s), 0, -1, false))
 	e := [5]byte{0x81, 0x82, 0xc3, 0xc4, 0x86}
-	fmt.Println(FormatBytes("EBCDIC : ", e[:], 5, -1))
+	fmt.Println(FormatBytes("EBCDIC : ", e[:], len(e[:]), 5, -1, false))
 	// Output:
 	// XXX : 172C0C21 2D [.,.!-] [.....]
 	//
@@ -53,7 +53,7 @@ func ExampleFormatBytes_x() {
 	}
 
 	s := []byte("ABCDEFGHIJKLMNOPQRSTUVWXYT")
-	fmt.Println(FormatBytes("ABC :", s, 4, 8))
+	fmt.Println(FormatBytes("ABC :", s, len(s), 4, 8, false))
 	// Output:
 	// ABC :
 	// 0000 41424344 45464748  [ABCDEFGH] [........]
@@ -70,7 +70,7 @@ func ExampleFormatBytes_omitDoubles() {
 	}
 
 	s := []byte("ABCDEFGHABCDEFGHABCDEFGHABCDEFGH")
-	fmt.Println(FormatBytes("ABC :", s, 4, 8))
+	fmt.Println(FormatBytes("ABC :", s, len(s), 4, 8, false))
 	// Output:
 	// ABC :
 	// 0000 41424344 45464748  [ABCDEFGH] [........]

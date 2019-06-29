@@ -179,7 +179,7 @@ func (value *unpackedValue) parseBuffer(helper *BufferHelper, option *BufferOpti
 	value.value, err = helper.ReceiveBytes(uint32(len(value.value)))
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Buffer get unpacked offset=%d", helper.offset)
-		Central.Log.Debugf("GOT: %s", FormatBytes("UNPACK -> ", value.value, 0, -1))
+		Central.Log.Debugf("GOT: %s", FormatBytes("UNPACK -> ", value.value, len(value.value), 0, -1, false))
 	}
 	return
 }

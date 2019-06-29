@@ -394,7 +394,7 @@ func (connection *adatcp) SendData(buffer bytes.Buffer, nrAbdBuffers uint32) (er
 	headerBuffer.Write(buffer.Bytes())
 	send := headerBuffer.Bytes()
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatBytesWithLength("SND:", send, len(send), 8, true))
+		adatypes.LogMultiLineString(adatypes.FormatBytes("SND:", send, len(send), len(send), 8, true))
 	}
 	var n int
 	adatypes.Central.Log.Debugf("Write TCP data of length=%d capacity=%d netto bytes send=%d", headerBuffer.Len(), headerBuffer.Cap(), len(send))
@@ -432,7 +432,7 @@ func (connection *adatcp) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32
 	}
 	if adatypes.Central.IsDebugLevel() {
 		adatypes.Central.Log.Debugf("Receive got header .... size=%d/%d", n, len(rcvHeaderBuffer))
-		adatypes.LogMultiLineString(adatypes.FormatBytesWithLength("RCV Header BUFFER:", rcvHeaderBuffer, len(rcvHeaderBuffer), 8, true))
+		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV Header BUFFER:", rcvHeaderBuffer, len(rcvHeaderBuffer), len(rcvHeaderBuffer), 8, true))
 	}
 	if n < hl {
 		return 0, adatypes.NewGenericError(92)
@@ -477,7 +477,7 @@ func (connection *adatcp) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32
 		adatypes.Central.Log.Debugf("Current size of buffer=%d", buffer.Len())
 	}
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV DATA BUFFER:", buffer.Bytes(), buffer.Len(), 8))
+		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV DATA BUFFER:", buffer.Bytes(), buffer.Len(), buffer.Len(), 8, false))
 	}
 
 	return

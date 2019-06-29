@@ -793,7 +793,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			break
 		}
 
-		adatypes.Central.Log.Debugf("Limit=%d count=%d", adabasRequest.Limit, count)
+		adatypes.Central.Log.Debugf("Loop step ended Limit=%d count=%d", adabasRequest.Limit, count)
 		if (adabasRequest.Limit > 0) && (count >= adabasRequest.Limit) {
 			adatypes.Central.Log.Debugf("Limit reached")
 			break
@@ -1168,7 +1168,7 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 		for index, abd := range adabas.AdabasBuffers {
 			if adatypes.Central.IsDebugLevel() {
 				adatypes.Central.Log.Debugf("Parse %d.ABD got %c rest len=%d\n", index, abd.abd.Abdid, buffer.Len())
-				adatypes.LogMultiLineString(adatypes.FormatBytes("Rest ABD:", buffer.Bytes(), buffer.Len(), 8))
+				adatypes.LogMultiLineString(adatypes.FormatBytes("Rest ABD:", buffer.Bytes(), buffer.Len(), buffer.Len(), 8, false))
 			}
 			err = binary.Read(buffer, Endian(), &abd.abd)
 			if err != nil {
@@ -1206,7 +1206,7 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 					}
 				}
 				if adatypes.Central.IsDebugLevel() {
-					adatypes.LogMultiLineString(adatypes.FormatBytes(fmt.Sprintf("Got data of ABD %d :", index), abd.buffer, 8, 16))
+					adatypes.LogMultiLineString(adatypes.FormatBytes(fmt.Sprintf("Got data of ABD %d :", index), abd.buffer, len(abd.buffer), 8, 16, false))
 				}
 			}
 		}
