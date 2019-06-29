@@ -6,6 +6,7 @@ set CGO_CFLAGS=-I%ACLDIR%\..\inc
 set CGO_LDFLAGS=-L%ACLDIR% -L%ACLDIR%\..\lib -ladalnkx  
 
 set TESTFILES=%DIR%\files
+set REFERENCES=%TESTFILES%\references
 set LOGPATH=%DIR%\logs
 
 echo "Work in %DIR"
