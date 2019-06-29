@@ -249,7 +249,7 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 		return nil, err
 	}
 	if adabasMap.Name == "" {
-		return nil, adatypes.NewGenericError(66)
+		return nil, adatypes.NewGenericError(66, name)
 	}
 	adabasMap.createFieldMap()
 	repository.CachedMaps[name] = adabasMap

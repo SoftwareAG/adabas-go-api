@@ -45,7 +45,7 @@ func TestConnectionSecure_fail(t *testing.T) {
 		return
 	}
 	err = request.QueryFields("AA")
-	if !assert.Error(t, err) {
+	if assert.Error(t, err) {
 		assert.Equal(t, "ADAGEC801F: Security violation: Authentication error (rsp=200,subrsp=31,dbid=25,file=0)", err.Error())
 	}
 }

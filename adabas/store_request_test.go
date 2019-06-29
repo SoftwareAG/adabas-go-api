@@ -122,10 +122,26 @@ func prepareCreateTestMap(mapName string, fileName string, dataRepository *Datab
 	return nil
 }
 
+func TestStoreRequestConstructor(t *testing.T) {
+	initTestLogWithFile(t, "store.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	ada, _ := NewAdabas(adabasStatDBID)
+	defer ada.Close()
+	repository := NewMapRepository(ada, 4)
+	storeRequest, err := NewStoreRequest("EMPLOYEES-NAT-DDM", ada, repository)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.NotNil(t, storeRequest)
+
+}
+
 func TestStoreFailMapFieldsCheck(t *testing.T) {
 	initTestLogWithFile(t, "store.log")
 
-	fmt.Println("Start : TestStoreFailMapFieldsCheck")
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 11}
 	perr := prepareCreateTestMap(massLoadEmployees, massLoadSystrans, dataRepository)

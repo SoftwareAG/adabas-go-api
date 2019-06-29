@@ -633,9 +633,8 @@ func TestMapRequestWithHistogramWith(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		if result != nil {
-			assert.Equal(t, 13, len(result.Values))
+			assert.Equal(t, 1, len(result.Values))
 			assert.Equal(t, uint64(8), result.Values[0].Quantity)
-			assert.Equal(t, uint64(95), result.Values[12].Quantity)
 		}
 	}
 }

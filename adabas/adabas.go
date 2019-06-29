@@ -707,6 +707,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 					return
 				}
 				if nrMultifetchEntries > 10000 {
+					adatypes.Central.Log.Debugf("multifetch entries mismatch, panic ...")
 					panic("To many multifetch entries")
 				}
 				adatypes.Central.Log.Debugf("Nr of multifetch entries %d", nrMultifetchEntries)
