@@ -213,9 +213,9 @@ func ExampleIAdaType_setValue() {
 	}
 	fmt.Printf("Integer -2 (1-byte array) value : %d %T\n", up.value, up.value)
 	if bigEndian() {
-		err = up.SetValue([]byte{0x50, 0x2})
-	} else {
 		err = up.SetValue([]byte{0x2, 0x50})
+	} else {
+		err = up.SetValue([]byte{0x50, 0x2})
 	}
 	if err != nil {
 		fmt.Println(err)
