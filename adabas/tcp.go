@@ -258,8 +258,10 @@ func connect(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 		return
 	}
 	if bigEndian() {
+		adatypes.Central.Log.Debugf("Write TCP payload for big endian")
 		payload.Endianness = adatcpBigEndian
 	} else {
+		adatypes.Central.Log.Debugf("Write TCP payload for little endian")
 		payload.Endianness = adatcpLittleEndian
 	}
 	adatypes.Central.Log.Debugf("Buffer size after header=%d", buffer.Len())
@@ -272,7 +274,11 @@ func connect(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 	}
 	adatypes.Central.Log.Debugf("Buffer size after payload=%d", buffer.Len())
 
-	_, err = connection.connection.Write(buffer.Bytes())
+	send := buffer.Bytes()
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.LogMultiLineString(adatypes.FormatBytes("PAYLOAD:", send, len(send), len(send), 8, true))
+	}
+	_, err = connection.connection.Write(send)
 	if err != nil {
 		adatypes.Central.Log.Debugf("Error writing data %s", err)
 		return

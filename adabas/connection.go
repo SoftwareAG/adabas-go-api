@@ -220,6 +220,9 @@ func parseAuth(id *ID, value string) error {
 
 // String provide the string representation of the connection
 func (connection *Connection) String() string {
+	if connection == nil {
+		return "Connection <nil>"
+	}
 	var buffer bytes.Buffer
 	if connection.adabasMap != nil {
 		buffer.WriteString("Map=" + connection.adabasMap.Name + " ")

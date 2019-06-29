@@ -254,6 +254,9 @@ func (adabas *Adabas) Release() (err error) {
 }
 
 func (adabas *Adabas) String() string {
+	if adabas == nil {
+		return "Adabas <nil>"
+	}
 	return fmt.Sprintf("Adabas url=%s fnr=%d", adabas.URL.String(), adabas.Acbx.Acbxfnr)
 }
 
@@ -342,7 +345,8 @@ func (adabas *Adabas) sendTCP() (err error) {
 			adabas.transactions.connection = nil
 		}
 	}
-	adatypes.Central.Log.Debugf("Got context for %p %p ", adabas, adabas.transactions.connection)
+	adatypes.Central.Log.Debugf("Got context for %s %p ", adabas.String(),
+		adabas.transactions.connection)
 	return
 }
 
@@ -825,7 +829,7 @@ func (adabas *Adabas) secondCall(adabasRequest *adatypes.Request, x interface{})
 		tmpAdabasRequest.Isn = adabasRequest.Isn
 		tmpAdabasRequest.Definition = adabasRequest.Definition
 		tmpAdabasRequest.Option.SecondCall = true
-		adatypes.Central.Log.Debugf("Got temporary request")
+		adatypes.Central.Log.Debugf("Call second request to ISN=%d", tmpAdabasRequest.Isn)
 		err = adabas.readISN(adabas.Acbx.Acbxfnr, tmpAdabasRequest, x)
 		if err != nil {
 			return
