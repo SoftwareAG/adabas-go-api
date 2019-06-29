@@ -27,6 +27,8 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
+const maximumFormatLength = 4096
+
 // FormatByteBuffer formats the byte array to an output with a hexadecimal part, a ASCII part and
 // a EBCDIC converted part of the same data
 func FormatByteBuffer(header string, b []byte) string {
@@ -157,8 +159,8 @@ func FormatBytes(header string, b []byte, bufferLength int, modSpace int, max in
 	buffer.WriteString(header)
 
 	formatLength := bufferLength
-	if os.Getenv("ADABAS_DUMP_BIG") == "" {
-		formatLength = 4096
+	if os.Getenv("ADABAS_DUMP_BIG") == "" && formatLength > maximumFormatLength {
+		formatLength = maximumFormatLength
 	}
 
 	if showLength {
