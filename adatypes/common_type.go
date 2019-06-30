@@ -334,6 +334,8 @@ const (
 	FlagOptionReference
 	// FlagOptionReadOnly read only field
 	FlagOptionReadOnly
+	// FlagOptionLengthNotIncluded length not include in record buffer
+	FlagOptionLengthNotIncluded
 )
 
 // Bit return the Bit of the option flag

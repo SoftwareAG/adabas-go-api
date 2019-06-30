@@ -22,7 +22,6 @@ package adatypes
 import (
 	"bytes"
 	"fmt"
-	"math"
 	"reflect"
 	"strings"
 )
@@ -222,39 +221,40 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 
 	fieldLength := value.adatype.Length()
 	switch fieldLength {
-	case math.MaxUint32:
-		length, errh := helper.ReceiveUInt8()
-		if errh != nil {
-			return EndTraverser, errh
-		}
-		fieldLength = uint32(length)
-
 	case 0:
-		switch value.adatype.Type() {
-		case FieldTypeLAString:
-			length, errh := helper.ReceiveUInt16()
-			if errh != nil {
-				return EndTraverser, errh
-			}
-			fieldLength = uint32(length - 2)
-		case FieldTypeLBString:
-			value.lobSize, err = helper.ReceiveUInt32()
-			if err != nil {
-				return EndTraverser, err
-			}
-			//value.lobSize = uint32(value.lobSize - 4)
-			// if value.lobSize > PartialLobSize {
-			fieldLength = PartialLobSize
-			//} else {
-			// fieldLength = value.lobSize
-			//}
-			Central.Log.Debugf("Take partial buffer .... of size=%d current lob size is %d", PartialLobSize, value.lobSize)
-		default:
+		if value.adatype.HasFlagSet(FlagOptionLengthNotIncluded) {
 			length, errh := helper.ReceiveUInt8()
 			if errh != nil {
 				return EndTraverser, errh
 			}
-			fieldLength = uint32(length - 1)
+			fieldLength = uint32(length)
+		} else {
+			switch value.adatype.Type() {
+			case FieldTypeLAString:
+				length, errh := helper.ReceiveUInt16()
+				if errh != nil {
+					return EndTraverser, errh
+				}
+				fieldLength = uint32(length - 2)
+			case FieldTypeLBString:
+				value.lobSize, err = helper.ReceiveUInt32()
+				if err != nil {
+					return EndTraverser, err
+				}
+				//value.lobSize = uint32(value.lobSize - 4)
+				// if value.lobSize > PartialLobSize {
+				fieldLength = PartialLobSize
+				//} else {
+				// fieldLength = value.lobSize
+				//}
+				Central.Log.Debugf("Take partial buffer .... of size=%d current lob size is %d", PartialLobSize, value.lobSize)
+			default:
+				length, errh := helper.ReceiveUInt8()
+				if errh != nil {
+					return EndTraverser, errh
+				}
+				fieldLength = uint32(length - 1)
+			}
 		}
 	default:
 	}

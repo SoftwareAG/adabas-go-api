@@ -118,9 +118,27 @@ type StructureType struct {
 	fieldMap map[string]IAdaType
 }
 
+// func NewType(fType FieldType, name string) *AdaType {
+
 // NewType Define new type with length equal 1
-func NewType(fType FieldType, name string) *AdaType {
+func NewType(param ...interface{}) *AdaType {
+	fType := param[0].(FieldType)
+	name := param[1].(string)
 	length := uint32(1)
+	if len(param) > 2 {
+		switch param[2].(type) {
+		case int:
+			i := param[2].(int)
+			length = uint32(i)
+		case uint32:
+			length = param[2].(uint32)
+		default:
+		}
+	}
+	flags := uint8(1 << FlagOptionToBeRemoved)
+	if len(param) > 3 {
+		flags = flags | uint8(1<<FlagOptionLengthNotIncluded)
+	}
 	switch fType {
 	case FieldTypeUByte, FieldTypeByte:
 	case FieldTypeUInt2, FieldTypeInt2:
@@ -134,7 +152,7 @@ func NewType(fType FieldType, name string) *AdaType {
 		fieldType: fType,
 		level:     1,
 		name:      name,
-		flags:     uint8(1 << FlagOptionToBeRemoved),
+		flags:     flags,
 		shortName: name,
 		peRange:   *NewEmptyRange(),
 		muRange:   *NewEmptyRange(),
