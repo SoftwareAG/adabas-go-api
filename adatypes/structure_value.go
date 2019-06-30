@@ -164,17 +164,19 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		Central.Log.Debugf("Skip not group -> %s", value.Type().Name())
 		return
 	}
-	Central.Log.Debugf("%s/%s parse buffer for MU in PE/first call", value.Type().Name(), value.Type().ShortName())
+	Central.Log.Debugf("%s/%s parse buffer for MU in PE/first call\n", value.Type().Name(), value.Type().ShortName())
 	var occNumber int
 	// In the second call the occurrence is available
-	if option.SecondCall && value.Type().Type() != FieldTypeMultiplefield {
+	if option.SecondCall && value.Type().Type() == FieldTypePeriodGroup {
 		occNumber = value.NrElements()
-		Central.Log.Debugf("Second call use available occurrence %d", occNumber)
+		Central.Log.Debugf("Second call use available occurrence %d Type %s\n", occNumber, value.Type().Type().name())
 	} else {
+		Central.Log.Debugf("Second call evaluate available Type %s\n", value.Type().Type().name())
 		occNumber, err = value.evaluateOccurrence(helper)
 		if err != nil {
 			return
 		}
+		Central.Log.Debugf("Second call got occurrence %d available Type %s\n", occNumber, value.Type().Type().name())
 	}
 	Central.Log.Debugf("PE occurrence %s has %d entries pos=%d", value.Type().Name(), occNumber, helper.offset)
 	if occNumber > 0 {
@@ -210,8 +212,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		Central.Log.Debugf("Are on mainframe, shift PE empty part")
 		value.shiftPeriod(helper)
 	}
-
-	res = SkipStructure
+	res = SkipTree
 	return
 }
 
@@ -347,7 +348,8 @@ func (value *StructureValue) evaluateOccurrence(helper *BufferHelper) (occNumber
 			break
 		}
 	}
-	Central.Log.Debugf("Evaluate occurrence for %s of type %d to %d", value.Type().Name(), subStructureType.occ, occNumber)
+	Central.Log.Debugf("Evaluate occurrence for %s of type %d to %d offset after=%d", value.Type().Name(),
+		subStructureType.occ, occNumber, helper.offset)
 	return
 }
 
@@ -356,7 +358,7 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 	Central.Log.Debugf("Parse Buffer structure without MUPE name=%s offset=%d remaining=%d length=%d value length=%d type=%d", value.Type().Name(),
 		helper.offset, helper.Remaining(), len(helper.buffer), len(value.Elements), value.Type().Type())
 	var occNumber int
-	if option.SecondCall {
+	if option.SecondCall /*&& value.Type().Type() == FieldTypePeriodGroup */ {
 		occNumber = value.NrElements()
 		Central.Log.Debugf("Second call use available occurrence %d", occNumber)
 	} else {

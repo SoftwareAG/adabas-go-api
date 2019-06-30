@@ -1956,8 +1956,8 @@ func TestConnectionFile9Isn242(t *testing.T) {
 	assert.NoError(t, err)
 	result, rerr := readRequest.ReadISN(242)
 	assert.NoError(t, rerr)
-
-	fmt.Println(result.String())
+	assert.NotNil(t, result)
+	//fmt.Println(result.String())
 }
 
 func TestConnectionFile9Isn297(t *testing.T) {
