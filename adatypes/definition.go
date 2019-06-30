@@ -219,7 +219,7 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 		Central.Log.Debugf("Condition matrix %v", conditionMatrix)
 		for _, ref := range conditionMatrix {
 			if Central.IsDebugLevel() {
-				Central.Log.Debugf("Get reference field %s %v %d offset=%d", types[ref].String(), ref, len(types), helper.offset)
+				Central.Log.Debugf("Get reference field %s %v %d offset=%d(%X)", types[ref].String(), ref, len(types), helper.offset, helper.offset)
 			}
 			value, subErr := types[ref].Value()
 			if subErr != nil {

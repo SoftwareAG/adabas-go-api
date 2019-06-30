@@ -384,11 +384,15 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 		helper := adatypes.NewHelper(adabas.AdabasBuffers[1].buffer, int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())
 		fdtDefinition := createFdtDefintion()
 		fdtDefinition.Values = nil
-		fdtDefinition.ParseBuffer(helper, adatypes.NewBufferOption(false, false), "")
+		_, err = fdtDefinition.ParseBuffer(helper, adatypes.NewBufferOption(false, false), "")
+		if err != nil {
+			adatypes.Central.Log.Debugf("ERROR parse FDT: %v", err)
+			return
+		}
 		adatypes.Central.Log.Debugf("Format read field definition")
 		definition, err = createFieldDefinitionTable(fdtDefinition)
 		if err != nil {
-			adatypes.Central.Log.Debugf("ERROR create FDT:", err)
+			adatypes.Central.Log.Debugf("ERROR create FDT: %v", err)
 			return
 		}
 		definition.PutCache(cacheName)
