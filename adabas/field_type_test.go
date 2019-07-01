@@ -231,7 +231,11 @@ func TestFieldTypeRead(t *testing.T) {
 		kaVal = result.Values[1].HashFields["S4"]
 		assert.Equal(t, "-100000", kaVal.String())
 		kaVal = result.Values[1].HashFields["BR"]
-		assert.Equal(t, []byte{0x0, 0x10, 0x20}, kaVal.Value())
+		if bigEndian() {
+			assert.Equal(t, []byte{0x10, 0x20}, kaVal.Value())
+		} else {
+			assert.Equal(t, []byte{0x0, 0x10, 0x20}, kaVal.Value())
+		}
 		db := []byte{0xff, 0x10, 0x5, 0x0, 0x10, 0x20}
 		b := make([]byte, 122)
 		copy(b[:len(db)], db)
