@@ -66,7 +66,7 @@ func (value *StructureValue) initSubValues(index uint32, peIndex uint32, initMuF
  */
 func (value *StructureValue) initMultipleSubValues(index uint32, peIndex uint32, muIndex uint32, initMuFields bool) {
 	subType := value.adatype.(*StructureType)
-	Central.Log.Debugf("Init sub values for %s[%d,%d] -> |%d,%d| - %d", value.adatype.Name(), value.PeriodIndex(),
+	Central.Log.Infof("Init sub values for %s[%d,%d] -> |%d,%d| - %d", value.adatype.Name(), value.PeriodIndex(),
 		value.MultipleIndex(), peIndex, muIndex, index)
 
 	if value.Type().Type() != FieldTypeMultiplefield || initMuFields {
@@ -366,6 +366,10 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 		if err != nil {
 			return
 		}
+	}
+	// TODO Remove because it it only a limit
+	if occNumber > 4000 {
+		panic(fmt.Sprintf("Occurence for %s exceed to %d",value.Type().Name(),occNumber))
 	}
 	Central.Log.Debugf("Occurrence %d period index=%d", occNumber, value.peIndex)
 	switch value.Type().Type() {
