@@ -23,6 +23,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"strings"
 )
 
 type structureElement struct {
@@ -368,7 +369,7 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 		}
 	}
 	// TODO Remove because it it only a limit
-	if occNumber > 4000 {
+	if occNumber > 4000 && !strings.HasPrefix(value.Type().Name(),"fdt") {
 		panic(fmt.Sprintf("Occurence for %s exceed to %d",value.Type().Name(),occNumber))
 	}
 	Central.Log.Debugf("Occurrence %d period index=%d", occNumber, value.peIndex)
