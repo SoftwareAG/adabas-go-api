@@ -21,6 +21,7 @@ package adabas
 
 import (
 	"fmt"
+	"runtime"
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -31,6 +32,11 @@ func TestConnectionSecure_fail(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+
 	initTestLogWithFile(t, "connection_secure.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
@@ -53,6 +59,10 @@ func TestConnectionSecure_fail(t *testing.T) {
 func TestConnectionSecure_pwd(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
 	}
 	initTestLogWithFile(t, "connection_secure.log")
 

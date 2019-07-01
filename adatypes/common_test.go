@@ -94,9 +94,9 @@ func initLogLevelWithFile(fileName string, level zapcore.Level) (err error) {
 	defer logger.Sync()
 
 	sugar := logger.Sugar()
-
-	sugar.Infof("logger construction succeeded %s", "xx")
 	Central.Log = sugar
+
+	sugar.Infof("AdabasGoApi logger initialization succeeded")
 	return nil
 }
 

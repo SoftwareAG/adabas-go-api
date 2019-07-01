@@ -131,7 +131,7 @@ func initLogLevelWithFile(fileName string, level string) (err error) {
 	sugar := logger.Sugar()
 	adatypes.Central.Log = sugar
 
-	sugar.Infof("logger construction succeeded %s", "xx")
+	sugar.Infof("AdabasGoApi logger initialization succeeded")
 
 	return nil
 }
@@ -1980,6 +1980,7 @@ func TestConnectionFile9Isn297(t *testing.T) {
 	assert.NoError(t, err)
 	result, rerr := readRequest.ReadISN(297)
 	assert.NoError(t, rerr)
+	assert.NotNil(t, result)
 
-	fmt.Println(result.String())
+	//fmt.Println(result.String())
 }

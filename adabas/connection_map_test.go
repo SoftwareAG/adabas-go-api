@@ -150,7 +150,6 @@ func TestConnectionRemoteMap(t *testing.T) {
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
-	//connection, cerr := NewConnection("acj;map;config=[177(adatcp://pinas:60177),4]")
 	connection, cerr := NewConnection("acj;map;config=[177(adatcp://" + adabasTCPLocation() + "),4];auth=NONE,user=TCRemMap")
 	if !assert.NoError(t, cerr) {
 		return
