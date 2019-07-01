@@ -1236,6 +1236,7 @@ func TestConnectionADATCPReadRemote(t *testing.T) {
 		// fmt.Printf("Result: %p\n", result)
 		//err = result.DumpValues()
 		assert.NoError(t, err)
+		assert.Equal(t, 1107, len(result.Values))
 	}
 }
 
