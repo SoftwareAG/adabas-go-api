@@ -118,6 +118,7 @@ type SearchInfo struct {
 
 // SearchTree tree entry point
 type SearchTree struct {
+	platform          *Platform
 	node              *SearchNode
 	value             *SearchValue
 	uniqueDescriptors []string
@@ -162,10 +163,12 @@ func (tree *SearchTree) ValueBuffer(buffer *bytes.Buffer) {
 
 func (tree *SearchTree) addNode(node *SearchNode) {
 	tree.node = node
+	node.platform = tree.platform
 }
 
 func (tree *SearchTree) addValue(value *SearchValue) {
 	tree.value = value
+	value.platform = tree.platform
 }
 
 // OrderBy provide list of descriptor names for this search
@@ -235,16 +238,19 @@ func (tree *SearchTree) SearchFields() []string {
 
 // SearchNode node entry in the searchtree
 type SearchNode struct {
-	nodes  []*SearchNode
-	values []*SearchValue
-	logic  logicBound
+	platform *Platform
+	nodes    []*SearchNode
+	values   []*SearchValue
+	logic    logicBound
 }
 
 func (node *SearchNode) addNode(childNode *SearchNode) {
+	childNode.platform = node.platform
 	node.nodes = append(node.nodes, childNode)
 }
 
 func (node *SearchNode) addValue(value *SearchValue) {
+	value.platform = node.platform
 	node.values = append(node.values, value)
 }
 
@@ -350,10 +356,11 @@ func (node *SearchNode) searchFields() []string {
 
 // SearchValue value endpoint
 type SearchValue struct {
-	field   string
-	adaType IAdaType
-	value   IAdaValue
-	comp    comparator
+	platform *Platform
+	field    string
+	adaType  IAdaType
+	value    IAdaValue
+	comp     comparator
 }
 
 // String shows the current value of the search value
@@ -384,10 +391,17 @@ func (value *SearchValue) searchFields() string {
 
 func (value *SearchValue) searchBuffer(buffer *bytes.Buffer) {
 	Central.Log.Debugf("Before value %s", buffer.String())
-	value.value.FormatBuffer(buffer, &BufferOption{})
+	var tmpBuffer bytes.Buffer
+	value.value.FormatBuffer(&tmpBuffer, &BufferOption{})
+	buffer.Write(tmpBuffer.Bytes())
 	if value.comp != NONE {
-		buffer.WriteByte(',')
-		buffer.WriteString(value.comp.String())
+		if value.platform.IsMainframe() {
+			buffer.WriteString(",S,")
+			buffer.Write(tmpBuffer.Bytes())
+		} else {
+			buffer.WriteByte(',')
+			buffer.WriteString(value.comp.String())
+		}
 	}
 	Central.Log.Debugf("After value %s", buffer.String())
 }
@@ -473,7 +487,7 @@ func NewSearchInfo(platform *Platform, search string) *SearchInfo {
 // GenerateTree generate tree search information
 func (searchInfo *SearchInfo) GenerateTree() (tree *SearchTree, err error) {
 	Central.Log.Debugf("Generate search tree: %#v", searchInfo)
-	tree = &SearchTree{}
+	tree = &SearchTree{platform: searchInfo.platform}
 	err = searchInfo.extractBinding(tree, searchInfo.search)
 	if err != nil {
 		return nil, err

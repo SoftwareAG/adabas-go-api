@@ -681,3 +681,64 @@ func TestSuperDescriptor(t *testing.T) {
 	assert.Equal(t, "EMPL", buffer.String())
 	assert.False(t, searchInfo.NeedSearch)
 }
+
+func TestTwoFields(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "S1=EMPL OR S1=ABC")
+	searchInfo.Definition = tDefinition()
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
+	assert.NoError(t, err)
+	Central.Log.Debugf(tree.String())
+	assert.Equal(t, "S1,4,A,EQ,R,S1,3,A,EQ.", tree.SearchBuffer())
+	var buffer bytes.Buffer
+	tree.ValueBuffer(&buffer)
+	assert.Equal(t, "EMPLABC", buffer.String())
+	assert.False(t, searchInfo.NeedSearch)
+}
+
+func TestMainframeEqual(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "SA='ABC'")
+	searchInfo.Definition = tDefinition()
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
+	assert.NoError(t, err)
+	Central.Log.Debugf(tree.String())
+	assert.Equal(t, "SA,3,A,EQ.", tree.SearchBuffer())
+	var buffer bytes.Buffer
+	tree.ValueBuffer(&buffer)
+	assert.Equal(t, "ABC", buffer.String())
+	assert.False(t, searchInfo.NeedSearch)
+
+	searchInfo = NewSearchInfo(mainframe, "SA='ABC'")
+	searchInfo.Definition = tDefinition()
+	tree, serr = searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
+	assert.NoError(t, err)
+	Central.Log.Debugf(tree.String())
+	assert.Equal(t, "SA,3,A,S,SA,3,A.", tree.SearchBuffer())
+	buffer = bytes.Buffer{}
+	tree.ValueBuffer(&buffer)
+	assert.Equal(t, "ABCABC", buffer.String())
+	assert.False(t, searchInfo.NeedSearch)
+
+}

@@ -251,6 +251,7 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 	if adabasMap.Name == "" {
 		return nil, adatypes.NewGenericError(66, name)
 	}
+	adatypes.Central.Log.Debugf("Got Adabas map %s", adabasMap.Name)
 	adabasMap.createFieldMap()
 	repository.CachedMaps[name] = adabasMap
 	var dbid Dbid

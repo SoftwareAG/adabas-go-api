@@ -167,5 +167,6 @@ func TestMapFieldsMainframe(t *testing.T) {
 		fmt.Println(err)
 		return
 	}
+	assert.Equal(t, "EMPLOYEES-NAT-MF", m.Name)
 	fmt.Println(m)
 }
