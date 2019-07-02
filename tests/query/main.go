@@ -247,6 +247,7 @@ func main() {
 	var search string
 	var fields string
 	var credentials string
+	var displayFdt bool
 	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 	var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
@@ -260,6 +261,7 @@ func main() {
 	flag.StringVar(&fields, "d", "", "Query field list")
 	flag.IntVar(&file, "f", 11, "Adabas file used to read, should be Employees file")
 	flag.BoolVar(&output, "o", false, "display output")
+	flag.BoolVar(&displayFdt, "F", false, "display Field Definition table")
 	flag.BoolVar(&close, "C", false, "Close Adabas connection in each loop")
 	flag.Parse()
 	args := flag.Args()
@@ -281,6 +283,20 @@ func main() {
 	}
 
 	names := strings.Split(name, ",")
+
+	if displayFdt {
+		ada, aerr := adabas.NewAdabas(args[0])
+		if aerr != nil {
+			panic("Error init Adabas call: " + aerr.Error())
+		}
+		defer ada.Close()
+		fdt, err := ada.ReadFileDefinition(adabas.Fnr(file))
+		if err != nil {
+			panic("Error evaluate Adabas FDT: " + err.Error())
+		}
+		fmt.Println("Display FDT of database %s file %d", args[0], file)
+		fmt.Println(fdt.String())
+	}
 
 	wg.Add(threadValue)
 	for i := uint32(0); i < uint32(threadValue); i++ {
