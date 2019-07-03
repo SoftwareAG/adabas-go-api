@@ -537,7 +537,7 @@ func tDefinition() *Definition {
 		NewStructureList(FieldTypeGroup, "AB", OccNone, groupLayout),
 		NewTypeWithLength(FieldTypeString, "SA", 8),
 		NewType(FieldTypeUInt8, "AA"),
-		NewTypeWithLength(FieldTypeString, "SD", 8),
+		NewTypeWithLength(FieldTypeString, "SD", 20),
 		st,
 	}
 	layout[7].AddOption(FieldOptionUQ)
@@ -767,7 +767,7 @@ func TestSingleLessLength(t *testing.T) {
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	assert.Equal(t, "ABC", buffer.String())
-	assert.False(t, searchInfo.NeedSearch)
+	assert.True(t, searchInfo.NeedSearch)
 
 }
 
@@ -828,6 +828,7 @@ var complesSearchTest = []struct {
 	needSearch   bool
 }{
 	{opensystem, "S1=['BVEHICLE '0x00:'BVEHICLE '0xFF]", "S1,10,A,GE,S,S1,10,A,LE.", []byte{0x42, 0x56, 0x45, 0x48, 0x49, 0x43, 0x4c, 0x45, 0x20, 0x0, 0x42, 0x56, 0x45, 0x48, 0x49, 0x43, 0x4c, 0x45, 0x20, 0xff}, false},
+	{opensystem, "SD=[0x00'VEHICLE '0x01(10):0x00'VEHICLE '0xFF(5)]", "SD,10,A,GE,S,SD,10,A,LE.", []byte{0x01, 0x42, 0x56, 0x45, 0x48, 0x49, 0x43, 0x4c, 0x45, 0x20, 0x0, 0x42, 0x56, 0x45, 0x48, 0x49, 0x43, 0x4c, 0x45, 0x20, 0xff}, false},
 }
 
 func TestComplexSearchTest(t *testing.T) {

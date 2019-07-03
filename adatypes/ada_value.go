@@ -82,10 +82,11 @@ type IAdaValue interface {
 }
 
 type adaValue struct {
-	adatype IAdaType
-	parent  IAdaValue
-	peIndex uint32
-	muIndex uint32
+	adatype      IAdaType
+	parent       IAdaValue
+	peIndex      uint32
+	muIndex      uint32
+	searchLength uint32
 }
 
 func (adavalue adaValue) Type() IAdaType {

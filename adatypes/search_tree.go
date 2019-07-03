@@ -182,7 +182,7 @@ func (tree *SearchTree) OrderBy() []string {
 
 func (tree *SearchTree) evalueDescriptors() bool {
 	if tree.node != nil {
-		Central.Log.Debugf("Search node descriptor")
+		Central.Log.Debugf("Evaluate node descriptors")
 		descriptors := tree.node.orderBy()
 		Central.Log.Debugf("Descriptor list: %v", descriptors)
 		for _, d := range descriptors {
@@ -200,7 +200,7 @@ func (tree *SearchTree) evalueDescriptors() bool {
 			}
 		}
 	} else {
-		Central.Log.Debugf("Empty node use value descriptor")
+		Central.Log.Debugf("Empty node evaluate value descriptor")
 		if tree.value == nil {
 			return false
 		}
