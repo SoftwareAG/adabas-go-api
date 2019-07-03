@@ -349,17 +349,24 @@ func adaptFlags(adaType IAdaType, parentType IAdaType, level int, x interface{})
 func (def *Definition) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("Definition types:\n")
-	for _, value := range def.activeFieldTree.SubTypes {
-		output := fmt.Sprintf("%s\n", value.String())
+	t := TraverserMethods{EnterFunction: func(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+		output := fmt.Sprintf("%s\n", adaType.String())
 		buffer.WriteString(output)
-	}
-	if len(def.Values) > 0 {
-		buffer.WriteString("Definition IAdaTypes:\n")
-		for index, value := range def.Values {
-			output := fmt.Sprintf("%03d %s=%s\n", (index + 1), value.Type().Name(), value.String())
-			buffer.WriteString(output)
-		}
-	}
+		return nil
+	}}
+
+	def.TraverseTypes(t, true, nil)
+	// for _, value := range def.activeFieldTree.SubTypes {
+	// 	output := fmt.Sprintf("%s\n", value.String())
+	// 	buffer.WriteString(output)
+	// }
+	// if len(def.Values) > 0 {
+	// 	buffer.WriteString("Definition IAdaTypes:\n")
+	// 	for index, value := range def.Values {
+	// 		output := fmt.Sprintf("%03d %s=%s\n", (index + 1), value.Type().Name(), value.String())
+	// 		buffer.WriteString(output)
+	// 	}
+	// }
 	return buffer.String()
 }
 

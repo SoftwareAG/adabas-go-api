@@ -537,10 +537,12 @@ func tDefinition() *Definition {
 		NewStructureList(FieldTypeGroup, "AB", OccNone, groupLayout),
 		NewTypeWithLength(FieldTypeString, "SA", 8),
 		NewType(FieldTypeUInt8, "AA"),
+		NewTypeWithLength(FieldTypeString, "SD", 8),
 		st,
 	}
 	layout[7].AddOption(FieldOptionUQ)
 	layout[7].AddOption(FieldOptionDE)
+	layout[8].AddOption(FieldOptionDE)
 
 	testDefinition := NewDefinitionWithTypes(layout)
 	for _, t := range layout {
@@ -766,5 +768,88 @@ func TestSingleLessLength(t *testing.T) {
 	tree.ValueBuffer(&buffer)
 	assert.Equal(t, "ABC", buffer.String())
 	assert.False(t, searchInfo.NeedSearch)
+
+}
+
+var searchTest = []struct {
+	platform     *Platform
+	searchQuery  string
+	searchBuffer string
+	valueBuffer  string
+	needSearch   bool
+}{
+	{opensystem, "SA='1'", "SA,1,A,EQ.", "1", true},
+	{opensystem, "SD='1' AND SD='2'", "SD,1,A,EQ,D,AA,1,A,EQ.", "12", false},
+	{mainframe, "SD='1' AND SD='2'", "SD,1,A,S,SD,1,A,D,AA,1,A,S,SD,1,A.", "1122", false},
+	{opensystem, "SD='1' OR SD='2'", "SD,1,A,EQ,O,AA,1,A,EQ.", "12", false},
+	{mainframe, "SD='1' OR SD='2'", "SD,1,A,S,SD,1,A,O,AA,1,A,S,SD,1,A.", "1122", false},
+	{opensystem, "SD<='SMITH'", "SD,5,A,LE.", "SMITH", false},
+	{opensystem, "SA='ABC'", "SA,3,A,EQ.", "ABC", true},
+	{mainframe, "SA='ABC'", "SA,3,A,S,SA,3,A.", "ABC", true},
+	{opensystem, "S1=EMPL OR S1=ABC", "S1,3,A,EQ,R,S1,3,A,EQ.", "EMPLABC", false},
+	{mainframe, "S1=EMPL OR S1=ABC", "S1,3,A,S,S1,3,A,R,S1,3,A,S,S1,3,A.", "EMPLEMPLABCABC", false},
+	{opensystem, "SD=['A':'B']", "SD,1,A,GE,S,SD,1,A,LE.", "AB", false},
+	{mainframe, "SD=['A':'B']", "SD,1,A,S,SD,1,A.", "AB", false},
+	{opensystem, "SD=('A':'B']", "SD,1,A,GT,S,SD,1,A,LE.", "AB", false},
+	{mainframe, "SD=('A':'B']", "SD,1,A,S,SD,1,A,D,SD,1,A,NE.", "AB", false},
+	{opensystem, "SD=['A':'B')", "SD,1,A,GE,S,SD,1,A,LT.", "AB", false},
+	{mainframe, "SD=['A':'B')", "SD,1,A,S,SD,1,A,D,SD,1,A,NE.", "AB", false},
+}
+
+func TestSearchTest(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	tdefinition := tDefinition()
+	fmt.Println(tdefinition)
+	for _, search := range searchTest {
+		searchInfo := NewSearchInfo(search.platform, search.searchQuery)
+		searchInfo.Definition = tdefinition
+		tree, serr := searchInfo.GenerateTree()
+		if !assert.NoError(t, serr) {
+			return
+		}
+		Central.Log.Debugf(tree.String())
+		assert.Equal(t, search.searchBuffer, tree.SearchBuffer())
+		var buffer bytes.Buffer
+		tree.ValueBuffer(&buffer)
+		assert.Equal(t, search.valueBuffer, buffer.String())
+		assert.Equal(t, search.needSearch, searchInfo.NeedSearch)
+	}
+
+}
+
+var complesSearchTest = []struct {
+	platform     *Platform
+	searchQuery  string
+	searchBuffer string
+	valueBuffer  []byte
+	needSearch   bool
+}{
+	{opensystem, "S1=['BVEHICLE '0x00:'BVEHICLE '0xFF]", "S1,10,A,GE,S,S1,10,A,LE.", []byte{0x42, 0x56, 0x45, 0x48, 0x49, 0x43, 0x4c, 0x45, 0x20, 0x0, 0x42, 0x56, 0x45, 0x48, 0x49, 0x43, 0x4c, 0x45, 0x20, 0xff}, false},
+}
+
+func TestComplexSearchTest(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	tdefinition := tDefinition()
+	fmt.Println(tdefinition.String())
+	for _, search := range complesSearchTest {
+		searchInfo := NewSearchInfo(search.platform, search.searchQuery)
+		searchInfo.Definition = tdefinition
+		tree, serr := searchInfo.GenerateTree()
+		if !assert.NoError(t, serr) {
+			return
+		}
+		Central.Log.Debugf(tree.String())
+		assert.Equal(t, search.searchBuffer, tree.SearchBuffer())
+		var buffer bytes.Buffer
+		tree.ValueBuffer(&buffer)
+		assert.Equal(t, search.valueBuffer, buffer.Bytes())
+		assert.Equal(t, search.needSearch, searchInfo.NeedSearch)
+	}
 
 }

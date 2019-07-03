@@ -158,6 +158,9 @@ func (tree *SearchTree) ValueBuffer(buffer *bytes.Buffer) {
 	helper.search = true
 	Central.Log.Debugf("Tree value value buffer %s", tree.value.value.String())
 	tree.value.value.StoreBuffer(helper)
+	if tree.platform.IsMainframe() && tree.value.comp == EQ {
+		tree.value.value.StoreBuffer(helper)
+	}
 	buffer.Write(helper.buffer)
 	//buffer.Write(tree.value.value.Bytes())
 }
@@ -320,6 +323,9 @@ func (node *SearchNode) valueBuffer(buffer *bytes.Buffer) {
 		helper.search = true
 		Central.Log.Debugf("Tree value value buffer %s", v.value.String())
 		v.value.StoreBuffer(helper)
+		if node.platform.IsMainframe() && v.comp == EQ {
+			v.value.StoreBuffer(helper)
+		}
 		buffer.Write(helper.buffer)
 		Central.Log.Debugf("%d Len buffer %d", i, buffer.Len())
 	}
@@ -408,6 +414,9 @@ func (value *SearchValue) searchFields() string {
 func (value *SearchValue) searchBuffer(buffer *bytes.Buffer) {
 	Central.Log.Debugf("Before value %s", buffer.String())
 	curLen := buffer.Len()
+	if curLen > 0 {
+		curLen++
+	}
 	value.value.FormatBuffer(buffer, &BufferOption{})
 	if value.comp != NONE {
 		if value.platform.IsMainframe() && value.comp == EQ {
