@@ -105,6 +105,7 @@ type ISearchNode interface {
 	addNode(*SearchNode)
 	addValue(*SearchValue)
 	String() string
+	Platform() *Platform
 }
 
 // SearchInfo structure containing search parameters
@@ -208,6 +209,11 @@ func (tree *SearchTree) evalueDescriptors() bool {
 	}
 	Central.Log.Debugf("Unique descriptor list: %v", tree.uniqueDescriptors)
 	return len(tree.uniqueDescriptors) != 1
+}
+
+// Platform returns current os platform
+func (tree *SearchTree) Platform() *Platform {
+	return tree.platform
 }
 
 // SearchFields provide list of field names for this search
@@ -354,6 +360,11 @@ func (node *SearchNode) searchFields() []string {
 	return fields
 }
 
+// Platform returns current os platform
+func (node *SearchNode) Platform() *Platform {
+	return node.platform
+}
+
 // SearchValue value endpoint
 type SearchValue struct {
 	platform *Platform
@@ -375,6 +386,11 @@ func (value *SearchValue) String() string {
 		value.value.String(), value.value.Type().Length())
 }
 
+// Platform returns current os platform
+func (value *SearchValue) Platform() *Platform {
+	return value.platform
+}
+
 func (value *SearchValue) orderBy() string {
 	Central.Log.Debugf("Order by %s", value.adaType.Name())
 	if value.value.Type().IsOption(FieldOptionDE) || value.value.Type().IsSpecialDescriptor() {
@@ -391,13 +407,11 @@ func (value *SearchValue) searchFields() string {
 
 func (value *SearchValue) searchBuffer(buffer *bytes.Buffer) {
 	Central.Log.Debugf("Before value %s", buffer.String())
-	var tmpBuffer bytes.Buffer
-	value.value.FormatBuffer(&tmpBuffer, &BufferOption{})
-	buffer.Write(tmpBuffer.Bytes())
+	curLen := buffer.Len()
+	value.value.FormatBuffer(buffer, &BufferOption{})
 	if value.comp != NONE {
-		if value.platform.IsMainframe() {
-			buffer.WriteString(",S,")
-			buffer.Write(tmpBuffer.Bytes())
+		if value.platform.IsMainframe() && value.comp == EQ {
+			buffer.WriteString(",S," + buffer.String()[curLen:])
 		} else {
 			buffer.WriteByte(',')
 			buffer.WriteString(value.comp.String())
@@ -508,14 +522,14 @@ func (searchInfo *SearchInfo) extractBinding(parentNode ISearchNode, bind string
 	binds := regexp.MustCompile(" AND | and ").Split(bind, -1)
 	if len(binds) > 1 {
 		Central.Log.Debugf("Found AND binds: %d", len(binds))
-		node = &SearchNode{logic: AND}
+		node = &SearchNode{logic: AND, platform: parentNode.Platform()}
 		searchInfo.NeedSearch = true
 	} else {
 		Central.Log.Debugf("Check or bindings")
 		binds = regexp.MustCompile(" OR | or ").Split(bind, -1)
 		if len(binds) > 1 {
 			Central.Log.Debugf("Found OR binds: %d", len(binds))
-			node = &SearchNode{logic: OR}
+			node = &SearchNode{logic: OR, platform: parentNode.Platform()}
 			searchInfo.NeedSearch = true
 		}
 	}
@@ -544,14 +558,14 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 	parameter := regexp.MustCompile("!=|=|<=|>=|<>|<|>").Split(search, -1)
 	field := parameter[0]
 	value := parameter[len(parameter)-1]
-	lowerLevel := &SearchValue{field: field}
+	lowerLevel := &SearchValue{field: field, platform: node.Platform()}
 	Central.Log.Debugf("Field: %s Value: %s from %v", lowerLevel.field, value, parameter)
 
 	/* Check for range information */
 	if regexp.MustCompile("^[\\[\\(].*:.*[\\]\\)]$").MatchString(value) {
 		/* Found range definition, will add lower and upper limit */
 		Central.Log.Debugf("Range found")
-		rangeNode := &SearchNode{logic: RANGE}
+		rangeNode := &SearchNode{logic: RANGE, platform: node.Platform()}
 
 		/*
 		 * Check for lower level and upper level comparator
@@ -589,7 +603,7 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 		rangeNode.addValue(lowerLevel)
 
 		/* Generate upper level value */
-		upperLevel := &SearchValue{field: strings.TrimSpace(field), comp: maximumRange}
+		upperLevel := &SearchValue{field: strings.TrimSpace(field), comp: maximumRange, platform: node.Platform()}
 		endValue := value[columnIndex+1 : len(value)-1]
 		Central.Log.Debugf("Search range end value: %s", startValue)
 
@@ -603,7 +617,7 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 			searchInfo.NeedSearch = true
 			var notLowerLevel *SearchValue
 			if value[0] == '(' {
-				notLowerLevel = &SearchValue{field: strings.TrimSpace(field), comp: NONE}
+				notLowerLevel = &SearchValue{field: strings.TrimSpace(field), comp: NONE, platform: node.Platform()}
 				err = searchInfo.searchFieldValue(notLowerLevel, startValue)
 				if err != nil {
 					return
@@ -614,17 +628,17 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 				rangeNode.addNode(notRangeNode)
 			}
 			if value[len(value)-1] == ')' {
-				notUpperLevel := &SearchValue{field: strings.TrimSpace(field), comp: NONE}
+				notUpperLevel := &SearchValue{field: strings.TrimSpace(field), comp: NONE, platform: node.Platform()}
 				err = searchInfo.searchFieldValue(notUpperLevel, endValue)
 				if err != nil {
 					return
 				}
 				if notLowerLevel == nil {
-					notRangeNode := &SearchNode{logic: NOT}
+					notRangeNode := &SearchNode{logic: NOT, platform: node.Platform()}
 					notRangeNode.addValue(notUpperLevel)
 					rangeNode.addNode(notRangeNode)
 				} else {
-					notRangeNode := &SearchNode{logic: AND}
+					notRangeNode := &SearchNode{logic: AND, platform: node.Platform()}
 					notUpperLevel.comp = NE
 					notRangeNode.addValue(notUpperLevel)
 					rangeNode.addNode(notRangeNode)
