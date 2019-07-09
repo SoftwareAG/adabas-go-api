@@ -79,8 +79,8 @@ func TestConnectionSecure_pwd(t *testing.T) {
 		return
 	}
 	err = request.QueryFields("AA,AE")
-	assert.NoError(t, err)
-	if err != nil {
+
+	if !assert.NoError(t, err) {
 		fmt.Println("Error query fields for request", err)
 		return
 	}
