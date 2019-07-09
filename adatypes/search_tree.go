@@ -180,38 +180,48 @@ func (tree *SearchTree) OrderBy() []string {
 	return tree.uniqueDescriptors
 }
 
-func (tree *SearchTree) evalueDescriptors() bool {
-	if tree.node != nil {
-		Central.Log.Debugf("Evaluate node descriptors")
-		descriptors := tree.node.orderBy()
-		Central.Log.Debugf("Descriptor list: %v", descriptors)
-		for _, d := range descriptors {
-			add := true
-			for _, ud := range tree.uniqueDescriptors {
-				Central.Log.Debugf("Check descriptor %s to unique descriptor %s", d, ud)
-				if d == ud {
-					add = false
-					break
-				}
-			}
-			if add {
-				Central.Log.Debugf("Add node descriptor : %s", d)
-				tree.uniqueDescriptors = append(tree.uniqueDescriptors, d)
-			}
-		}
-	} else {
-		Central.Log.Debugf("Empty node evaluate value descriptor")
-		if tree.value == nil {
-			return false
-		}
-		descriptor := tree.value.orderBy()
-		if descriptor != "" {
-			Central.Log.Debugf("Add value descriptor : %s", descriptor)
-			tree.uniqueDescriptors = append(tree.uniqueDescriptors, descriptor)
+func (tree *SearchTree) evaluateDescriptors(fields map[string]bool) bool {
+	Central.Log.Debugf("Evaluate node descriptors")
+	needSearch := false
+	for k, v := range fields {
+		if v {
+			tree.uniqueDescriptors = append(tree.uniqueDescriptors, k)
+		} else {
+			needSearch = true
 		}
 	}
-	Central.Log.Debugf("Unique descriptor list: %v", tree.uniqueDescriptors)
-	return len(tree.uniqueDescriptors) != 1
+	return needSearch || (len(tree.uniqueDescriptors) != 1)
+
+	// if tree.node != nil {
+	// 	descriptors := tree.node.orderBy()
+	// 	Central.Log.Debugf("Descriptor list: %v", descriptors)
+	// 	for _, d := range descriptors {
+	// 		add := true
+	// 		for _, ud := range tree.uniqueDescriptors {
+	// 			Central.Log.Debugf("Check descriptor %s to unique descriptor %s", d, ud)
+	// 			if d == ud {
+	// 				add = false
+	// 				break
+	// 			}
+	// 		}
+	// 		if add {
+	// 			Central.Log.Debugf("Add node descriptor : %s", d)
+	// 			tree.uniqueDescriptors = append(tree.uniqueDescriptors, d)
+	// 		}
+	// 	}
+	// } else {
+	// 	Central.Log.Debugf("Empty node evaluate value descriptor")
+	// 	if tree.value == nil {
+	// 		return false
+	// 	}
+	// 	descriptor := tree.value.orderBy()
+	// 	if descriptor != "" {
+	// 		Central.Log.Debugf("Add value descriptor : %s", descriptor)
+	// 		tree.uniqueDescriptors = append(tree.uniqueDescriptors, descriptor)
+	// 	}
+	// }
+	// Central.Log.Debugf("Unique descriptor list: %v -> %d", tree.uniqueDescriptors, len(tree.uniqueDescriptors))
+	// return len(tree.uniqueDescriptors) != 1
 }
 
 // Platform returns current os platform
@@ -511,11 +521,12 @@ func NewSearchInfo(platform *Platform, search string) *SearchInfo {
 func (searchInfo *SearchInfo) GenerateTree() (tree *SearchTree, err error) {
 	Central.Log.Debugf("Generate search tree: %#v", searchInfo)
 	tree = &SearchTree{platform: searchInfo.platform}
-	err = searchInfo.extractBinding(tree, searchInfo.search)
+	fields := make(map[string]bool)
+	err = searchInfo.extractBinding(tree, searchInfo.search, fields)
 	if err != nil {
 		return nil, err
 	}
-	searchNeeded := tree.evalueDescriptors()
+	searchNeeded := tree.evaluateDescriptors(fields)
 	if !searchInfo.NeedSearch {
 		searchInfo.NeedSearch = searchNeeded
 	}
@@ -523,7 +534,7 @@ func (searchInfo *SearchInfo) GenerateTree() (tree *SearchTree, err error) {
 	return
 }
 
-func (searchInfo *SearchInfo) extractBinding(parentNode ISearchNode, bind string) (err error) {
+func (searchInfo *SearchInfo) extractBinding(parentNode ISearchNode, bind string, fields map[string]bool) (err error) {
 	var node *SearchNode
 
 	Central.Log.Debugf("Extract binding of: %s in parent Node: %s", bind, parentNode.String())
@@ -532,29 +543,36 @@ func (searchInfo *SearchInfo) extractBinding(parentNode ISearchNode, bind string
 	if len(binds) > 1 {
 		Central.Log.Debugf("Found AND binds: %d", len(binds))
 		node = &SearchNode{logic: AND, platform: parentNode.Platform()}
-		searchInfo.NeedSearch = true
+		//searchInfo.NeedSearch = true
 	} else {
 		Central.Log.Debugf("Check or bindings")
 		binds = regexp.MustCompile(" OR | or ").Split(bind, -1)
 		if len(binds) > 1 {
 			Central.Log.Debugf("Found OR binds: %d", len(binds))
 			node = &SearchNode{logic: OR, platform: parentNode.Platform()}
-			searchInfo.NeedSearch = true
+			//searchInfo.NeedSearch = true
 		}
 	}
 	if node != nil {
 		Central.Log.Debugf("Go through nodes")
 		parentNode.addNode(node)
+		subFields := make(map[string]bool)
 		for _, bind := range binds {
 			Central.Log.Debugf("Go through bind: %s", bind)
-			err = searchInfo.extractBinding(node, bind)
+			err = searchInfo.extractBinding(node, bind, subFields)
 			if err != nil {
 				return
 			}
 		}
+		if node.logic == OR && len(subFields) == 1 {
+			node.logic = MOR
+		}
+		for k, v := range subFields {
+			fields[k] = v
+		}
 	} else {
 		Central.Log.Debugf("Go through value bind: %s", bind)
-		err = searchInfo.extractComparator(bind, parentNode)
+		err = searchInfo.extractComparator(bind, parentNode, fields)
 		if err != nil {
 			return
 		}
@@ -562,8 +580,8 @@ func (searchInfo *SearchInfo) extractBinding(parentNode ISearchNode, bind string
 	return
 }
 
-func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode) (err error) {
-	Central.Log.Debugf("Search: %s", search)
+func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode, fields map[string]bool) (err error) {
+	Central.Log.Debugf("Extract comparator %s", search)
 	parameter := regexp.MustCompile("!=|=|<=|>=|<>|<|>").Split(search, -1)
 	field := parameter[0]
 	value := parameter[len(parameter)-1]
@@ -610,6 +628,7 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 			return
 		}
 		rangeNode.addValue(lowerLevel)
+		fields[lowerLevel.adaType.Name()] = lowerLevel.adaType.IsSpecialDescriptor() || lowerLevel.adaType.IsOption(FieldOptionDE)
 
 		/* Generate upper level value */
 		upperLevel := &SearchValue{field: strings.TrimSpace(field), comp: maximumRange, platform: node.Platform()}
@@ -672,6 +691,7 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 		if err != nil {
 			return
 		}
+		fields[lowerLevel.adaType.Name()] = lowerLevel.adaType.IsSpecialDescriptor() || lowerLevel.adaType.IsOption(FieldOptionDE)
 		node.addValue(lowerLevel)
 	}
 	return
@@ -679,11 +699,27 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 
 func (searchInfo *SearchInfo) searchFieldValue(searchValue *SearchValue, value string) (err error) {
 	Central.Log.Debugf("Search for type %s", searchValue.field)
-	searchValue.adaType, err = searchInfo.Definition.SearchType(searchValue.field)
-	if err != nil {
+	adaType, xerr := searchInfo.Definition.SearchType(searchValue.field)
+	if xerr != nil {
 		Central.Log.Debugf("Search error: %v", err)
-		return
+		return xerr
 	}
+	switch adaType.(type) {
+	case *AdaType:
+		t := adaType.(*AdaType)
+		var xType AdaType
+		xType = *t
+		searchValue.adaType = &xType
+	case *AdaSuperType:
+		t := adaType.(*AdaSuperType)
+		var xType AdaSuperType
+		xType = *t
+		searchValue.adaType = &xType
+	default:
+		return NewGenericError(0)
+	}
+
+	Central.Log.Debugf("Search value type: %T", searchValue.adaType)
 	searchValue.value, err = searchValue.adaType.Value()
 	if err != nil {
 		return
@@ -735,9 +771,11 @@ func (searchInfo *SearchInfo) expandConstants(searchValue *SearchValue, value st
 	}
 	if numPart {
 		Central.Log.Debugf("Numeric part available ....")
+		searchValue.value.Type().SetLength(uint32(buffer.Len()))
 		err = searchValue.value.SetValue(buffer.Bytes())
 	} else {
 		Central.Log.Debugf("No Numeric part available ....%s", string(expandedValue))
+		searchValue.value.Type().SetLength(uint32(buffer.Len()))
 		searchValue.value.SetStringValue(buffer.String())
 	}
 	return
@@ -748,8 +786,23 @@ func appendNumericValue(buffer *bytes.Buffer, v string) {
 	if v != "" {
 		// Work on hexadecimal value
 		if strings.HasPrefix(v, "0x") {
-			src := []byte(v[2:])
-			Central.Log.Debugf("Append numeric %s\n", v[2:])
+			multiplier := 1
+			bm := strings.Index(v, "(")
+			if bm > 0 {
+				em := strings.Index(v, ")")
+				Central.Log.Debugf("Multiplier %v", v[bm+1:em])
+				var err error
+				multiplier, err = strconv.Atoi(v[bm+1 : em])
+				if err != nil {
+					Central.Log.Debugf("Error multiplier %v", err)
+					return
+				}
+			} else {
+				bm = len(v)
+			}
+			Central.Log.Debugf("Range end %d %v", bm, v[2:bm])
+			src := []byte(v[2:bm])
+			Central.Log.Debugf("Append numeric %s\n", v[2:bm])
 			dst := make([]byte, hex.DecodedLen(len(src)))
 			n, err := hex.Decode(dst, src)
 			if err != nil {
@@ -757,7 +810,9 @@ func appendNumericValue(buffer *bytes.Buffer, v string) {
 			}
 
 			Central.Log.Debugf("Byte value %v\n", dst[:n])
-			buffer.Write(dst[:n])
+			for i := 0; i < multiplier; i++ {
+				buffer.Write(dst[:n])
+			}
 		} else {
 			va, err := strconv.Atoi(v)
 			if err != nil {
