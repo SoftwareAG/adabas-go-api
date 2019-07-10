@@ -352,8 +352,8 @@ func TestConnectionPEMUMfMap(t *testing.T) {
 		fmt.Println("Check size ...", len(result.Values))
 		if assert.Equal(t, 1, len(result.Values)) {
 			ae := result.Values[0].HashFields["name"]
-			fmt.Println("Check HAIBACH ...")
-			assert.Equal(t, "HAIBACH", strings.TrimSpace(ae.String()))
+			fmt.Println("Check BERGMANN ...")
+			assert.Equal(t, "BERGMANN", strings.TrimSpace(ae.String()))
 			ei64, xErr := ae.Int64()
 			assert.Error(t, xErr, "Error should be send if value is string")
 			assert.Equal(t, int64(0), ei64)
