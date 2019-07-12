@@ -1837,6 +1837,10 @@ func TestConnectionLobADATCP(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
 	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())

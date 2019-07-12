@@ -744,29 +744,31 @@ func (searchInfo *SearchInfo) expandConstants(searchValue *SearchValue, value st
 	}
 	numPart := false
 	for strings.Contains(expandedValue, ConstantIndicator) {
-		posIndicator = strings.IndexByte(expandedValue, ConstantIndicator[0])
-		constantString := regexp.MustCompile(".*#{").ReplaceAllString(expandedValue, "")
+		Central.Log.Debugf("Work on expanded value %s", expandedValue)
+		posIndicator = strings.Index(expandedValue, ConstantIndicator+"{")
+		//posIndicator = strings.IndexByte(expandedValue, ConstantIndicator[0])
+		constantString := expandedValue[posIndicator+2:]
 		Central.Log.Debugf("Constant without indicator id: %s", constantString)
 		constantString = regexp.MustCompile("}.*").ReplaceAllString(constantString, "")
-		Central.Log.Debugf("Constant id: %s", constantString)
 		postIndicator = strings.IndexByte(expandedValue, '}') + 1
+		Central.Log.Debugf("Constant id: %s pos=%d post=%d", constantString, posIndicator, postIndicator)
 		index, error := strconv.Atoi(constantString)
 		if error != nil {
 			err = error
 			return
 		}
 		if posIndicator > 0 {
-			appendNumericValue(&buffer, value[:posIndicator])
+			Central.Log.Debugf("Check numeric value %s", expandedValue[:posIndicator])
+			appendNumericValue(&buffer, expandedValue[:posIndicator])
 			numPart = true
 		}
-		expandedValue = value[postIndicator:]
+		expandedValue = expandedValue[postIndicator:]
 		buffer.WriteString(searchInfo.constants[index-1])
-		Central.Log.Debugf("Expand start=%s -> %d->%v ->end=%s", value[:posIndicator], posIndicator,
-			expandedValue, value[postIndicator:])
+		Central.Log.Debugf("Expand end=%s", expandedValue)
 	}
 	Central.Log.Debugf("Rest value=%s", value[postIndicator:])
-	if value[postIndicator:] != "" {
-		appendNumericValue(&buffer, value[postIndicator:])
+	if expandedValue != "" {
+		appendNumericValue(&buffer, expandedValue)
 		numPart = true
 	}
 	if numPart {
@@ -782,7 +784,7 @@ func (searchInfo *SearchInfo) expandConstants(searchValue *SearchValue, value st
 }
 
 func appendNumericValue(buffer *bytes.Buffer, v string) {
-	Central.Log.Debugf("Append numeric offset=%d\n", buffer.Len())
+	Central.Log.Debugf("Append numeric offset=%d v=%s\n", buffer.Len(), v)
 	if v != "" {
 		// Work on hexadecimal value
 		if strings.HasPrefix(v, "0x") {
