@@ -36,6 +36,11 @@ func newStructureElement() *structureElement {
 	return &structureElement{valueMap: make(map[string]IAdaValue)}
 }
 
+// StructureValueTraverser structure value traverser
+type StructureValueTraverser interface {
+	Traverse(t TraverserValuesMethods, x interface{}) (ret TraverseResult, err error)
+}
+
 // StructureValue structure value struct
 type StructureValue struct {
 	adaValue

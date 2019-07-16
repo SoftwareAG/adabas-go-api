@@ -235,12 +235,11 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 	}
 	adatypes.Central.Log.Debugf("Before Prepare Repository %#v\n", *repository)
 	url := repository.DatabaseURL
-	adabasMap = &Map{Repository: &repository.DatabaseURL, Data: &url}
+	adabasMap = NewAdabasMap(&repository.DatabaseURL, &url)
 	request, _ := NewReadRequest(commonRequest)
 	// Reset map definition, because
 	request.commonRequest.adabasMap = nil
 	request.commonRequest.MapName = ""
-	adatypes.Central.Log.Debugf("Before Read Repository %#v\n", *repository)
 
 	adatypes.Central.Log.Debugf("Search for Map with name=%s", name)
 	// Search for map name in database
@@ -446,7 +445,7 @@ func parseMapNames(adabasRequest *adatypes.Request, x interface{}) (err error) {
 // parseMap Adabas read parser of the Map definition used during read
 func parseMaps(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	repository := x.(*Repository)
-	adabasMap := &Map{Repository: &repository.DatabaseURL, Data: &DatabaseURL{}}
+	adabasMap := NewAdabasMap(&repository.DatabaseURL, &DatabaseURL{})
 	err = parseMap(adabasRequest, adabasMap)
 	if err != nil {
 		return

@@ -129,7 +129,7 @@ func (record *Record) traverse(t adatypes.TraverserValuesMethods, x interface{})
 		}
 		if value.Type().IsStructure() {
 			adatypes.Central.Log.Debugf("Go through structure %s %d", value.Type().Name(), value.Type().Type())
-			ret, err = value.(*adatypes.StructureValue).Traverse(t, x)
+			ret, err = value.(adatypes.StructureValueTraverser).Traverse(t, x)
 			if err != nil || ret == adatypes.EndTraverser {
 				return
 			}

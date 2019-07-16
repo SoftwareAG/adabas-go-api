@@ -126,13 +126,25 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 		fieldMap.definition.activeFields[adaType.Name()] = adaType
 	}
 	// Structure need to be copied each time because of tree to nodes of fields
-	if adaType.IsStructure() {
+	switch {
+	case adaType.Type() == FieldTypeRedefinition:
+		Central.Log.Debugf("Check redefintion %s", adaType.Name())
+		if ok {
+			redType := adaType.(*RedefinitionType)
+			adaType.RemoveFlag(FlagOptionToBeRemoved)
+			for _, s := range redType.SubTypes {
+				Central.Log.Debugf("Sub redefintion %s", s.Name())
+				delete(fieldMap.set, s.Name())
+			}
+			fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, redType)
+		}
+	case adaType.IsStructure():
 		if adaType.Type() == FieldTypeMultiplefield && !ok && fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved) {
 			Central.Log.Debugf("Skip removing MU field %s", adaType.Name())
 			return nil
 		}
 		removeStructure(adaType, fieldMap, fq, ok, parentType.Name() != "" && fieldMap.lastStructure.Name() == parentType.Name())
-	} else {
+	default:
 		Central.Log.Debugf("In map=%v Level=%d < %d", ok, fieldMap.lastStructure.Level(),
 			adaType.Level())
 		fieldMap.evaluateTopLevelStructure(adaType.Level())
@@ -269,6 +281,7 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	def.DumpTypes(true, false, "remove restrict restrict")
 
 	if len(fieldMap.set) > 0 {
+		Central.Log.Debugf("Field map ... %v", fieldMap.set)
 		for f := range fieldMap.set {
 			err = NewGenericError(50, f)
 			if Central.IsDebugLevel() {

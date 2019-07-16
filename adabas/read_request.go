@@ -659,7 +659,7 @@ func traverseFieldMap(adaType adatypes.IAdaType, parentType adatypes.IAdaType, l
 	s := adaType.Name()
 	if index, ok := ev.fields[s]; ok {
 		if _, okq := ev.queryFields[s]; !okq {
-			if adaType.IsStructure() {
+			if adaType.IsStructure() && adaType.Type() != adatypes.FieldTypeRedefinition {
 				st := adaType.(*adatypes.StructureType)
 				current := index
 				initFieldSubTypes(st, ev.queryFields, &current)
@@ -685,17 +685,19 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	adatypes.Central.Log.Debugf("Query fields to %s", fieldq)
 	err = request.Open()
 	if err != nil {
+		adatypes.Central.Log.Debugf("Query fields open error: %v", err)
 		return
 	}
 
 	err = request.loadDefinition()
 	if err != nil {
+		adatypes.Central.Log.Debugf("Query fields definition error: %v", err)
 		return
 	}
 	if !(request.adabasMap != nil && fieldq == "*") {
 		err = request.definition.ShouldRestrictToFields(fieldq)
 		if err != nil {
-			adatypes.Central.Log.Debugf("Restrict error: %v", err)
+			adatypes.Central.Log.Debugf("Query fields restrict error: %v", err)
 			return err
 		}
 	}
@@ -719,6 +721,7 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 		}
 	}
 
+	adatypes.Central.Log.Debugf("Query fields ready %v", err)
 	return
 }
 

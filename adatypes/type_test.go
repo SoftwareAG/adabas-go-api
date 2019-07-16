@@ -120,3 +120,18 @@ func TestTypeFlagsSetClear(t *testing.T) {
 	assert.False(t, ty.HasFlagSet(FlagOptionMU))
 
 }
+
+func TestRedefinitionType(t *testing.T) {
+	err := initLogWithFile("type.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
+	adaType := NewType(FieldTypeString, "AB", 10)
+	redType := NewRedefinitionType(adaType)
+	assert.Equal(t, uint32(10), redType.Length())
+	assert.Equal(t, "A", adaType.fieldType.FormatCharacter())
+	assert.Equal(t, "A", redType.MainType.Type().FormatCharacter())
+	assert.Equal(t, uint32(10), redType.MainType.Length())
+
+}

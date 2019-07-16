@@ -100,7 +100,7 @@ func (request *commonRequest) commonOpen() (err error) {
 		if dbid != 0 {
 			request.adabas.SetDbid(dbid)
 		}
-		adatypes.Central.Log.Debugf("Got fnr=%d/%d from map %s", request.repository.Fnr, request.adabasMap.Repository.Fnr, request.adabasMap.Name)
+		adatypes.Central.Log.Debugf("Load definition on fnr=%d/%d for map %s", request.repository.Fnr, request.adabasMap.Repository.Fnr, request.adabasMap.Name)
 		err = request.loadDefinition()
 		if err != nil {
 			return
@@ -112,6 +112,7 @@ func (request *commonRequest) commonOpen() (err error) {
 		}
 		err = request.adabasMap.adaptFieldType(request.definition)
 		if err != nil {
+			adatypes.Central.Log.Debugf("Adapt fields error request definition %v", err)
 			return
 		}
 	} else {

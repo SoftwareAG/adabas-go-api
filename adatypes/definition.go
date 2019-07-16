@@ -429,7 +429,7 @@ func createValue(adaType IAdaType, parentType IAdaType, level int, x interface{}
 		return nil
 	}
 	Central.Log.Debugf("Create value for level=%d %s -> %d", level, adaType.Name(), adaType.Level())
-	if adaType.IsStructure() {
+	if adaType.IsStructure() && adaType.Type() != FieldTypeRedefinition {
 		if adaType.Type() != FieldTypePeriodGroup && adaType.HasFlagSet(FlagOptionPE) {
 			return nil
 		}

@@ -199,7 +199,7 @@ func parseSystransFileForFields(file *os.File) (maps []*Map, err error) {
 				// Only parse DDM views (V)
 				if line[76] == 'V' {
 					curEntry = &entry{libName: line[36:44], ddmName: line[44 : 44+32], rootField: &field{}, stack: adatypes.NewStack(),
-						adabasMap: &Map{Name: line[44 : 44+32]}}
+						adabasMap: NewAdabasMap(line[44 : 44+32])}
 					shortNames = make(map[string]bool)
 					ddmEntries = append(ddmEntries, curEntry)
 					// fmt.Printf("Current entry: %#v\n", *curEntry)

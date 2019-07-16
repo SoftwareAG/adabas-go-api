@@ -89,6 +89,8 @@ const (
 	FieldTypeStructure
 	// FieldTypeGroup field type group
 	FieldTypeGroup
+	// FieldTypeRedefinition field type group
+	FieldTypeRedefinition
 	// FieldTypePackedArray field type packed array
 	FieldTypePackedArray
 	// FieldTypePhonetic field type of phonetic descriptor
@@ -139,6 +141,49 @@ func (fieldType FieldType) FormatCharacter() string {
 	default:
 	}
 	return " "
+}
+
+// EvaluateFieldType evaluate field type of format string
+func EvaluateFieldType(fieldType rune, length int32) FieldType {
+	switch fieldType {
+	case 'A':
+		if length == 1 {
+			return FieldTypeByte
+		}
+		return FieldTypeString
+	case 'P':
+		return FieldTypePacked
+	case 'U':
+		return FieldTypeUnpacked
+	case 'G':
+		return FieldTypeFloat
+	case 'B':
+		switch length {
+		case 1:
+			return FieldTypeUByte
+		case 2:
+			return FieldTypeUInt2
+		case 4:
+			return FieldTypeUInt4
+		case 8:
+			return FieldTypeUInt8
+		}
+		return FieldTypeByteArray
+	case 'F':
+		switch length {
+		case 1:
+			return FieldTypeByte
+		case 2:
+			return FieldTypeInt2
+		case 4:
+			return FieldTypeInt4
+		case 8:
+			return FieldTypeInt8
+		}
+		return FieldTypeByteArray
+	default:
+	}
+	return FieldTypeUndefined
 }
 
 // CommonType common data type structure defined for all types
@@ -363,4 +408,19 @@ func (commonType *CommonType) AddFlag(flagOption FlagOption) {
 // RemoveFlag add the flag to the type flag set
 func (commonType *CommonType) RemoveFlag(flagOption FlagOption) {
 	commonType.flags &= ^flagOption.Bit()
+}
+
+func (commonType *CommonType) rangeString() string {
+	pe := commonType.peRange.FormatBuffer()
+	r := ""
+	if pe != "" {
+		pe = " PE=" + pe
+		r = pe
+	}
+	mu := commonType.muRange.FormatBuffer()
+	if mu != "" {
+		mu = " MU=" + mu
+		r = r + mu
+	}
+	return r
 }

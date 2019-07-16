@@ -101,19 +101,18 @@ func traverseDumpRecord(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Tr
 		brackets = fmt.Sprintf("[%02d]", adaValue.MultipleIndex())
 	default:
 	}
-
-	if adaValue.Type().IsStructure() {
+	switch {
+	case adaValue.Type().Type() == adatypes.FieldTypeRedefinition:
+		buffer.WriteString(fmt.Sprintf("%s %s%s \n", y, adaValue.Type().Name(), brackets))
+	case adaValue.Type().IsStructure():
 		adatypes.Central.Log.Debugf("Use structure dump")
 		structureValue := adaValue.(*adatypes.StructureValue)
 		buffer.WriteString(fmt.Sprintf("%s %s%s = [ %d ]\n", y, adaValue.Type().Name(), brackets, structureValue.NrElements()))
-	} else {
+	default:
 		adatypes.Central.Log.Debugf("Use string dump")
 		buffer.WriteString(fmt.Sprintf("%s %s%s = > %s <\n", y, adaValue.Type().Name(), brackets, adaValue.String()))
 	}
-	// } else {
-	// 	buffer := x.(*bytes.Buffer)
-	// 	buffer.WriteString(fmt.Sprintln(y, adaValue.Type().Name(), "= >", adaValue.String(), "<"))
-	// }
+
 	return adatypes.Continue, nil
 }
 

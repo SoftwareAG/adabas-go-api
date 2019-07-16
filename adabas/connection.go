@@ -137,7 +137,7 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 		}
 	}
 
-	adatypes.Central.Log.Debugf("Ready created connection handle %#v", connection)
+	adatypes.Central.Log.Debugf("Ready created connection handle %s", connection.String())
 	return
 }
 

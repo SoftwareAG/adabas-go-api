@@ -147,8 +147,8 @@ func formatBufferTraverserLeave(adaValue IAdaValue, x interface{}) (TraverseResu
 }
 
 func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
-	Central.Log.Debugf("Format Buffer Read traverser: %s-%s level=%d/%d", adaType.Name(), adaType.ShortName(),
-		adaType.Level(), level)
+	Central.Log.Debugf("Format Buffer Read traverser: %s-%s level=%d/%d -> %T", adaType.Name(), adaType.ShortName(),
+		adaType.Level(), level, adaType)
 	if adaType.HasFlagSet(FlagOptionReference) {
 		return nil
 	}
@@ -206,6 +206,13 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			adabasRequest.RecordBufferLength += adaType.Length()
 		}
 	case FieldTypePhonetic, FieldTypeCollation, FieldTypeReferential:
+	case FieldTypeRedefinition:
+		if buffer.Len() > 0 {
+			buffer.WriteString(",")
+		}
+		genType := adaType.(*RedefinitionType).MainType
+		buffer.WriteString(fmt.Sprintf("%s,%d,%s", genType.ShortName(),
+			genType.Length(), genType.Type().FormatCharacter()))
 	default:
 		if !adaType.IsStructure() {
 			if !adaType.HasFlagSet(FlagOptionMUGhost) && (!adaType.HasFlagSet(FlagOptionPE) ||
@@ -214,25 +221,30 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 					buffer.WriteString(",")
 				}
 				fieldIndex := ""
+				genType := adaType
+				if adaType.Type() == FieldTypeRedefinition {
+					genType = adaType.(*RedefinitionType).MainType
+				}
 				if adaType.Type() == FieldTypeLBString {
 					buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(1,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
 						PartialLobSize))
 					adabasRequest.RecordBufferLength += (4 + PartialLobSize)
 				} else {
-					if adaType.HasFlagSet(FlagOptionPE) {
-						t := adaType.(*AdaType)
+					if genType.HasFlagSet(FlagOptionPE) {
+						t := genType.(*AdaType)
 						// fieldIndex = "1-N"
 						fieldIndex = t.peRange.FormatBuffer()
 						adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
 					} else {
-						if adaType.Length() == uint32(0) {
+						if genType.Length() == uint32(0) {
 							adabasRequest.RecordBufferLength += 512
 						} else {
 							adabasRequest.RecordBufferLength += adaType.Length()
 						}
 					}
-					buffer.WriteString(fmt.Sprintf("%s%s,%d,%s", adaType.ShortName(), fieldIndex,
-						adaType.Length(), adaType.Type().FormatCharacter()))
+					Central.Log.Debugf("FB generate %T %s -> %s", adaType, genType.ShortName(), genType.Type().FormatCharacter())
+					buffer.WriteString(fmt.Sprintf("%s%s,%d,%s", genType.ShortName(), fieldIndex,
+						genType.Length(), genType.Type().FormatCharacter()))
 				}
 			}
 		}
