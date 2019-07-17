@@ -20,16 +20,69 @@ package adabas
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
 )
 
+func importMaps(ada *Adabas, mr *Repository, fileName string) error {
+	p := os.Getenv("TESTFILES")
+	if p == "" {
+		p = "."
+	}
+	name := p + string(os.PathSeparator) + fileName
+	fmt.Println("Loading ....", fileName)
+	file, err := os.Open(name)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	maps, perr := ParseJSONFileForFields(file)
+	if perr != nil {
+		fmt.Println("Error parsing file", perr)
+		return perr
+	}
+	fmt.Println("Number of maps", len(maps))
+	for _, m := range maps {
+		fmt.Println("MAP", m.Name)
+		fmt.Printf("  %s %d\n", m.Data.URL.String(), m.Data.Fnr)
+		for _, f := range m.Fields {
+			fmt.Printf("   ln=%s sn=%s len=%d format=%s content=%s\n", f.LongName, f.ShortName, f.Length, f.FormatType, f.ContentType)
+		}
+		m.Repository = &mr.DatabaseURL
+		err = m.Store()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func checkMapAvailable(mapName, fileName string) error {
+	adabas, _ := NewAdabas(23)
+	defer adabas.Close()
+	mr := NewMapRepository(adabas, 250)
+	_, err := mr.SearchMap(adabas, mapName)
+	if err != nil {
+		return importMaps(adabas, mr, fileName)
+	}
+	fmt.Println("Map loaded: ", mapName)
+	return nil
+}
+
 func TestReadPartRedefinition(t *testing.T) {
 	initTestLogWithFile(t, "redefinition.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	merr := checkMapAvailable("MapperRedefTest", "Redefinition.json")
+	if !assert.NoError(t, merr) {
+		return
+	}
+
 	connection, err := NewConnection("ada;map;config=[" + adabasModDBIDs + ",250]")
 	if !assert.NoError(t, err) {
 		return
