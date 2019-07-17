@@ -21,6 +21,7 @@ package adabas
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -78,7 +79,10 @@ func loadTestData() (err error) {
 	ada, _ := NewAdabas(23)
 	defer ada.Close()
 	repository := NewMapRepository(ada, 250)
-	storeRequest, _ := NewStoreRequest("MapperRedefTest", ada, repository)
+	storeRequest, rerr := NewStoreRequest("MapperRedefTest", ada, repository)
+	if rerr != nil {
+		return rerr
+	}
 	defer storeRequest.Close()
 	err = storeRequest.StoreFields("*")
 	if err != nil {
@@ -101,6 +105,9 @@ func loadTestData() (err error) {
 		serr = storeRequest.Store(storeRecord)
 		if serr != nil {
 			fmt.Println("Store request", serr)
+			if strings.HasPrefix(serr.Error(), "ADAGE62000: Unique descriptor already present") {
+				return nil
+			}
 			return serr
 			//panic("Store request: " + serr.Error())
 		}
@@ -113,14 +120,24 @@ func loadTestData() (err error) {
 	return nil
 }
 
+func prepareRedefinitionTest() error {
+	merr := checkMapAvailable("MapperRedefTest", "Redefinition.json")
+	if merr != nil {
+		return merr
+	}
+	merr = loadTestData()
+	if merr != nil {
+		return merr
+	}
+	return nil
+}
+
 func TestReadPartRedefinition(t *testing.T) {
 	initTestLogWithFile(t, "redefinition.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
-	loadTestData()
-
-	merr := checkMapAvailable("MapperRedefTest", "Redefinition.json")
+	merr := prepareRedefinitionTest()
 	if !assert.NoError(t, merr) {
 		return
 	}
@@ -162,7 +179,7 @@ func TestRedefinition(t *testing.T) {
 	initTestLogWithFile(t, "redefinition.log")
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
-	merr := checkMapAvailable("MapperRedefTest", "Redefinition.json")
+	merr := prepareRedefinitionTest()
 	if !assert.NoError(t, merr) {
 		return
 	}
