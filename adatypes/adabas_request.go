@@ -122,6 +122,9 @@ func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResu
 		adaValue.Type().Type() == FieldTypeMultiplefield && adaValue.Type().HasFlagSet(FlagOptionPE) {
 		return SkipTree, nil
 	}
+	if adaValue.Type().Type() == FieldTypeRedefinition {
+		return SkipTree, nil
+	}
 	Central.Log.Debugf("After %s current Record length %d -> %s", adaValue.Type().Name(), adabasRequest.RecordBufferLength,
 		adabasRequest.FormatBuffer.String())
 	return Continue, nil

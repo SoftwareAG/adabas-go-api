@@ -136,6 +136,7 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 	}
 	if option.StoreCall {
 		Central.Log.Debugf("Common store call for %s len=%d", adavalue.Type().Name(), adavalue.Type().Length())
+		// debug.PrintStack()
 		if buffer.Len() > 0 {
 			buffer.WriteString(",")
 		}

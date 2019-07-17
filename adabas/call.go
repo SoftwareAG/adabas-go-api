@@ -22,7 +22,6 @@
 package adabas
 
 import (
-	"fmt"
 	"os"
 	"os/user"
 	"sync/atomic"
@@ -256,9 +255,9 @@ func (adabas *Adabas) CallAdabas() (err error) {
 		adatypes.LogMultiLineString(adabas.Acbx.String())
 		if adabas.Acbx.Acbxrsp != 0 {
 			if adabas.Acbx.Acbxrsp == 60 {
-				fmt.Println(adabas.Acbx.String())
+				adatypes.Central.Log.Debugf("%s", adabas.Acbx.String())
 				for index := range adabas.AdabasBuffers {
-					fmt.Println(adabas.AdabasBuffers[index].String())
+					adatypes.Central.Log.Debugf("%s", adabas.AdabasBuffers[index].String())
 				}
 			}
 		}

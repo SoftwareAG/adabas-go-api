@@ -1106,8 +1106,8 @@ func (adabas *Adabas) WriteBuffer(buffer *bytes.Buffer, order binary.ByteOrder, 
 
 		if abd.abd.Abdver[0] != 'G' {
 			adatypes.Central.Log.Debugf("ABD error %p\n", abd)
-			fmt.Println("ABD content error", index)
-			os.Exit(100)
+			panic(fmt.Sprintf("ABD content error: %d", index))
+			//os.Exit(100)
 		}
 		err = binary.Write(&tempBuffer, Endian(), abd.abd)
 		if err != nil {
@@ -1117,6 +1117,7 @@ func (adabas *Adabas) WriteBuffer(buffer *bytes.Buffer, order binary.ByteOrder, 
 		b := tempBuffer.Bytes()
 		if b[2] != 'G' {
 			fmt.Println("ABD buffer error")
+			panic("ABD buffer error")
 		}
 		buffer.Write(b)
 		adatypes.Central.Log.Debugf("Add ADABAS ABD: %d to len buffer=%d", index, buffer.Len())

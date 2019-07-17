@@ -79,7 +79,17 @@ func (value *RedefinitionValue) Bytes() []byte {
 
 // StoreBuffer store buffer format generator
 func (value *RedefinitionValue) StoreBuffer(helper *BufferHelper) error {
-	value.mainValue.StoreBuffer(helper)
+	Central.Log.Debugf("Store buffer redefinition")
+	subHelper := NewDynamicHelper(helper.order)
+	for _, s := range value.subValues {
+		err := s.StoreBuffer(subHelper)
+		if err != nil {
+			Central.Log.Debugf("Error store buffer redefinition values: %s", s.Type().Name())
+			return err
+		}
+	}
+	helper.putBytes(subHelper.Buffer())
+	//value.mainValue.StoreBuffer(helper)
 	return nil
 }
 

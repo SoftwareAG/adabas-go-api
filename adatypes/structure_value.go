@@ -668,6 +668,7 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 				}
 				buffer.WriteString(value.Type().ShortName() + "C,4,B")
 				if !value.Type().HasFlagSet(FlagOptionMU) {
+					Central.Log.Debugf("Add Format buffer field")
 					r := structureType.peRange.FormatBuffer()
 					buffer.WriteString("," + value.Type().ShortName() + r)
 				}

@@ -45,8 +45,9 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 				if err != nil {
 					return nil, err
 				}
+				dataRepository := &Repository{DatabaseURL: *adaMap.Data}
 				request := &StoreRequest{commonRequest: commonRequest{MapName: url,
-					adabas: ada, adabasMap: adaMap, repository: repo}}
+					adabas: ada, adabasMap: adaMap, repository: dataRepository}}
 				return request, nil
 			default:
 				fnr, err := evaluateFnr(param[1])

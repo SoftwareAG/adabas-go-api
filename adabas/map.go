@@ -401,7 +401,7 @@ func adaptRedefintionFields(redType *adatypes.RedefinitionType, fields []*MapFie
 		fieldType := adatypes.EvaluateFieldType([]rune(f.FormatType)[0], f.Length)
 		subType := adatypes.NewType(fieldType, f.ShortName, uint32(f.Length))
 		subType.SetName(f.LongName)
-		fmt.Println(f.LongName, f.ShortName, f.FormatType, f.Length, subType.Length())
+		adatypes.Central.Log.Debugf("%s:%s %s %d %d", f.LongName, f.ShortName, f.FormatType, f.Length, subType.Length())
 		redType.AddSubType(subType)
 	}
 }

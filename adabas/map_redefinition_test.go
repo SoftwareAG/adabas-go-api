@@ -73,10 +73,52 @@ func checkMapAvailable(mapName, fileName string) error {
 	return nil
 }
 
+func loadTestData() (err error) {
+
+	ada, _ := NewAdabas(23)
+	defer ada.Close()
+	repository := NewMapRepository(ada, 250)
+	storeRequest, _ := NewStoreRequest("MapperRedefTest", ada, repository)
+	defer storeRequest.Close()
+	err = storeRequest.StoreFields("*")
+	if err != nil {
+		fmt.Println("Store Fields", err)
+		//return err
+		panic("Store fields " + err.Error())
+	}
+
+	for i := 10; i < 200; i += 10 {
+		storeRecord, serr := storeRequest.CreateRecord()
+		if serr != nil {
+			fmt.Println("Create record", serr)
+			return serr
+		}
+		storeRecord.SetValue("Personel-Id", fmt.Sprintf("REDEF%d", i/10))
+		storeRecord.SetValue("REFFIELD1", 124+i)
+		storeRecord.SetValue("REFFIELD2", 12+i)
+		storeRecord.SetValue("REFFIELD3", i)
+		storeRecord.SetValue("LONGPART", "ABCDEFGHIJ")
+		serr = storeRequest.Store(storeRecord)
+		if serr != nil {
+			fmt.Println("Store request", serr)
+			return serr
+			//panic("Store request: " + serr.Error())
+		}
+		serr = storeRequest.EndTransaction()
+		if serr != nil {
+			fmt.Println("End transaction", serr)
+			return serr
+		}
+	}
+	return nil
+}
+
 func TestReadPartRedefinition(t *testing.T) {
 	initTestLogWithFile(t, "redefinition.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	loadTestData()
 
 	merr := checkMapAvailable("MapperRedefTest", "Redefinition.json")
 	if !assert.NoError(t, merr) {
@@ -101,8 +143,6 @@ func TestReadPartRedefinition(t *testing.T) {
 		return
 	}
 	request.Limit = 4
-	request.definition.DumpTypes(false, false)
-	request.definition.DumpTypes(false, true)
 	result, qerr := request.ReadLogicalWith("Personel-Id=[REDEF0:REDEFA]")
 	if !assert.NoError(t, qerr) {
 		fmt.Println("Error read sequence", qerr)
@@ -120,8 +160,13 @@ func TestReadPartRedefinition(t *testing.T) {
 
 func TestRedefinition(t *testing.T) {
 	initTestLogWithFile(t, "redefinition.log")
-
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	merr := checkMapAvailable("MapperRedefTest", "Redefinition.json")
+	if !assert.NoError(t, merr) {
+		return
+	}
+
 	connection, err := NewConnection("ada;map;config=[" + adabasModDBIDs + ",250]")
 	if !assert.NoError(t, err) {
 		return
@@ -140,8 +185,7 @@ func TestRedefinition(t *testing.T) {
 		return
 	}
 	request.Limit = 4
-	request.definition.DumpTypes(false, false)
-	request.definition.DumpTypes(false, true)
+
 	result, qerr := request.ReadLogicalWith("Personel-Id=[REDEF0:REDEFA]")
 	if !assert.NoError(t, qerr) {
 		fmt.Println("Error read sequence", qerr)
