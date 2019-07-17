@@ -346,8 +346,8 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 		}
 		return nil
 	case "":
-		adaType.SetFormatType([]rune(f.FormatType)[0])
 	default:
+		adaType.SetFormatType([]rune(f.FormatType)[0])
 	}
 	adaType.SetFormatLength(uint32(f.Length))
 	if !adaType.IsStructure() {

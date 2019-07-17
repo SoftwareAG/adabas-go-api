@@ -233,7 +233,7 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 		err = adatypes.NewGenericError(5)
 		return
 	}
-	adatypes.Central.Log.Debugf("Before Prepare Repository %#v\n", *repository)
+	adatypes.Central.Log.Debugf("Before Prepare Repository %#v\n", repository)
 	url := repository.DatabaseURL
 	adabasMap = NewAdabasMap(&repository.DatabaseURL, &url)
 	request, _ := NewReadRequest(commonRequest)
@@ -254,7 +254,7 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 	adabasMap.createFieldMap()
 	repository.CachedMaps[name] = adabasMap
 	var dbid Dbid
-	adatypes.Central.Log.Debugf("After Repository %#v\n", *repository)
+	adatypes.Central.Log.Debugf("After Repository %#v\n", repository)
 	if adabasMap.Repository.URL.Dbid == 0 {
 		err = adatypes.NewGenericError(18)
 		return
@@ -274,7 +274,7 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 // readAdabasMap read Adabas map defined by repository and name
 func (repository *Repository) readAdabasMap(adabas *Adabas, name string) (adabasMap *Map, err error) {
 	request, _ := NewReadRequest(adabas, repository.Fnr)
-	adatypes.Central.Log.Debugf("Read map %s in repository %#v\n", name, *repository)
+	adatypes.Central.Log.Debugf("Read map %s in repository %#v\n", name, repository)
 	adabasMap, err = repository.readAdabasMapWithRequest(&request.commonRequest, name)
 	return
 }
