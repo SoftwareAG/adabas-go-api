@@ -21,6 +21,7 @@ package adabas
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -325,6 +326,10 @@ func TestConnectionPEMUMfMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
 	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
@@ -366,6 +371,10 @@ func TestConnectionPEShiftMfMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
 	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
@@ -403,6 +412,10 @@ func TestConnectionPEShiftMfMap(t *testing.T) {
 func TestConnectionAllMfMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
 	}
 	initTestLogWithFile(t, "connection.log")
 

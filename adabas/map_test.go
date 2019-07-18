@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"runtime"
 	"strconv"
 	"testing"
 
@@ -141,6 +142,10 @@ func TestMapCreate(t *testing.T) {
 }
 
 func TestMapFieldsMainframe(t *testing.T) {
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
 	initTestLogWithFile(t, "map.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())

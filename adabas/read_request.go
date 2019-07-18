@@ -194,7 +194,8 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, e
 	adabasRequest.Definition = request.definition
 	adabasRequest.RecordBufferShift = request.RecordBufferShift
 	adabasRequest.HoldRecords = request.HoldRecords
-	if request.Limit < uint64(adabasRequest.Multifetch) {
+	adabasRequest.Multifetch = request.Multifetch
+	if request.Limit != 0 && request.Limit < uint64(request.Multifetch) {
 		adabasRequest.Multifetch = uint32(request.Limit)
 	}
 
@@ -264,15 +265,9 @@ func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes
 		adabasRequest.Parser = resultParser
 	}
 	adabasRequest.Limit = request.Limit
-	if request.Multifetch > 1 {
-		if request.Limit < uint64(request.Multifetch) {
-			adabasRequest.Multifetch = uint32(request.Limit)
-		} else {
-			adabasRequest.Multifetch = request.Multifetch
-		}
-
-	} else {
-		adabasRequest.Multifetch = 1
+	adabasRequest.Multifetch = request.Multifetch
+	if request.Limit != 0 && request.Limit < uint64(request.Multifetch) {
+		adabasRequest.Multifetch = uint32(request.Limit)
 	}
 	adabasRequest.Parameter = request.adabasMap
 

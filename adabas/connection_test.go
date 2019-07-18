@@ -1221,13 +1221,14 @@ func TestConnectionADATCPReadRemote(t *testing.T) {
 		return
 	}
 	defer connection.Close()
-	fmt.Println(connection)
+	fmt.Println("Connection:", connection)
 	openErr := connection.Open()
 	assert.NoError(t, openErr)
 	request, err := connection.CreateFileReadRequest(11)
 	if !assert.NoError(t, err) {
 		return
 	}
+	fmt.Println("Multifetch entries:", request.Multifetch)
 	request.Limit = 0
 	var result *Response
 	result, err = request.ReadPhysicalSequence()
