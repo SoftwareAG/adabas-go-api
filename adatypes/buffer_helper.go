@@ -134,7 +134,6 @@ func (helper *BufferHelper) ReceiveBytesOcc(occ int) (res []byte, err error) {
 			return
 		}
 		length = uint32(occ)
-		break
 	default:
 		err = NewGenericError(107)
 		return

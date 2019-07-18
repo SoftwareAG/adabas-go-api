@@ -88,7 +88,8 @@ func prepareStoreAndHold(t *testing.T, c chan bool) {
 	c <- true
 	time.Sleep(10 * time.Second)
 	fmt.Println("End transaction")
-	connection.EndTransaction()
+	err = connection.EndTransaction()
+	assert.NoError(t, err)
 	fmt.Println("Notify main function")
 	c <- true
 

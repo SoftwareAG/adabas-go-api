@@ -65,10 +65,10 @@ type Request struct {
 	Parameter          interface{}
 }
 
-func (adabasRequest *Request) reset() {
-	adabasRequest.SearchTree = nil
-	adabasRequest.Definition = nil
-}
+// func (adabasRequest *Request) reset() {
+// 	adabasRequest.SearchTree = nil
+// 	adabasRequest.Definition = nil
+// }
 
 type valueSearch struct {
 	name     string
@@ -200,7 +200,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
 		}
 	case FieldTypeSuperDesc, FieldTypeHyperDesc:
-		if !(adaType.IsOption(FieldOptionPE) || adaType.IsOption(FieldOptionPE)) {
+		if !adaType.IsOption(FieldOptionPE) {
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")
 			}

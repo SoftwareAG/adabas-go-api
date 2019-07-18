@@ -33,15 +33,12 @@ func lognil() *nilLogger {
 }
 
 func (*nilLogger) Debugf(format string, args ...interface{}) {
-	return
 }
 
 func (*nilLogger) Infof(format string, args ...interface{}) {
-	return
 }
 
 func (*nilLogger) Errorf(format string, args ...interface{}) {
-	return
 }
 
 func (*nilLogger) Fatal(args ...interface{}) {

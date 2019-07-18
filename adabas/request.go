@@ -131,10 +131,7 @@ func (request *commonRequest) commonOpen() (err error) {
 
 // IsOpen provide True if the database connection is opened
 func (request *commonRequest) IsOpen() bool {
-	if request.adabas.status.open {
-		return true
-	}
-	return false
+	return request.adabas.status.open
 }
 
 func (request *commonRequest) TraverseFields(t adatypes.TraverserMethods, p interface{}) error {

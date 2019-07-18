@@ -126,8 +126,8 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 	}
 	Central.Log.Debugf("================== Parse Buffer for IAdaTypes of %s -> value avail.=%v index=%d need second=%v",
 		parent.Name(), (parentStructure != nil), peIndex, option.NeedSecondCall)
-	var types []IAdaType
-	types = parent.SubTypes
+
+	types := parent.SubTypes
 	var conditionMatrix []byte
 
 	// First get reference field index if index is needed for conditional parsing
@@ -182,8 +182,8 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 		if err != nil {
 			return
 		}
-		var at IAdaType
-		at = parent
+		//var at IAdaType
+		at := parent
 		// TODO Check why parent not used
 		types[i].SetParent(at)
 

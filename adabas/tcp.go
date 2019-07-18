@@ -80,7 +80,7 @@ const (
 	adatcpLittleEndian = byte(2)
 
 	adatcpASCII8 = byte(1)
-	adatcpEBCDIC = byte(2)
+	//adatcpEBCDIC = byte(2)
 
 	adatcpFloatIEEE = byte(1)
 )
@@ -127,7 +127,8 @@ const adatcpDataHeaderVersion = "0001"
 
 const (
 	adabasRequest = uint32(1)
-	adabasReply   = uint32(2)
+
+//	adabasReply   = uint32(2)
 )
 
 // AdaTCPDataHeader Adabas TCP header
@@ -147,10 +148,11 @@ func adatcpTCPClientHTON8(l uint64) uint64 {
 	return uint64(
 		((uint64(l) >> 56) & uint64(0x00000000000000ff)) | ((uint64(l) >> 40) & uint64(0x000000000000ff00)) | ((uint64(l) >> 24) & uint64(0x0000000000ff0000)) | ((uint64(l) >> 8) & uint64(0x00000000ff000000)) | ((uint64(l) << 8) & uint64(0x000000ff00000000)) | ((uint64(l) << 24) & uint64(0x0000ff0000000000)) | ((uint64(l) << 40) & uint64(0x00ff000000000000)) | ((uint64(l) << 56) & uint64(0xff00000000000000)))
 }
-func adatcpTCPClientHTON4(l uint32) uint32 {
-	return uint32(
-		((uint32(l) >> 24) & uint32(0x000000ff)) | ((uint32(l) >> 8) & uint32(0x0000ff00)) | ((uint32(l) << 8) & uint32(0x00ff0000)) | ((uint32(l) << 24) & uint32(0xff000000)))
-}
+
+// func adatcpTCPClientHTON4(l uint32) uint32 {
+// 	return uint32(
+// 		((uint32(l) >> 24) & uint32(0x000000ff)) | ((uint32(l) >> 8) & uint32(0x0000ff00)) | ((uint32(l) << 8) & uint32(0x00ff0000)) | ((uint32(l) << 24) & uint32(0xff000000)))
+// }
 
 // NewAdatcpHeader new Adabas TCP header
 func NewAdatcpHeader(bufferType BufferType) AdaTCPHeader {
@@ -170,10 +172,7 @@ func newAdatcpDataHeader(dataType uint32) AdaTCPDataHeader {
 func bigEndian() (ret bool) {
 	i := 0x1
 	bs := (*[4]byte)(unsafe.Pointer(&i))
-	if bs[0] == 0 {
-		return true
-	}
-	return false
+	return bs[0] == 0
 }
 
 // Endian current byte order of the client system

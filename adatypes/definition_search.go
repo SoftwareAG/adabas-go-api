@@ -100,7 +100,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 			}
 		}
 		strv := v.(*StructureValue)
-		if index == nil || len(index) == 0 {
+		if len(index) == 0 {
 			err = NewGenericError(121)
 			return
 		}
@@ -205,16 +205,16 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 	return
 }
 
-func traverserFindType(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
-	search := x.(*search)
-	Central.Log.Debugf("Check search %s:%s search=%s", adaType.Name(), adaType.ShortName(), search.name)
-	if adaType.Name() == search.name {
-		search.adaType = adaType
-		Central.Log.Debugf("Found type ...return error find")
-		return NewGenericError(126, search.name)
-	}
-	return nil
-}
+// func traverserFindType(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+// 	search := x.(*search)
+// 	Central.Log.Debugf("Check search %s:%s search=%s", adaType.Name(), adaType.ShortName(), search.name)
+// 	if adaType.Name() == search.name {
+// 		search.adaType = adaType
+// 		Central.Log.Debugf("Found type ...return error find")
+// 		return NewGenericError(126, search.name)
+// 	}
+// 	return nil
+// }
 
 // SearchType search for a type definition in the tree
 func (def *Definition) SearchType(fieldName string) (adaType IAdaType, err error) {

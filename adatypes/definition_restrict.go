@@ -217,7 +217,7 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 	fieldMap.set = make(map[string]*fieldQuery)
 	fieldMap.strCount = make(map[string]*StructureType)
 	fieldMap.stackStructure = NewStack()
-	if field != nil {
+	if len(field) != 0 {
 		for _, f := range field {
 			fl := strings.Trim(f, " ")
 			if fl != "" && !strings.HasPrefix(fl, "#ISN") {

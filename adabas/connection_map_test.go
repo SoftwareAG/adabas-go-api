@@ -510,6 +510,11 @@ func ExampleConnection_readWithMap() {
 	var result *Response
 	fmt.Println("Read logigcal data:")
 	result, err = request.ReadLogicalWith("PERSONNEL-ID=[11100314:11100317]")
+	if err != nil {
+		fmt.Println("Error read logical data", err)
+		return
+	}
+
 	result.DumpValues()
 	// Output:Read logigcal data:
 	// Dump all result values
@@ -563,6 +568,10 @@ func ExampleConnection_readWithMapFormatted() {
 	var result *Response
 	fmt.Println("Read logigcal data:")
 	result, err = request.ReadLogicalWith("PERSONNEL-ID=[11100314:11100317]")
+	if err != nil {
+		fmt.Println("Error reading", err)
+		return
+	}
 	result.DumpValues()
 	// Output:Read logigcal data:
 	// Dump all result values
@@ -841,15 +850,19 @@ func ExampleConnection_mapStore() {
 	defer connection.Close()
 	connection.Open()
 	storeRequest16, rErr := connection.CreateMapStoreRequest(massLoadSystransStore)
-	if err != nil {
+	if rErr != nil {
 		return
 	}
 	storeRequest16.StoreFields("PERSONNEL-ID,NAME")
 	record, err := storeRequest16.CreateRecord()
-	err = record.SetValueWithIndex("PERSONNEL-ID", nil, "26555_0")
-	err = record.SetValueWithIndex("NAME", nil, "WABER")
-	err = record.SetValueWithIndex("FIRST-NAME", nil, "EMIL")
-	err = record.SetValueWithIndex("MIDDLE-I", nil, "MERK")
+	if err != nil {
+		fmt.Println("Error create record", err)
+		return
+	}
+	_ = record.SetValueWithIndex("PERSONNEL-ID", nil, "26555_0")
+	_ = record.SetValueWithIndex("NAME", nil, "WABER")
+	_ = record.SetValueWithIndex("FIRST-NAME", nil, "EMIL")
+	_ = record.SetValueWithIndex("MIDDLE-I", nil, "MERK")
 	err = storeRequest16.Store(record)
 	if err != nil {
 		fmt.Println("Error store record", err)
@@ -867,6 +880,10 @@ func ExampleConnection_mapStore() {
 	}
 
 	record, err = storeRequest19.CreateRecord()
+	if err != nil {
+		fmt.Println("Create record", err)
+		return
+	}
 	err = record.SetValueWithIndex("REG-NUM", nil, "29555_0")
 	if err != nil {
 		fmt.Println("Error", err)
@@ -995,6 +1012,10 @@ func ExampleConnection_readShortMap() {
 	var result *Response
 	fmt.Println("Read logigcal data:")
 	result, err = request.ReadLogicalWith("ID=[11100314:11100317]")
+	if err != nil {
+		fmt.Println("Error read logical", err)
+		return
+	}
 	result.DumpValues()
 	// Output:Read logigcal data:
 	// Dump all result values
@@ -1053,11 +1074,19 @@ func ExampleConnection_readLongMapIsn() {
 	var result *Response
 	fmt.Println("Read logigcal data:")
 	result, err = request.ReadISN(1)
+	if err != nil {
+		fmt.Println("Error search value", err)
+		return
+	}
 	for _, v := range result.Values {
 		f, e := v.SearchValue("creation_time")
+		if e != nil {
+			fmt.Println("Error search value", e)
+			return
+		}
 		f.SetValue(0)
 		f, e = v.SearchValue("Last_Updates[01]")
-		if err != nil || f == nil {
+		if e != nil || f == nil {
 			fmt.Println(e)
 			return
 		}
@@ -1146,11 +1175,19 @@ func ExampleConnection_readLongMapRange() {
 	var result *Response
 	fmt.Println("Read logigcal data:")
 	result, err = request.ReadLogicalWith("personnel-id=[50005800:50005801]")
+	if err != nil {
+		fmt.Println("Read error", err)
+		return
+	}
 	for _, v := range result.Values {
 		f, e := v.SearchValue("creation_time")
+		if e != nil {
+			fmt.Println("Search error", e)
+			return
+		}
 		f.SetValue(0)
 		f, e = v.SearchValue("Last_Updates[01]")
-		if err != nil || f == nil {
+		if e != nil || f == nil {
 			fmt.Println(e)
 			return
 		}

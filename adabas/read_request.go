@@ -65,19 +65,15 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 		return createNewReadRequestCommon(cr)
 	case *Adabas:
 		ada := param[0].(*Adabas)
-		switch param[1].(type) {
+		switch p := param[1].(type) {
 		case string:
-			mapName := param[1].(string)
-			return createNewMapReadRequest(mapName, ada)
+			return createNewMapReadRequest(p, ada)
 		case *Map:
-			m := param[1].(*Map)
-			return createNewMapPointerReadRequest(ada, m)
+			return createNewMapPointerReadRequest(ada, p)
 		case Fnr:
-			file := param[1].(Fnr)
-			return createNewReadRequestAdabas(ada, file), nil
+			return createNewReadRequestAdabas(ada, p), nil
 		case int:
-			file := param[1].(int)
-			return createNewReadRequestAdabas(ada, Fnr(file)), nil
+			return createNewReadRequestAdabas(ada, Fnr(p)), nil
 		}
 	case string:
 		mapName := param[0].(string)
@@ -154,7 +150,7 @@ func createNewMapReadRequest(mapName string, adabas *Adabas) (request *ReadReque
 // createNewMapPointerReadRequest create a new Request instance
 func createNewMapPointerReadRequest(adabas *Adabas, adabasMap *Map) (request *ReadRequest, err error) {
 	if adabasMap == nil {
-		err = adatypes.NewGenericError(22, adabasMap.Name)
+		err = adatypes.NewGenericError(22, "")
 		return
 	}
 	adatypes.Central.Log.Debugf("Read: Adabas new map reference for %s to %d -> %#v", adabasMap.Name,

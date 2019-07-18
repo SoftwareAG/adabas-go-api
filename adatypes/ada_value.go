@@ -82,11 +82,11 @@ type IAdaValue interface {
 }
 
 type adaValue struct {
-	adatype      IAdaType
-	parent       IAdaValue
-	peIndex      uint32
-	muIndex      uint32
-	searchLength uint32
+	adatype IAdaType
+	parent  IAdaValue
+	peIndex uint32
+	muIndex uint32
+	//	searchLength uint32
 }
 
 func (adavalue adaValue) Type() IAdaType {
@@ -96,10 +96,7 @@ func (adavalue adaValue) Type() IAdaType {
 func bigEndian() (ret bool) {
 	i := 0x1
 	bs := (*[4]byte)(unsafe.Pointer(&i))
-	if bs[0] == 0 {
-		return true
-	}
-	return false
+	return bs[0] == 0
 }
 
 func endian() binary.ByteOrder {

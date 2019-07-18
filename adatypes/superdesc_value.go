@@ -71,7 +71,7 @@ func (value *superDescValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 	if option.SecondCall {
 		return 0
 	}
-	if value.adatype.IsOption(FieldOptionPE) || value.adatype.IsOption(FieldOptionPE) {
+	if value.adatype.IsOption(FieldOptionPE) {
 		return 0
 	}
 	Central.Log.Debugf("Write super descriptor FB part of %s", value.adatype.Name())
@@ -104,7 +104,7 @@ func (value *superDescValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 	if option.SecondCall {
 		return
 	}
-	if value.adatype.IsOption(FieldOptionPE) || value.adatype.IsOption(FieldOptionPE) {
+	if value.adatype.IsOption(FieldOptionPE) {
 		return
 	}
 	value.value, err = helper.ReceiveBytes(value.adatype.Length())

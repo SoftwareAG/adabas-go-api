@@ -212,7 +212,7 @@ func TestConnectionSimpleTypes(t *testing.T) {
 	assert.NoError(t, dErr)
 	readRequest.Limit = 0
 	err = readRequest.ReadPhysicalSequenceWithParser(deleteRecords, deleteRequest)
-	assert.NoError(t, dErr)
+	assert.NoError(t, err)
 	deleteRequest.EndTransaction()
 
 	request, rErr2 := connection.CreateFileReadRequest(11)
@@ -311,6 +311,7 @@ func TestConnectionMultipleFields(t *testing.T) {
 	assert.NoError(t, dErr)
 	readRequest.Limit = 0
 	err = readRequest.ReadPhysicalSequenceWithParser(deleteRecords, deleteRequest)
+	assert.NoError(t, err)
 	deleteRequest.EndTransaction()
 
 	request, rErr2 := connection.CreateFileReadRequest(11)
@@ -349,6 +350,7 @@ func TestConnectionStorePeriodFields(t *testing.T) {
 	assert.NoError(t, dErr)
 	readRequest.Limit = 0
 	err = readRequest.ReadPhysicalSequenceWithParser(deleteRecords, deleteRequest)
+	assert.NoError(t, err)
 	fmt.Println("Delete done, call end of transaction")
 	adatypes.Central.Log.Debugf("Delete done, call end of transaction")
 	deleteRequest.EndTransaction()
@@ -855,10 +857,10 @@ func registerTestedValuesAvailable(adaValue adatypes.IAdaValue, x interface{}) (
 			if tv, ok := tvc.tvcMap[vt]; ok {
 				vln := structureValue.Get("MD", currentIndex)
 				assert.Equal(tvc.t, tv.longName, strings.TrimSpace(vln.String()))
-				vln = structureValue.Get("ML", currentIndex)
+				//	vln = structureValue.Get("ML", currentIndex)
 				assert.Equal(tvc.t, tv.index, uint32(currentIndex))
-			} else {
-				// fmt.Println("No Found tv element ", ok)
+				// } else {
+				// 	// fmt.Println("No Found tv element ", ok)
 
 			}
 		}
@@ -1667,10 +1669,11 @@ func TestConnectionSimpleMultipleStore(t *testing.T) {
 	}
 	storeRequest16.StoreFields("AA,AB")
 	record, err := storeRequest16.CreateRecord()
-	err = record.SetValueWithIndex("AA", nil, "16555_0")
-	err = record.SetValueWithIndex("AC", nil, "WABER")
-	err = record.SetValueWithIndex("AD", nil, "EMIL")
-	err = record.SetValueWithIndex("AE", nil, "MERK")
+	assert.NoError(t, err)
+	_ = record.SetValueWithIndex("AA", nil, "16555_0")
+	_ = record.SetValueWithIndex("AC", nil, "WABER")
+	_ = record.SetValueWithIndex("AD", nil, "EMIL")
+	_ = record.SetValueWithIndex("AE", nil, "MERK")
 	err = storeRequest16.Store(record)
 	if !assert.NoError(t, err) {
 		return
@@ -1681,10 +1684,13 @@ func TestConnectionSimpleMultipleStore(t *testing.T) {
 	}
 	storeRequest19.StoreFields("AA,CD")
 	record, err = storeRequest19.CreateRecord()
-	err = record.SetValueWithIndex("AA", nil, "19555_0")
-	err = record.SetValueWithIndex("AC", nil, "WABER")
-	err = record.SetValueWithIndex("AD", nil, "EMIL")
-	err = record.SetValueWithIndex("AE", nil, "MERK")
+	if !assert.NoError(t, err) {
+		return
+	}
+	_ = record.SetValueWithIndex("AA", nil, "19555_0")
+	_ = record.SetValueWithIndex("AC", nil, "WABER")
+	_ = record.SetValueWithIndex("AD", nil, "EMIL")
+	_ = record.SetValueWithIndex("AE", nil, "MERK")
 	err = storeRequest19.Store(record)
 	if !assert.NoError(t, err) {
 		return
@@ -1718,15 +1724,21 @@ func ExampleConnection_store() {
 	defer connection.Close()
 	connection.Open()
 	storeRequest16, rErr := connection.CreateStoreRequest(16)
+	if rErr != nil {
+		return
+	}
+	serr := storeRequest16.StoreFields("AA,AB")
+	if serr != nil {
+		return
+	}
+	record, err := storeRequest16.CreateRecord()
 	if err != nil {
 		return
 	}
-	storeRequest16.StoreFields("AA,AB")
-	record, err := storeRequest16.CreateRecord()
-	err = record.SetValueWithIndex("AA", nil, "16555_0")
-	err = record.SetValueWithIndex("AC", nil, "WABER")
-	err = record.SetValueWithIndex("AD", nil, "EMIL")
-	err = record.SetValueWithIndex("AE", nil, "MERK")
+	_ = record.SetValueWithIndex("AA", nil, "16555_0")
+	_ = record.SetValueWithIndex("AC", nil, "WABER")
+	_ = record.SetValueWithIndex("AD", nil, "EMIL")
+	_ = record.SetValueWithIndex("AE", nil, "MERK")
 	err = storeRequest16.Store(record)
 	if err != nil {
 		return
@@ -1735,12 +1747,18 @@ func ExampleConnection_store() {
 	if rErr != nil {
 		return
 	}
-	storeRequest19.StoreFields("AA,CD")
+	err = storeRequest19.StoreFields("AA,CD")
+	if err != nil {
+		return
+	}
 	record, err = storeRequest19.CreateRecord()
-	err = record.SetValueWithIndex("AA", nil, "19555_0")
-	err = record.SetValueWithIndex("AC", nil, "WABER")
-	err = record.SetValueWithIndex("AD", nil, "EMIL")
-	err = record.SetValueWithIndex("AE", nil, "MERK")
+	if err != nil {
+		return
+	}
+	_ = record.SetValueWithIndex("AA", nil, "19555_0")
+	_ = record.SetValueWithIndex("AC", nil, "WABER")
+	_ = record.SetValueWithIndex("AD", nil, "EMIL")
+	_ = record.SetValueWithIndex("AE", nil, "MERK")
 	err = storeRequest19.Store(record)
 	if err != nil {
 		return
@@ -1751,9 +1769,15 @@ func ExampleConnection_store() {
 		return
 	}
 	fmt.Println("Read file 16 ...")
-	dumpStoredData(adabasModDBIDs, 16, "16555")
+	err = dumpStoredData(adabasModDBIDs, 16, "16555")
+	if err != nil {
+		return
+	}
 	fmt.Println("Read file 19 ...")
-	dumpStoredData(adabasModDBIDs, 19, "19555")
+	err = dumpStoredData(adabasModDBIDs, 19, "19555")
+	if err != nil {
+		return
+	}
 
 	// Output: Read file 16 ...
 	// Dump all result values
@@ -1862,7 +1886,8 @@ func TestConnectionLobADATCP(t *testing.T) {
 	assert.NoError(t, serr)
 	assert.NotNil(t, dc)
 	h := sha1.New()
-	h.Write(dc.Bytes())
+	_, err = h.Write(dc.Bytes())
+	assert.NoError(t, err)
 	fmt.Printf("SHA ALL: %x\n", h.Sum(nil))
 	assert.Equal(t, "a147a6bff1d2dc47e2e63404c3548d939764e6d2", fmt.Sprintf("%x", h.Sum(nil)))
 	ea, eerr := result.Values[0].SearchValue("EC")
@@ -1897,7 +1922,8 @@ func TestConnectionLobCheckAllIPC(t *testing.T) {
 		assert.NoError(t, serr)
 		assert.NotNil(t, dc)
 		h := sha1.New()
-		h.Write(dc.Bytes())
+		_, err = h.Write(dc.Bytes())
+		assert.NoError(t, err)
 		ea, eerr := v.SearchValue("EC")
 		assert.NoError(t, eerr)
 		assert.NotNil(t, ea)
@@ -1932,7 +1958,8 @@ func TestConnectionLobCheckAllADATCP(t *testing.T) {
 		assert.NoError(t, serr)
 		assert.NotNil(t, dc)
 		h := sha1.New()
-		h.Write(dc.Bytes())
+		_, err = h.Write(dc.Bytes())
+		assert.NoError(t, err)
 		ea, eerr := v.SearchValue("EC")
 		assert.NoError(t, eerr)
 		assert.NotNil(t, ea)

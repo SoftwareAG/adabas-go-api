@@ -107,6 +107,9 @@ func loadFile(fileName string, ada *adabas.Adabas) error {
 	}
 	defer f.Close()
 	fi, err := f.Stat()
+	if err != nil {
+		return err
+	}
 	data := make([]byte, fi.Size())
 	var n int
 	n, err = f.Read(data)

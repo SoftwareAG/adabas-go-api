@@ -140,7 +140,7 @@ func TestAdabasOk(t *testing.T) {
 	adabas.Acbx.resetAcbx()
 }
 
-const CDVTReq = uint64(0x98BADCFE)
+//const CDVTReq = uint64(0x98BADCFE)
 
 func TestAdabasOpen(t *testing.T) {
 	if testing.Short() {
@@ -622,10 +622,10 @@ func simpleDefinition() *adatypes.Definition {
 }
 
 func testParser(adabasRequest *adatypes.Request, x interface{}) (err error) {
-	switch x.(type) {
+	switch v := x.(type) {
 	case *uint32:
-		counter := x.(*uint32)
-		(*counter)++
+		//counter := x.(*uint32)
+		(*v)++
 	case []uint32:
 		isns := x.([]adatypes.Isn)
 		for i := range isns {

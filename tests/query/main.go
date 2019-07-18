@@ -294,7 +294,7 @@ func main() {
 		if err != nil {
 			panic("Error evaluate Adabas FDT: " + err.Error())
 		}
-		fmt.Println("Display FDT of database %s file %d", args[0], file)
+		fmt.Printf("Display FDT of database %s file %d\n", args[0], file)
 		fmt.Println(fdt.String())
 	}
 

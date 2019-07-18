@@ -207,10 +207,10 @@ func (Response *Response) MarshalXML(e *xml.Encoder, start xml.StartElement) err
 	return nil
 }
 
-type dataValue struct {
-	Isn   adatypes.Isn `json:"ISN"`
-	Value map[string]string
-}
+// type dataValue struct {
+// 	Isn   adatypes.Isn `json:"ISN"`
+// 	Value map[string]string
+// }
 
 type request struct {
 	Values         []*map[string]interface{} `json:"Records"`
@@ -378,8 +378,8 @@ func (Response *Response) Isn(isn adatypes.Isn) *Record {
 	return nil
 }
 
-type rrecord struct {
-	stack       *adatypes.Stack
-	buffer      bytes.Buffer
-	hasElements bool
-}
+// type rrecord struct {
+// 	stack       *adatypes.Stack
+// 	buffer      bytes.Buffer
+// 	hasElements bool
+// }

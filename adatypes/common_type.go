@@ -410,17 +410,17 @@ func (commonType *CommonType) RemoveFlag(flagOption FlagOption) {
 	commonType.flags &= ^flagOption.Bit()
 }
 
-func (commonType *CommonType) rangeString() string {
-	pe := commonType.peRange.FormatBuffer()
-	r := ""
-	if pe != "" {
-		pe = " PE=" + pe
-		r = pe
-	}
-	mu := commonType.muRange.FormatBuffer()
-	if mu != "" {
-		mu = " MU=" + mu
-		r = r + mu
-	}
-	return r
-}
+// func (commonType *CommonType) rangeString() string {
+// 	pe := commonType.peRange.FormatBuffer()
+// 	r := ""
+// 	if pe != "" {
+// 		pe = " PE=" + pe
+// 		r = pe
+// 	}
+// 	mu := commonType.muRange.FormatBuffer()
+// 	if mu != "" {
+// 		mu = " MU=" + mu
+// 		r = r + mu
+// 	}
+// 	return r
+// }

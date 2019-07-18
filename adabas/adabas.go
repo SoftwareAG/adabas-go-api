@@ -95,15 +95,13 @@ func NewAdabas(p ...interface{}) (ada *Adabas, err error) {
 		return nil, adatypes.NewGenericError(86)
 	}
 	var url *URL
-	switch p[0].(type) {
+	switch u := p[0].(type) {
 	case int:
-		dbid := p[0].(int)
-		url = NewURLWithDbid(Dbid(dbid))
+		url = NewURLWithDbid(Dbid(u))
 	case Dbid:
-		dbid := p[0].(Dbid)
-		url = NewURLWithDbid(dbid)
+		url = NewURLWithDbid(u)
 	case string:
-		url, err = NewURL(p[0].(string))
+		url, err = NewURL(u)
 		if err != nil {
 			return
 		}

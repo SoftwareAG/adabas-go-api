@@ -208,9 +208,9 @@ func (adaType *StructureType) NrFields() int {
 	return len(adaType.SubTypes)
 }
 
-func (adaType *StructureType) parseBuffer(helper *BufferHelper, option *BufferOption) {
-	Central.Log.Debugf("Parse Structure type offset=%d", helper.offset)
-}
+// func (adaType *StructureType) parseBuffer(helper *BufferHelper, option *BufferOption) {
+// 	Central.Log.Debugf("Parse Structure type offset=%d", helper.offset)
+// }
 
 // Traverse Traverse through the definition tree calling a callback method for each node
 func (adaType *StructureType) Traverse(t TraverserMethods, level int, x interface{}) (err error) {

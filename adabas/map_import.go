@@ -191,7 +191,7 @@ func parseSystransFileForFields(file *os.File) (maps []*Map, err error) {
 		// 		while (line != null && !end) {
 		// 			try {
 		lineNumber++
-		var ddmEntries []*entry
+		//		var ddmEntries []*entry
 		phoneticDescriptor := false
 		if len(line) > 4 {
 			if strings.HasPrefix(line, "*C**") {
@@ -201,7 +201,7 @@ func parseSystransFileForFields(file *os.File) (maps []*Map, err error) {
 					curEntry = &entry{libName: line[36:44], ddmName: line[44 : 44+32], rootField: &field{}, stack: adatypes.NewStack(),
 						adabasMap: NewAdabasMap(line[44 : 44+32])}
 					shortNames = make(map[string]bool)
-					ddmEntries = append(ddmEntries, curEntry)
+					//					ddmEntries = append(ddmEntries, curEntry)
 					// fmt.Printf("Current entry: %#v\n", *curEntry)
 					maps = append(maps, curEntry.adabasMap)
 					// fmt.Println("Add map", curEntry.adabasMap.Name)
@@ -268,7 +268,7 @@ func parseSystransFileForFields(file *os.File) (maps []*Map, err error) {
 								/* Parse length */
 								length, cerr :=
 									strconv.Atoi(line[42:44])
-								if err != nil {
+								if cerr != nil {
 									err = cerr
 									return
 								}

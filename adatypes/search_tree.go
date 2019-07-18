@@ -191,37 +191,6 @@ func (tree *SearchTree) evaluateDescriptors(fields map[string]bool) bool {
 		}
 	}
 	return needSearch || (len(tree.uniqueDescriptors) != 1)
-
-	// if tree.node != nil {
-	// 	descriptors := tree.node.orderBy()
-	// 	Central.Log.Debugf("Descriptor list: %v", descriptors)
-	// 	for _, d := range descriptors {
-	// 		add := true
-	// 		for _, ud := range tree.uniqueDescriptors {
-	// 			Central.Log.Debugf("Check descriptor %s to unique descriptor %s", d, ud)
-	// 			if d == ud {
-	// 				add = false
-	// 				break
-	// 			}
-	// 		}
-	// 		if add {
-	// 			Central.Log.Debugf("Add node descriptor : %s", d)
-	// 			tree.uniqueDescriptors = append(tree.uniqueDescriptors, d)
-	// 		}
-	// 	}
-	// } else {
-	// 	Central.Log.Debugf("Empty node evaluate value descriptor")
-	// 	if tree.value == nil {
-	// 		return false
-	// 	}
-	// 	descriptor := tree.value.orderBy()
-	// 	if descriptor != "" {
-	// 		Central.Log.Debugf("Add value descriptor : %s", descriptor)
-	// 		tree.uniqueDescriptors = append(tree.uniqueDescriptors, descriptor)
-	// 	}
-	// }
-	// Central.Log.Debugf("Unique descriptor list: %v -> %d", tree.uniqueDescriptors, len(tree.uniqueDescriptors))
-	// return len(tree.uniqueDescriptors) != 1
 }
 
 // Platform returns current os platform
@@ -344,21 +313,6 @@ func (node *SearchNode) valueBuffer(buffer *bytes.Buffer) {
 			n.valueBuffer(buffer)
 		}
 	}
-}
-
-func (node *SearchNode) orderBy() []string {
-	var descriptors []string
-	for _, n := range node.nodes {
-		subDescriptors := n.orderBy()
-		descriptors = append(descriptors, subDescriptors...)
-	}
-	for _, v := range node.values {
-		subDescriptor := v.orderBy()
-		if subDescriptor != "" {
-			descriptors = append(descriptors, subDescriptor)
-		}
-	}
-	return descriptors
 }
 
 func (node *SearchNode) searchFields() []string {
@@ -589,7 +543,7 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode,
 	Central.Log.Debugf("Field: %s Value: %s from %v", lowerLevel.field, value, parameter)
 
 	/* Check for range information */
-	if regexp.MustCompile("^[\\[\\(].*:.*[\\]\\)]$").MatchString(value) {
+	if regexp.MustCompile(`^[\[\(].*:.*[\]\)]$`).MatchString(value) {
 		/* Found range definition, will add lower and upper limit */
 		Central.Log.Debugf("Range found")
 		rangeNode := &SearchNode{logic: RANGE, platform: node.Platform()}
@@ -827,58 +781,58 @@ func appendNumericValue(buffer *bytes.Buffer, v string) {
 	}
 }
 
-func (searchInfo *SearchInfo) extractBinarySearchNodeValue(value string, searchTreeNode *SearchValue) int {
-	valuesTrimed := strings.TrimSpace(value)
-	values := strings.Split(valuesTrimed, " ")
-	var binaryValues [][]byte
-	for _, part := range values {
-		/* Check if parser constant found */
-		if strings.Contains(part, ConstantIndicator) {
-			var output bytes.Buffer
-			restString := part
-			Central.Log.Debugf("Work on part : %s", part)
-			for {
-				binaryInterpretation := false
-				if regexp.MustCompile("^-?H#.*").MatchString(restString) {
-					Central.Log.Debugf("Binary value found")
-					binaryInterpretation = true
-				}
-				constantString := regexp.MustCompile("[-H]*#\\{").ReplaceAllString(restString, "")
-				constantString = regexp.MustCompile("}.*").ReplaceAllString(constantString, "")
-				restString = regexp.MustCompile("#\\{[0-9]*\\} *").ReplaceAllString(restString, "")
-				Central.Log.Debugf("Constant string : ",
-					constantString)
-				Central.Log.Debugf("Rest string : ", restString)
+// func (searchInfo *SearchInfo) extractBinarySearchNodeValue(value string, searchTreeNode *SearchValue) int {
+// 	valuesTrimed := strings.TrimSpace(value)
+// 	values := strings.Split(valuesTrimed, " ")
+// 	var binaryValues [][]byte
+// 	for _, part := range values {
+// 		/* Check if parser constant found */
+// 		if strings.Contains(part, ConstantIndicator) {
+// 			var output bytes.Buffer
+// 			restString := part
+// 			Central.Log.Debugf("Work on part : %s", part)
+// 			for {
+// 				binaryInterpretation := false
+// 				if regexp.MustCompile("^-?H#.*").MatchString(restString) {
+// 					Central.Log.Debugf("Binary value found")
+// 					binaryInterpretation = true
+// 				}
+// 				constantString := regexp.MustCompile(`[-H]*#\{`).ReplaceAllString(restString, "")
+// 				constantString = regexp.MustCompile("}.*").ReplaceAllString(constantString, "")
+// 				restString = regexp.MustCompile(`#\{[0-9]*\} *`).ReplaceAllString(restString, "")
+// 				Central.Log.Debugf("Constant string : ",
+// 					constantString)
+// 				Central.Log.Debugf("Rest string : ", restString)
 
-				intTrimed := strings.TrimSpace(constantString)
-				index, err := strconv.Atoi(intTrimed)
-				if err != nil {
-					return -1
-				}
-				index--
-				var binaryValue []byte
-				if binaryInterpretation {
-					binaryValue = []byte(searchInfo.constants[index])
-				} else {
-					//					binaryValue = searchTreeNode.binaryValue(		searchInfo.constants[index])
-				}
-				output.Write(binaryValue)
-				if !strings.Contains(restString, ConstantIndicator) {
-					break
-				}
-			}
-			binaryValues = append(binaryValues, output.Bytes())
-		} else {
-			Central.Log.Debugf("Set value: ", value)
+// 				intTrimed := strings.TrimSpace(constantString)
+// 				index, err := strconv.Atoi(intTrimed)
+// 				if err != nil {
+// 					return -1
+// 				}
+// 				index--
+// 				var binaryValue []byte
+// 				if binaryInterpretation {
+// 					binaryValue = []byte(searchInfo.constants[index])
+// 				// } else {
+// 				// 	//					binaryValue = searchTreeNode.binaryValue(		searchInfo.constants[index])
+// 				}
+// 				output.Write(binaryValue)
+// 				if !strings.Contains(restString, ConstantIndicator) {
+// 					break
+// 				}
+// 			}
+// 			binaryValues = append(binaryValues, output.Bytes())
+// 		// } else {
+// 		// 	Central.Log.Debugf("Set value: ", value)
 
-			//			binaryValues.add(searchTreeNode.binaryValue(part))
-		}
-	}
-	if len(values) > 1 {
-		Central.Log.Debugf("Print binary list: ")
-		//		searchTreeNode.SetValue(binaryValues)
-	} else {
-		//		searchTreeNode.SetValue(binaryValues.get(0))
-	}
-	return 0
-}
+// 		// 	//			binaryValues.add(searchTreeNode.binaryValue(part))
+// 		}
+// 	}
+// 	// if len(values) > 1 {
+// 	// 	Central.Log.Debugf("Print binary list: ")
+// 	// 	//		searchTreeNode.SetValue(binaryValues)
+// 	// } else {
+// 	// 	//		searchTreeNode.SetValue(binaryValues.get(0))
+// 	// }
+// 	return 0
+// }

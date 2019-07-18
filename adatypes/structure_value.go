@@ -349,9 +349,7 @@ func (value *StructureValue) evaluateOccurrence(helper *BufferHelper) (occNumber
 				return
 			}
 			occNumber = int(res)
-			break
 		case OccNone:
-			break
 		}
 	}
 	Central.Log.Debugf("Evaluate occurrence for %s of type %d to %d offset after=%d", value.Type().Name(),
@@ -458,7 +456,6 @@ func (value *StructureValue) shiftPeriod(helper *BufferHelper) {
 	adaType.Traverse(t, 1, &size)
 	Central.Log.Debugf("Skip parsing, shift PE empty part of size=%d", size)
 	helper.ReceiveBytes(size)
-	return
 }
 
 // Search for structures by name
@@ -629,19 +626,7 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 		Central.Log.Debugf("Structure FormatBuffer %s type=%d nrFields=%d", value.Type().Name(), value.Type().Type(), structureType.NrFields())
 		switch value.Type().Type() {
 		case FieldTypeMultiplefield:
-			if option.StoreCall {
-				if value.NrElements() > 0 {
-					// if buffer.Len() > 0 {
-					// 	buffer.WriteString(",")
-					// }
-					// for idxElement, element := range value.Elements {
-					// 	for idxValue := range element.Values {
-					// 		Central.Log.Debugf("StoreCall: %d -> %d", idxElement, idxValue)
-					// 		buffer.WriteString(fmt.Sprintf("%s%d", value.Type().Name(), idxElement))
-					// 	}
-					// }
-				}
-			} else {
+			if !option.StoreCall {
 				if buffer.Len() > 0 {
 					buffer.WriteString(",")
 				}

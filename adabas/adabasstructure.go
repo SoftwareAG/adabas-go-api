@@ -28,10 +28,10 @@ import (
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
-const acbxEyecatcher = 'F'   /*      F - EYECATCHER              */
-const acbxVersion = '2'      /*      2 - VERSION                 */
-const eAcbxEyecatcher = 0xc6 /* EBCDIC F - EYECATCHER            */
-const eAcbxVersion = 0xf2    /* EBCDIC 2 - VERSION               */
+const acbxEyecatcher = 'F' /*      F - EYECATCHER              */
+const acbxVersion = '2'    /*      2 - VERSION                 */
+//const eAcbxEyecatcher = 0xc6 /* EBCDIC F - EYECATCHER            */
+//const eAcbxVersion = 0xf2    /* EBCDIC 2 - VERSION               */
 const acbxLength = 192
 
 // Dbid Adabas database identifier
@@ -295,9 +295,9 @@ func (adaid *ID) status(url string) *Status {
 	return s
 }
 
-func (adaid *ID) changePlatform(url string, platform *adatypes.Platform) {
-	adaid.status(url).platform = platform
-}
+// func (adaid *ID) changePlatform(url string, platform *adatypes.Platform) {
+// 	adaid.status(url).platform = platform
+// }
 
 func (adaid *ID) platform(url string) *adatypes.Platform {
 	return adaid.status(url).platform

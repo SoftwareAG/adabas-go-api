@@ -95,14 +95,14 @@ func (value *RedefinitionValue) StoreBuffer(helper *BufferHelper) error {
 
 // parseBuffer parse buffer
 func (value *RedefinitionValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
-	res, err = value.mainValue.parseBuffer(helper, option)
+	_, err = value.mainValue.parseBuffer(helper, option)
 	if err != nil {
 		return EndTraverser, err
 	}
 	vb := value.mainValue.Bytes()
 	subHelper := NewHelper(vb, len(vb), helper.order)
 	for _, s := range value.subValues {
-		res, err = s.parseBuffer(subHelper, option)
+		_, err = s.parseBuffer(subHelper, option)
 		if err != nil {
 			Central.Log.Debugf("Error parsing redefinition values: %s", s.Type().Name())
 			return Continue, err

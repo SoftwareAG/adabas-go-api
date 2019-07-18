@@ -58,8 +58,6 @@ func TestUnpacked(t *testing.T) {
 	up.SetValue(uint32(2))
 	i32, i32err = up.Int32()
 	assert.NoError(t, i32err)
-	i32, i32err = up.Int32()
-	assert.NoError(t, i32err)
 	assert.Equal(t, int32(2), i32)
 	up.SetValue("123")
 	u32, u32err := up.UInt32()
