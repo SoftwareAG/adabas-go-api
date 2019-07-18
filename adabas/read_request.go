@@ -618,7 +618,7 @@ func (request *ReadRequest) adaptDescriptorMap(adabasRequest *adatypes.Request) 
 			if t == nil {
 				request.definition.DumpTypes(false, false, "Global Tree")
 				request.definition.DumpTypes(false, false, "Active Tree")
-				panic("Search error")
+				return adatypes.NewGenericError(76)
 			}
 			adabasRequest.Descriptors[i] = t.ShortName()
 		}

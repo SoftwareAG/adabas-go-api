@@ -117,8 +117,9 @@ func NewType(param ...interface{}) *AdaType {
 		case uint32:
 			length = param[2].(uint32)
 		default:
-			fmt.Printf("Unknown parameter type %T", param[2])
-			panic("Error for type parameter")
+			Central.Log.Debugf("Unknown parameter type %T", param[2])
+			//panic("Error for type parameter")
+			return nil
 		}
 	}
 	flags := uint8(1 << FlagOptionToBeRemoved)
@@ -460,7 +461,8 @@ type RedefinitionType struct {
 // NewRedefinitionType Creates a new object of redefootopm types
 func NewRedefinitionType(mainType IAdaType) *RedefinitionType {
 	if mainType == nil {
-		panic("Main type of redefinition nil")
+		//panic("Main type of redefinition nil")
+		return nil
 	}
 	return &RedefinitionType{MainType: mainType,
 		CommonType: CommonType{level: mainType.Level(), name: mainType.Name(),
@@ -531,7 +533,7 @@ func (adaType *RedefinitionType) SetLength(length uint32) {
 // String return the name of the field
 func (adaType *RedefinitionType) String() string {
 	if adaType.MainType == nil {
-		panic("Main type in redefinition nil")
+		return "Main type in redefinition nil"
 	}
 	return adaType.MainType.String()
 }

@@ -143,7 +143,6 @@ func (value *RedefinitionValue) Traverse(t TraverserValuesMethods, x interface{}
 			v.PeriodIndex(), v.MultipleIndex(), value.Type().Name(), value.PeriodIndex(), value.MultipleIndex())
 		if value.PeriodIndex() != v.PeriodIndex() {
 			if value.Type().Type() != FieldTypePeriodGroup {
-				//panic("Error index parent not correct")
 				Central.Log.Debugf("!!!!----> Error index parent not correct for %s of %s", v.Type().Name(), value.Type().Name())
 			}
 		}
