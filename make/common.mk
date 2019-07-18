@@ -79,6 +79,9 @@ $(BIN)/%: $(BIN); $(info $(M) building $(REPOSITORY)…)
 GOLINT = $(BIN)/golint
 $(BIN)/golint: REPOSITORY=golang.org/x/lint/golint
 
+GOCILINT = $(BIN)/golangci-lint
+$(BIN)/golangci-lint: REPOSITORY=github.com/golangci/golangci-lint/cmd/golangci-lint
+
 GOCOVMERGE = $(BIN)/gocovmerge
 $(BIN)/gocovmerge: REPOSITORY=github.com/wadey/gocovmerge
 
@@ -189,9 +192,10 @@ test-coverage: fmt lint test-coverage-tools ; $(info $(M) running coverage tests
 .PHONY: lint
 lint: | $(GOLINT) ; $(info $(M) running golint…) @ ## Run golint
 	$Q cd $(CURDIR) && $(GOLINT) -set_exit_status ./...
-#	$Q cd $(CURDIR) && ret=0 && for pkg in $(PKGS); do \
-#		test -z "$$($(GOLINT) $$pkg | tee /dev/stderr)" || ret=1 ; \
-#	 done ; exit $$ret
+
+.PHONY: cilint
+cilint: | $(GOCILINT) ; $(info $(M) running golint…) @ ## Run golint
+	$Q cd $(CURDIR) && $(GOCILINT) run
 
 .PHONY: fmt
 fmt: ; $(info $(M) running fmt…) @ ## Run go fmt on all source files
