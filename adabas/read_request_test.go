@@ -665,3 +665,54 @@ func TestMapRequestFractional(t *testing.T) {
 		}
 	}
 }
+
+func ExampleReadRequest_ReadPhysical() {
+	err := initLogWithFile("request.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	adabas, _ := NewAdabas(adabasModDBID)
+	request, _ := NewReadRequest(adabas, 225)
+	defer request.Close()
+	request.Limit = 2
+	request.QueryFields("*")
+	var result *Response
+	result, err = request.ReadPhysicalSequence()
+	fmt.Println("Dump result received ...")
+	if result != nil {
+		result.DumpValues()
+	}
+
+	// Output:
+	// Dump result received ...
+	// Dump all result values
+	// Record Isn: 0204
+	//   AA = > 11100102 <
+	//   AB = [ 1 ]
+	//    AC = > EDGAR                <
+	//    AD = > PETER                <
+	// Record Isn: 0205
+	//   AA = > 11100105 <
+	//   AB = [ 1 ]
+	//    AC = > CHRISTIAN            <
+	//    AD = >                      <
+}
+
+func TestReadPElevel2Group(t *testing.T) {
+	initTestLogWithFile(t, "request.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	adabas, _ := NewAdabas(adabasModDBID)
+	request, _ := NewReadRequest(adabas, 225)
+	defer request.Close()
+	request.QueryFields("AD")
+	result, err := request.ReadPhysicalSequence()
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	if result != nil {
+		fmt.Println("Dump result received ...")
+		result.DumpValues()
+	}
+}
