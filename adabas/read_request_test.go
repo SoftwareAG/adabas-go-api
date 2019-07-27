@@ -688,16 +688,26 @@ func ExampleReadRequest_readPhysical() {
 	// Output:
 	// Dump result received ...
 	// Dump all result values
-	// Record Isn: 0204
-	//   AA = > 11100102 <
+	// Record Isn: 0001
+	//   AA = > AVS0                             <
 	//   AB = [ 1 ]
-	//    AC = > EDGAR                <
-	//    AD = > PETER                <
-	// Record Isn: 0205
-	//   AA = > 11100105 <
+	//    AC[01] = > 0 <
+	//    AD[01] = [ 1 ]
+	//     AE[01] = > 0 <
+	//     AF[01] = > XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                                                                                                                                                                   <
+	//     AG[01] = > 0 <
+	//     AH[01] = > 0ABCDDDDD                                                                                                                                                                                                <
+	//     AI[01] = > 0.000000 <
+	// Record Isn: 0002
+	//   AA = > AVS1                             <
 	//   AB = [ 1 ]
-	//    AC = > CHRISTIAN            <
-	//    AD = >                      <
+	//    AC[01] = > 9999 <
+	//    AD[01] = [ 1 ]
+	//     AE[01] = > 233 <
+	//     AF[01] = > XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                                                                                                                                                                   <
+	//     AG[01] = > 100 <
+	//     AH[01] = > 1ABCDDDDD                                                                                                                                                                                                <
+	//     AI[01] = > 10.300000 <
 }
 
 func TestReadPElevel2Group(t *testing.T) {
