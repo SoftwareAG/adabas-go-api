@@ -666,14 +666,14 @@ func TestMapRequestFractional(t *testing.T) {
 	}
 }
 
-func ExampleReadRequest_ReadPhysical() {
+func ExampleReadRequest_readPhysical() {
 	err := initLogWithFile("request.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	adabas, _ := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasStatDBID)
 	request, _ := NewReadRequest(adabas, 225)
 	defer request.Close()
 	request.Limit = 2
@@ -704,7 +704,7 @@ func TestReadPElevel2Group(t *testing.T) {
 	initTestLogWithFile(t, "request.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
-	adabas, _ := NewAdabas(adabasModDBID)
+	adabas, _ := NewAdabas(adabasStatDBID)
 	request, _ := NewReadRequest(adabas, 225)
 	defer request.Close()
 	request.Multifetch = 1
