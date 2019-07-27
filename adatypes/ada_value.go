@@ -165,9 +165,11 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 			adavalue.muIndex, adavalue.Type().Length(), adavalue.Type().Type().FormatCharacter()))
 		return adavalue.Type().Length()
 	}
-	if adavalue.adatype.HasFlagSet(FlagOptionPE) && !adavalue.Type().HasFlagSet(FlagOptionMU) {
-		Central.Log.Debugf("Skip ... because PE and not MU")
-		return 0
+	if adavalue.adatype.HasFlagSet(FlagOptionPE) {
+		if !adavalue.Type().HasFlagSet(FlagOptionMU) && !adavalue.Type().HasFlagSet(FlagOptionPart) {
+			Central.Log.Debugf("Skip ... because PE and not MU")
+			return 0
+		}
 	}
 	if buffer.Len() > 0 {
 		buffer.WriteString(",")

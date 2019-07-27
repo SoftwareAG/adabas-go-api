@@ -168,7 +168,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 		Central.Log.Debugf("------->>>>>> Range %s=%s%s %p", structureType.name, structureType.shortName, r, structureType)
 		buffer.WriteString(adaType.ShortName() + "C,4,B")
 		adabasRequest.RecordBufferLength += 4
-		if !adaType.HasFlagSet(FlagOptionMU) {
+		if !adaType.HasFlagSet(FlagOptionMU) && !adaType.HasFlagSet(FlagOptionPart) {
 			Central.Log.Debugf("No MU field, use general range group query")
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")
@@ -219,7 +219,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 	default:
 		if !adaType.IsStructure() {
 			if !adaType.HasFlagSet(FlagOptionMUGhost) && (!adaType.HasFlagSet(FlagOptionPE) ||
-				(adaType.HasFlagSet(FlagOptionPE) && adaType.HasFlagSet(FlagOptionMU))) {
+				(adaType.HasFlagSet(FlagOptionPE) && (adaType.HasFlagSet(FlagOptionMU) || adaType.HasFlagSet(FlagOptionPart)))) {
 				if buffer.Len() > 0 {
 					buffer.WriteString(",")
 				}

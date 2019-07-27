@@ -707,6 +707,8 @@ func TestReadPElevel2Group(t *testing.T) {
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 225)
 	defer request.Close()
+	request.Multifetch = 1
+	request.Limit = 1
 	request.QueryFields("AD")
 	result, err := request.ReadPhysicalSequence()
 	assert.NoError(t, err)

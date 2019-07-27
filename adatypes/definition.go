@@ -490,6 +490,7 @@ func (def *Definition) CreateValues(forStoring bool) (err error) {
 	t := TraverserMethods{EnterFunction: createValue}
 	err = def.TraverseTypes(t, true, parameter)
 	Central.Log.Debugf("Done creating values ... %v", err)
+	Central.Log.Debugf("Created %d values", len(def.Values))
 	return
 }
 

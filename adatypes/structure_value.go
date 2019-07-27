@@ -651,9 +651,10 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 					buffer.WriteString(",")
 				}
 				buffer.WriteString(value.Type().ShortName() + "C,4,B")
-				if !value.Type().HasFlagSet(FlagOptionMU) {
-					Central.Log.Debugf("Add Format buffer field")
+				Central.Log.Debugf("%s Flag option %d %v %d", structureType.Name(), structureType.flags, structureType.HasFlagSet(FlagOptionPart), FlagOptionPart)
+				if !value.Type().HasFlagSet(FlagOptionMU) && !value.Type().HasFlagSet(FlagOptionPart) {
 					r := structureType.peRange.FormatBuffer()
+					Central.Log.Debugf("Add generic format buffer field with range %s", r)
 					buffer.WriteString("," + value.Type().ShortName() + r)
 				}
 				recordBufferLength += option.multipleSize

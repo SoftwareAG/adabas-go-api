@@ -23,7 +23,7 @@ type AdaSuperType struct {
 func NewSuperType(name string, option byte) *AdaSuperType {
 
 	superType := &AdaSuperType{CommonType: CommonType{fieldType: FieldTypeSuperDesc,
-		flags: uint8(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
+		flags: uint32(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
 		name:  name, shortName: name}}
 	if (option & 0x08) > 0 {
 		Central.Log.Debugf("%s super/sub descriptor found PE", name)
@@ -137,7 +137,7 @@ func NewPhoneticType(name string, descriptorLength uint16, parentName string) *A
 	var code [2]byte
 	copy(code[:], parentName)
 	return &AdaPhoneticType{AdaType: AdaType{CommonType: CommonType{fieldType: FieldTypePhonetic, name: name,
-		flags:     uint8(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
+		flags:     uint32(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
 		shortName: name}},
 		descriptorLength: descriptorLength, parentName: code}
 }
@@ -160,7 +160,7 @@ func NewCollationType(name string, length uint16, parentName string, collAttribu
 	var code [2]byte
 	copy(code[:], parentName)
 	return &AdaCollationType{AdaType: AdaType{CommonType: CommonType{fieldType: FieldTypeCollation,
-		flags: uint8(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
+		flags: uint32(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
 		name:  name, shortName: name}}, length: length,
 		parentName: code, collAttribute: collAttribute}
 }
@@ -196,7 +196,7 @@ type AdaHyperExitType struct {
 // NewHyperExitType new hyper exit type
 func NewHyperExitType(name string, length uint32, fdtFormat byte, nr uint8, parentNames []string) *AdaHyperExitType {
 	return &AdaHyperExitType{AdaType: AdaType{CommonType: CommonType{fieldType: FieldTypeHyperDesc,
-		flags: uint8(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
+		flags: uint32(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
 		name:  name, shortName: name, length: length}},
 		fdtFormat: fdtFormat, nr: nr, parentNames: parentNames}
 }
@@ -231,7 +231,7 @@ type AdaReferentialType struct {
 // NewReferentialType new referential integrity type
 func NewReferentialType(name string, refFile uint32, keys [2]string, refType uint8, refUpdateAction uint8, refDeleteAction uint8) *AdaReferentialType {
 	return &AdaReferentialType{AdaType: AdaType{CommonType: CommonType{fieldType: FieldTypeReferential,
-		flags: uint8(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
+		flags: uint32(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
 		name:  name, shortName: name, length: 0}}, refFile: refFile, keys: keys, refType: refType,
 		refUpdateAction: refUpdateAction, refDeleteAction: refDeleteAction}
 

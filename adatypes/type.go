@@ -122,9 +122,9 @@ func NewType(param ...interface{}) *AdaType {
 			return nil
 		}
 	}
-	flags := uint8(1 << FlagOptionToBeRemoved)
+	flags := FlagOptionToBeRemoved.Bit()
 	if len(param) > 3 {
-		flags = flags | uint8(1<<FlagOptionLengthNotIncluded)
+		flags = flags | FlagOptionLengthNotIncluded.Bit()
 	}
 	switch fType {
 	case FieldTypeUByte, FieldTypeByte:
@@ -160,7 +160,7 @@ func NewTypeWithLength(fType FieldType, name string, length uint32) *AdaType {
 		fieldType: fType,
 		level:     1,
 		name:      name,
-		flags:     uint8(1 << FlagOptionToBeRemoved),
+		flags:     uint32(1 << FlagOptionToBeRemoved),
 		shortName: name,
 		length:    length,
 	}}

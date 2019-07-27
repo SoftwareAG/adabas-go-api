@@ -24,7 +24,7 @@ func NewStructure() *StructureType {
 	Central.Log.Debugf("Create structure list")
 	return &StructureType{
 		CommonType: CommonType{
-			flags: uint8(1 << FlagOptionToBeRemoved),
+			flags: uint32(1 << FlagOptionToBeRemoved),
 		},
 		condition: FieldCondition{
 			lengthFieldIndex: -1,
@@ -54,7 +54,7 @@ func NewStructureEmpty(fType FieldType, name string, occByteShort int16,
 		CommonType: CommonType{
 			fieldType: fType,
 			name:      name,
-			flags:     uint8(1 << FlagOptionToBeRemoved),
+			flags:     uint32(1 << FlagOptionToBeRemoved),
 			shortName: name,
 			length:    0,
 			peRange:   *pr,
@@ -79,7 +79,7 @@ func NewStructureList(fType FieldType, name string, occByteShort int16, subField
 		CommonType: CommonType{fieldType: fType,
 			name:      name,
 			shortName: name,
-			flags:     uint8(1 << FlagOptionToBeRemoved),
+			flags:     uint32(1 << FlagOptionToBeRemoved),
 			level:     1,
 			length:    0},
 		occ: int(occByteShort),
@@ -119,7 +119,7 @@ func NewStructureCondition(fType FieldType, name string, subFields []IAdaType, c
 		CommonType: CommonType{fieldType: fType,
 			name:      name,
 			shortName: name,
-			flags:     uint8(1 << FlagOptionToBeRemoved),
+			flags:     uint32(1 << FlagOptionToBeRemoved),
 			level:     1,
 			length:    0},
 		condition: condition,
@@ -259,6 +259,17 @@ func (adaType *StructureType) AddField(fieldType IAdaType) {
 		st := fieldType.(*StructureType)
 		st.fieldMap = adaType.fieldMap
 	}
+}
+
+func travereAdaptPartOption(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+	adaType.AddFlag(FlagOptionPart)
+	return nil
+}
+
+func (adaType *StructureType) addPart() {
+	adaType.AddFlag(FlagOptionPart)
+	t := TraverserMethods{EnterFunction: travereAdaptPartOption}
+	adaType.Traverse(t, 0, nil)
 }
 
 // RemoveField remote field of the structure type

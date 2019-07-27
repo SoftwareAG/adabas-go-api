@@ -896,3 +896,48 @@ func ExampleDefinition_dumpValuesRestrict() {
 	//   GP = >0<
 
 }
+
+func TestDefinition_restrict(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if err != nil {
+		fmt.Println("Error init log ", err)
+		return
+	}
+
+	groupLayout2 := []IAdaType{
+		NewType(FieldTypeCharacter, "GC"),
+		NewType(FieldTypeString, "GS"),
+	}
+
+	groupLayout := []IAdaType{
+		NewType(FieldTypePacked, "GP"),
+		NewStructureList(FieldTypeGroup, "G2", 1, groupLayout2),
+	}
+	layout := []IAdaType{
+		NewType(FieldTypeUInt8, "U8"),
+		NewStructureList(FieldTypePeriodGroup, "P1", OccCapacity, groupLayout),
+		NewType(FieldTypeUInt8, "I8"),
+	}
+	testDefinition := NewDefinitionWithTypes(layout)
+	testDefinition.InitReferences()
+
+	err = testDefinition.ShouldRestrictToFields("G2")
+	if !assert.NoError(t, err) {
+		fmt.Println("Error restrict fields ", err)
+		return
+	}
+	testDefinition.DumpTypes(false, false)
+	testDefinition.DumpTypes(false, true)
+	testDefinition.DumpValues(false)
+	err = testDefinition.CreateValues(false)
+	if !assert.NoError(t, err) {
+		fmt.Println("Error create values", err)
+		return
+	}
+	req, rerr := testDefinition.CreateAdabasRequest(false, false, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	assert.Equal(t, "P1C,4,B,GC1-N,1,A,GS1-N,1,A.", req.FormatBuffer.String())
+}

@@ -63,8 +63,8 @@ func TestTypeFlags(t *testing.T) {
 	}
 
 	Central.Log.Infof("TEST: %s", t.Name())
-	assert.Equal(t, uint8(1), FlagOptionPE.Bit())
-	assert.Equal(t, uint8(2), FlagOptionMU.Bit())
+	assert.Equal(t, uint32(1), FlagOptionPE.Bit())
+	assert.Equal(t, uint32(2), FlagOptionMU.Bit())
 }
 
 func TestTypeReferential(t *testing.T) {
@@ -107,14 +107,19 @@ func TestTypeFlagsSetClear(t *testing.T) {
 	Central.Log.Infof("TEST: %s", t.Name())
 	ty := NewLongNameType(FieldTypeByte, "ABC", "XX")
 	assert.True(t, ty.HasFlagSet(FlagOptionToBeRemoved))
+	assert.False(t, ty.HasFlagSet(FlagOptionPart))
 	ty.AddFlag(FlagOptionMU)
+	ty.AddFlag(FlagOptionPart)
+	assert.True(t, ty.HasFlagSet(FlagOptionPart))
 	assert.True(t, ty.HasFlagSet(FlagOptionMU))
 	ty.RemoveFlag(FlagOptionToBeRemoved)
 	assert.False(t, ty.HasFlagSet(FlagOptionToBeRemoved))
 	ty.RemoveFlag(FlagOptionMU)
+	ty.RemoveFlag(FlagOptionPart)
 	assert.False(t, ty.HasFlagSet(FlagOptionToBeRemoved))
 	assert.False(t, ty.HasFlagSet(FlagOptionMU))
-	assert.Equal(t, uint8(0), ty.flags)
+	assert.False(t, ty.HasFlagSet(FlagOptionPart))
+	assert.Equal(t, uint32(0), ty.flags)
 	ty.AddFlag(FlagOptionToBeRemoved)
 	assert.True(t, ty.HasFlagSet(FlagOptionToBeRemoved))
 	assert.False(t, ty.HasFlagSet(FlagOptionMU))

@@ -193,7 +193,7 @@ type CommonType struct {
 	shortName           string
 	length              uint32
 	level               uint8
-	flags               uint8
+	flags               uint32
 	parentType          IAdaType
 	options             uint32
 	Charset             string
@@ -362,7 +362,7 @@ const (
 var fieldOptions = []string{"UQ", "NU", "FI", "DE", "NC", "NN", "HF", "NV", "NB", "HE", "PE", "MU"}
 
 // FlagOption flag option used to omit traversal through the tree (example is MU and PE)
-type FlagOption uint
+type FlagOption uint32
 
 const (
 	// FlagOptionPE indicate tree is part of period group
@@ -381,15 +381,18 @@ const (
 	FlagOptionReadOnly
 	// FlagOptionLengthNotIncluded length not include in record buffer
 	FlagOptionLengthNotIncluded
+	// FlagOptionPart structure is request only in parts
+	FlagOptionPart
 )
 
 // Bit return the Bit of the option flag
-func (flagOption FlagOption) Bit() uint8 {
+func (flagOption FlagOption) Bit() uint32 {
 	return (1 << flagOption)
 }
 
 // HasFlagSet check if given flag is set
 func (commonType *CommonType) HasFlagSet(flagOption FlagOption) bool {
+	Central.Log.Debugf("Check flag %d set %d=%d -> %v", commonType.flags, flagOption.Bit(), flagOption.Bit(), (commonType.flags & flagOption.Bit()))
 	return (commonType.flags & flagOption.Bit()) != 0
 }
 
@@ -409,18 +412,3 @@ func (commonType *CommonType) AddFlag(flagOption FlagOption) {
 func (commonType *CommonType) RemoveFlag(flagOption FlagOption) {
 	commonType.flags &= ^flagOption.Bit()
 }
-
-// func (commonType *CommonType) rangeString() string {
-// 	pe := commonType.peRange.FormatBuffer()
-// 	r := ""
-// 	if pe != "" {
-// 		pe = " PE=" + pe
-// 		r = pe
-// 	}
-// 	mu := commonType.muRange.FormatBuffer()
-// 	if mu != "" {
-// 		mu = " MU=" + mu
-// 		r = r + mu
-// 	}
-// 	return r
-// }
