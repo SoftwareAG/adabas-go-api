@@ -289,6 +289,11 @@ func connect(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 		adatypes.Central.Log.Debugf("Error reading data %v", err)
 		return
 	}
+
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV PAYLOAD:", rcvBuffer, len(rcvBuffer), len(rcvBuffer), 8, true))
+	}
+
 	buf := bytes.NewBuffer(rcvBuffer)
 	err = binary.Read(buf, binary.BigEndian, &header)
 	if err != nil {
