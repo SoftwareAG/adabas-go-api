@@ -130,3 +130,65 @@ func TestRecord_MarshalXML(t *testing.T) {
 
 	}
 }
+
+func TestRecordGroupValues(t *testing.T) {
+	initTestLogWithFile(t, "Record.log")
+
+	resultNil, err := NewRecord(nil)
+	assert.Error(t, err)
+	assert.Nil(t, resultNil)
+
+	groupLayoutLevel3 := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypeUInt2, "U3"),
+		adatypes.NewType(adatypes.FieldTypeInt8, "I3"),
+	}
+
+	groupLayoutLevel2 := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypeUByte, "U2"),
+		adatypes.NewStructureList(adatypes.FieldTypeGroup, "G3", adatypes.OccNone, groupLayoutLevel3),
+		adatypes.NewType(adatypes.FieldTypeUInt2, "I2"),
+	}
+
+	periodGroupLayoutLevel2 := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypeUByte, "UP"),
+		adatypes.NewType(adatypes.FieldTypeUInt2, "IP"),
+	}
+
+	layout := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypeString, "UI", 20),
+		adatypes.NewStructureList(adatypes.FieldTypeGroup, "G2", adatypes.OccNone, groupLayoutLevel2),
+		adatypes.NewStructureList(adatypes.FieldTypePeriodGroup, "P2", adatypes.OccCapacity, periodGroupLayoutLevel2),
+		adatypes.NewType(adatypes.FieldTypeByte, "BI"),
+	}
+
+	testDefinition := adatypes.NewDefinitionWithTypes(layout)
+	testDefinition.CreateValues(false)
+	result, err := NewRecord(testDefinition)
+	result.SetValue("UP[1]", 100)
+	result.SetValue("IP[1]", 1023)
+	result.SetValue("BI", 1)
+	result.SetValue("UI", "ANCXXX")
+	result.SetValue("I2", 1231)
+	if assert.NoError(t, err) {
+		assert.NotNil(t, result)
+		assert.Equal(t, "ISN=0 quantity=0\n UI=\"ANCXXX              \"\n G2=\"\"\n U2=\"0\"\n G3=\"\"\n U3=\"0\"\n I3=\"0\"\n I2=\"1231\"\n P2=\"\"\n UP=\"100\"\n IP=\"1023\"\n BI=\"1\"\n", result.String())
+		v, verr := result.SearchValue("G3")
+		assert.NoError(t, verr)
+		assert.NotNil(t, v)
+		assert.Equal(t, "", v.String())
+		v, verr = result.SearchValue("G2")
+		assert.NoError(t, verr)
+		assert.Equal(t, "G2", v.Type().Name())
+		v, verr = result.SearchValue("U3")
+		assert.NoError(t, verr)
+		assert.Equal(t, "U3", v.Type().Name())
+		fieldNames := []string{"UI", "BI", "G2", "U2", "G3", "U3"}
+		for _, s := range fieldNames {
+			fmt.Println("Check field", s)
+			_, ok := result.HashFields[s]
+			assert.True(t, ok)
+		}
+	}
+	result.definition.DumpTypes(false, true)
+	result.DumpValues()
+}

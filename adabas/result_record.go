@@ -44,9 +44,10 @@ type Record struct {
 
 func hashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	record := x.(*Record)
-	if _, ok := record.HashFields[adaValue.Type().Name()]; !ok {
-		record.HashFields[adaValue.Type().Name()] = adaValue
-	}
+	adatypes.Central.Log.Debugf("Add hash to %s", adaValue.Type().Name())
+	//if _, ok := record.HashFields[adaValue.Type().Name()]; !ok {
+	record.HashFields[adaValue.Type().Name()] = adaValue
+	//}
 
 	return adatypes.Continue, nil
 }
@@ -231,6 +232,10 @@ func (record *Record) SearchValue(parameter ...interface{}) (adatypes.IAdaValue,
 		} else {
 			index = []uint32{0, 0}
 		}
+	}
+
+	if v, ok := record.HashFields[name]; ok && !v.Type().HasFlagSet(adatypes.FlagOptionPE) {
+		return v, nil
 	}
 	adatypes.Central.Log.Debugf("Search %s index: %#v", name, index)
 	return record.SearchValueIndex(name, index)

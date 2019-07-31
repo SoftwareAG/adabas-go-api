@@ -22,6 +22,7 @@ package adatypes
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"math"
 	"reflect"
@@ -333,6 +334,12 @@ func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 		val = int64(v) * int64(multiplier)
 	case int:
 		val = int64(x.(int)) * int64(multiplier)
+	case json.Number:
+		i64, err := x.(json.Number).Int64()
+		if err != nil {
+			return 0, err
+		}
+		val = i64 * int64(multiplier)
 	case []byte:
 		v := x.([]byte)
 		switch len(v) {
