@@ -124,27 +124,34 @@ func (request *StoreRequest) prepareRequest() (adabasRequest *adatypes.Request, 
 }
 
 // StoreFields create record field definition for the next store
-func (request *StoreRequest) StoreFields(fields string) (err error) {
+func (request *StoreRequest) StoreFields(param ...interface{}) (err error) {
+	if len(param) == 0 {
+		return adatypes.NewGenericError(0)
+	}
 	err = request.Open()
 	if err != nil {
 		return
 	}
-	// if request.definition == nil {
-	// 	err = request.loadDefinition()
-	// 	if err != nil {
-	// 		return
-	// 	}
-	// }
 	adatypes.Central.Log.Debugf("Check store fields Definition values %#v", request.definition.Values)
 	adatypes.Central.Log.Debugf("Dump all fields")
 	request.definition.DumpTypes(true, true)
-	adatypes.Central.Log.Debugf("Store restrict fields to %s", fields)
-	err = request.definition.ShouldRestrictToFields(fields)
-	if err != nil {
-		return
+	switch f := param[0].(type) {
+	case string:
+		adatypes.Central.Log.Debugf("Store restrict fields to %s", f)
+		err = request.definition.ShouldRestrictToFields(f)
+		if err != nil {
+			return
+		}
+	case []string:
+		adatypes.Central.Log.Debugf("Store restrict fields to %v", f)
+		err = request.definition.ShouldRestrictToFieldSlice(f)
+		if err != nil {
+			return
+		}
 	}
 	request.definition.DumpTypes(true, true)
 	adatypes.Central.Log.Debugf("Definition values %#v", request.definition.Values)
+
 	return
 }
 
