@@ -168,6 +168,17 @@ func TestPackedCheckFractional(t *testing.T) {
 	assert.Equal(t, "10002423.00", pa.String())
 	var j json.Number
 	err = pa.SetValue(j)
+
+	f = 10002423.01
+	err = pa.SetValue(f)
+	assert.NoError(t, err)
+	_, err = pa.Int64()
+	assert.Error(t, err)
+
+	adaType.SetFractional(0)
+	err = pa.SetValue(f)
+	assert.Error(t, err)
+
 }
 
 func TestPackedFormatterDate(t *testing.T) {
