@@ -21,6 +21,7 @@ package adatypes
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -160,6 +161,13 @@ func TestPackedCheckFractional(t *testing.T) {
 	assert.Equal(t, 0.01, f64)
 	assert.Equal(t, "0.01", pa.String())
 
+	var f float64
+	f = 10002423.0
+	err = pa.SetValue(f)
+	assert.NoError(t, err)
+	assert.Equal(t, "10002423.00", pa.String())
+	var j json.Number
+	err = pa.SetValue(j)
 }
 
 func TestPackedFormatterDate(t *testing.T) {

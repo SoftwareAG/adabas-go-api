@@ -251,6 +251,12 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
 		val = uint64(v)
+	case float64:
+		v := x.(float64)
+		if v < 0 {
+			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
+		}
+		val = uint64(v)
 	case []byte:
 		v := x.([]byte)
 		switch len(v) {
@@ -298,7 +304,7 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 
 // common format buffer generation
 func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
-	Central.Log.Debugf("Convert common value %s %v %s", adavalue.Type().Name(), x, reflect.TypeOf(x).Name())
+	Central.Log.Debugf("Convert common int64 value %s %v %s %T", adavalue.Type().Name(), x, reflect.TypeOf(x).Name(), x)
 	var val int64
 	multiplier := math.Pow10(int(adavalue.Type().Fractional()))
 	switch x.(type) {
