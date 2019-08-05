@@ -167,13 +167,11 @@ func AllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
 		adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
 		adatypes.Central.Log.Debugf("Read in repository using Adabas %s for %s/%03d in %s",
 			adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr, ref)
-		if mr.mapNames == nil {
-			err = mr.LoadMapRepository(adabas)
-			if err != nil {
-				adatypes.Central.Log.Infof("Skip repository %s/%d due to error %v", mr.DatabaseURL.URL.String(), mr.Fnr, err)
-				mr.online = false
-				continue
-			}
+		err = mr.LoadMapRepository(adabas)
+		if err != nil {
+			adatypes.Central.Log.Infof("Skip repository %s/%d due to error %v", mr.DatabaseURL.URL.String(), mr.Fnr, err)
+			mr.online = false
+			continue
 		}
 		mr.online = true
 		for mn := range mr.mapNames {
@@ -191,6 +189,7 @@ func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, err er
 	// Check if hash is defined
 	if r, ok := mapHash[mapName]; ok {
 		if r.online {
+			adatypes.Central.Log.Infof("Found in map hash, query map...")
 			adabasMap, err = r.SearchMap(adabas, mapName)
 			if err == nil {
 				return

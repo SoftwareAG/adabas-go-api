@@ -41,12 +41,17 @@ func (repURL *DatabaseURL) dbid() (dbid Dbid, err error) {
 	return
 }
 
+type mapNameFlags struct {
+	isn   adatypes.Isn
+	found bool
+}
+
 // Repository Adabas Map repository container
 type Repository struct {
 	sync.Mutex
 	DatabaseURL
 	online     bool
-	mapNames   map[string]adatypes.Isn
+	mapNames   map[string]*mapNameFlags
 	CachedMaps map[string]*Map
 }
 
@@ -273,7 +278,11 @@ func parseMapNames(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	name := v.String()
 	repository.Lock()
 	defer repository.Unlock()
-	repository.mapNames[name] = adabasRequest.Isn
+	if f, ok := repository.mapNames[name]; ok {
+		f.found = true
+	} else {
+		repository.mapNames[name] = &mapNamesFlags{isn: adabasRequest.Isn, found: true}
+	}
 	return
 }
 
@@ -304,7 +313,7 @@ func parseMaps(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	repository.CachedMaps[adabasMap.Name] = adabasMap
 	repository.Lock()
 	defer repository.Unlock()
-	repository.mapNames[adabasMap.Name] = adabasRequest.Isn
+	repository.mapNames[adabasMap.Name] = &mapNamesFlags{isn: adabasRequest.Isn, found: true}
 	return
 }
 
@@ -315,7 +324,7 @@ func (repository *Repository) LoadMapRepository(adabas *Adabas) (err error) {
 	}
 	adatypes.Central.Log.Debugf("Read all data from dbid=%d(%s) of %s/%d\n",
 		adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.DatabaseURL.URL.String(), repository.Fnr)
-	repository.mapNames = make(map[string]adatypes.Isn)
+	repository.mapNames = make(map[string]*mapNamesFlags)
 
 	adabas.Acbx.Acbxdbid = repository.DatabaseURL.URL.Dbid
 	request, _ := NewReadRequest(adabas, repository.Fnr)

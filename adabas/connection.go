@@ -152,6 +152,7 @@ func (connection *Connection) searchRepository(adabasID *ID, repository *Reposit
 		}
 		connection.adabasMap, err = SearchMapRepository(connection.adabasToMap, mapName)
 		if err != nil {
+			adatypes.Central.Log.Debugf("Search in global repositories fail: %v", err)
 			return err
 		}
 		if connection.adabasMap == nil {
@@ -161,10 +162,12 @@ func (connection *Connection) searchRepository(adabasID *ID, repository *Reposit
 		adatypes.Central.Log.Debugf("Search in given repository %v", repository)
 		connection.adabasToMap, err = NewAdabasWithID(repository.DatabaseURL.URL.String(), adabasID)
 		if err != nil {
+			adatypes.Central.Log.Debugf("New Adabas to map ID error: %v", err)
 			return err
 		}
 		connection.adabasMap, err = repository.SearchMap(connection.adabasToMap, mapName)
 		if err != nil {
+			adatypes.Central.Log.Debugf("Search map error: %v", err)
 			return err
 		}
 		// 	connection.adabasMap = NewAdabasMap(mapName, &repository.DatabaseURL)
@@ -179,13 +182,17 @@ func (connection *Connection) searchRepository(adabasID *ID, repository *Reposit
 	}
 	adatypes.Central.Log.Debugf("Found map %s\n", connection.adabasMap.Name)
 	if connection.adabasMap.URL().String() == connection.adabasMap.Data.URL.String() {
+		adatypes.Central.Log.Debugf("Different URL %v", connection.adabasMap.URL().String())
 		connection.adabasToData = connection.adabasToMap
 	} else {
+		adatypes.Central.Log.Debugf("Create new Adabas URL %v!=%v", connection.adabasMap.URL().String(), connection.adabasMap.Data.URL.String())
 		connection.adabasToMap, err = NewAdabasWithURL(&connection.adabasMap.Data.URL, adabasID)
 		if err != nil {
+			adatypes.Central.Log.Debugf("Error new ADabas URL %v", err)
 			return err
 		}
 	}
+	adatypes.Central.Log.Debugf("Final error: %v", err)
 	return
 }
 

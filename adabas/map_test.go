@@ -109,9 +109,9 @@ func TestMaps(t *testing.T) {
 		fmt.Println(err)
 	} else {
 		nr := 1
-		for name, isn := range mr.mapNames {
+		for name, f := range mr.mapNames {
 			if assert.NotZero(t, isn) {
-				fmt.Printf("%s: ISN: %d\n", name, isn)
+				fmt.Printf("%s: ISN: %d\n", name, f.isn)
 			} else {
 				fmt.Printf("%s: Empty\n", name)
 			}
