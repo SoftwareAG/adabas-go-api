@@ -281,7 +281,7 @@ func parseMapNames(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	if f, ok := repository.mapNames[name]; ok {
 		f.found = true
 	} else {
-		repository.mapNames[name] = &mapNamesFlags{isn: adabasRequest.Isn, found: true}
+		repository.mapNames[name] = &mapNameFlags{isn: adabasRequest.Isn, found: true}
 	}
 	return
 }
@@ -313,7 +313,7 @@ func parseMaps(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	repository.CachedMaps[adabasMap.Name] = adabasMap
 	repository.Lock()
 	defer repository.Unlock()
-	repository.mapNames[adabasMap.Name] = &mapNamesFlags{isn: adabasRequest.Isn, found: true}
+	repository.mapNames[adabasMap.Name] = &mapNameFlags{isn: adabasRequest.Isn, found: true}
 	return
 }
 
@@ -324,7 +324,7 @@ func (repository *Repository) LoadMapRepository(adabas *Adabas) (err error) {
 	}
 	adatypes.Central.Log.Debugf("Read all data from dbid=%d(%s) of %s/%d\n",
 		adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.DatabaseURL.URL.String(), repository.Fnr)
-	repository.mapNames = make(map[string]*mapNamesFlags)
+	repository.mapNames = make(map[string]*mapNameFlags)
 
 	adabas.Acbx.Acbxdbid = repository.DatabaseURL.URL.Dbid
 	request, _ := NewReadRequest(adabas, repository.Fnr)
@@ -403,6 +403,6 @@ func (repository *Repository) RemoveMap(mapName string) (err error) {
 	repository.Lock()
 	defer repository.Unlock()
 
-	repository.mapNames[mapName] = 0
+	delete(repository.mapNames, mapName)
 	return nil
 }
