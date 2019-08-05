@@ -319,9 +319,9 @@ func parseMaps(adabasRequest *adatypes.Request, x interface{}) (err error) {
 
 // LoadMapRepository read an index for names of all Adabas maps in the repository into memory
 func (repository *Repository) LoadMapRepository(adabas *Adabas) (err error) {
-	if repository.mapNames != nil {
-		return nil
-	}
+	// if repository.mapNames != nil {
+	// 	return nil
+	// }
 	adatypes.Central.Log.Debugf("Read all data from dbid=%d(%s) of %s/%d\n",
 		adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.DatabaseURL.URL.String(), repository.Fnr)
 	repository.mapNames = make(map[string]*mapNameFlags)
