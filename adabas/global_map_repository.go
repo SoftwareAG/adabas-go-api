@@ -53,7 +53,9 @@ func loopMapCache() {
 			return
 		}
 		_, err = AllGlobalMapNames(ada)
-		adatypes.Central.Log.Infof("Some map cache name error %v", err)
+		if err != nil {
+			adatypes.Central.Log.Infof("Some map cache name error %v", err)
+		}
 		adatypes.Central.Log.Infof("Number of Hashed maps: %d", len(mapHash))
 		time.Sleep(10 * time.Second)
 	}
@@ -168,15 +170,19 @@ func AllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
 		if mr.mapNames == nil {
 			err = mr.LoadMapRepository(adabas)
 			if err != nil {
+				adatypes.Central.Log.Infof("Skip repository %s/%d due to error %v", mr.DatabaseURL.URL.String(), mr.Fnr, err)
+				mr.online = false
 				continue
 			}
 		}
+		mr.online = true
 		for mn := range mr.mapNames {
 			maps = append(maps, mn)
 			mapHash[mn] = mr
 		}
 		adatypes.Central.Log.Debugf("Found %d map names in repository using Adabas %s/%03d", len(maps), adabas.URL.String(), mr.Fnr)
 	}
+	adatypes.Central.Log.Debugf("Found %d map names in all repositories", len(maps))
 	return
 }
 
