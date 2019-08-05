@@ -142,7 +142,7 @@ func AllGlobalMaps(adabas *Adabas) (maps []*Map, err error) {
 	mm := make(map[string]string)
 	for mn, mr := range repositories {
 		adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
-		adatypes.Central.Log.Debugf("Read in repository using Adabas %s for %s/%03d in %s",
+		adatypes.Central.Log.Debugf("Read maps in repository using Adabas %s for %s/%03d in %s",
 			adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr, mn)
 		adabasMaps, serr := mr.LoadAllMaps(adabas)
 		if serr != nil {
@@ -165,7 +165,7 @@ func AllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
 	maps = make([]string, 0)
 	for ref, mr := range repositories {
 		adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
-		adatypes.Central.Log.Debugf("Read in repository using Adabas %s for %s/%03d in %s",
+		adatypes.Central.Log.Debugf("Read map names in repository using Adabas %s for %s/%03d in %s",
 			adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr, ref)
 		err = mr.LoadMapRepository(adabas)
 		if err != nil {
