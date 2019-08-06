@@ -54,15 +54,17 @@ func EndAsynchronousMapCache() {
 }
 
 func loopMapCache() {
+	adatypes.Central.Log.Infof("Init loop map cache check")
 	mapLoopRunning = true
 	defer EndAsynchronousMapCache()
 	for mapLoopRunning {
+		adatypes.Central.Log.Infof("Start loop map cache check")
 		ada, err := NewAdabas(1)
 		if err != nil {
 			adatypes.Central.Log.Infof("Error loop map cache %v", err)
 			return
 		}
-		_, err = AllGlobalMapNames(ada)
+		_, err = readAllGlobalMapNames(ada)
 		if err != nil {
 			adatypes.Central.Log.Infof("Some map cache name error %v", err)
 		}
@@ -182,6 +184,11 @@ func AllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
 		}
 		return maps, nil
 	}
+	return readAllGlobalMapNames(adabas)
+}
+
+// AllGlobalMapNames search in map repositories global defined, all map names
+func readAllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
 	// If no map loop running, read through all repositories
 	for ref, mr := range repositories {
 		adabas.SetDbid(mr.DatabaseURL.URL.Dbid)

@@ -1879,7 +1879,9 @@ func TestConnectionLobADATCP(t *testing.T) {
 	readRequest, rErr := connection.CreateFileReadRequest(202)
 	assert.NoError(t, rErr)
 	err = readRequest.QueryFields("DC,EC")
-	assert.NoError(t, err)
+	if !assert.NoError(t, err) {
+		return
+	}
 	result, rerr := readRequest.ReadISN(1)
 	if !assert.NoError(t, rerr) {
 		return
@@ -1920,7 +1922,9 @@ func TestConnectionLobCheckAllIPC(t *testing.T) {
 	err = readRequest.QueryFields("DC,EC")
 	assert.NoError(t, err)
 	result, rerr := readRequest.ReadLogicalBy("BB")
-	assert.NoError(t, rerr)
+	if !assert.NoError(t, rerr) {
+		return
+	}
 
 	for _, v := range result.Values {
 		dc, serr := v.SearchValue("DC")
@@ -1960,7 +1964,9 @@ func TestConnectionLobCheckAllADATCP(t *testing.T) {
 	err = readRequest.QueryFields("DC,EC")
 	assert.NoError(t, err)
 	result, rerr := readRequest.ReadLogicalBy("BB")
-	assert.NoError(t, rerr)
+	if !assert.NoError(t, rerr) {
+		return
+	}
 
 	for _, v := range result.Values {
 		dc, serr := v.SearchValue("DC")
@@ -1992,9 +1998,13 @@ func TestConnectionFile9Isn242(t *testing.T) {
 	fmt.Println(connection)
 	connection.Open()
 	readRequest, rErr := connection.CreateFileReadRequest(9)
-	assert.NoError(t, rErr)
+	if !assert.NoError(t, rErr) {
+		return
+	}
 	err = readRequest.QueryFields("*")
-	assert.NoError(t, err)
+	if !assert.NoError(t, err) {
+		return
+	}
 	result, rerr := readRequest.ReadISN(242)
 	assert.NoError(t, rerr)
 	assert.NotNil(t, result)
@@ -2016,9 +2026,13 @@ func TestConnectionFile9Isn297(t *testing.T) {
 	fmt.Println(connection)
 	connection.Open()
 	readRequest, rErr := connection.CreateFileReadRequest(9)
-	assert.NoError(t, rErr)
+	if !assert.NoError(t, rErr) {
+		return
+	}
 	err = readRequest.QueryFields("*")
-	assert.NoError(t, err)
+	if !assert.NoError(t, err) {
+		return
+	}
 	result, rerr := readRequest.ReadISN(297)
 	assert.NoError(t, rerr)
 	assert.NotNil(t, result)
