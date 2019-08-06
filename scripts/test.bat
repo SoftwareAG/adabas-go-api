@@ -17,6 +17,7 @@ if not exist %LOGPATH% mkdir %LOGPATH%
 
 
 mkdir test
-go test -timeout 100s -count 1 -tags adalnk -v  github.com/SoftwareAG/adabas-go-api/adabas github.com/SoftwareAG/adabas-go-api/adatypes >test.output
+go test -timeout 100s -count 1 -tags adalnk -v  ./... >test.output
+rem github.com/SoftwareAG/adabas-go-api/adabas github.com/SoftwareAG/adabas-go-api/adatypes
 
 %GOPATH%\bin\go2xunit -input test.output -output test\tests.xml
