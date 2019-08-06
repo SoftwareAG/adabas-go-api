@@ -86,14 +86,14 @@ func evaluateURL(i interface{}) *URL {
 // NewMapRepository new map repository created
 func NewMapRepository(i interface{}, fnr Fnr) *Repository {
 	url := evaluateURL(i)
-	mr := &Repository{DatabaseURL: DatabaseURL{URL: *url, Fnr: fnr}}
+	mr := &Repository{DatabaseURL: DatabaseURL{URL: *url, Fnr: fnr}, online: true}
 	mr.CachedMaps = make(map[string]*Map)
 	return mr
 }
 
 // NewMapRepositoryWithURL new map repository created
 func NewMapRepositoryWithURL(url DatabaseURL) *Repository {
-	mr := &Repository{DatabaseURL: url}
+	mr := &Repository{DatabaseURL: url, online: true}
 	mr.CachedMaps = make(map[string]*Map)
 	return mr
 }

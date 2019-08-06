@@ -148,9 +148,11 @@ func TestStoreFailMapFieldsCheck(t *testing.T) {
 	if !assert.NoError(t, perr) {
 		return
 	}
+	adatypes.Central.Log.Debugf("Prepare of test finished")
 	ada, _ := NewAdabas(adabasModDBID)
 	AddGlobalMapRepository(ada.URL, 250)
 	defer DelGlobalMapRepository(ada.URL, 250)
+	adatypes.Central.Log.Debugf("Search map in repository")
 	adabasMap, serr := SearchMapRepository(ada, massLoadEmployees)
 	if !assert.NoError(t, serr) {
 		return

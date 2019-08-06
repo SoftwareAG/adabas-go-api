@@ -198,7 +198,7 @@ func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, err er
 			adatypes.Central.Log.Debugf("Error searching in repository: %v", err)
 		}
 	}
-	adatypes.Central.Log.Infof("Not found in map hash or error accessing repository, go through all repositories")
+	adatypes.Central.Log.Infof("Not found in map hash or error accessing repository, go through all repositories len=%d", len(repositories))
 	// Not in hash search repository
 	for _, mr := range repositories {
 		if mr.online {
@@ -218,6 +218,8 @@ func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, err er
 				}
 			}
 			adatypes.Central.Log.Debugf("Not found in repository using Adabas %s/%03d", adabas.URL.String(), mr.Fnr)
+		} else {
+			adatypes.Central.Log.Debugf("Repository offline: %s-%d", mr.DatabaseURL.URL.String(), mr.DatabaseURL.Fnr)
 		}
 	}
 	adatypes.Central.Log.Debugf("No map found error\n")
