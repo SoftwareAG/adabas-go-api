@@ -1860,7 +1860,7 @@ func TestConnection_NewConnectionError(t *testing.T) {
 
 func TestConnectionLobADATCP(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping malloc count in short mode")
+		t.Skip("skipping LOB call in short mode")
 	}
 	if runtime.GOARCH == "arm" {
 		t.Skip("Not supported on this architecture")

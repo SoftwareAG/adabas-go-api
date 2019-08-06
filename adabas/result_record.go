@@ -42,11 +42,13 @@ type Record struct {
 	adabasMap  *Map
 }
 
-func hashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
+func traverseHashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	record := x.(*Record)
-	adatypes.Central.Log.Debugf("Add hash to %s", adaValue.Type().Name())
 	//if _, ok := record.HashFields[adaValue.Type().Name()]; !ok {
-	record.HashFields[adaValue.Type().Name()] = adaValue
+	if !adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost) {
+		adatypes.Central.Log.Debugf("Add hash to %s", adaValue.Type().Name())
+		record.HashFields[adaValue.Type().Name()] = adaValue
+	}
 	//}
 
 	return adatypes.Continue, nil
@@ -67,7 +69,7 @@ func NewRecord(definition *adatypes.Definition) (*Record, error) {
 	record := &Record{Value: definition.Values, definition: definition}
 	definition.Values = nil
 	record.HashFields = make(map[string]adatypes.IAdaValue)
-	t := adatypes.TraverserValuesMethods{EnterFunction: hashValues}
+	t := adatypes.TraverserValuesMethods{EnterFunction: traverseHashValues}
 	record.traverse(t, record)
 	return record, nil
 }
