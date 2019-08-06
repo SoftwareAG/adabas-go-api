@@ -174,29 +174,33 @@ func AllGlobalMaps(adabas *Adabas) (maps []*Map, err error) {
 
 // AllGlobalMapNames search in map repositories global defined, all map names
 func AllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
-	maps = make([]string, 0)
 	// First map loop running using the cache map
 	if mapLoopRunning {
+		maps = make([]string, 0)
 		for m, mr := range mapHash {
 			if mr.online {
 				maps = append(maps, m)
 			}
 		}
+		adatypes.Central.Log.Debugf("All global maps number %d", len(maps))
+		fmt.Printf("All global maps number %d\n", len(maps))
+
 		return maps, nil
 	}
 	return readAllGlobalMapNames(adabas)
 }
 
 // AllGlobalMapNames search in map repositories global defined, all map names
-func readAllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
+func readAllGlobalMapNames(ada *Adabas) (maps []string, err error) {
+	defer ada.Close()
 	// If no map loop running, read through all repositories
 	for ref, mr := range repositories {
-		adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
+		ada.SetDbid(mr.DatabaseURL.URL.Dbid)
 		adatypes.Central.Log.Debugf("Read map names in repository using Adabas %s for %s/%03d in %s",
-			adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr, ref)
-		err = mr.LoadMapRepository(adabas)
+			ada.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr, ref)
+		err = mr.LoadMapRepository(ada)
 		if err != nil {
-			adatypes.Central.Log.Infof("Skip repository %s/%d due to error %v", mr.DatabaseURL.URL.String(), mr.Fnr, err)
+			adatypes.Central.Log.Infof("Skip repository %s/%d due to error %v define offline", mr.DatabaseURL.URL.String(), mr.Fnr, err)
 			mr.online = false
 			continue
 		}
@@ -205,7 +209,7 @@ func readAllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
 			maps = append(maps, mn)
 			mapHash[mn] = mr
 		}
-		adatypes.Central.Log.Debugf("Found %d map names in repository using Adabas %s/%03d", len(maps), adabas.URL.String(), mr.Fnr)
+		adatypes.Central.Log.Debugf("Found %d map names in repository using Adabas %s/%03d hash=%d", len(maps), ada.URL.String(), mr.Fnr, len(mapHash))
 	}
 	adatypes.Central.Log.Debugf("Found %d map names in all repositories", len(maps))
 	return
