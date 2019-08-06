@@ -78,7 +78,7 @@ func TestRecord(t *testing.T) {
 	}
 }
 
-func TestRecord_MarshalXML(t *testing.T) {
+func TestRecord_Marshal(t *testing.T) {
 	initTestLogWithFile(t, "Record.log")
 
 	resultNil, err := NewRecord(nil)
@@ -126,6 +126,55 @@ func TestRecord_MarshalXML(t *testing.T) {
 		jout, jerr = json.Marshal(result)
 		assert.NoError(t, jerr)
 		assert.Equal(t, "{\"B1\":10,\"I2\":100,\"I8\":1234567,\"S4\":\"ABCabcdfegggggg\",\"U4\":4200,\"U8\":0,\"UB\":0}", string(jout))
+		fmt.Println("JSON:", string(jout))
+
+	}
+}
+
+func TestRecord_MarshalLink(t *testing.T) {
+	initTestLogWithFile(t, "Record.log")
+
+	resultNil, err := NewRecord(nil)
+	assert.Error(t, err)
+	assert.Nil(t, resultNil)
+
+	layout := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypeUInt4, "U4", "UInt4"),
+		adatypes.NewType(adatypes.FieldTypeLBString, "S4", "@Link", 100),
+		adatypes.NewType(adatypes.FieldTypeUInt8, "I8", "Int8"),
+	}
+
+	testDefinition := adatypes.NewDefinitionWithTypes(layout)
+	testDefinition.CreateValues(false)
+	result, err := NewRecord(testDefinition)
+	if assert.NoError(t, err) {
+		verr := result.SetValue("U4", 100)
+		assert.Error(t, verr)
+		verr = result.SetValue("UInt4", 100)
+		assert.NoError(t, verr)
+		verr = result.SetValue("Int8", "1234567")
+		assert.NoError(t, verr)
+		verr = result.SetValue("S4", "1234567")
+		assert.Error(t, verr)
+		verr = result.SetValue("@Link", "4200")
+		assert.NoError(t, verr)
+
+		xout, xerr := xml.Marshal(result)
+		assert.NoError(t, xerr)
+		fmt.Println("XML:", string(xout))
+		assert.Equal(t, "<Record><UInt4>100</UInt4><Link type=\"link\">4200</Link><Int8>1234567</Int8></Record>", string(xout))
+		jout, jerr := json.Marshal(result)
+		assert.NoError(t, jerr)
+		fmt.Println("JSON:", string(jout))
+		assert.Equal(t, "{\"@Link\":\"4200\",\"Int8\":1234567,\"UInt4\":100}", string(jout))
+		result.adabasMap = NewAdabasMap("ABC", &DatabaseURL{})
+		xout, xerr = xml.Marshal(result)
+		assert.NoError(t, xerr)
+		fmt.Println("XML:", string(xout))
+		assert.Equal(t, "<ABC><UInt4>100</UInt4><Link type=\"link\">4200</Link><Int8>1234567</Int8></ABC>", string(xout))
+		jout, jerr = json.Marshal(result)
+		assert.NoError(t, jerr)
+		assert.Equal(t, "{\"@Link\":\"4200\",\"Int8\":1234567,\"UInt4\":100}", string(jout))
 		fmt.Println("JSON:", string(jout))
 
 	}

@@ -108,18 +108,22 @@ func NewFieldCondition(index int, ref int, condition map[byte][]byte) FieldCondi
 func NewType(param ...interface{}) *AdaType {
 	fType := param[0].(FieldType)
 	name := param[1].(string)
+	longName := name
 	length := uint32(1)
 	if len(param) > 2 {
-		switch param[2].(type) {
-		case int:
-			i := param[2].(int)
-			length = uint32(i)
-		case uint32:
-			length = param[2].(uint32)
-		default:
-			Central.Log.Debugf("Unknown parameter type %T", param[2])
-			//panic("Error for type parameter")
-			return nil
+		for i := 2; i < len(param); i++ {
+			switch p := param[i].(type) {
+			case int:
+				length = uint32(p)
+			case uint32:
+				length = p
+			case string:
+				longName = p
+			default:
+				Central.Log.Debugf("Unknown parameter type %T", param[2])
+				//panic("Error for type parameter")
+				return nil
+			}
 		}
 	}
 	flags := FlagOptionToBeRemoved.Bit()
@@ -138,7 +142,7 @@ func NewType(param ...interface{}) *AdaType {
 	return &AdaType{CommonType: CommonType{
 		fieldType: fType,
 		level:     1,
-		name:      name,
+		name:      longName,
 		flags:     flags,
 		shortName: name,
 		peRange:   *NewEmptyRange(),

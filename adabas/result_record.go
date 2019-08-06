@@ -305,7 +305,15 @@ func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 			enc.EncodeToken(start)
 		}
 	} else {
-		start := xml.StartElement{Name: xml.Name{Local: adaValue.Type().Name()}}
+		isLink := strings.HasPrefix(adaValue.Type().Name(), "@")
+		name := adaValue.Type().Name()
+		if isLink {
+			name = adaValue.Type().Name()[1:]
+		}
+		start := xml.StartElement{Name: xml.Name{Local: name}}
+		if isLink {
+			start.Attr = []xml.Attr{xml.Attr{Name: xml.Name{Local: "type"}, Value: "link"}}
+		}
 		enc.EncodeToken(start)
 		x := adaValue.String()
 		x = strings.Trim(x, " ")
