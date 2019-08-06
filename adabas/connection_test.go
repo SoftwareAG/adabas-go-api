@@ -1881,10 +1881,14 @@ func TestConnectionLobADATCP(t *testing.T) {
 	err = readRequest.QueryFields("DC,EC")
 	assert.NoError(t, err)
 	result, rerr := readRequest.ReadISN(1)
-	assert.NoError(t, rerr)
+	if !assert.NoError(t, rerr) {
+		return
+	}
 
 	dc, serr := result.Values[0].SearchValue("DC")
-	assert.NoError(t, serr)
+	if !assert.NoError(t, serr) {
+		return
+	}
 	assert.NotNil(t, dc)
 	h := sha1.New()
 	_, err = h.Write(dc.Bytes())
