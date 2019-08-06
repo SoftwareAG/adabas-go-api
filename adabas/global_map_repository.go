@@ -190,6 +190,7 @@ func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, err er
 	if r, ok := mapHash[mapName]; ok {
 		if r.online {
 			adatypes.Central.Log.Infof("Found in map hash, query map...")
+			adabas.SetDbid(r.DatabaseURL.URL.Dbid)
 			adabasMap, err = r.SearchMap(adabas, mapName)
 			if err == nil {
 				return
