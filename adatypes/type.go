@@ -153,28 +153,25 @@ func NewType(param ...interface{}) *AdaType {
 
 // NewLongNameType Define new type with length equal 1
 func NewLongNameType(fType FieldType, name string, shortName string) *AdaType {
-	t := NewType(fType, name)
-	t.shortName = shortName
-	return t
+	return NewType(fType, shortName, name)
 }
 
 // NewTypeWithLength Definen new type
 func NewTypeWithLength(fType FieldType, name string, length uint32) *AdaType {
-	return &AdaType{CommonType: CommonType{
-		fieldType: fType,
-		level:     1,
-		name:      name,
-		flags:     uint32(1 << FlagOptionToBeRemoved),
-		shortName: name,
-		length:    length,
-	}}
+	return NewType(fType, name, length)
+	// return &AdaType{CommonType: CommonType{
+	// 	fieldType: fType,
+	// 	level:     1,
+	// 	name:      name,
+	// 	flags:     uint32(1 << FlagOptionToBeRemoved),
+	// 	shortName: name,
+	// 	length:    length,
+	// }}
 }
 
 // NewLongNameTypeWithLength Definen new type
 func NewLongNameTypeWithLength(fType FieldType, name string, shortName string, length uint32) *AdaType {
-	t := NewTypeWithLength(fType, name, length)
-	t.shortName = shortName
-	return t
+	return NewType(fType, shortName, name, length)
 }
 
 // String return the name of the field

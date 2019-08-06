@@ -35,12 +35,14 @@ type DatabaseURL struct {
 	Fnr Fnr `json:"File"`
 }
 
+// dbid reply the database id
 func (repURL *DatabaseURL) dbid() (dbid Dbid, err error) {
 	adatypes.Central.Log.Debugf("repURL=%#v", repURL)
 	dbid = repURL.URL.Dbid
 	return
 }
 
+// map name flags contains map related ISN and if found in search
 type mapNameFlags struct {
 	isn   adatypes.Isn
 	found bool

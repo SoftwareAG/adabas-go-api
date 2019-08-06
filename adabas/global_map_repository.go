@@ -29,8 +29,11 @@ import (
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
-var repositories map[string]*Repository
-var mapHash map[string]*Repository
+var (
+	repositories   map[string]*Repository
+	mapHash        map[string]*Repository
+	mapLoopRunning bool
+)
 
 func init() {
 	mapHash = make(map[string]*Repository)
@@ -45,8 +48,15 @@ func StartAsynchronousMapCache() {
 	go loopMapCache()
 }
 
+// EndAsynchronousMapCache end asynchronous cache
+func EndAsynchronousMapCache() {
+	mapLoopRunning = false
+}
+
 func loopMapCache() {
-	for {
+	mapLoopRunning = true
+	defer EndAsynchronousMapCache()
+	for mapLoopRunning {
 		ada, err := NewAdabas(1)
 		if err != nil {
 			adatypes.Central.Log.Infof("Error loop map cache %v", err)
@@ -163,6 +173,16 @@ func AllGlobalMaps(adabas *Adabas) (maps []*Map, err error) {
 // AllGlobalMapNames search in map repositories global defined, all map names
 func AllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
 	maps = make([]string, 0)
+	// First map loop running using the cache map
+	if mapLoopRunning {
+		for m, mr := range mapHash {
+			if mr.online {
+				maps = append(maps, m)
+			}
+		}
+		return maps, nil
+	}
+	// If no map loop running, read through all repositories
 	for ref, mr := range repositories {
 		adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
 		adatypes.Central.Log.Debugf("Read map names in repository using Adabas %s for %s/%03d in %s",
