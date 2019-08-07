@@ -250,6 +250,60 @@ func (record *Record) SearchValueIndex(name string, index []uint32) (adatypes.IA
 	return record.definition.SearchByIndex(name, index, false)
 }
 
+// PeriodGroup period group of field value
+func PeriodGroup(v adatypes.IAdaValue) adatypes.IAdaValue {
+	if v.Type().HasFlagSet(adatypes.FlagOptionPE) {
+		c := v
+		for c.Type().Type() != adatypes.FieldTypePeriodGroup {
+			c = c.Parent()
+		}
+		return c
+	}
+	return nil
+}
+
+// ValueQuantity provide number of quantity in an PE or MU field
+func (record *Record) ValueQuantity(param ...interface{}) int32 {
+	if len(param) == 0 {
+		return -1
+	}
+	fieldName := param[0].(string)
+	if v, ok := record.HashFields[fieldName]; ok {
+		if v.Type().HasFlagSet(adatypes.FlagOptionPE) {
+			adatypes.Central.Log.Debugf("%s PE", v.Type().Name())
+			if len(param) == 1 {
+				p := PeriodGroup(v)
+				pv := p.(*adatypes.StructureValue)
+				return int32(pv.NrElements())
+			}
+			var index []uint32
+			for i := 1; i < len(param); i++ {
+				switch w := param[i].(type) {
+				case uint32:
+					index = append(index, w)
+				case int:
+					index = append(index, uint32(w))
+				default:
+				}
+			}
+			var err error
+			v, err = record.SearchValueIndex(fieldName, index)
+			if err != nil {
+				adatypes.Central.Log.Debugf("Error %s/%v: %v", fieldName, index, err)
+				return -1
+			}
+
+		}
+		if v.Type().Type() == adatypes.FieldTypeMultiplefield {
+			adatypes.Central.Log.Debugf("%s MU", v.Type().Name())
+			mv := v.(*adatypes.StructureValue)
+			return int32(mv.NrElements())
+		}
+		return 1
+	}
+	return -1
+}
+
 // Scan scan for different field entries
 func (record *Record) Scan(dest ...interface{}) (err error) {
 	adatypes.Central.Log.Debugf("Scan Record %#v", record.fields)

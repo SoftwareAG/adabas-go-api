@@ -139,13 +139,14 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 					Central.Log.Debugf("Found value searching %s under %s", x.found.Type().Name(), strv.Type().Name())
 					if x.found.Type().Type() == FieldTypeMultiplefield {
 						if len(index) < 2 {
-							return nil, NewGenericError(61)
-						}
-						strv := x.found.(*StructureValue)
-						element := strv.elementMap[index[1]]
-						if element == nil {
-							err = NewGenericError(123)
-							return
+							//return nil, NewGenericError(61)
+						} else {
+							strv := x.found.(*StructureValue)
+							element := strv.elementMap[index[1]]
+							if element == nil {
+								err = NewGenericError(123)
+								return
+							}
 						}
 					}
 					value = x.found

@@ -369,7 +369,7 @@ func TestConnectionPEMUMfMap(t *testing.T) {
 
 func TestConnectionPEShiftMfMap(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping malloc count in short mode")
+		t.Skip("skipping mainframe tests in short mode")
 	}
 	if runtime.GOARCH == "arm" {
 		t.Skip("Not supported on this architecture")
@@ -402,8 +402,20 @@ func TestConnectionPEShiftMfMap(t *testing.T) {
 		fmt.Println("Check size ...", len(result.Values))
 		if assert.Equal(t, 5, len(result.Values)) {
 			ae := result.Values[1].HashFields["name"]
-			fmt.Println("Check HAIBACH ...")
+			fmt.Println("Check SCHILLING ...")
 			assert.Equal(t, "SCHILLING", strings.TrimSpace(ae.String()))
+			ae = result.Values[2].HashFields["name"]
+			val := result.Values[2]
+			fmt.Println("Check FREI ...")
+			assert.Equal(t, "FREI", strings.TrimSpace(ae.String()))
+			nv, _ := val.searchValue("name")
+			assert.Equal(t, "FREI", strings.TrimSpace(nv.String()))
+			assert.Equal(t, int32(3), val.ValueQuantity("income"))
+			assert.Equal(t, int32(3), val.ValueQuantity("bonus"))
+			assert.Equal(t, int32(0), val.ValueQuantity("bonus", 2))
+			assert.Equal(t, int32(0), val.ValueQuantity("bonus", 3))
+			_, aerr := val.SearchValueIndex("bonus", []uint32{3, 12})
+			assert.Error(t, aerr)
 		}
 	}
 

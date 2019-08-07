@@ -71,6 +71,7 @@ type IAdaValue interface {
 	FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32
 	Value() interface{}
 	SetParent(parentAdaValue IAdaValue)
+	Parent() IAdaValue
 	SetStringValue(string)
 	SetValue(interface{}) error
 	StoreBuffer(*BufferHelper) error
@@ -422,6 +423,10 @@ func (adavalue *adaValue) setMultipleIndex(index uint32) {
 
 func (adavalue *adaValue) SetParent(parentAdaValue IAdaValue) {
 	adavalue.parent = parentAdaValue
+}
+
+func (adavalue *adaValue) Parent() IAdaValue {
+	return adavalue.parent
 }
 
 func (value *fillerValue) ByteValue() byte {
