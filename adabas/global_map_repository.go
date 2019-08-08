@@ -132,7 +132,7 @@ func DumpGlobalMapRepositories() {
 	for _, r := range repositories {
 		fmt.Printf("Repository at %s map file=%d:\n", r.URL, r.Fnr)
 		if r.mapNames == nil || len(r.mapNames) == 0 {
-			if a, err := NewAdabasWithURL(&r.DatabaseURL.URL, id); err == nil {
+			if a, err := NewAdabas(&r.DatabaseURL.URL, id); err == nil {
 				err = r.LoadMapRepository(a)
 				if err != nil {
 					fmt.Println("    Map repository access problem", err)

@@ -114,7 +114,7 @@ func createNewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Rep
 	if serr != nil {
 		return nil, serr
 	}
-	dataAdabas, nerr := NewAdabasWithURL(&adabasMap.Data.URL, adabas.ID)
+	dataAdabas, nerr := NewAdabas(&adabasMap.Data.URL, adabas.ID)
 	if nerr != nil {
 		return nil, nerr
 	}
