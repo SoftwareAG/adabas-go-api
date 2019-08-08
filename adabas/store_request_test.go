@@ -251,7 +251,7 @@ func TestStoreMapFields(t *testing.T) {
 func clearAdabasFile(t *testing.T, target string, fnr Fnr) error {
 	fmt.Println("Clear Adabas file", target, "/", fnr)
 	id := NewAdabasID()
-	adabas, err := NewAdabasWithID(target, id)
+	adabas, err := NewAdabas(target, id)
 	if err != nil {
 		return err
 	}
@@ -455,7 +455,7 @@ func checkUpdateCorrectRead(t *testing.T, value string, isn adatypes.Isn) {
 func checkUpdateCorrectReadNumber(t *testing.T, value string, isns []adatypes.Isn, number int) {
 	id := NewAdabasID()
 	copy(id.AdaID.User[:], []byte("CHECK   "))
-	adabas, err := NewAdabasWithID(adabasModDBIDs, id)
+	adabas, err := NewAdabas(adabasModDBIDs, id)
 	if !assert.NoError(t, err) {
 		return
 	}

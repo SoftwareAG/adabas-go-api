@@ -224,7 +224,7 @@ func main() {
 	}
 
 	id := adabas.NewAdabasID()
-	a, err := adabas.NewAdabasWithID(dbidParameter, id)
+	a, err := adabas.NewAdabas(dbidParameter, id)
 	if err != nil {
 		fmt.Println("Adabas target generation error", err)
 		return

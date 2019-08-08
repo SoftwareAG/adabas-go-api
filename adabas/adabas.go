@@ -105,6 +105,8 @@ func NewAdabas(p ...interface{}) (ada *Adabas, err error) {
 		if err != nil {
 			return
 		}
+	case *URL:
+		url = u
 	default:
 		return nil, adatypes.NewGenericError(87)
 	}
@@ -132,16 +134,23 @@ func NewAdabas(p ...interface{}) (ada *Adabas, err error) {
 
 }
 
-// NewAdabass create a new Adabas struct instance using string parameter
-// func NewAdabass(target string) (*Adabas, error) {
-// 	ID := NewAdabasID()
-// 	adatypes.Central.Log.Debugf("Implicit created Adabas instance target with ID %s", ID.String())
+// // NewAdabasWithID create a new Adabas struct instance using string parameter
+// func NewAdabasWithID(target string, ID *ID) (*Adabas, error) {
+// 	if ID == nil {
+// 		return nil, adatypes.NewGenericError(60)
+// 	}
+// 	adatypes.Central.Log.Debugf("Use new Adabas with Adabas ID: %s", ID.String())
+// 	// fmt.Println("Create URL", target)
 // 	URL, err := NewURL(target)
 // 	if err != nil {
 // 		return nil, err
 // 	}
+// 	if (URL.Dbid < 1) || (URL.Dbid > MaxDatabasesID) {
+// 		err = adatypes.NewGenericError(67, URL.Dbid, 1, MaxDatabasesID)
+// 		return nil, err
+// 	}
+
 // 	acbx := newAcbx(URL.Dbid)
-// 	adatypes.Central.Log.Debugf("Created ACBX")
 // 	return &Adabas{
 // 		ID:           ID,
 // 		status:       ID.status(URL.String()),
@@ -151,48 +160,22 @@ func NewAdabas(p ...interface{}) (ada *Adabas, err error) {
 // 	}, nil
 // }
 
-// NewAdabasWithID create a new Adabas struct instance using string parameter
-func NewAdabasWithID(target string, ID *ID) (*Adabas, error) {
-	if ID == nil {
-		return nil, adatypes.NewGenericError(60)
-	}
-	adatypes.Central.Log.Debugf("Use new Adabas with Adabas ID: %s", ID.String())
-	// fmt.Println("Create URL", target)
-	URL, err := NewURL(target)
-	if err != nil {
-		return nil, err
-	}
-	if (URL.Dbid < 1) || (URL.Dbid > MaxDatabasesID) {
-		err = adatypes.NewGenericError(67, URL.Dbid, 1, MaxDatabasesID)
-		return nil, err
-	}
-
-	acbx := newAcbx(URL.Dbid)
-	return &Adabas{
-		ID:           ID,
-		status:       ID.status(URL.String()),
-		URL:          URL,
-		Acbx:         acbx,
-		transactions: &transactions{},
-	}, nil
-}
-
-// NewAdabasWithURL create a new Adabas struct instance
-func NewAdabasWithURL(URL *URL, ID *ID) (*Adabas, error) {
-	adatypes.Central.Log.Debugf("Use new Adabas instance with Adabas ID: %s", ID.String())
-	if (URL.Dbid < 1) || (URL.Dbid > MaxDatabasesID) {
-		err := adatypes.NewGenericError(67, URL.Dbid, 1, MaxDatabasesID)
-		return nil, err
-	}
-	acbx := newAcbx(URL.Dbid)
-	return &Adabas{
-		URL:          URL,
-		ID:           ID,
-		status:       ID.status(URL.String()),
-		Acbx:         acbx,
-		transactions: &transactions{},
-	}, nil
-}
+// // NewAdabasWithURL create a new Adabas struct instance
+// func NewAdabasWithURL(URL *URL, ID *ID) (*Adabas, error) {
+// 	adatypes.Central.Log.Debugf("Use new Adabas instance with Adabas ID: %s", ID.String())
+// 	if (URL.Dbid < 1) || (URL.Dbid > MaxDatabasesID) {
+// 		err := adatypes.NewGenericError(67, URL.Dbid, 1, MaxDatabasesID)
+// 		return nil, err
+// 	}
+// 	acbx := newAcbx(URL.Dbid)
+// 	return &Adabas{
+// 		URL:          URL,
+// 		ID:           ID,
+// 		status:       ID.status(URL.String()),
+// 		Acbx:         acbx,
+// 		transactions: &transactions{},
+// 	}, nil
+// }
 
 // Open opens a session to the database
 func (adabas *Adabas) Open() (err error) {
@@ -718,43 +701,14 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 				count++
 				adatypes.Central.Log.Debugf("Nr of multifetch entries left: %d", nrMultifetchEntries)
 				if multifetchHelper != nil {
-					recordLength, rErr := multifetchHelper.ReceiveUInt32()
-					if rErr != nil {
-						err = rErr
-						return
-					}
-					adatypes.Central.Log.Debugf("Record length %d", recordLength)
-					responseCode, err = multifetchHelper.ReceiveUInt32()
+					responseCode, err = adabas.readMultifetch(adabasRequest, multifetchHelper)
 					if err != nil {
-						adatypes.Central.Log.Debugf("Response parser error in MF %v", err)
+						adatypes.Central.Log.Debugf("Multifetch parse error: %v", err)
 						return
 					}
 					if responseCode != AdaNormal {
-						adabasRequest.Response = uint16(responseCode) // adabas.Acbx.Acbxrsp
-						adatypes.Central.Log.Debugf("Response code in MF %v", adabasRequest.Response)
 						break
 					}
-					adatypes.Central.Log.Debugf("Response code %d", responseCode)
-					isn, isnErr := multifetchHelper.ReceiveUInt32()
-					if isnErr != nil {
-						err = isnErr
-						return
-					}
-					adatypes.Central.Log.Debugf("ISN %d", isn)
-					adabasRequest.Isn = adatypes.Isn(isn)
-					switch adabas.Acbx.Acbxcmd {
-					case l1.code(), l4.code():
-						adabas.Acbx.Acbxisn = adatypes.Isn(isn)
-					case l2.code(), l5.code():
-					default:
-						adabas.Acbx.Acbxisn = adatypes.Isn(isn)
-					}
-					quantity, qerr := multifetchHelper.ReceiveUInt32()
-					if qerr != nil {
-						return
-					}
-					adatypes.Central.Log.Debugf("ISN quantity=%d", quantity)
-					adabasRequest.IsnQuantity = uint64(quantity)
 				}
 
 				switch adabas.Acbx.Acbxcmd {
@@ -815,6 +769,48 @@ func (adabas *Adabas) resetSendSize() {
 	for _, abd := range adabas.AdabasBuffers {
 		abd.resetSendSize()
 	}
+}
+
+// Parse multifetch values
+func (adabas *Adabas) readMultifetch(adabasRequest *adatypes.Request, multifetchHelper *adatypes.BufferHelper) (responseCode uint32, err error) {
+	recordLength, rErr := multifetchHelper.ReceiveUInt32()
+	if rErr != nil {
+		err = rErr
+		return
+	}
+	adatypes.Central.Log.Debugf("Record length %d", recordLength)
+	responseCode, err = multifetchHelper.ReceiveUInt32()
+	if err != nil {
+		adatypes.Central.Log.Debugf("Response parser error in MF %v", err)
+		return
+	}
+	if responseCode != AdaNormal {
+		adabasRequest.Response = uint16(responseCode) // adabas.Acbx.Acbxrsp
+		adatypes.Central.Log.Debugf("Response code in MF %v", adabasRequest.Response)
+		return
+	}
+	adatypes.Central.Log.Debugf("Response code %d", responseCode)
+	isn, isnErr := multifetchHelper.ReceiveUInt32()
+	if isnErr != nil {
+		err = isnErr
+		return
+	}
+	adatypes.Central.Log.Debugf("Got ISN %d", isn)
+	adabasRequest.Isn = adatypes.Isn(isn)
+	switch adabas.Acbx.Acbxcmd {
+	case l1.code(), l4.code():
+		adabas.Acbx.Acbxisn = adatypes.Isn(isn)
+	case l2.code(), l5.code():
+	default:
+		adabas.Acbx.Acbxisn = adatypes.Isn(isn)
+	}
+	quantity, qerr := multifetchHelper.ReceiveUInt32()
+	if qerr != nil {
+		return
+	}
+	adatypes.Central.Log.Debugf("ISN quantity=%d", quantity)
+	adabasRequest.IsnQuantity = uint64(quantity)
+	return
 }
 
 // do second call reading lob data or multiple fields of the period group

@@ -207,6 +207,7 @@ func (request *ReadRequest) SetHoldRecords(hold adatypes.HoldType) {
 	request.HoldRecords = hold
 }
 
+// parses the read record record
 func parseRead(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	result := x.(*Response)
 

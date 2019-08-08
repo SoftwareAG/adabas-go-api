@@ -134,6 +134,7 @@ func (request *commonRequest) IsOpen() bool {
 	return request.adabas.status.open
 }
 
+// TraverseFields traverse through all request fields
 func (request *commonRequest) TraverseFields(t adatypes.TraverserMethods, p interface{}) error {
 	return request.definition.TraverseTypes(t, true, p)
 }

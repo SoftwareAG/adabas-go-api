@@ -85,7 +85,7 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 		case strings.HasPrefix(p, "target="):
 			target := strings.Split(parts[1], "=")
 			adatypes.Central.Log.Debugf("Connection to target : %s", target[1])
-			adabasToData, err = NewAdabasWithID(target[1], adabasID)
+			adabasToData, err = NewAdabas(target[1], adabasID)
 			if err != nil {
 				return nil, err
 			}
@@ -118,7 +118,7 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 		if serr != nil {
 			return nil, serr
 		}
-		adabasToMap, err = NewAdabasWithID(repositoryParameter[1], adabasID)
+		adabasToMap, err = NewAdabas(repositoryParameter[1], adabasID)
 		if err != nil {
 			return nil, err
 		}
@@ -146,7 +146,7 @@ func (connection *Connection) searchRepository(adabasID *ID, repository *Reposit
 	mapName string) (err error) {
 	if repository == nil {
 		adatypes.Central.Log.Debugf("Search in global repositories")
-		connection.adabasToMap, err = NewAdabasWithID("1", adabasID)
+		connection.adabasToMap, err = NewAdabas("1", adabasID)
 		if err != nil {
 			return err
 		}
@@ -160,7 +160,7 @@ func (connection *Connection) searchRepository(adabasID *ID, repository *Reposit
 		}
 	} else {
 		adatypes.Central.Log.Debugf("Search in given repository %v", repository)
-		connection.adabasToMap, err = NewAdabasWithID(repository.DatabaseURL.URL.String(), adabasID)
+		connection.adabasToMap, err = NewAdabas(repository.DatabaseURL.URL.String(), adabasID)
 		if err != nil {
 			adatypes.Central.Log.Debugf("New Adabas to map ID error: %v", err)
 			return err

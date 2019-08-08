@@ -212,7 +212,7 @@ func (Response *Response) MarshalXML(e *xml.Encoder, start xml.StartElement) err
 // 	Value map[string]string
 // }
 
-type request struct {
+type responseJSON struct {
 	Values         []*map[string]interface{} `json:"Records"`
 	dataMap        *map[string]interface{}
 	stack          *adatypes.Stack
@@ -238,7 +238,7 @@ func evaluateValue(adaValue adatypes.IAdaValue) (interface{}, error) {
 }
 
 func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
-	req := x.(*request)
+	req := x.(*responseJSON)
 	if !adaValue.Type().IsSpecialDescriptor() && !adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost) {
 		adatypes.Central.Log.Debugf("Marshal JSON level=%d %s -> type=%T MU ghost=%v", adaValue.Type().Level(),
 			adaValue.Type().Name(), adaValue, adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost))
@@ -302,7 +302,7 @@ func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 
 func traverseElementMarshalJSON(adaValue adatypes.IAdaValue, nr, max int, x interface{}) (adatypes.TraverseResult, error) {
 	if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup {
-		req := x.(*request)
+		req := x.(*responseJSON)
 		if req.structureArray == nil {
 			req.stack.Push(req.dataMap)
 		}
@@ -316,7 +316,7 @@ func traverseElementMarshalJSON(adaValue adatypes.IAdaValue, nr, max int, x inte
 func traverseMarshalJSONEnd(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	if adaValue.Type().IsStructure() && adaValue.Type().Type() != adatypes.FieldTypeMultiplefield {
 		sv := adaValue.(*adatypes.StructureValue)
-		req := x.(*request)
+		req := x.(*responseJSON)
 		if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup && len(sv.Elements) == 0 {
 			(*req.dataMap)[adaValue.Type().Name()] = make([]interface{}, 0)
 			adatypes.Central.Log.Debugf("JSON end skip for %s->%d", adaValue.Type().Name(), req.stack.Size)
@@ -343,7 +343,7 @@ func traverseMarshalJSONEnd(adaValue adatypes.IAdaValue, x interface{}) (adatype
 
 // MarshalJSON provide JSON
 func (Response *Response) MarshalJSON() ([]byte, error) {
-	req := &request{special: true}
+	req := &responseJSON{special: true}
 	adatypes.Central.Log.Debugf("Marshal JSON go through records -> %d", len(Response.Values))
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalJSON, LeaveFunction: traverseMarshalJSONEnd,
 		ElementFunction: traverseElementMarshalJSON}

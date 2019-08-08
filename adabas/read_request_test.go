@@ -154,7 +154,7 @@ func TestRequestRemoteLogicalByAll(t *testing.T) {
 	url := "201(tcpip://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
 	ID := NewAdabasID()
-	adabas, aerr := NewAdabasWithID(url, ID)
+	adabas, aerr := NewAdabas(url, ID)
 	if !assert.NoError(t, aerr) {
 		return
 	}

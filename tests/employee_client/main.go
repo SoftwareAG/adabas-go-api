@@ -233,7 +233,7 @@ func main() {
 	for i := uint32(0); i < uint32(threadValue); i++ {
 		fmt.Printf("Start thread %d/%d\n", i+1, threadValue)
 		id := adabas.NewAdabasID()
-		adabas, err := adabas.NewAdabasWithID(args[0], id)
+		adabas, err := adabas.NewAdabas(args[0], id)
 		if err != nil {
 			fmt.Println("Error createing Adabas link:", err)
 			return

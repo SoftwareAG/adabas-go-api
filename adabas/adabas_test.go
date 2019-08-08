@@ -558,7 +558,7 @@ func TestAdabasFdtNewEmployeeRemote(t *testing.T) {
 	url := "201(tcpip://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
 	ID := NewAdabasID()
-	adabas, uerr := NewAdabasWithID(url, ID)
+	adabas, uerr := NewAdabas(url, ID)
 	if !assert.NoError(t, uerr) {
 		return
 	}
@@ -601,7 +601,7 @@ func TestAdabasUnknownDriver(t *testing.T) {
 	url := "201(abc://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
 	ID := NewAdabasID()
-	adabas, uerr := NewAdabasWithID(url, ID)
+	adabas, uerr := NewAdabas(url, ID)
 	if !assert.NoError(t, uerr) {
 		return
 	}

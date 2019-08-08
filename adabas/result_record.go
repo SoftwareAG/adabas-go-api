@@ -443,7 +443,7 @@ func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 // MarshalJSON provide JSON
 func (record *Record) MarshalJSON() ([]byte, error) {
 	adatypes.Central.Log.Debugf("Marshal JSON record: %d", record.Isn)
-	req := &request{special: true}
+	req := &responseJSON{special: true}
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalJSON, LeaveFunction: traverseMarshalJSONEnd,
 		ElementFunction: traverseElementMarshalJSON}
 	req.stack = adatypes.NewStack()
@@ -467,40 +467,3 @@ func (record *Record) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(req.dataMap)
 }
-
-// UnmarshalJSON parse JSON
-// func (record *Record) UnmarshalJSON(b []byte) error {
-// 	var stuff map[string]interface{}
-// 	err := json.Unmarshal(b, &stuff)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if record.Value == nil {
-// 		if record.definition.Values == nil {
-// 			record.definition.CreateValues(false)
-// 		}
-// 		record.Value = record.definition.Values
-// 	}
-// 	for key, value := range stuff {
-// 		fmt.Println("JSON:", key, "=", value)
-// 		if key == "ISN" {
-// 			isn, ierr := strconv.Atoi(value.(string))
-// 			if ierr != nil {
-// 				return ierr
-// 			}
-// 			record.Isn = adatypes.Isn(isn)
-// 		} else {
-// 			switch value.(type) {
-// 			case map[string]interface{}:
-// 				fmt.Println("JSON:", key, "=", value)
-// 			default:
-// 				err = record.SetValue(key, value)
-// 				if err != nil {
-// 					fmt.Println("Error setting key:", key)
-// 					return err
-// 				}
-// 			}
-// 		}
-// 	}
-// 	return nil
-// }
