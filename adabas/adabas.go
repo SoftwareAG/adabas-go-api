@@ -643,6 +643,27 @@ func (adabas *Adabas) SearchLogicalWith(fileNr Fnr, adabasRequest *adatypes.Requ
 func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	adatypes.Central.Log.Debugf("Loop call records")
 	count := uint64(0)
+	adabasRequest.CmdCode = adabas.Acbx.Acbxcmd
+	switch adabas.Acbx.Acbxcmd {
+	case l1.code(), l4.code():
+		adabasRequest.IsnIncrease = true
+		adabasRequest.StoreIsn = true
+	case l2.code(), l5.code():
+		adabasRequest.IsnIncrease = false
+		adabasRequest.StoreIsn = false
+	default:
+		adabasRequest.IsnIncrease = false
+		adabasRequest.StoreIsn = true
+	}
+	if adabasRequest.Parameter == nil {
+		adabasRequest.Reference = fmt.Sprintf("db/%d/%d", adabas.Acbx.Acbxdbid, adabas.Acbx.Acbxfnr)
+	} else {
+		adabasMap := adabasRequest.Parameter.(*Map)
+		adatypes.Central.Log.Debugf("%v -> %#v\n", adabasRequest.Parameter, adabasMap)
+		if adabasMap != nil {
+			adabasRequest.Reference = fmt.Sprintf("map/%s", adabasMap.Name)
+		}
+	}
 	var responseCode uint32
 	for responseCode == 0 {
 		if !adabasRequest.Option.SecondCall {
@@ -659,6 +680,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			return
 		}
 
+		adabasRequest.Caller = adabas
 		adabasRequest.Response = adabas.Acbx.Acbxrsp
 
 		// End of file reached
@@ -671,96 +693,33 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			err = NewError(adabas)
 			return
 		}
-		adabasRequest.RecordBuffer = adatypes.NewHelper(adabas.AdabasBuffers[1].buffer,
-			int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())
 		adabasRequest.Isn = adatypes.Isn(adabas.Acbx.Acbxisn)
 		adabasRequest.IsnQuantity = adabas.Acbx.Acbxisq
 		adatypes.Central.Log.Debugf("ISN= %d ISN quantity=%d multifetch=%d", adabasRequest.Isn, adabasRequest.IsnQuantity,
 			adabasRequest.Multifetch)
 
-		// If parser is available, use the parser to extract content
-		if adabasRequest.Parser != nil {
-			var multifetchHelper *adatypes.BufferHelper
-			nrMultifetchEntries := uint32(1)
-			if adabasRequest.Multifetch > 1 {
-				multifetchHelper, err = adabas.multifetchBuffer()
-				if err != nil {
-					return
-				}
-				nrMultifetchEntries, err = multifetchHelper.ReceiveUInt32()
-				if err != nil {
-					return
-				}
-				if nrMultifetchEntries > 10000 {
-					adatypes.Central.Log.Debugf("multifetch entries mismatch, panic ...")
-					panic("Too many multifetch entries")
-				}
-				adatypes.Central.Log.Debugf("Nr of multifetch entries %d", nrMultifetchEntries)
-			}
-			for nrMultifetchEntries > 0 {
-				count++
-				adatypes.Central.Log.Debugf("Nr of multifetch entries left: %d", nrMultifetchEntries)
-				if multifetchHelper != nil {
-					responseCode, err = adabas.readMultifetch(adabasRequest, multifetchHelper)
-					if err != nil {
-						adatypes.Central.Log.Debugf("Multifetch parse error: %v", err)
-						return
-					}
-					if responseCode != AdaNormal {
-						break
-					}
-				}
-
-				switch adabas.Acbx.Acbxcmd {
-				case l1.code(), l4.code():
-					adabas.Acbx.Acbxisn++
-				default:
-				}
-				adatypes.Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values == nil))
-				var prefix string
-				if adabasRequest.Parameter == nil {
-					prefix = fmt.Sprintf("/image/db/%d/%d/%d/", adabas.Acbx.Acbxdbid, adabas.Acbx.Acbxfnr, adabasRequest.Isn)
-				} else {
-					adabasMap := adabasRequest.Parameter.(*Map)
-					adatypes.Central.Log.Debugf("%v -> %#v\n", adabasRequest.Parameter, adabasMap)
-					if adabasMap != nil {
-						prefix = fmt.Sprintf("/image/map/%s/%d/", adabasMap.Name, adabasRequest.Isn)
-					}
-				}
-				_, err = adabasRequest.Definition.ParseBuffer(adabasRequest.RecordBuffer, adabasRequest.Option, prefix)
-				if err != nil {
-					return
-				}
-				err = adabas.secondCall(adabasRequest, x)
-				if err != nil {
-					return
-				}
-				adatypes.Central.Log.Debugf("Found parser .... values avail.=%v", (adabasRequest.Definition.Values == nil))
-				err = adabasRequest.Parser(adabasRequest, x)
-				if err != nil {
-					return
-				}
-				nrMultifetchEntries--
-
-				// If multifetch on, create values for next parse step, only possible on read calls
-				if nrMultifetchEntries > 0 {
-					//adabasRequest.Definition.Values = nil
-					adabasRequest.Definition.CreateValues(false)
-				}
-			}
-
-		} else {
-			adatypes.Central.Log.Debugf("Found no parser")
+		adabasRequest.RecordBuffer = adatypes.NewHelper(adabas.AdabasBuffers[1].buffer,
+			int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())
+		adabasRequest.MultifetchBuffer, err = adabas.multifetchBuffer()
+		if err != nil {
+			return
+		}
+		if adabasRequest.Parser == nil {
 			break
 		}
-
+		adabasRequest.CbIsn = adabas.Acbx.Acbxisn
+		if adabasRequest.IsnIncrease {
+			adabas.Acbx.Acbxisn++
+		}
+		responseCode, err = adabasRequest.ParseBuffer(&count, x)
+		adabas.Acbx.Acbxisn = adabasRequest.CbIsn
 		adatypes.Central.Log.Debugf("Loop step ended Limit=%d count=%d", adabasRequest.Limit, count)
 		if (adabasRequest.Limit > 0) && (count >= adabasRequest.Limit) {
 			adatypes.Central.Log.Debugf("Limit reached")
 			break
 		}
 	}
-	adatypes.Central.Log.Debugf("End loop call records")
+	adatypes.Central.Log.Debugf("Loop call ended")
 
 	return
 }
@@ -771,50 +730,8 @@ func (adabas *Adabas) resetSendSize() {
 	}
 }
 
-// Parse multifetch values
-func (adabas *Adabas) readMultifetch(adabasRequest *adatypes.Request, multifetchHelper *adatypes.BufferHelper) (responseCode uint32, err error) {
-	recordLength, rErr := multifetchHelper.ReceiveUInt32()
-	if rErr != nil {
-		err = rErr
-		return
-	}
-	adatypes.Central.Log.Debugf("Record length %d", recordLength)
-	responseCode, err = multifetchHelper.ReceiveUInt32()
-	if err != nil {
-		adatypes.Central.Log.Debugf("Response parser error in MF %v", err)
-		return
-	}
-	if responseCode != AdaNormal {
-		adabasRequest.Response = uint16(responseCode) // adabas.Acbx.Acbxrsp
-		adatypes.Central.Log.Debugf("Response code in MF %v", adabasRequest.Response)
-		return
-	}
-	adatypes.Central.Log.Debugf("Response code %d", responseCode)
-	isn, isnErr := multifetchHelper.ReceiveUInt32()
-	if isnErr != nil {
-		err = isnErr
-		return
-	}
-	adatypes.Central.Log.Debugf("Got ISN %d", isn)
-	adabasRequest.Isn = adatypes.Isn(isn)
-	switch adabas.Acbx.Acbxcmd {
-	case l1.code(), l4.code():
-		adabas.Acbx.Acbxisn = adatypes.Isn(isn)
-	case l2.code(), l5.code():
-	default:
-		adabas.Acbx.Acbxisn = adatypes.Isn(isn)
-	}
-	quantity, qerr := multifetchHelper.ReceiveUInt32()
-	if qerr != nil {
-		return
-	}
-	adatypes.Central.Log.Debugf("ISN quantity=%d", quantity)
-	adabasRequest.IsnQuantity = uint64(quantity)
-	return
-}
-
-// do second call reading lob data or multiple fields of the period group
-func (adabas *Adabas) secondCall(adabasRequest *adatypes.Request, x interface{}) (err error) {
+// SecondCall do second call reading lob data or multiple fields of the period group
+func (adabas *Adabas) SecondCall(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	adatypes.Central.Log.Debugf("Check second call .... values avail.=%v", (adabasRequest.Definition.Values == nil))
 	if adabasRequest.Option.NeedSecondCall {
 		adatypes.Central.Log.Debugf("Need second call %v", adabasRequest.Option.NeedSecondCall)
