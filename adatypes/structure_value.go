@@ -212,7 +212,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		}
 		return value.parsePeriodGroup(helper, option, occNumber)
 	}
-	Central.Log.Debugf("No occurrence, check shift of PE empty part, sn=%d mainframe=%v need second=%v pos=%d", value.Type().Name(), option.Mainframe,
+	Central.Log.Debugf("No occurrence, check shift of PE empty part, sn=%s mainframe=%v need second=%v pos=%d", value.Type().Name(), option.Mainframe,
 		option.NeedSecondCall, helper.offset)
 	if option.Mainframe {
 		Central.Log.Debugf("Are on mainframe, shift PE empty part pos=%d/%X", helper.offset, helper.offset)
@@ -461,7 +461,8 @@ func (value *StructureValue) shiftPeriod(helper *BufferHelper) (err error) {
 	t := TraverserMethods{EnterFunction: countPEsize}
 	adaType := value.Type().(*StructureType)
 	adaType.Traverse(t, 1, &size)
-	Central.Log.Debugf("Skip parsing, shift PE empty part of size=%d remaining=%d", size, helper.Remaining())
+	Central.Log.Debugf("Skip parsing %s/%s type=%s, shift PE empty part %d bytes remaining=%d",
+		value.Type().Name(), value.Type().ShortName(), value.Type().Type().name(), size, helper.Remaining())
 	_, err = helper.ReceiveBytes(size)
 	return
 }
