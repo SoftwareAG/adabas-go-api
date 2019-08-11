@@ -1,6 +1,7 @@
 package adatypes
 
 import (
+	"encoding/binary"
 	"fmt"
 	"testing"
 
@@ -76,9 +77,16 @@ func TestAdabasRequestParser_withPeriod(t *testing.T) {
 	adabasRequest.Definition = testDefinition
 	adabasRequest.Caller = testCaller
 	adabasRequest.Parser = testParser
-	dataContent := []byte{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 1, 0, 0, 0, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x31, 0x32, 0, 0, 0, 0, 0, 0, 0x12, 0x1d}
+	var multifetchData []byte
+	var dataContent []byte
+	if endian() == binary.LittleEndian {
+		multifetchData = []byte{1, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 7, 0, 0, 0}
+		dataContent = []byte{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 1, 0, 0, 0, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x31, 0x32, 0, 0, 0, 0, 0, 0, 0x12, 0x1d}
+	} else {
+		multifetchData = []byte{0, 0, 0, 1, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 7}
+		dataContent = []byte{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 0, 0, 0, 1, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x31, 0x32, 0, 0, 0, 0, 0, 0, 0x12, 0x1d}
+	}
 	adabasRequest.RecordBuffer = NewHelper(dataContent, len(dataContent), endian())
-	multifetchData := []byte{1, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 7, 0, 0, 0}
 	adabasRequest.MultifetchBuffer = NewHelper(multifetchData, len(multifetchData), endian())
 	count := uint64(0)
 	responseCode, perr := adabasRequest.ParseBuffer(&count, nil)
@@ -119,9 +127,16 @@ func TestAdabasRequestParser_osEmptyPeriod(t *testing.T) {
 	adabasRequest.Definition = testDefinition
 	adabasRequest.Caller = testCaller
 	adabasRequest.Parser = testParser
-	dataContent := []byte{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 0, 0, 0, 0}
+	var multifetchData []byte
+	var dataContent []byte
+	if endian() == binary.LittleEndian {
+		dataContent = []byte{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 0, 0, 0, 0}
+		multifetchData = []byte{1, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 7, 0, 0, 0}
+	} else {
+		dataContent = []byte{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 0, 0, 0, 0}
+		multifetchData = []byte{0, 0, 0, 1, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 7}
+	}
 	adabasRequest.RecordBuffer = NewHelper(dataContent, len(dataContent), endian())
-	multifetchData := []byte{1, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 7, 0, 0, 0}
 	adabasRequest.MultifetchBuffer = NewHelper(multifetchData, len(multifetchData), endian())
 	count := uint64(0)
 	responseCode, perr := adabasRequest.ParseBuffer(&count, nil)
@@ -162,7 +177,10 @@ func TestAdabasRequestParser_mfEmptyPeriod(t *testing.T) {
 	adabasRequest.Parser = testParser
 	dataContent := []byte{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	adabasRequest.RecordBuffer = NewHelper(dataContent, len(dataContent), endian())
-	multifetchData := []byte{1, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 7, 0, 0, 0}
+	var multifetchData []byte
+	if endian() == binary.LittleEndian {
+		multifetchData = []byte{0, 0, 0, 1, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 7}
+	}
 	adabasRequest.MultifetchBuffer = NewHelper(multifetchData, len(multifetchData), endian())
 	count := uint64(0)
 	responseCode, perr := adabasRequest.ParseBuffer(&count, nil)
