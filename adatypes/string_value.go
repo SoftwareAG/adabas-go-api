@@ -214,7 +214,7 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 			Central.Log.Debugf("New size of lob data %d offset=%d/%X", len(value.value), helper.Offset, helper.Offset)
 		}
 		if !value.Type().HasFlagSet(FlagOptionSecondCall) {
-			Central.Log.Debugf("Skip parsing %s offset=%d", value.Type().Name(), helper.offset)
+			Central.Log.Debugf("Skip parsing %s offset=%d, no second call flag", value.Type().Name(), helper.offset)
 			return
 		}
 	}

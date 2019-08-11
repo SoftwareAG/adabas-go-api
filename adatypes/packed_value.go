@@ -318,7 +318,7 @@ func (value *packedValue) StoreBuffer(helper *BufferHelper) error {
 
 func (value *packedValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 	if option.SecondCall && !value.Type().HasFlagSet(FlagOptionSecondCall) {
-		Central.Log.Debugf("Skip parsing %s offset=%d", value.Type().Name(), helper.offset)
+		Central.Log.Debugf("Skip parsing packed %s offset=%d, not needed at second call", value.Type().Name(), helper.offset)
 		return
 	}
 	if value.Type().Length() == 0 {

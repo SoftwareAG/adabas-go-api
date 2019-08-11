@@ -181,7 +181,7 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 			}
 		}
 		if !value.Type().HasFlagSet(FlagOptionSecondCall) {
-			Central.Log.Debugf("Skip parsing %s offset=%d", value.Type().Name(), helper.offset)
+			Central.Log.Debugf("Skip parsing %s offset=%d, no second call flag", value.Type().Name(), helper.offset)
 			return
 		}
 	}

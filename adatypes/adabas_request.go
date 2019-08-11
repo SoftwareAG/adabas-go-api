@@ -302,15 +302,18 @@ func (def *Definition) CreateAdabasRequest(store bool, secondCall bool, mainfram
 
 // ParseBuffer parse given record buffer and multifetch buffer
 func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (responseCode uint32, err error) {
-	Central.Log.Debugf("Parse adabas request buffers")
+	Central.Log.Debugf("Parse Adabas request buffers")
 	// If parser is available, use the parser to extract content
 	if adabasRequest.Parser != nil {
+		Central.Log.Debugf("Parser method found")
 		var multifetchHelper *BufferHelper
 		nrMultifetchEntries := uint32(1)
 		if adabasRequest.Multifetch > 1 {
+			Central.Log.Debugf("Multifetch %d", adabasRequest.Multifetch)
 			multifetchHelper = adabasRequest.MultifetchBuffer
 			nrMultifetchEntries, err = multifetchHelper.ReceiveUInt32()
 			if err != nil {
+				Central.Log.Debugf("Error evaluate multifetch entries %v", err)
 				return
 			}
 			if nrMultifetchEntries > 10000 {
@@ -319,9 +322,9 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 			}
 			Central.Log.Debugf("Nr of multifetch entries %d", nrMultifetchEntries)
 		}
+		Central.Log.Debugf("Nr Multifetch entries %d", nrMultifetchEntries)
 		for nrMultifetchEntries > 0 {
 			(*count)++
-			Central.Log.Debugf("Nr of multifetch entries left: %d", nrMultifetchEntries)
 			if multifetchHelper != nil {
 				responseCode, err = adabasRequest.readMultifetch(multifetchHelper)
 				if err != nil {
@@ -329,11 +332,12 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 					return
 				}
 				if responseCode != AdaNormal {
+					Central.Log.Debugf("Adabas response received %d", responseCode)
 					break
 				}
 			}
 
-			Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values == nil))
+			Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values != nil))
 			var prefix string
 			prefix = fmt.Sprintf("/image/%s/%d/", adabasRequest.Reference, adabasRequest.Isn)
 			_, err = adabasRequest.Definition.ParseBuffer(adabasRequest.RecordBuffer, adabasRequest.Option, prefix)
@@ -354,12 +358,14 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 			// If multifetch on, create values for next parse step, only possible on read calls
 			if nrMultifetchEntries > 0 {
 				//adabasRequest.Definition.Values = nil
-				adabasRequest.Definition.CreateValues(false)
+				err = adabasRequest.Definition.CreateValues(false)
+				if err != nil {
+					return
+				}
 			}
 		}
-
 		Central.Log.Debugf("Parser ended")
-		} else {
+	} else {
 		Central.Log.Debugf("Found no parser")
 	}
 	return
@@ -391,13 +397,13 @@ func (adabasRequest *Request) readMultifetch(multifetchHelper *BufferHelper) (re
 	}
 	Central.Log.Debugf("Got ISN %d", isn)
 	adabasRequest.Isn = Isn(isn)
-	if adabasRequest.IsnIncrease {
-	}
 	if adabasRequest.StoreIsn {
 		adabasRequest.CbIsn = Isn(isn)
 	}
 	quantity, qerr := multifetchHelper.ReceiveUInt32()
 	if qerr != nil {
+		Central.Log.Debugf("Quantity buffer error %v", qerr)
+		err = qerr
 		return
 	}
 	Central.Log.Debugf("ISN quantity=%d", quantity)

@@ -94,14 +94,29 @@ type FieldCondition struct {
 	conditionMatrix  map[byte][]byte
 }
 
+//func NewFieldCondition(index int, ref int, condition map[byte][]byte) FieldCondition {
+
 // NewFieldCondition creates a new field condition
-func NewFieldCondition(index int, ref int, condition map[byte][]byte) FieldCondition {
-	Central.Log.Debugf("New field condition lengthFieldIndex=%d refField=%d", index, ref)
-	return FieldCondition{
-		lengthFieldIndex: index,
-		refField:         ref,
-		conditionMatrix:  condition,
+func NewFieldCondition(param ...interface{}) FieldCondition {
+	lengthFieldIndex := -1
+	refField := NoReferenceField
+	var conditionMatrix map[byte][]byte
+	if len(param) > 0 {
+		lengthFieldIndex = param[0].(int)
+		refField = param[1].(int)
+		conditionMatrix = param[2].(map[byte][]byte)
 	}
+	Central.Log.Debugf("New field condition lengthFieldIndex=%d refField=%d", lengthFieldIndex, refField)
+	return FieldCondition{
+		lengthFieldIndex: lengthFieldIndex,
+		refField:         refField,
+		conditionMatrix:  conditionMatrix,
+	}
+	// return FieldCondition{
+	// 	lengthFieldIndex: index,
+	// 	refField:         ref,
+	// 	conditionMatrix:  condition,
+	// }
 }
 
 // NewType Define new type with length equal 1
@@ -257,7 +272,7 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 		adaValue = newByteArrayValue(adaType)
 		return
 	case FieldTypeLength, FieldTypeUByte, FieldTypeCharacter:
-		Central.Log.Debugf("Return byte value")
+		Central.Log.Debugf("Return unsigned byte value")
 		adaValue = newUByteValue(adaType)
 		return
 	case FieldTypeString:

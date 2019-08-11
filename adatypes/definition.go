@@ -180,6 +180,7 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 		Central.Log.Debugf("Call parse buffer of field %s", types[i].Name())
 		_, err = value.parseBuffer(helper, option)
 		if err != nil {
+			Central.Log.Debugf("Error parse buffer %v", err)
 			return
 		}
 		//var at IAdaType
@@ -242,11 +243,14 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 			}
 			adaValues = append(adaValues, value)
 		}
+	} else {
+		Central.Log.Debugf("No condition matrix step")
 	}
 	if lengthFieldIndex > 0 {
 		pos, posErr := helper.position(endOfBuffer)
 		if posErr != nil {
 			err = posErr
+			Central.Log.Debugf("Position error %v", posErr)
 			return
 		}
 		if pos == -1 {
@@ -272,9 +276,7 @@ func NewDefinition() *Definition {
 func NewDefinitionWithTypes(types []IAdaType) *Definition {
 	def := NewDefinition()
 	def.activeFieldTree.SubTypes = types
-	def.activeFieldTree.condition = FieldCondition{
-		lengthFieldIndex: -1,
-		refField:         NoReferenceField}
+	def.activeFieldTree.condition = NewFieldCondition()
 	def.fileFieldTree = def.activeFieldTree
 	def.InitReferences()
 	def.activeFields = make(map[string]IAdaType)

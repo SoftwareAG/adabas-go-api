@@ -728,3 +728,45 @@ func TestReadPElevel2Group(t *testing.T) {
 		result.DumpValues()
 	}
 }
+
+func ExampleReadRequest_readGroup() {
+	err := initLogWithFile("request.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	adabas, aerr := NewAdabas(adabasStatDBID)
+	if aerr != nil {
+		fmt.Println(aerr)
+		return
+	}
+	request, rerr := NewReadRequest(adabas, 11)
+	if rerr != nil {
+		fmt.Println(rerr)
+		return
+	}
+	defer request.Close()
+	request.Limit = 1
+	request.QueryFields("AA,AW")
+	var result *Response
+	result, err = request.ReadPhysicalSequence()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("Dump result received ...")
+	if result != nil {
+		result.DumpValues()
+	}
+
+	// Output:
+	// Dump result received ...
+	// Dump all result values
+	// Record Isn: 0001
+	//   AA = > 50005800 <
+	//   AW = [ 1 ]
+	//    AX[01] = > 19990801 <
+	//    AY[01] = > 19990831 <
+
+}

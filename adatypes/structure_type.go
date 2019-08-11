@@ -26,10 +26,7 @@ func NewStructure() *StructureType {
 		CommonType: CommonType{
 			flags: uint32(1 << FlagOptionToBeRemoved),
 		},
-		condition: FieldCondition{
-			lengthFieldIndex: -1,
-			refField:         NoReferenceField,
-		},
+		condition: NewFieldCondition(),
 	}
 }
 
@@ -61,11 +58,8 @@ func NewStructureEmpty(fType FieldType, name string, occByteShort int16,
 			muRange:   *mr,
 			level:     level,
 		},
-		occ: int(occByteShort),
-		condition: FieldCondition{
-			lengthFieldIndex: -1,
-			refField:         NoReferenceField,
-		},
+		occ:       int(occByteShort),
+		condition: NewFieldCondition(),
 	}
 	st.adaptSubFields()
 	Central.Log.Debugf("Got structure list Range [%s,%s]", st.peRange.FormatBuffer(), st.muRange.FormatBuffer())
@@ -82,12 +76,9 @@ func NewStructureList(fType FieldType, name string, occByteShort int16, subField
 			flags:     uint32(1 << FlagOptionToBeRemoved),
 			level:     1,
 			length:    0},
-		occ: int(occByteShort),
-		condition: FieldCondition{
-			lengthFieldIndex: -1,
-			refField:         NoReferenceField,
-		},
-		SubTypes: subFields,
+		occ:       int(occByteShort),
+		condition: NewFieldCondition(),
+		SubTypes:  subFields,
 	}
 	switch fType {
 	case FieldTypePeriodGroup:
