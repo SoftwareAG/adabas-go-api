@@ -179,6 +179,8 @@ func TestAdabasRequestParser_mfEmptyPeriod(t *testing.T) {
 	adabasRequest.RecordBuffer = NewHelper(dataContent, len(dataContent), endian())
 	var multifetchData []byte
 	if endian() == binary.LittleEndian {
+		multifetchData = []byte{1, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 7, 0, 0, 0}
+	} else {
 		multifetchData = []byte{0, 0, 0, 1, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 7}
 	}
 	adabasRequest.MultifetchBuffer = NewHelper(multifetchData, len(multifetchData), endian())

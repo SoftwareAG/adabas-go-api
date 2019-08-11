@@ -456,14 +456,14 @@ func TestConnectionPEShiftMfMapShort(t *testing.T) {
 		fmt.Println("Check size ...", len(result.Values))
 		if assert.Equal(t, 5, len(result.Values)) {
 			ae := result.Values[1].HashFields["personnnel-id"]
-			fmt.Println("Check SCHILLING ...")
-			assert.Equal(t, "SCHILLING", strings.TrimSpace(ae.String()))
+			fmt.Println("Check 11400328 ...")
+			assert.Equal(t, "11400328", strings.TrimSpace(ae.String()))
 			ae = result.Values[2].HashFields["personnnel-id"]
 			val := result.Values[2]
-			fmt.Println("Check FREI ...")
-			assert.Equal(t, "FREI", strings.TrimSpace(ae.String()))
+			fmt.Println("Check 11500301 ...")
+			assert.Equal(t, "11500301", strings.TrimSpace(ae.String()))
 			nv, _ := val.searchValue("name")
-			assert.Equal(t, "FREI", strings.TrimSpace(nv.String()))
+			assert.Equal(t, "11500301", strings.TrimSpace(nv.String()))
 			assert.Equal(t, int32(3), val.ValueQuantity("income"))
 			assert.Equal(t, int32(3), val.ValueQuantity("bonus"))
 			assert.Equal(t, int32(0), val.ValueQuantity("bonus", 2))
