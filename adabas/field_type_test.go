@@ -258,6 +258,56 @@ func TestFieldTypeRead(t *testing.T) {
 	}
 }
 
+func TestFieldTypeReadBR(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "field_type.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	openErr := connection.Open()
+	assert.NoError(t, openErr)
+	request, err := connection.CreateFileReadRequest(270)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = request.QueryFields("BR")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	request.Limit = 0
+	result, rerr := request.ReadLogicalWith("AF=" + recordNamePrefix)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	if assert.NotNil(t, result) {
+		assert.Equal(t, 2, len(result.Values))
+		assert.Equal(t, 2, result.NrRecords())
+		err = result.DumpValues()
+		assert.NoError(t, err)
+		kaVal := result.Values[1].HashFields["BR"]
+		// if bigEndian() {
+		// 	assert.Equal(t, []byte{0x10, 0x20}, kaVal.Value())
+		// } else {
+		assert.Equal(t, []byte{0x0, 0x10, 0x20}, kaVal.Value())
+		// }
+		err = jsonOutput(result.Values[0])
+		if !assert.NoError(t, err) {
+			return
+		}
+		jsonOutput(result.Values[1])
+		if !assert.NoError(t, err) {
+			return
+		}
+	}
+}
+
 func jsonOutput(r *Record) error {
 	x, jsonErr := json.Marshal(r)
 	if jsonErr != nil {
