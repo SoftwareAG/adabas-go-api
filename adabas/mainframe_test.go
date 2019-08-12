@@ -462,7 +462,7 @@ func TestConnectionPEShiftMfMapShort(t *testing.T) {
 			val := result.Values[2]
 			fmt.Println("Check 11500301 ...")
 			assert.Equal(t, "11500301", strings.TrimSpace(ae.String()))
-			nv, _ := val.searchValue("name")
+			nv, _ := val.searchValue("personnnel-id")
 			assert.Equal(t, "11500301", strings.TrimSpace(nv.String()))
 			assert.Equal(t, int32(3), val.ValueQuantity("income"))
 			assert.Equal(t, int32(3), val.ValueQuantity("bonus"))
