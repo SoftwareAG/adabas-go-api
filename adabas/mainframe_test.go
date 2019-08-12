@@ -475,60 +475,6 @@ func TestConnectionPEShiftMfMapShort(t *testing.T) {
 
 }
 
-func TestConnectionPEShiftMfShort(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping mainframe tests in short mode")
-	}
-	if runtime.GOARCH == "arm" {
-		t.Skip("Not supported on this architecture")
-		return
-	}
-	initTestLogWithFile(t, "connection.log")
-
-	adatypes.Central.Log.Infof("TEST: %s", t.Name())
-	network := os.Getenv("ADAMFDBID")
-	if network == "" {
-		fmt.Println("Mainframe database not defined")
-		return
-	}
-	connection, cerr := NewConnection("acj;target=" + network)
-	if !assert.NoError(t, cerr) {
-		return
-	}
-	defer connection.Close()
-	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
-	request, err := connection.CreateFileReadRequest(12)
-	if assert.NoError(t, err) {
-		fmt.Println("Limit query data:")
-		request.QueryFields("AA,AU,AV,AQ,AZ")
-		request.Limit = 0
-		fmt.Println("Read physical data:")
-		result, err := request.ReadPhysicalSequence()
-		assert.NoError(t, err)
-		// fmt.Println("Result data:")
-		// result.DumpValues()
-		fmt.Println("Check size ...", len(result.Values))
-		if assert.Equal(t, 5, len(result.Values)) {
-			ae := result.Values[1].HashFields["AA"]
-			fmt.Println("Check SCHILLING ...")
-			assert.Equal(t, "SCHILLING", strings.TrimSpace(ae.String()))
-			ae = result.Values[2].HashFields["AA"]
-			val := result.Values[2]
-			fmt.Println("Check FREI ...")
-			assert.Equal(t, "FREI", strings.TrimSpace(ae.String()))
-			nv, _ := val.searchValue("name")
-			assert.Equal(t, "FREI", strings.TrimSpace(nv.String()))
-			assert.Equal(t, int32(3), val.ValueQuantity("AQ"))
-			assert.Equal(t, int32(3), val.ValueQuantity("AT"))
-			assert.Equal(t, int32(0), val.ValueQuantity("AT", 2))
-			assert.Equal(t, int32(0), val.ValueQuantity("AT", 3))
-			_, aerr := val.SearchValueIndex("AT", []uint32{3, 12})
-			assert.Error(t, aerr)
-		}
-	}
-
-}
-
 func TestConnectionAllMfMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
