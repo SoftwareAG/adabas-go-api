@@ -392,7 +392,7 @@ func (flagOption FlagOption) Bit() uint32 {
 
 // HasFlagSet check if given flag is set
 func (commonType *CommonType) HasFlagSet(flagOption FlagOption) bool {
-	Central.Log.Debugf("Check flag %d set %d=%d -> %v", commonType.flags, flagOption.Bit(), flagOption.Bit(), (commonType.flags & flagOption.Bit()))
+	//Central.Log.Debugf("Check flag %d set %d=%d -> %v", commonType.flags, flagOption.Bit(), flagOption.Bit(), (commonType.flags & flagOption.Bit()))
 	return (commonType.flags & flagOption.Bit()) != 0
 }
 

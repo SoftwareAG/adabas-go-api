@@ -66,7 +66,7 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 
 	Central.Log.Debugf("Start parsing value .... %s offset=%d/%X type=%s", adaValue.Type().Name(),
 		parameter.helper.offset, parameter.helper.offset, adaValue.Type().Type().name())
-	Central.Log.Debugf("Parse value %s .... second=%v need second=%v pe=%v", adaValue.Type().Name(),
+	Central.Log.Debugf("Parse value %s/%s .... second=%v need second=%v pe=%v", adaValue.Type().ShortName(), adaValue.Type().Name(),
 		parameter.option.SecondCall, parameter.option.NeedSecondCall, adaValue.Type().HasFlagSet(FlagOptionPE))
 	// On second call, to collect MU fields in an PE group, skip all other parser tasks
 	if !(adaValue.Type().HasFlagSet(FlagOptionPE) && adaValue.Type().Type() == FieldTypeMultiplefield) {

@@ -170,19 +170,19 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		Central.Log.Debugf("Skip not group -> %s", value.Type().Name())
 		return
 	}
-	Central.Log.Debugf("%s/%s parse buffer for MU in PE/first call\n", value.Type().Name(), value.Type().ShortName())
+	Central.Log.Debugf("%s/%s parse buffer for MU in PE/first call", value.Type().Name(), value.Type().ShortName())
 	var occNumber int
 	// In the second call the occurrence is available
 	if option.SecondCall && value.Type().Type() == FieldTypePeriodGroup {
 		occNumber = value.NrElements()
-		Central.Log.Debugf("Second call use available occurrence %d Type %s\n", occNumber, value.Type().Type().name())
+		Central.Log.Debugf("Second call use available occurrence %d Type %s", occNumber, value.Type().Type().name())
 	} else {
-		Central.Log.Debugf("Second call evaluate available Type %s\n", value.Type().Type().name())
+		Central.Log.Debugf("Second call evaluate available Type %s", value.Type().Type().name())
 		occNumber, err = value.evaluateOccurrence(helper)
 		if err != nil {
 			return
 		}
-		Central.Log.Debugf("Second call got occurrence %d available Type %s\n", occNumber, value.Type().Type().name())
+		Central.Log.Debugf("Second call got occurrence %d available Type %s", occNumber, value.Type().Type().name())
 	}
 	Central.Log.Debugf("PE occurrence %s has %d entries pos=%d", value.Type().Name(), occNumber, helper.offset)
 	if occNumber > 0 {
@@ -216,7 +216,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		option.NeedSecondCall, helper.offset)
 	if option.Mainframe {
 		Central.Log.Debugf("Are on mainframe, shift PE empty part pos=%d/%X", helper.offset, helper.offset)
-		err = value.shiftPeriod(helper)
+		err = value.shiftEmptyMfBuffer(helper)
 		if err != nil {
 			return EndTraverser, err
 		}
@@ -385,7 +385,7 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 		Central.Log.Debugf("Init period group values occurrence=%d mainframe=%v", occNumber, option.Mainframe)
 		if occNumber == 0 {
 			if option.Mainframe {
-				err = value.shiftPeriod(helper)
+				err = value.shiftEmptyMfBuffer(helper)
 				if err != nil {
 					return EndTraverser, err
 				}
@@ -456,7 +456,14 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 	return
 }
 
-func (value *StructureValue) shiftPeriod(helper *BufferHelper) (err error) {
+func (value *StructureValue) shiftEmptyMfBuffer(helper *BufferHelper) (err error) {
+	if value.Type().Type() == FieldTypeMultiplefield {
+		st := value.Type().(*StructureType)
+		subType := st.SubTypes[0]
+		_, err = helper.ReceiveBytes(subType.Length())
+		return
+
+	}
 	size := uint32(0)
 	t := TraverserMethods{EnterFunction: countPEsize}
 	adaType := value.Type().(*StructureType)
