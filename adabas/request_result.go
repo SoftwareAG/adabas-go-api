@@ -223,9 +223,16 @@ type responseJSON struct {
 
 func evaluateValue(adaValue adatypes.IAdaValue) (interface{}, error) {
 	switch adaValue.Type().Type() {
+	case adatypes.FieldTypeDouble, adatypes.FieldTypeFloat:
+		v, err := adaValue.Float()
+		if err != nil {
+			adatypes.Central.Log.Debugf("Error marshal JSON %s: %v", adaValue.Type().Name(), err)
+			return adatypes.EndTraverser, err
+		}
+		return v, nil
 	case adatypes.FieldTypePacked, adatypes.FieldTypeUnpacked, adatypes.FieldTypeByte, adatypes.FieldTypeUByte,
 		adatypes.FieldTypeUInt2, adatypes.FieldTypeInt2, adatypes.FieldTypeUInt4, adatypes.FieldTypeInt4,
-		adatypes.FieldTypeUInt8, adatypes.FieldTypeInt8, adatypes.FieldTypeDouble, adatypes.FieldTypeFloat:
+		adatypes.FieldTypeUInt8, adatypes.FieldTypeInt8:
 		v, err := adaValue.Int64()
 		if err != nil {
 			adatypes.Central.Log.Debugf("Error marshal JSON %s: %v", adaValue.Type().Name(), err)
