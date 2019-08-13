@@ -215,6 +215,12 @@ func (adabas *Adabas) Open() (err error) {
 
 // Close A session to the database will be closed
 func (adabas *Adabas) Close() {
+	url := adabas.URL.String()
+	adatypes.Central.Log.Debugf("Close Adabas call %s", url)
+	if !adabas.ID.isOpen(url) {
+		adatypes.Central.Log.Debugf("Database %s already closed by ID %#v", url, adabas.ID)
+		return
+	}
 	if adabas.ID.transactions(adabas.URL.String()) > 0 {
 		adabas.BackoutTransaction()
 	}

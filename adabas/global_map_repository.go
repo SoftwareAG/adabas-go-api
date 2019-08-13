@@ -39,13 +39,13 @@ func init() {
 	mapHash = make(map[string]*Repository)
 	mapCacheLoop := os.Getenv("MAP_CACHE_LOOP")
 	if mapCacheLoop != "" {
-		StartAsynchronousMapCache()
+		StartAsynchronousMapCache(10)
 	}
 }
 
 // StartAsynchronousMapCache asynchronous map cache read
-func StartAsynchronousMapCache() {
-	go loopMapCache()
+func StartAsynchronousMapCache(interval int) {
+	go loopMapCache(interval)
 }
 
 // EndAsynchronousMapCache end asynchronous cache
@@ -53,7 +53,7 @@ func EndAsynchronousMapCache() {
 	mapLoopRunning = false
 }
 
-func loopMapCache() {
+func loopMapCache(interval int) {
 	adatypes.Central.Log.Infof("Init loop map cache check")
 	mapLoopRunning = true
 	defer EndAsynchronousMapCache()
@@ -69,7 +69,8 @@ func loopMapCache() {
 			adatypes.Central.Log.Infof("Some map cache name error %v", err)
 		}
 		adatypes.Central.Log.Infof("Number of Hashed maps: %d", len(mapHash))
-		time.Sleep(10 * time.Second)
+		ada.Close()
+		time.Sleep(time.Duration(interval) * time.Second)
 	}
 }
 
