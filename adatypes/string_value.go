@@ -103,6 +103,9 @@ func (value *stringValue) SetValue(v interface{}) error {
 	switch v.(type) {
 	case string:
 		sv := v.(string)
+		if value.Type().Length() > 0 && uint32(len(sv)) > value.Type().Length() {
+			return NewGenericError(77, len(sv), value.Type().Length())
+		}
 		value.setStringWithSize(sv)
 		Central.Log.Debugf("Set value to >%s<", value.value)
 	case []byte:

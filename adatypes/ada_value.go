@@ -206,24 +206,21 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 // common format buffer generation
 func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 	var val uint64
-	switch x.(type) {
+	switch v := x.(type) {
 	case string:
-		s := x.(string)
-		sval, err := strconv.Atoi(s)
+		sval, err := strconv.Atoi(v)
 		if err != nil {
 			return 0, err
 		}
 		val = uint64(sval)
 	case uint64:
-		val = x.(uint64)
+		val = v
 	case int64:
-		v := x.(int64)
 		if v < 0 {
 			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
 		val = uint64(v)
 	case int:
-		v := x.(int)
 		if v < 0 {
 			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
@@ -237,29 +234,31 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 		}
 		val = uint64(v)
 	case uint16:
-		val = uint64(x.(uint16))
+		val = uint64(v)
 	case int16:
-		v := x.(int16)
 		if v < 0 {
 			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
 		val = uint64(v)
 	case uint8:
-		val = uint64(x.(uint8))
+		val = uint64(v)
 	case int8:
-		v := x.(int8)
 		if v < 0 {
 			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
 		val = uint64(v)
 	case float64:
-		v := x.(float64)
 		if v < 0 {
 			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
 		val = uint64(v)
+	case json.Number:
+		i64, err := v.Int64()
+		if err != nil {
+			return 0, err
+		}
+		val = uint64(i64)
 	case []byte:
-		v := x.([]byte)
 		switch len(v) {
 		case 1:
 			buf := bytes.NewBuffer(v)
