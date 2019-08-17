@@ -821,6 +821,7 @@ var statisMessages = []struct {
 	{"ADG0000074", "en", "ABD eyecatcher error: {0}"},
 	{"ADG0000075", "en", "ABD buffer error"},
 	{"ADG0000076", "en", "Search generation tree error"},
+	{"ADG0000077", "en", "Input value size of {0} does not fit into field length {1}"},
 	{"ADG0000080", "en", "Type {0} for {1} not supported for structure extraction"},
 	{"ADG0000081", "en", "No values in result list"},
 	{"ADG0000082", "en", "Error reading map {0} out of map repository"},

@@ -228,7 +228,6 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 	case uint32:
 		val = uint64(x.(uint32))
 	case int32:
-		v := x.(int32)
 		if v < 0 {
 			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}

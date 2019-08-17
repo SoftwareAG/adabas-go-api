@@ -40,8 +40,8 @@ TESTOUTPUT   ?= $(CURDIR)/test
 ENABLE_DEBUG ?= 0
 
 # Executables
-EXECS         = $(BIN)/tests/employee_client $(BIN)/tests/testsuite $(BIN)/tests/simple_read $(BIN)/tests/query \
-    $(BIN)/tests/querym $(BIN)/tests/lobload $(BIN)/tests/clear_map_reference
+EXECS         = $(BIN)/tools/employee_client $(BIN)/tools/testsuite $(BIN)/tools/simple_read $(BIN)/tools/query \
+    $(BIN)/tools/querym $(BIN)/tools/lobload $(BIN)/tools/clear_map_reference
 LIBS          = 
 
 include $(CURDIR)/make/common.mk
