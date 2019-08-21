@@ -183,8 +183,7 @@ func AllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
 				maps = append(maps, m)
 			}
 		}
-		adatypes.Central.Log.Debugf("All global maps number %d", len(maps))
-		fmt.Printf("All global maps number %d\n", len(maps))
+		adatypes.Central.Log.Infof("All global maps number %d", len(maps))
 
 		return maps, nil
 	}
