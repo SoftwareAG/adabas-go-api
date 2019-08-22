@@ -141,7 +141,7 @@ func (adabasBuffer *Buffer) WriteBinary(content []byte) {
 	}
 
 	// Copy content into buffer
-	adatypes.Central.Log.Debugf("Copy to range", adabasBuffer.offset, end, len(adabasBuffer.buffer), cap(adabasBuffer.buffer))
+	adatypes.Central.Log.Debugf("Copy to range offset=%d end=%d len=%d cap=%d", adabasBuffer.offset, end, len(adabasBuffer.buffer), cap(adabasBuffer.buffer))
 	copy(adabasBuffer.buffer[adabasBuffer.offset:], content[:])
 	adabasBuffer.offset += len(content)
 	adabasBuffer.abd.Abdsend = uint64(adabasBuffer.offset)
