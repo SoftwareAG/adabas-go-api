@@ -837,6 +837,7 @@ var statisMessages = []struct {
 	{"ADG0000092", "en", "ADATCP header received is incomplete"},
 	{"ADG0000093", "en", "Replacable type entry of {0} not found in {1}"},
 	{"ADG0000094", "en", "Read invalid Adabas Map version: {0}"},
+	{"ADG0000095", "en", "Invalid hold option for ISN direct read access"},
 	{"ADG0000100", "en", "Value interface does not support type {0} for field {1}/{2}"},
 	{"ADG0000101", "en", "Cannot convert negative value to unsigned of type {0}"},
 	{"ADG0000102", "en", "Error creating type value for: {0} [{1}]"},

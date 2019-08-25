@@ -35,9 +35,27 @@ const (
 	HoldNone HoldType = iota
 	// HoldWait wait for hold released
 	HoldWait
-	// HoldResponse receive response code
+	// HoldResponse receive response code if record is in hold state
 	HoldResponse
+	// HoldAccess check during read that the record is not in hold (shared lock 'C')
+	HoldAccess
+	// HoldRead use shared lock until next read operation (shared lock 'Q')
+	HoldRead
+	// HoldTransaction use shared lock until end of transaction (shared lock 'S')
+	HoldTransaction
 )
+
+var holdOption = []byte{' ', ' ', ' ', 'C', 'Q', 'S'}
+
+// HoldOption return hold option for Adabas option 3
+func (ht HoldType) HoldOption() byte {
+	return holdOption[ht]
+}
+
+// IsHold check if hold type is hold
+func (ht HoldType) IsHold() bool {
+	return ht != HoldNone
+}
 
 const (
 	// DefaultMultifetchLimit default number of multifetch entries
