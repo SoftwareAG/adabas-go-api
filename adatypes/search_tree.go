@@ -395,7 +395,7 @@ func (value *SearchValue) searchBuffer(buffer *bytes.Buffer) {
 
 func checkComparator(comp string) comparator {
 	switch comp {
-	case "=":
+	case "=", "==":
 		return EQ
 	case "!=":
 		return NE

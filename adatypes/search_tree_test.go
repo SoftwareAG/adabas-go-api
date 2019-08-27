@@ -887,3 +887,40 @@ func TestComplexSearchTest(t *testing.T) {
 	fmt.Println("Done")
 
 }
+
+func TestSearchEqual(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "AA=12 AND AA==34 AND AA>123")
+	searchInfo.Definition = tDefinition()
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
+	Central.Log.Debugf("Search Tree:", tree.String())
+
+	assert.Equal(t, "AA,8,B,EQ,D,AA,8,B,EQ,D,AA,8,B,GT.", tree.SearchBuffer())
+	var buffer bytes.Buffer
+	tree.ValueBuffer(&buffer)
+	valueBuffer := buffer.Bytes()
+	if !assert.Len(t, valueBuffer, 24) {
+		return
+	}
+	if bigEndian() {
+		assert.Equal(t, uint8(12), valueBuffer[7])
+		assert.Equal(t, uint8(34), valueBuffer[15])
+	} else {
+		assert.Equal(t, uint8(12), valueBuffer[0])
+		assert.Equal(t, uint8(34), valueBuffer[8])
+	}
+	descriptors := tree.OrderBy()
+	assert.Equal(t, 1, len(descriptors))
+	assert.Equal(t, "AA", descriptors[0])
+	assert.False(t, searchInfo.NeedSearch)
+
+}
