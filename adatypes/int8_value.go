@@ -84,13 +84,13 @@ func (value *uint64Value) StoreBuffer(helper *BufferHelper) error {
 
 func (value *uint64Value) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 	if value.Type().Length() == 0 {
-		len, lerr := helper.ReceiveUInt8()
+		rbLen, lerr := helper.ReceiveUInt8()
 		if lerr != nil {
 			return EndTraverser, lerr
 		}
-		len--
-		Central.Log.Debugf("Buffer get variable length=%d", len)
-		switch len {
+		rbLen--
+		Central.Log.Debugf("Buffer get variable length=%d", rbLen)
+		switch rbLen {
 		case 1:
 			vba, verr := helper.ReceiveUInt8()
 			if verr != nil {
@@ -116,13 +116,17 @@ func (value *uint64Value) parseBuffer(helper *BufferHelper, option *BufferOption
 			}
 			value.value = vba
 		default:
-			vba, verr := helper.ReceiveBytes(uint32(len))
+			vba, verr := helper.ReceiveBytes(uint32(rbLen))
 			if verr != nil {
 				return EndTraverser, verr
 			}
 			value.value = 0
-			for i, v := range vba {
-				value.value = value.value + uint64(uint32(v)<<(uint32(i)*8))
+			for i := range vba {
+				ei := i
+				if bigEndian() {
+					ei = int(rbLen) - 1 - i
+				}
+				value.value = value.value + uint64(uint32(vba[ei])<<(uint32(i)*8))
 			}
 		}
 	} else {
@@ -215,13 +219,13 @@ func (value *int64Value) StoreBuffer(helper *BufferHelper) error {
 
 func (value *int64Value) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 	if value.Type().Length() == 0 {
-		len, lerr := helper.ReceiveUInt8()
+		rbLen, lerr := helper.ReceiveUInt8()
 		if lerr != nil {
 			return EndTraverser, lerr
 		}
-		len--
-		Central.Log.Debugf("Buffer get variable length=%d", len)
-		switch len {
+		rbLen--
+		Central.Log.Debugf("Buffer get variable length=%d", rbLen)
+		switch rbLen {
 		case 1:
 			vba, verr := helper.ReceiveInt8()
 			if verr != nil {
@@ -247,12 +251,16 @@ func (value *int64Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 			}
 			value.value = vba
 		default:
-			vba, verr := helper.ReceiveBytes(uint32(len))
+			vba, verr := helper.ReceiveBytes(uint32(rbLen))
 			if verr != nil {
 				return EndTraverser, verr
 			}
 			v8 := make([]byte, 8)
-			copy(v8[:len], vba[:])
+			if bigEndian() {
+				copy(v8[8-rbLen:], vba[:])
+			} else {
+				copy(v8[:rbLen], vba[:])
+			}
 			buf := bytes.NewBuffer(v8)
 			binary.Read(buf, helper.order, &value.value)
 		}

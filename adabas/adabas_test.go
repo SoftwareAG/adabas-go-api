@@ -26,7 +26,6 @@ import (
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -39,10 +38,9 @@ const (
 )
 
 func TestAdabasFailure(t *testing.T) {
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(0)
 	assert.Nil(t, adabas)
 	assert.Error(t, err)
@@ -66,15 +64,15 @@ func TestAdabasFailure(t *testing.T) {
 	}
 	assert.Error(t, retb)
 
-	log.Debug("acbx ver=", adabas.Acbx.Acbxver)
-	log.Debug("acbx cmd=", adabas.Acbx.Acbxcmd)
-	log.Debug("acbx len=", adabas.Acbx.Acbxlen)
+	adatypes.Central.Log.Debugf("acbx ver=%v", adabas.Acbx.Acbxver)
+	adatypes.Central.Log.Debugf("acbx cmd=%v", adabas.Acbx.Acbxcmd)
+	adatypes.Central.Log.Debugf("acbx len=%v", adabas.Acbx.Acbxlen)
 
 	adabas.Acbx.Acbxcmd = cl.code()
 
-	log.Debug("acbx ver=", adabas.Acbx.Acbxver)
-	log.Debug("acbx cmd=", adabas.Acbx.Acbxcmd)
-	log.Debug("acbx len=", adabas.Acbx.Acbxlen)
+	adatypes.Central.Log.Debugf("acbx ver=%v", adabas.Acbx.Acbxver)
+	adatypes.Central.Log.Debugf("acbx cmd=%v", adabas.Acbx.Acbxcmd)
+	adatypes.Central.Log.Debugf("acbx len=%v", adabas.Acbx.Acbxlen)
 
 	retb = adabas.CallAdabas()
 	if retb == nil {
@@ -93,10 +91,9 @@ func TestAdabasOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 
 	var abds []*Buffer
@@ -143,16 +140,15 @@ func TestAdabasOk(t *testing.T) {
 	adabas.Acbx.resetAcbx()
 }
 
-const CDVTReq = uint64(0x98BADCFE)
+//const CDVTReq = uint64(0x98BADCFE)
 
 func TestAdabasOpen(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 
 	var abds []*Buffer
@@ -188,10 +184,9 @@ func TestAdabasFdt(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
 
@@ -218,12 +213,11 @@ func TestAdabasFdt(t *testing.T) {
 }
 
 func ExampleAdabas_readFileDefinitionFile11() {
-	f, err := initLogWithFile("adabas.log")
+	err := initLogWithFile("adabas.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
@@ -249,53 +243,52 @@ func ExampleAdabas_readFileDefinitionFile11() {
 	// Output: Open database
 	// Read file definition
 	// Dump all file field types:
-	//   1, AA, 8, A ,UQ DE ; AA  PE=false MU=false REMOVE=true
-	//   1, AB  ; AB  PE=false MU=false REMOVE=true
-	//     2, AC, 20, A ,NU ; AC  PE=false MU=false REMOVE=true
-	//     2, AE, 20, A ,DE ; AE  PE=false MU=false REMOVE=true
-	//     2, AD, 20, A ,NU ; AD  PE=false MU=false REMOVE=true
-	//   1, AF, 1, A ,FI ; AF  PE=false MU=false REMOVE=true
-	//   1, AG, 1, A ,FI ; AG  PE=false MU=false REMOVE=true
-	//   1, AH, 4, P ,DE NC ; AH  PE=false MU=false REMOVE=true
-	//   1, A1  ; A1  PE=false MU=true REMOVE=true
-	//     2, AI, 20, A NU MU,MU; AI  PE=false MU=true REMOVE=true MU=1-N
-	//       3, AI, 20, A ,NU MU ; AI  PE=false MU=true REMOVE=true
-	//     2, AJ, 20, A ,NU DE ; AJ  PE=false MU=true REMOVE=true
-	//     2, AK, 10, A ,NU ; AK  PE=false MU=true REMOVE=true
-	//     2, AL, 3, A ,NU ; AL  PE=false MU=true REMOVE=true
-	//   1, A2  ; A2  PE=false MU=false REMOVE=true
-	//     2, AN, 6, A ,NU ; AN  PE=false MU=false REMOVE=true
-	//     2, AM, 15, A ,NU ; AM  PE=false MU=false REMOVE=true
-	//   1, AO, 6, A ,DE ; AO  PE=false MU=false REMOVE=true
-	//   1, AP, 25, A ,NU DE ; AP  PE=false MU=false REMOVE=true
-	//   1, AQ ,PE ; AQ  PE=true MU=true REMOVE=true PE=1-N
-	//     2, AR, 3, A ,NU ; AR  PE=true MU=true REMOVE=true PE=1-N
-	//     2, AS, 5, P ,NU ; AS  PE=true MU=true REMOVE=true PE=1-N
-	//     2, AT, 5, P NU MU,MU; AT  PE=true MU=true REMOVE=true PE=1-N MU=1-N
-	//       3, AT, 5, P ,NU MU ; AT  PE=true MU=true REMOVE=true
-	//   1, A3  ; A3  PE=false MU=false REMOVE=true
-	//     2, AU, 2, U  ; AU  PE=false MU=false REMOVE=true
-	//     2, AV, 2, U ,NU ; AV  PE=false MU=false REMOVE=true
-	//   1, AW ,PE ; AW  PE=true MU=false REMOVE=true PE=1-N
-	//     2, AX, 8, U ,NU ; AX  PE=true MU=false REMOVE=true PE=1-N
-	//     2, AY, 8, U ,NU ; AY  PE=true MU=false REMOVE=true PE=1-N
-	//   1, AZ, 3, A NU DE MU,MU; AZ  PE=false MU=true REMOVE=true MU=1-N
-	//     2, AZ, 3, A ,NU DE MU ; AZ  PE=false MU=true REMOVE=true
-	//  PH=PHON(AE) ; PH  PE=false MU=false REMOVE=true
-	//  H1=AU(1-2),AV(1-2) ; H1  PE=false MU=false REMOVE=true
-	//  S1=AO(1-4) ; S1  PE=false MU=false REMOVE=true
-	//  S2=AO(1-6),AE(1-20) ; S2  PE=false MU=false REMOVE=true
-	//  S3=AR(1-3),AS(1-9) ; S3  PE=false MU=false REMOVE=true
+	//   1, AA, 8, A ,UQ,DE ; AA
+	//   1, AB  ; AB
+	//     2, AC, 20, A ,NU ; AC
+	//     2, AE, 20, A ,DE ; AE
+	//     2, AD, 20, A ,NU ; AD
+	//   1, AF, 1, A ,FI ; AF
+	//   1, AG, 1, A ,FI ; AG
+	//   1, AH, 4, P ,DE,NC ; AH
+	//   1, A1  ; A1
+	//     2, AI, 20, A ,NU,MU; AI
+	//       3, AI, 20, A ,NU,MU ; AI
+	//     2, AJ, 20, A ,NU,DE ; AJ
+	//     2, AK, 10, A ,NU ; AK
+	//     2, AL, 3, A ,NU ; AL
+	//   1, A2  ; A2
+	//     2, AN, 6, A ,NU ; AN
+	//     2, AM, 15, A ,NU ; AM
+	//   1, AO, 6, A ,DE ; AO
+	//   1, AP, 25, A ,NU,DE ; AP
+	//   1, AQ ,PE ; AQ
+	//     2, AR, 3, A ,NU ; AR
+	//     2, AS, 5, P ,NU ; AS
+	//     2, AT, 5, P ,NU,MU; AT
+	//       3, AT, 5, P ,NU,MU ; AT
+	//   1, A3  ; A3
+	//     2, AU, 2, U  ; AU
+	//     2, AV, 2, U ,NU ; AV
+	//   1, AW ,PE ; AW
+	//     2, AX, 8, U ,NU ; AX
+	//     2, AY, 8, U ,NU ; AY
+	//   1, AZ, 3, A ,NU,DE,MU; AZ
+	//     2, AZ, 3, A ,NU,DE,MU ; AZ
+	//  PH=PHON(AE) ; PH
+	//  H1=AU(1,2),AV(1,2) ; H1
+	//  S1=AO(1,4) ; S1
+	//  S2=AO(1,6),AE(1,20) ; S2
+	//  S3=AR(1,3),AS(1,9) ; S3
 
 }
 
 func ExampleAdabas_readFileDefinition9() {
-	f, err := initLogWithFile("adabas.log")
+	err := initLogWithFile("adabas.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
@@ -321,87 +314,86 @@ func ExampleAdabas_readFileDefinition9() {
 	// Output:Open database
 	// Read file definition
 	// Dump all file field types:
-	//   1, A0  ; A0  PE=false MU=false REMOVE=true
-	//     2, AA, 8, A ,UQ DE NC NN ; AA  PE=false MU=false REMOVE=true
-	//     2, AB  ; AB  PE=false MU=false REMOVE=true
-	//       3, AC, 4, F ,DE ; AC  PE=false MU=false REMOVE=true
-	//       3, AD, 8, B ,NU HF ; AD  PE=false MU=false REMOVE=true
-	//       3, AE, 0, A ,NU NV NB ; AE  PE=false MU=false REMOVE=true
-	//   1, B0  ; B0  PE=false MU=false REMOVE=true
-	//     2, BA, 40, W ,NU ; BA  PE=false MU=false REMOVE=true
-	//     2, BB, 40, W ,NU ; BB  PE=false MU=false REMOVE=true
-	//     2, BC, 50, W ,NU DE ; BC  PE=false MU=false REMOVE=true
-	//   1, CA, 1, A ,FI ; CA  PE=false MU=false REMOVE=true
-	//   1, DA, 1, A ,FI ; DA  PE=false MU=false REMOVE=true
-	//   1, EA, 4, P ,DE NC ; EA  PE=false MU=false REMOVE=true
-	//   1, F0 ,PE ; F0  PE=true MU=true REMOVE=true PE=1-N
-	//     2, FA, 60, W NU MU,MU; FA  PE=true MU=true REMOVE=true PE=1-N MU=1-N
-	//       3, FA, 60, W ,NU MU ; FA  PE=true MU=true REMOVE=true
-	//     2, FB, 40, W ,NU DE ; FB  PE=true MU=true REMOVE=true PE=1-N
-	//     2, FC, 10, A ,NU ; FC  PE=true MU=true REMOVE=true PE=1-N
-	//     2, FD, 3, A ,NU ; FD  PE=true MU=true REMOVE=true PE=1-N
-	//     2, F1  ; F1  PE=true MU=true REMOVE=true PE=1-N
-	//       3, FE, 6, A ,NU ; FE  PE=true MU=true REMOVE=true PE=1-N
-	//       3, FF, 15, A ,NU ; FF  PE=true MU=true REMOVE=true PE=1-N
-	//       3, FG, 15, A ,NU ; FG  PE=true MU=true REMOVE=true PE=1-N
-	//       3, FH, 15, A ,NU ; FH  PE=true MU=true REMOVE=true PE=1-N
-	//       3, FI, 80, A NU DE MU,MU; FI  PE=true MU=true REMOVE=true PE=1-N MU=1-N
-	//         4, FI, 80, A ,NU DE MU ; FI  PE=true MU=true REMOVE=true
-	//   1, I0 ,PE ; I0  PE=true MU=true REMOVE=true PE=1-N
-	//     2, IA, 40, W NU MU,MU; IA  PE=true MU=true REMOVE=true PE=1-N MU=1-N
-	//       3, IA, 40, W ,NU MU ; IA  PE=true MU=true REMOVE=true
-	//     2, IB, 40, W ,NU DE ; IB  PE=true MU=true REMOVE=true PE=1-N
-	//     2, IC, 10, A ,NU ; IC  PE=true MU=true REMOVE=true PE=1-N
-	//     2, ID, 3, A ,NU ; ID  PE=true MU=true REMOVE=true PE=1-N
-	//     2, IE, 5, A ,NU ; IE  PE=true MU=true REMOVE=true PE=1-N
-	//     2, I1  ; I1  PE=true MU=true REMOVE=true PE=1-N
-	//       3, IF, 6, A ,NU ; IF  PE=true MU=true REMOVE=true PE=1-N
-	//       3, IG, 15, A ,NU ; IG  PE=true MU=true REMOVE=true PE=1-N
-	//       3, IH, 15, A ,NU ; IH  PE=true MU=true REMOVE=true PE=1-N
-	//       3, II, 15, A ,NU ; II  PE=true MU=true REMOVE=true PE=1-N
-	//       3, IJ, 80, A NU DE MU,MU; IJ  PE=true MU=true REMOVE=true PE=1-N MU=1-N
-	//         4, IJ, 80, A ,NU DE MU ; IJ  PE=true MU=true REMOVE=true
-	//   1, JA, 6, A ,DE ; JA  PE=false MU=false REMOVE=true
-	//   1, KA, 66, W ,NU DE ; KA  PE=false MU=false REMOVE=true
-	//   1, L0 ,PE ; L0  PE=true MU=true REMOVE=true PE=1-N
-	//     2, LA, 3, A ,NU ; LA  PE=true MU=true REMOVE=true PE=1-N
-	//     2, LB, 6, P ,NU ; LB  PE=true MU=true REMOVE=true PE=1-N
-	//     2, LC, 6, P NU DE MU,MU; LC  PE=true MU=true REMOVE=true PE=1-N MU=1-N
-	//       3, LC, 6, P ,NU DE MU ; LC  PE=true MU=true REMOVE=true
-	//   1, MA, 4, G ,NU ; MA  PE=false MU=false REMOVE=true
-	//   1, N0  ; N0  PE=false MU=false REMOVE=true
-	//     2, NA, 2, U  ; NA  PE=false MU=false REMOVE=true
-	//     2, NB, 3, U ,NU ; NB  PE=false MU=false REMOVE=true
-	//   1, O0 ,PE ; O0  PE=true MU=false REMOVE=true PE=1-N
-	//     2, OA, 8, U ,NU DT=E(DATE) ; OA  PE=true MU=false REMOVE=true PE=1-N
-	//     2, OB, 8, U ,NU DT=E(DATE) ; OB  PE=true MU=false REMOVE=true PE=1-N
-	//   1, PA, 3, A NU DE MU,MU; PA  PE=false MU=true REMOVE=true MU=1-N
-	//     2, PA, 3, A ,NU DE MU ; PA  PE=false MU=true REMOVE=true
-	//   1, QA, 7, P  ; QA  PE=false MU=false REMOVE=true
-	//   1, RA, 0, A ,NU NV NB ; RA  PE=false MU=false REMOVE=true
-	//   1, S0 ,PE ; S0  PE=true MU=true REMOVE=true PE=1-N
-	//     2, SA, 80, W ,NU ; SA  PE=true MU=true REMOVE=true PE=1-N
-	//     2, SB, 3, A ,NU ; SB  PE=true MU=true REMOVE=true PE=1-N
-	//     2, SC, 0, A NU NV NB MU,MU; SC  PE=true MU=true REMOVE=true PE=1-N MU=1-N
-	//       3, SC, 0, A ,NU NV NB MU ; SC  PE=true MU=true REMOVE=true
-	//   1, TC, 20, U ,SY=TIME DT=E(TIMESTAMP) ; TC  PE=false MU=false REMOVE=true
-	//   1, TU, 20, U MU SY=TIME DT=E(TIMESTAMP),MU; TU  PE=false MU=true REMOVE=true MU=1-N
-	//     2, TU, 20, U ,MU SY=TIME DT=E(TIMESTAMP) ; TU  PE=false MU=true REMOVE=true
-	//  CN,HE=COLLATING(BC,'de@collation=phonebook',PRIMAR) ; CN  PE=false MU=false REMOVE=true
-	//  H1=NA(1-2),NB(1-3) ; H1  PE=false MU=false REMOVE=true
-	//  S1=JA(1-2) ; S1  PE=false MU=false REMOVE=true
-	//  S2=JA(1-6),BC(1-40) ; S2  PE=false MU=false REMOVE=true
-	//  S3=LA(1-3),LB(1-6) ; S3  PE=false MU=false REMOVE=true
-	//  HO=REFINT(A,12,A/DC) ; HO  PE=false MU=false REMOVE=true
+	//   1, A0  ; A0
+	//     2, AA, 8, A ,UQ,DE,NC,NN ; AA
+	//     2, AB  ; AB
+	//       3, AC, 4, F ,DE ; AC
+	//       3, AD, 8, B ,NU,HF ; AD
+	//       3, AE, 0, A ,NU,NV,NB ; AE
+	//   1, B0  ; B0
+	//     2, BA, 40, W ,NU ; BA
+	//     2, BB, 40, W ,NU ; BB
+	//     2, BC, 50, W ,NU,DE ; BC
+	//   1, CA, 1, A ,FI ; CA
+	//   1, DA, 1, A ,FI ; DA
+	//   1, EA, 4, P ,DE,NC ; EA
+	//   1, F0 ,PE ; F0
+	//     2, FA, 60, W ,NU,MU; FA
+	//       3, FA, 60, W ,NU,MU ; FA
+	//     2, FB, 40, W ,NU,DE ; FB
+	//     2, FC, 10, A ,NU ; FC
+	//     2, FD, 3, A ,NU ; FD
+	//     2, F1  ; F1
+	//       3, FE, 6, A ,NU ; FE
+	//       3, FF, 15, A ,NU ; FF
+	//       3, FG, 15, A ,NU ; FG
+	//       3, FH, 15, A ,NU ; FH
+	//       3, FI, 80, A ,NU,DE,MU; FI
+	//         4, FI, 80, A ,NU,DE,MU ; FI
+	//   1, I0 ,PE ; I0
+	//     2, IA, 40, W ,NU,MU; IA
+	//       3, IA, 40, W ,NU,MU ; IA
+	//     2, IB, 40, W ,NU,DE ; IB
+	//     2, IC, 10, A ,NU ; IC
+	//     2, ID, 3, A ,NU ; ID
+	//     2, IE, 5, A ,NU ; IE
+	//     2, I1  ; I1
+	//       3, IF, 6, A ,NU ; IF
+	//       3, IG, 15, A ,NU ; IG
+	//       3, IH, 15, A ,NU ; IH
+	//       3, II, 15, A ,NU ; II
+	//       3, IJ, 80, A ,NU,DE,MU; IJ
+	//         4, IJ, 80, A ,NU,DE,MU ; IJ
+	//   1, JA, 6, A ,DE ; JA
+	//   1, KA, 66, W ,NU,DE ; KA
+	//   1, L0 ,PE ; L0
+	//     2, LA, 3, A ,NU ; LA
+	//     2, LB, 6, P ,NU ; LB
+	//     2, LC, 6, P ,NU,DE,MU; LC
+	//       3, LC, 6, P ,NU,DE,MU ; LC
+	//   1, MA, 4, G ,NU ; MA
+	//   1, N0  ; N0
+	//     2, NA, 2, U  ; NA
+	//     2, NB, 3, U ,NU ; NB
+	//   1, O0 ,PE ; O0
+	//     2, OA, 8, U ,NU,DT=E(DATE) ; OA
+	//     2, OB, 8, U ,NU,DT=E(DATE) ; OB
+	//   1, PA, 3, A ,NU,DE,MU; PA
+	//     2, PA, 3, A ,NU,DE,MU ; PA
+	//   1, QA, 7, P  ; QA
+	//   1, RA, 0, A ,NU,NV,NB ; RA
+	//   1, S0 ,PE ; S0
+	//     2, SA, 80, W ,NU ; SA
+	//     2, SB, 3, A ,NU ; SB
+	//     2, SC, 0, A ,NU,NV,NB,MU; SC
+	//       3, SC, 0, A ,NU,NV,NB,MU ; SC
+	//   1, TC, 20, U ,SY=TIME,DT=E(TIMESTAMP) ; TC
+	//   1, TU, 20, U ,MU,SY=TIME,DT=E(TIMESTAMP); TU
+	//     2, TU, 20, U ,MU,SY=TIME,DT=E(TIMESTAMP) ; TU
+	//  CN,HE=COLLATING(BC,'de@collation=phonebook',PRIMAR) ; CN
+	//  H1=NA(1,2),NB(1,3) ; H1
+	//  S1=JA(1,2) ; S1
+	//  S2=JA(1,6),BC(1,40) ; S2
+	//  S3=LA(1,3),LB(1,6) ; S3
+	//  HO=REFINT(A,12,A/DC) ; HO
 }
 
 func ExampleAdabas_readFileDefinition9RestrictF0() {
-	f, err := initLogWithFile("adabas.log")
+	err := initLogWithFile("adabas.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
@@ -428,30 +420,29 @@ func ExampleAdabas_readFileDefinition9RestrictF0() {
 	// Output:Open database
 	// Read file definition
 	// Dump all active field types:
-	//   1, A0  ; A0  PE=false MU=false REMOVE=true
-	//     2, AA, 8, A ,UQ DE NC NN ; AA  PE=false MU=false REMOVE=false
-	//   1, F0 ,PE ; F0  PE=true MU=true REMOVE=false PE=1-N
-	//     2, FA, 60, W NU MU,MU; FA  PE=true MU=true REMOVE=false PE=1-N MU=1-N
-	//       3, FA, 60, W ,NU MU ; FA  PE=true MU=true REMOVE=false PE=1-N MU=1-N
-	//     2, FB, 40, W ,NU DE ; FB  PE=true MU=true REMOVE=false PE=1-N
-	//     2, FC, 10, A ,NU ; FC  PE=true MU=true REMOVE=false PE=1-N
-	//     2, FD, 3, A ,NU ; FD  PE=true MU=true REMOVE=false PE=1-N
-	//     2, F1  ; F1  PE=true MU=true REMOVE=false PE=1-N
-	//       3, FE, 6, A ,NU ; FE  PE=true MU=true REMOVE=false PE=1-N
-	//       3, FF, 15, A ,NU ; FF  PE=true MU=true REMOVE=false PE=1-N
-	//       3, FG, 15, A ,NU ; FG  PE=true MU=true REMOVE=false PE=1-N
-	//       3, FH, 15, A ,NU ; FH  PE=true MU=true REMOVE=false PE=1-N
-	//       3, FI, 80, A NU DE MU,MU; FI  PE=true MU=true REMOVE=false PE=1-N MU=1-N
-	//         4, FI, 80, A ,NU DE MU ; FI  PE=true MU=true REMOVE=false PE=1-N MU=1-N
+	//   1, A0  ; A0
+	//     2, AA, 8, A ,UQ,DE,NC,NN ; AA
+	//   1, F0 ,PE ; F0
+	//     2, FA, 60, W ,NU,MU; FA
+	//       3, FA, 60, W ,NU,MU ; FA
+	//     2, FB, 40, W ,NU,DE ; FB
+	//     2, FC, 10, A ,NU ; FC
+	//     2, FD, 3, A ,NU ; FD
+	//     2, F1  ; F1
+	//       3, FE, 6, A ,NU ; FE
+	//       3, FF, 15, A ,NU ; FF
+	//       3, FG, 15, A ,NU ; FG
+	//       3, FH, 15, A ,NU ; FH
+	//       3, FI, 80, A ,NU,DE,MU; FI
+	//         4, FI, 80, A ,NU,DE,MU ; FI
 }
 
 func ExampleAdabas_readFileDefinition9Restricted() {
-	f, err := initLogWithFile("adabas.log")
+	err := initLogWithFile("adabas.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("fdt")
@@ -478,28 +469,27 @@ func ExampleAdabas_readFileDefinition9Restricted() {
 	// Output: Open database
 	// Read file definition
 	// Dump all active field types:
-	//   1, A0  ; A0  PE=false MU=false REMOVE=false
-	//     2, AA, 8, A ,UQ DE NC NN ; AA  PE=false MU=false REMOVE=false
-	//     2, AB  ; AB  PE=false MU=false REMOVE=false
-	//       3, AC, 4, F ,DE ; AC  PE=false MU=false REMOVE=false
-	//       3, AD, 8, B ,NU HF ; AD  PE=false MU=false REMOVE=false
-	//       3, AE, 0, A ,NU NV NB ; AE  PE=false MU=false REMOVE=false
-	//   1, DA, 1, A ,FI ; DA  PE=false MU=false REMOVE=false
-	//   1, L0 ,PE ; L0  PE=true MU=true REMOVE=false PE=1-N
-	//     2, LA, 3, A ,NU ; LA  PE=true MU=true REMOVE=false PE=1-N
-	//     2, LB, 6, P ,NU ; LB  PE=true MU=true REMOVE=false PE=1-N
-	//     2, LC, 6, P NU DE MU,MU; LC  PE=true MU=true REMOVE=false PE=1-N MU=1-N
-	//       3, LC, 6, P ,NU DE MU ; LC  PE=true MU=true REMOVE=false PE=1-N MU=1-N
+	//   1, A0  ; A0
+	//     2, AA, 8, A ,UQ,DE,NC,NN ; AA
+	//     2, AB  ; AB
+	//       3, AC, 4, F ,DE ; AC
+	//       3, AD, 8, B ,NU,HF ; AD
+	//       3, AE, 0, A ,NU,NV,NB ; AE
+	//   1, DA, 1, A ,FI ; DA
+	//   1, L0 ,PE ; L0
+	//     2, LA, 3, A ,NU ; LA
+	//     2, LB, 6, P ,NU ; LB
+	//     2, LC, 6, P ,NU,DE,MU; LC
+	//       3, LC, 6, P ,NU,DE,MU ; LC
 }
 
 func TestAdabasFdtNewEmployee(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("newempl")
 
@@ -529,10 +519,9 @@ func TestAdabasFdtHyperexit(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	adabas.ID.SetUser("hyper")
 	defer adabas.Close()
@@ -561,16 +550,15 @@ func TestAdabasFdtNewEmployeeRemote(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
-	log.Debug("Network location ", entireNetworkLocation())
+	adatypes.Central.Log.Debugf("Network location %s", entireNetworkLocation())
 	url := "201(tcpip://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
 	ID := NewAdabasID()
-	adabas, uerr := NewAdabasWithID(url, ID)
+	adabas, uerr := NewAdabas(url, ID)
 	if !assert.NoError(t, uerr) {
 		return
 	}
@@ -605,16 +593,15 @@ func TestAdabasUnknownDriver(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
-	log.Debug("Network location ", entireNetworkLocation())
+	adatypes.Central.Log.Debugf("Network location %s", entireNetworkLocation())
 	url := "201(abc://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
 	ID := NewAdabasID()
-	adabas, uerr := NewAdabasWithID(url, ID)
+	adabas, uerr := NewAdabas(url, ID)
 	if !assert.NoError(t, uerr) {
 		return
 	}
@@ -635,10 +622,10 @@ func simpleDefinition() *adatypes.Definition {
 }
 
 func testParser(adabasRequest *adatypes.Request, x interface{}) (err error) {
-	switch x.(type) {
+	switch v := x.(type) {
 	case *uint32:
-		counter := x.(*uint32)
-		(*counter)++
+		//counter := x.(*uint32)
+		(*v)++
 	case []uint32:
 		isns := x.([]adatypes.Isn)
 		for i := range isns {
@@ -657,10 +644,9 @@ func TestAdabasReadPhysical(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	err := adabas.Open()
@@ -673,7 +659,6 @@ func TestAdabasReadPhysical(t *testing.T) {
 	req := &adatypes.Request{Option: &adatypes.BufferOption{}, Definition: simpleDefinition(),
 		FormatBuffer: fb, Multifetch: 1, RecordBufferLength: 200, Parser: testParser, Limit: 5}
 	counter := uint32(0)
-	//, RecordBuffer: adatypes.NewHelper(make([]byte, 199), 200, binary.LittleEndian)}
 	rerr := adabas.ReadPhysical(11, req, &counter)
 	if !assert.NoError(t, rerr) {
 		return
@@ -685,10 +670,9 @@ func TestAdabasReadLogical(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	err := adabas.Open()
@@ -713,10 +697,9 @@ func TestAdabasReadIsn(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	err := adabas.Open()
@@ -739,10 +722,9 @@ func TestAdabasSearchLogical(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	err := adabas.Open()
@@ -776,10 +758,9 @@ func TestAdabasCloned(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "adabas.log")
-	defer f.Close()
+	initTestLogWithFile(t, "adabas.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	clonedAdabas := NewClonedAdabas(adabas)

@@ -65,19 +65,15 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 		return createNewReadRequestCommon(cr)
 	case *Adabas:
 		ada := param[0].(*Adabas)
-		switch param[1].(type) {
+		switch p := param[1].(type) {
 		case string:
-			mapName := param[1].(string)
-			return createNewMapReadRequest(mapName, ada)
+			return createNewMapReadRequest(p, ada)
 		case *Map:
-			m := param[1].(*Map)
-			return createNewMapPointerReadRequest(ada, m)
+			return createNewMapPointerReadRequest(ada, p)
 		case Fnr:
-			file := param[1].(Fnr)
-			return createNewReadRequestAdabas(ada, file), nil
+			return createNewReadRequestAdabas(ada, p), nil
 		case int:
-			file := param[1].(int)
-			return createNewReadRequestAdabas(ada, Fnr(file)), nil
+			return createNewReadRequestAdabas(ada, Fnr(p)), nil
 		}
 	case string:
 		mapName := param[0].(string)
@@ -118,7 +114,7 @@ func createNewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Rep
 	if serr != nil {
 		return nil, serr
 	}
-	dataAdabas, nerr := NewAdabasWithURL(&adabasMap.Data.URL, adabas.ID)
+	dataAdabas, nerr := NewAdabas(&adabasMap.Data.URL, adabas.ID)
 	if nerr != nil {
 		return nil, nerr
 	}
@@ -154,7 +150,7 @@ func createNewMapReadRequest(mapName string, adabas *Adabas) (request *ReadReque
 // createNewMapPointerReadRequest create a new Request instance
 func createNewMapPointerReadRequest(adabas *Adabas, adabasMap *Map) (request *ReadRequest, err error) {
 	if adabasMap == nil {
-		err = adatypes.NewGenericError(22, adabasMap.Name)
+		err = adatypes.NewGenericError(22, "")
 		return
 	}
 	adatypes.Central.Log.Debugf("Read: Adabas new map reference for %s to %d -> %#v", adabasMap.Name,
@@ -198,7 +194,8 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, e
 	adabasRequest.Definition = request.definition
 	adabasRequest.RecordBufferShift = request.RecordBufferShift
 	adabasRequest.HoldRecords = request.HoldRecords
-	if request.Limit < uint64(adabasRequest.Multifetch) {
+	adabasRequest.Multifetch = request.Multifetch
+	if request.Limit != 0 && request.Limit < uint64(request.Multifetch) {
 		adabasRequest.Multifetch = uint32(request.Limit)
 	}
 
@@ -210,6 +207,7 @@ func (request *ReadRequest) SetHoldRecords(hold adatypes.HoldType) {
 	request.HoldRecords = hold
 }
 
+// parses the read record record
 func parseRead(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	result := x.(*Response)
 
@@ -268,15 +266,9 @@ func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes
 		adabasRequest.Parser = resultParser
 	}
 	adabasRequest.Limit = request.Limit
-	if request.Multifetch > 1 {
-		if request.Limit < uint64(request.Multifetch) {
-			adabasRequest.Multifetch = uint32(request.Limit)
-		} else {
-			adabasRequest.Multifetch = request.Multifetch
-		}
-
-	} else {
-		adabasRequest.Multifetch = 1
+	adabasRequest.Multifetch = request.Multifetch
+	if request.Limit != 0 && request.Limit < uint64(request.Multifetch) {
+		adabasRequest.Multifetch = uint32(request.Limit)
 	}
 	adabasRequest.Parameter = request.adabasMap
 
@@ -429,6 +421,7 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 		}
 
 		if searchInfo == nil {
+			adatypes.Central.Log.Debugf("read in ISN order ...from %d", request.Start)
 			adabasRequest.Isn = adatypes.Isn(request.Start)
 			err = request.adabas.ReadISNOrder(request.repository.Fnr, adabasRequest, x)
 		} else {
@@ -441,9 +434,10 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 			}
 		}
 	} else {
-		request.adabas.loopCall(request.cursoring.adabasRequest, x)
+		adatypes.Central.Log.Debugf("read logical with ...cursoring")
+		err = request.adabas.loopCall(request.cursoring.adabasRequest, x)
 	}
-
+	adatypes.Central.Log.Debugf("Read finished")
 	return
 }
 
@@ -613,14 +607,24 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 	return
 }
 
-func (request *ReadRequest) adaptDescriptorMap(adabasRequest *adatypes.Request) {
+func (request *ReadRequest) adaptDescriptorMap(adabasRequest *adatypes.Request) error {
 	if request.adabasMap != nil {
 		adabasRequest.Parameter = request.adabasMap
 		for i := 0; i < len(adabasRequest.Descriptors); i++ {
-			v := request.definition.Search(adabasRequest.Descriptors[i])
-			adabasRequest.Descriptors[i] = v.Type().ShortName()
+			t, err := request.definition.SearchType(adabasRequest.Descriptors[i])
+			if err != nil {
+				return err
+			}
+			adatypes.Central.Log.Debugf("Found search descriptor %s and got %#v", adabasRequest.Descriptors[i], t)
+			if t == nil {
+				request.definition.DumpTypes(false, false, "Global Tree")
+				request.definition.DumpTypes(false, false, "Active Tree")
+				return adatypes.NewGenericError(76)
+			}
+			adabasRequest.Descriptors[i] = t.ShortName()
 		}
 	}
+	return nil
 }
 
 type evaluateFieldMap struct {
@@ -647,7 +651,7 @@ func traverseFieldMap(adaType adatypes.IAdaType, parentType adatypes.IAdaType, l
 	s := adaType.Name()
 	if index, ok := ev.fields[s]; ok {
 		if _, okq := ev.queryFields[s]; !okq {
-			if adaType.IsStructure() {
+			if adaType.IsStructure() && adaType.Type() != adatypes.FieldTypeRedefinition {
 				st := adaType.(*adatypes.StructureType)
 				current := index
 				initFieldSubTypes(st, ev.queryFields, &current)
@@ -673,17 +677,19 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	adatypes.Central.Log.Debugf("Query fields to %s", fieldq)
 	err = request.Open()
 	if err != nil {
+		adatypes.Central.Log.Debugf("Query fields open error: %v", err)
 		return
 	}
 
 	err = request.loadDefinition()
 	if err != nil {
+		adatypes.Central.Log.Debugf("Query fields definition error: %v", err)
 		return
 	}
 	if !(request.adabasMap != nil && fieldq == "*") {
 		err = request.definition.ShouldRestrictToFields(fieldq)
 		if err != nil {
-			adatypes.Central.Log.Debugf("Restrict error: %v", err)
+			adatypes.Central.Log.Debugf("Query fields restrict error: %v", err)
 			return err
 		}
 	}
@@ -707,6 +713,7 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 		}
 	}
 
+	adatypes.Central.Log.Debugf("Query fields ready %v", err)
 	return
 }
 

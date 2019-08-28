@@ -28,7 +28,6 @@ import (
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -44,10 +43,9 @@ const (
 )
 
 func TestStoreAdabasFields(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	cErr := clearFile(16)
 	if !assert.NoError(t, cErr) {
@@ -124,20 +122,37 @@ func prepareCreateTestMap(mapName string, fileName string, dataRepository *Datab
 	return nil
 }
 
-func TestStoreFailMapFieldsCheck(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+func TestStoreRequestConstructor(t *testing.T) {
+	initTestLogWithFile(t, "store.log")
 
-	fmt.Println("Start : TestStoreFailMapFieldsCheck")
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	ada, _ := NewAdabas(adabasStatDBID)
+	defer ada.Close()
+	repository := NewMapRepository(ada, 4)
+	storeRequest, err := NewStoreRequest("EMPLOYEES-NAT-DDM", ada, repository)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.NotNil(t, storeRequest)
+
+}
+
+func TestStoreFailMapFieldsCheck(t *testing.T) {
+	initTestLogWithFile(t, "store.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 11}
 	perr := prepareCreateTestMap(massLoadEmployees, massLoadSystrans, dataRepository)
 	if !assert.NoError(t, perr) {
 		return
 	}
+	adatypes.Central.Log.Debugf("Prepare of test finished")
 	ada, _ := NewAdabas(adabasModDBID)
 	AddGlobalMapRepository(ada.URL, 250)
 	defer DelGlobalMapRepository(ada.URL, 250)
+	adatypes.Central.Log.Debugf("Search map in repository")
 	adabasMap, serr := SearchMapRepository(ada, massLoadEmployees)
 	if !assert.NoError(t, serr) {
 		return
@@ -165,10 +180,9 @@ func TestStoreFailMapFieldsCheck(t *testing.T) {
 }
 
 func TestStoreMapFields(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	fmt.Println("Prepare create test map")
 	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
@@ -237,7 +251,7 @@ func TestStoreMapFields(t *testing.T) {
 func clearAdabasFile(t *testing.T, target string, fnr Fnr) error {
 	fmt.Println("Clear Adabas file", target, "/", fnr)
 	id := NewAdabasID()
-	adabas, err := NewAdabasWithID(target, id)
+	adabas, err := NewAdabas(target, id)
 	if err != nil {
 		return err
 	}
@@ -304,10 +318,9 @@ func clearMap(t *testing.T, adabas *Adabas, mapName string) error {
 }
 
 func TestStoreMapFieldsPeriods(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
@@ -366,10 +379,9 @@ func TestStoreMapFieldsPeriods(t *testing.T) {
 }
 
 func TestStoreUpdateMapField(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
@@ -418,7 +430,7 @@ func TestStoreUpdateMapField(t *testing.T) {
 	}
 	storeRequest.EndTransaction()
 
-	log.Infof("First validate data in database ....")
+	adatypes.Central.Log.Infof("First validate data in database ....")
 	checkUpdateCorrectRead(t, "1111111", storeRecord.Isn)
 
 	err = storeRecord.SetValue("PERSONNEL-ID", "9999999")
@@ -431,7 +443,7 @@ func TestStoreUpdateMapField(t *testing.T) {
 	}
 	storeRequest.EndTransaction()
 
-	log.Infof("Second validate data in database ....")
+	adatypes.Central.Log.Infof("Second validate data in database ....")
 	checkUpdateCorrectRead(t, "9999999", storeRecord.Isn)
 
 }
@@ -443,7 +455,7 @@ func checkUpdateCorrectRead(t *testing.T, value string, isn adatypes.Isn) {
 func checkUpdateCorrectReadNumber(t *testing.T, value string, isns []adatypes.Isn, number int) {
 	id := NewAdabasID()
 	copy(id.AdaID.User[:], []byte("CHECK   "))
-	adabas, err := NewAdabasWithID(adabasModDBIDs, id)
+	adabas, err := NewAdabas(adabasModDBIDs, id)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -466,10 +478,9 @@ func checkUpdateCorrectReadNumber(t *testing.T, value string, isns []adatypes.Is
 }
 
 func TestStoreWithMapLobFile(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	p := os.Getenv("LOGPATH")
 	if p == "" {
@@ -651,10 +662,9 @@ func validateUsingMap(t *testing.T, isn adatypes.Isn) {
 }
 
 func TestStoreMapMissing(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	fmt.Println("Validate using Map invalid")
 	adabas, _ := NewAdabas(adabasModDBID)
@@ -675,10 +685,9 @@ func TestStoreMapMissing(t *testing.T) {
 }
 
 func TestStorePeriod(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	mr := NewMapRepository(adabas, 250)
@@ -750,10 +759,9 @@ func TestStorePeriod(t *testing.T) {
 }
 
 func TestStoreEndTransaction(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
@@ -813,15 +821,14 @@ func TestStoreEndTransaction(t *testing.T) {
 
 	storeRequest.EndTransaction()
 
-	log.Infof("First validate data in database ....")
+	adatypes.Central.Log.Infof("First validate data in database ....")
 	checkUpdateCorrectReadNumber(t, "CLTEST", isns, 10)
 }
 
 func TestStoreCloseWithBackout(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
@@ -881,15 +888,14 @@ func TestStoreCloseWithBackout(t *testing.T) {
 
 	storeRequest.Close()
 
-	log.Infof("First validate data in database ....")
+	adatypes.Central.Log.Infof("First validate data in database ....")
 	checkUpdateCorrectReadNumber(t, "CLTEST", isns, 0)
 }
 
 func TestStoreBackout(t *testing.T) {
-	f := initTestLogWithFile(t, "store.log")
-	defer f.Close()
+	initTestLogWithFile(t, "store.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
@@ -949,6 +955,6 @@ func TestStoreBackout(t *testing.T) {
 
 	storeRequest.BackoutTransaction()
 
-	log.Infof("First validate data in database ....")
+	adatypes.Central.Log.Infof("First validate data in database ....")
 	checkUpdateCorrectReadNumber(t, "BTTEST", isns, 0)
 }

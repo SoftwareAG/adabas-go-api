@@ -26,15 +26,13 @@ import (
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRequestPhysicalSimpleTypes(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 11)
 	defer request.Close()
@@ -46,10 +44,9 @@ func TestRequestPhysicalSimpleTypes(t *testing.T) {
 }
 
 func TestRequestPhysicalMultipleField(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 11)
 	defer request.Close()
@@ -68,10 +65,9 @@ func TestRequestPhysicalMultipleField(t *testing.T) {
 }
 
 func TestRequestLogicalWithQueryFields(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 11)
 	defer request.Close()
@@ -87,10 +83,9 @@ func TestRequestLogicalWithQueryFields(t *testing.T) {
 }
 
 func TestRequestLogicalWithFields(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 11)
 	defer request.Close()
@@ -105,10 +100,9 @@ func TestRequestLogicalWithFields(t *testing.T) {
 }
 
 func TestReadRequestLogicalBy(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 11)
 	defer request.Close()
@@ -123,10 +117,9 @@ func TestReadRequestLogicalBy(t *testing.T) {
 }
 
 func TestReadRequestLogicalByAll(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 11)
 	defer request.Close()
@@ -155,14 +148,13 @@ func TestReadRequestLogicalByAll(t *testing.T) {
 }
 
 func TestRequestRemoteLogicalByAll(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := "201(tcpip://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
 	ID := NewAdabasID()
-	adabas, aerr := NewAdabasWithID(url, ID)
+	adabas, aerr := NewAdabas(url, ID)
 	if !assert.NoError(t, aerr) {
 		return
 	}
@@ -176,12 +168,11 @@ func TestRequestRemoteLogicalByAll(t *testing.T) {
 }
 
 func ExampleReadRequest_ReadLogicalBy() {
-	f, err := initLogWithFile("request.log")
+	err := initLogWithFile("request.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 11)
@@ -211,10 +202,9 @@ func ExampleReadRequest_ReadLogicalBy() {
 }
 
 func TestReadRequestLogicalBySuperDescriptor(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 11)
 	defer request.Close()
@@ -229,10 +219,9 @@ func TestReadRequestLogicalBySuperDescriptor(t *testing.T) {
 }
 
 func TestReadRequestAllJson(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 16)
 	defer request.Close()
@@ -252,10 +241,9 @@ func TestReadRequestAllJson(t *testing.T) {
 }
 
 func TestReadRequestHistogramDescriptorField(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 11)
 	request.Limit = 10
@@ -275,10 +263,9 @@ func TestReadRequestHistogramDescriptorField(t *testing.T) {
 }
 
 func TestReadRequestHistogramSuperDescriptor(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 11)
 	defer request.Close()
@@ -304,12 +291,11 @@ func TestReadRequestHistogramSuperDescriptor(t *testing.T) {
 }
 
 func ExampleReadRequest_histogramWith() {
-	f, err := initLogWithFile("request.log")
+	err := initLogWithFile("request.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 11)
@@ -331,10 +317,9 @@ func ExampleReadRequest_histogramWith() {
 }
 
 func TestReadRequestReadMap(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
 	request, _ := NewReadRequest(adabas, 4)
 	defer request.Close()
@@ -354,10 +339,9 @@ func TestReadRequestReadMap(t *testing.T) {
 }
 
 func TestReadRequestMissingFile(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
 	request, _ := NewReadRequest(adabas, 123)
 	defer request.Close()
@@ -375,10 +359,9 @@ func dumpStream(record *Record, x interface{}) error {
 }
 
 func TestReadRequestWithStream(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
 	request, _ := NewReadRequest(adabas, 11)
 	defer request.Close()
@@ -393,12 +376,11 @@ func TestReadRequestWithStream(t *testing.T) {
 }
 
 func ExampleReadRequest_histogramWithStream() {
-	f, err := initLogWithFile("request.log")
+	err := initLogWithFile("request.log")
 	if err != nil {
 		fmt.Println("Error init log", err)
 		return
 	}
-	defer f.Close()
 
 	adabas, _ := NewAdabas(24)
 	request, _ := NewReadRequest(adabas, 11)
@@ -425,10 +407,9 @@ func ExampleReadRequest_histogramWithStream() {
 }
 
 func TestReadRequestPhysicalStream(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
 	request, _ := NewReadRequest(adabas, 11)
 	defer request.Close()
@@ -444,8 +425,7 @@ func TestReadRequestPhysicalStream(t *testing.T) {
 }
 
 func BenchmarkReadRequest_Small(b *testing.B) {
-	f, err := initLogLevelWithFile("request-bench.log", log.ErrorLevel)
-	defer f.Close()
+	err := initLogLevelWithFile("request-bench.log", "error")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -466,8 +446,7 @@ func BenchmarkReadRequest_Small(b *testing.B) {
 	}
 }
 func BenchmarkReadRequest(b *testing.B) {
-	f, err := initLogLevelWithFile("request-bench.log", log.ErrorLevel)
-	defer f.Close()
+	err := initLogLevelWithFile("request-bench.log", "error")
 
 	assert.NoError(b, err)
 
@@ -488,14 +467,13 @@ func BenchmarkReadRequest(b *testing.B) {
 }
 
 func TestRequestWithMapLogicalBy(t *testing.T) {
-	//	f, err := initLogLevelWithFile("request.log", log.DebugLevel)
-	f, err := initLogWithFile("request.log")
+	//	f, err := initLogLevelWithFile("request.log", adatypes.Central.Log.DebugLevel)
+	err := initLogWithFile("request.log")
 	if err != nil {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
 	mapRepository := NewMapRepository(adabas, 4)
 	request, err := NewReadRequest("EMPLOYEES-NAT-DDM", adabas, mapRepository)
@@ -532,10 +510,9 @@ func traverseFieldCounter(IAdaType adatypes.IAdaType, parentType adatypes.IAdaTy
 }
 
 func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	ada, _ := NewAdabas(24)
 	AddGlobalMapRepository(ada.URL, 4)
 	defer DelGlobalMapRepository(ada.URL, 4)
@@ -573,10 +550,9 @@ func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
 }
 
 func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(24)
 	request, err := NewReadRequest("EMPLOYEES-NAT-DDM", adabas,
@@ -601,8 +577,7 @@ func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
 }
 
 func TestReadMaps(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 	ada, _ := NewAdabas(24)
 	request, _ := NewReadRequest(ada, 4)
 	request.Limit = 0
@@ -616,10 +591,9 @@ func TestReadMaps(t *testing.T) {
 }
 
 func TestMapRequestWithHistogramBy(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(24)
 	request, err := NewReadRequest("EMPLOYEES-NAT-DDM", adabas,
@@ -642,10 +616,9 @@ func TestMapRequestWithHistogramBy(t *testing.T) {
 }
 
 func TestMapRequestWithHistogramWith(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(24)
 	request, err := NewReadRequest("EMPLOYEES-NAT-DDM", adabas,
@@ -660,22 +633,20 @@ func TestMapRequestWithHistogramWith(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		if result != nil {
-			assert.Equal(t, 13, len(result.Values))
+			assert.Equal(t, 1, len(result.Values))
 			assert.Equal(t, uint64(8), result.Values[0].Quantity)
-			assert.Equal(t, uint64(95), result.Values[12].Quantity)
 		}
 	}
 }
 
 func TestMapRequestFractional(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
-	adabas, _ := NewAdabas(23)
-	request, err := NewReadRequest("FRACTIONAL", adabas,
-		NewMapRepository(adabas, 250))
+	adabas, _ := NewAdabas(24)
+	request, err := NewReadRequest("Fractional", adabas,
+		NewMapRepository(adabas, 4))
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -693,4 +664,109 @@ func TestMapRequestFractional(t *testing.T) {
 			assert.Equal(t, "1.44", x.String())
 		}
 	}
+}
+
+func ExampleReadRequest_readPhysical() {
+	err := initLogWithFile("request.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	adabas, _ := NewAdabas(adabasStatDBID)
+	request, _ := NewReadRequest(adabas, 225)
+	defer request.Close()
+	request.Limit = 2
+	request.QueryFields("*")
+	var result *Response
+	result, err = request.ReadPhysicalSequence()
+	fmt.Println("Dump result received ...")
+	if result != nil {
+		result.DumpValues()
+	}
+
+	// Output:
+	// Dump result received ...
+	// Dump all result values
+	// Record Isn: 0001
+	//   AA = > AVS0                             <
+	//   AB = [ 1 ]
+	//    AC[01] = > 0 <
+	//    AD[01] = [ 1 ]
+	//     AE[01] = > 0 <
+	//     AF[01] = > XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                                                                                                                                                                   <
+	//     AG[01] = > 0 <
+	//     AH[01] = > 0ABCDDDDD                                                                                                                                                                                                <
+	//     AI[01] = > 0.000000 <
+	// Record Isn: 0002
+	//   AA = > AVS1                             <
+	//   AB = [ 1 ]
+	//    AC[01] = > 9999 <
+	//    AD[01] = [ 1 ]
+	//     AE[01] = > 233 <
+	//     AF[01] = > XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                                                                                                                                                                   <
+	//     AG[01] = > 100 <
+	//     AH[01] = > 1ABCDDDDD                                                                                                                                                                                                <
+	//     AI[01] = > 10.300000 <
+}
+
+func TestReadPElevel2Group(t *testing.T) {
+	initTestLogWithFile(t, "request.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	adabas, _ := NewAdabas(adabasStatDBID)
+	request, _ := NewReadRequest(adabas, 225)
+	defer request.Close()
+	request.Multifetch = 1
+	request.Limit = 1
+	request.QueryFields("AD")
+	result, err := request.ReadPhysicalSequence()
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	if result != nil {
+		fmt.Println("Dump result received ...")
+		result.DumpValues()
+	}
+}
+
+func ExampleReadRequest_readGroup() {
+	err := initLogWithFile("request.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	adabas, aerr := NewAdabas(adabasStatDBID)
+	if aerr != nil {
+		fmt.Println(aerr)
+		return
+	}
+	request, rerr := NewReadRequest(adabas, 11)
+	if rerr != nil {
+		fmt.Println(rerr)
+		return
+	}
+	defer request.Close()
+	request.Limit = 1
+	request.QueryFields("AA,AW")
+	var result *Response
+	result, err = request.ReadPhysicalSequence()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("Dump result received ...")
+	if result != nil {
+		result.DumpValues()
+	}
+
+	// Output:
+	// Dump result received ...
+	// Dump all result values
+	// Record Isn: 0001
+	//   AA = > 50005800 <
+	//   AW = [ 1 ]
+	//    AX[01] = > 19990801 <
+	//    AY[01] = > 19990831 <
+
 }

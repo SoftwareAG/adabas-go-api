@@ -1,0 +1,2 @@
+build.bat eol=crlf
+test.bat eol=crlf

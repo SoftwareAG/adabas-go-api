@@ -20,59 +20,92 @@
 package adatypes
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-func initTestLogWithFile(t *testing.T, fileName string) *os.File {
-	file, err := initLogWithFile(fileName)
+func initTestLogWithFile(t *testing.T, fileName string) {
+	err := initLogWithFile(fileName)
 	if err != nil {
 		t.Fatalf("error opening file: %v", err)
-		return nil
 	}
-	return file
 }
 
-func initLogWithFile(fileName string) (file *os.File, err error) {
-	level := log.ErrorLevel
+func initLogWithFile(fileName string) (err error) {
+	level := zap.ErrorLevel
 	ed := os.Getenv("ENABLE_DEBUG")
 	if ed == "1" {
-		level = log.DebugLevel
+		level = zap.DebugLevel
 		Central.SetDebugLevel(true)
 	}
 	return initLogLevelWithFile(fileName, level)
 }
 
-func initLogLevelWithFile(fileName string, level log.Level) (file *os.File, err error) {
+func newWinFileSink(u *url.URL) (zap.Sink, error) {
+	// Remove leading slash left by url.Parse()
+	return os.OpenFile(u.Path[1:], os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+}
+
+func initLogLevelWithFile(fileName string, level zapcore.Level) (err error) {
 	p := os.Getenv("LOGPATH")
 	if p == "" {
 		p = "."
 	}
-	name := p + string(os.PathSeparator) + fileName
-	file, err = os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		return
+	var name string
+	if runtime.GOOS == "windows" {
+		zap.RegisterSink("winfile", newWinFileSink)
+		//		OutputPaths: []string{"stdout", "winfile:///" + filepath.Join(GlobalConfigDir.Path, "info.log.json")},
+		name = "winfile:///" + p + string(os.PathSeparator) + fileName
+	} else {
+		name = "file://" + filepath.ToSlash(p+string(os.PathSeparator)+fileName)
 	}
-	myLog := log.New()
-	myLog.SetLevel(level)
-	myLog.Out = file
 
-	// log.SetOutput(file)
-	Central.Log = myLog
-	return
+	rawJSON := []byte(`{
+	"level": "error",
+	"encoding": "console",
+	"outputPaths": [ "XXX"],
+	"errorOutputPaths": ["stderr"],
+	"encoderConfig": {
+	  "messageKey": "message",
+	  "levelKey": "level",
+	  "levelEncoder": "lowercase"
+	}
+  }`)
+
+	var cfg zap.Config
+	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
+		panic(err)
+	}
+	cfg.Level.SetLevel(level)
+	cfg.OutputPaths = []string{name}
+	logger, err := cfg.Build()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
+
+	sugar := logger.Sugar()
+	Central.Log = sugar
+
+	sugar.Infof("AdabasGoApi logger initialization succeeded")
+	return nil
 }
 
 func TestLog(t *testing.T) {
-	f, err := initLogWithFile("log.log")
+	err := initLogWithFile("adatypes.Central.Log.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	defer TimeTrack(time.Now(), "Time Track Unit test ")
 

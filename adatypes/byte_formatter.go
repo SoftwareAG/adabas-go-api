@@ -22,9 +22,12 @@ package adatypes
 import (
 	"bytes"
 	"fmt"
+	"os"
 
 	"golang.org/x/text/encoding/charmap"
 )
+
+const maximumFormatLength = 4096
 
 // FormatByteBuffer formats the byte array to an output with a hexadecimal part, a ASCII part and
 // a EBCDIC converted part of the same data
@@ -150,19 +153,18 @@ func convertToASCII(b byte) byte {
 
 // FormatBytes formats a given byte array and modulo space operator. The modulo space defines the
 // the possition a space is added to the output. The maximum give the maximum characters per line.
-func FormatBytes(header string, b []byte, modSpace int, max int) string {
-	return FormatBytesWithLength(header, b, modSpace, max, false)
-}
-
-// FormatBytesWithLength formats a given byte array and modulo space operator. The modulo space defines the
-// the possition a space is added to the output. The maximum give the maximum characters per line.
 // This function enhance the display with showing the length if showLength is set to true
-func FormatBytesWithLength(header string, b []byte, modSpace int, max int, showLength bool) string {
+func FormatBytes(header string, b []byte, bufferLength int, modSpace int, max int, showLength bool) string {
 	var buffer bytes.Buffer
 	buffer.WriteString(header)
 
+	formatLength := bufferLength
+	if os.Getenv("ADABAS_DUMP_BIG") == "" && formatLength > maximumFormatLength {
+		formatLength = maximumFormatLength
+	}
+
 	if showLength {
-		buffer.WriteString(fmt.Sprintf(" length=%d", len(b)))
+		buffer.WriteString(fmt.Sprintf(" length=%d", bufferLength))
 	}
 
 	if max != -1 {
@@ -171,15 +173,15 @@ func FormatBytesWithLength(header string, b []byte, modSpace int, max int, showL
 	lineCr := max
 	var lastLine []byte
 	if max < 1 {
-		lineCr = len(b)
+		lineCr = formatLength
 		lastLine = make([]byte, 0)
 	} else {
 		lastLine = make([]byte, max)
 	}
 	noticed := true
-	for offset := 0; offset < len(b); offset += lineCr {
-		if offset+lineCr < len(b) {
-			if max > 0 && offset > 0 && offset+lineCr < len(b) && bytes.Equal(lastLine, b[offset:offset+lineCr]) {
+	for offset := 0; offset < formatLength; offset += lineCr {
+		if offset+lineCr < formatLength {
+			if max > 0 && offset > 0 && offset+lineCr < formatLength && bytes.Equal(lastLine, b[offset:offset+lineCr]) {
 				if noticed {
 					buffer.WriteString(fmt.Sprintf("%04X skipped equal lines\n", offset))
 				}
@@ -196,7 +198,7 @@ func FormatBytesWithLength(header string, b []byte, modSpace int, max int, showL
 			if max > -1 && j == 0 {
 				buffer.WriteString(fmt.Sprintf("%04X ", offset+j))
 			}
-			if len(b) > (offset + j) {
+			if formatLength > (offset + j) {
 				buffer.WriteString(fmt.Sprintf("%02X", b[offset+j]))
 			} else {
 				buffer.WriteString("  ")
@@ -207,7 +209,7 @@ func FormatBytesWithLength(header string, b []byte, modSpace int, max int, showL
 		}
 		buffer.WriteString(" [")
 		for j := 0; j < lineCr; j++ {
-			if len(b) > (offset + j) {
+			if formatLength > (offset + j) {
 				if b[offset+j] > 31 {
 					buffer.WriteString(fmt.Sprintf("%c", b[offset+j]))
 				} else {
@@ -219,7 +221,7 @@ func FormatBytesWithLength(header string, b []byte, modSpace int, max int, showL
 		}
 		buffer.WriteString("] [")
 		for j := 0; j < lineCr; j++ {
-			if len(b) > (offset + j) {
+			if formatLength > (offset + j) {
 				a := convertToASCII(b[offset+j])
 				if a > 31 {
 					buffer.WriteString(fmt.Sprintf("%c", a))

@@ -22,8 +22,6 @@ package adatypes
 import (
 	"bytes"
 	"encoding/binary"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // BufferHelper buffer helper structure used to parse the buffer
@@ -59,7 +57,7 @@ func (helper *BufferHelper) position(pos uint32) (newPos int, err error) {
 	if helper.max >= int(pos) {
 		helper.offset = uint32(pos)
 	} else {
-		log.Fatal("Position error", helper.offset, helper.max)
+		Central.Log.Infof("Position error", helper.offset, helper.max)
 		err = NewGenericError(38, pos)
 		return
 	}
@@ -125,7 +123,7 @@ func (helper *BufferHelper) putByte(data byte) (err error) {
 	return
 }
 
-// ReceiveBytesOcc receive bytes using a specific occurence
+// ReceiveBytesOcc receive bytes using a specific occurrence
 func (helper *BufferHelper) ReceiveBytesOcc(occ int) (res []byte, err error) {
 	var length uint32
 	switch occ {
@@ -136,7 +134,6 @@ func (helper *BufferHelper) ReceiveBytesOcc(occ int) (res []byte, err error) {
 			return
 		}
 		length = uint32(occ)
-		break
 	default:
 		err = NewGenericError(107)
 		return

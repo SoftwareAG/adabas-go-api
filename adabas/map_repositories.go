@@ -23,8 +23,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strconv"
-	"strings"
+	"sync"
 	"time"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -36,20 +35,27 @@ type DatabaseURL struct {
 	Fnr Fnr `json:"File"`
 }
 
+// dbid reply the database id
 func (repURL *DatabaseURL) dbid() (dbid Dbid, err error) {
 	adatypes.Central.Log.Debugf("repURL=%#v", repURL)
 	dbid = repURL.URL.Dbid
 	return
 }
 
-// Repository Adabas Map repository container
-type Repository struct {
-	DatabaseURL
-	MapNames   map[string]adatypes.Isn
-	CachedMaps map[string]*Map
+// map name flags contains map related ISN and if found in search
+type mapNameFlags struct {
+	isn   adatypes.Isn
+	found bool
 }
 
-var repositories map[string]*Repository
+// Repository Adabas Map repository container
+type Repository struct {
+	sync.Mutex
+	DatabaseURL
+	online     bool
+	mapNames   map[string]*mapNameFlags
+	CachedMaps map[string]*Map
+}
 
 func init() {
 	queryMaps := os.Getenv("QUERY_MAPFILES")
@@ -82,104 +88,16 @@ func evaluateURL(i interface{}) *URL {
 // NewMapRepository new map repository created
 func NewMapRepository(i interface{}, fnr Fnr) *Repository {
 	url := evaluateURL(i)
-	mr := &Repository{DatabaseURL: DatabaseURL{URL: *url, Fnr: fnr}}
+	mr := &Repository{DatabaseURL: DatabaseURL{URL: *url, Fnr: fnr}, online: true}
 	mr.CachedMaps = make(map[string]*Map)
 	return mr
 }
 
 // NewMapRepositoryWithURL new map repository created
 func NewMapRepositoryWithURL(url DatabaseURL) *Repository {
-	mr := &Repository{DatabaseURL: url}
+	mr := &Repository{DatabaseURL: url, online: true}
 	mr.CachedMaps = make(map[string]*Map)
 	return mr
-}
-
-func extractReference(reference string) (url *URL, fnr Fnr, err error) {
-	v := strings.Split(reference, ",")
-	url, err = NewURL(v[0])
-	if err != nil {
-		return
-	}
-	f, ferr := strconv.Atoi(v[1])
-	if ferr != nil {
-		err = ferr
-		return
-	}
-	fnr = Fnr(f)
-	return
-}
-
-// AddGlobalMapRepositoryReference add global map repository
-func AddGlobalMapRepositoryReference(reference string) error {
-	url, fnr, err := extractReference(reference)
-	if err != nil {
-		return err
-	}
-	AddGlobalMapRepository(url, fnr)
-	return nil
-}
-
-// AddGlobalMapRepository add global map repository
-func AddGlobalMapRepository(i interface{}, fnr Fnr) {
-	var url *URL
-	switch i.(type) {
-	case *URL:
-		url = i.(*URL)
-	case *Adabas:
-		a := i.(*Adabas)
-		url = a.URL
-	default:
-		fmt.Println("Error adding global repository with", i)
-		return
-	}
-	if repositories == nil {
-		repositories = make(map[string]*Repository)
-	}
-	rep := NewMapRepository(url, fnr)
-	reference := fmt.Sprintf("%s/%03d", url.String(), fnr)
-	adatypes.Central.Log.Debugf("Add global repository >%s<", reference)
-	repositories[reference] = rep
-}
-
-// DelGlobalMapRepositoryReference delete global map repository
-func DelGlobalMapRepositoryReference(reference string) error {
-	url, fnr, err := extractReference(reference)
-	if err != nil {
-		return err
-	}
-	DelGlobalMapRepository(url, fnr)
-	return nil
-}
-
-// DelGlobalMapRepository delete global map repository
-func DelGlobalMapRepository(i interface{}, fnr Fnr) {
-	url := evaluateURL(i)
-	if repositories != nil {
-		reference := fmt.Sprintf("%s/%03d", url.String(), fnr)
-		adatypes.Central.Log.Debugf("Remove global repository: %s", reference)
-		delete(repositories, reference)
-	}
-}
-
-// DumpGlobalMapRepositories dump global map repositories
-func DumpGlobalMapRepositories() {
-	fmt.Println("Dump global registered map repositories:")
-	id := NewAdabasID()
-	for _, r := range repositories {
-		fmt.Printf("Repository at %s map file=%d:\n", r.URL, r.Fnr)
-		if r.MapNames == nil || len(r.MapNames) == 0 {
-			if a, err := NewAdabasWithURL(&r.DatabaseURL.URL, id); err == nil {
-				r.LoadMapRepository(a)
-			} else {
-				fmt.Println("    Map repository is empty or not initiated already", err)
-			}
-		}
-		for m := range r.MapNames {
-			fmt.Printf("    %s\n", m)
-		}
-
-	}
-	fmt.Println("Dump global registered map repositories done")
 }
 
 // SearchMapInRepository search map name in specific map repository
@@ -225,14 +143,13 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 		err = adatypes.NewGenericError(5)
 		return
 	}
-	adatypes.Central.Log.Debugf("Before Prepare Repository %#v\n", *repository)
+	adatypes.Central.Log.Debugf("Before Prepare Repository %#v\n", repository)
 	url := repository.DatabaseURL
-	adabasMap = &Map{Repository: &repository.DatabaseURL, Data: &url}
+	adabasMap = NewAdabasMap(&repository.DatabaseURL, &url)
 	request, _ := NewReadRequest(commonRequest)
 	// Reset map definition, because
 	request.commonRequest.adabasMap = nil
 	request.commonRequest.MapName = ""
-	adatypes.Central.Log.Debugf("Before Read Repository %#v\n", *repository)
 
 	adatypes.Central.Log.Debugf("Search for Map with name=%s", name)
 	// Search for map name in database
@@ -241,12 +158,13 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 		return nil, err
 	}
 	if adabasMap.Name == "" {
-		return nil, adatypes.NewGenericError(66)
+		return nil, adatypes.NewGenericError(66, name)
 	}
+	adatypes.Central.Log.Debugf("Got Adabas map %s", adabasMap.Name)
 	adabasMap.createFieldMap()
 	repository.CachedMaps[name] = adabasMap
 	var dbid Dbid
-	adatypes.Central.Log.Debugf("After Repository %#v\n", *repository)
+	adatypes.Central.Log.Debugf("After Repository %#v\n", repository)
 	if adabasMap.Repository.URL.Dbid == 0 {
 		err = adatypes.NewGenericError(18)
 		return
@@ -266,23 +184,27 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 // readAdabasMap read Adabas map defined by repository and name
 func (repository *Repository) readAdabasMap(adabas *Adabas, name string) (adabasMap *Map, err error) {
 	request, _ := NewReadRequest(adabas, repository.Fnr)
-	adatypes.Central.Log.Debugf("Read map %s in repository %#v\n", name, *repository)
+	adatypes.Central.Log.Debugf("Read map %s in repository %#v\n", name, repository)
 	adabasMap, err = repository.readAdabasMapWithRequest(&request.commonRequest, name)
 	return
 }
 
 // SearchMap search map name in specific map repository
 func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasMap *Map, err error) {
-	if repository.MapNames == nil {
+	adatypes.Central.Log.Debugf("Search map %s in repository", mapName)
+	if repository.mapNames == nil {
 		err = repository.LoadMapRepository(adabas)
 		if err != nil {
 			return
 		}
 	}
-	if _, ok := repository.MapNames[mapName]; !ok {
+	repository.Lock()
+	if _, ok := repository.mapNames[mapName]; !ok {
 		err = adatypes.NewGenericError(14, mapName)
+		repository.Unlock()
 		return
 	}
+	repository.Unlock()
 	// Need a Adabas instance to work with corresponding ID, else return error
 	if adabas == nil {
 		return nil, adatypes.NewGenericError(64)
@@ -321,7 +243,7 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 
 // LoadAllMaps load all map out of specific map repository
 func (repository *Repository) LoadAllMaps(adabas *Adabas) (adabasMaps []*Map, err error) {
-	if repository.MapNames == nil {
+	if repository.mapNames == nil {
 		err = repository.LoadMapRepository(adabas)
 		if err != nil {
 			return
@@ -351,87 +273,25 @@ func (repository *Repository) LoadAllMaps(adabas *Adabas) (adabasMaps []*Map, er
 	return
 }
 
-// SearchMapRepository search in map repository for a specific map name
-func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, err error) {
-	for _, mr := range repositories {
-		adatypes.Central.Log.Debugf("Search in repository using Adabas %s for %s/%03d",
-			adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr)
-		var serr error
-		adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
-		adabasMap, serr = mr.SearchMapInRepository(adabas, mapName)
-		if serr != nil {
-			adatypes.Central.Log.Debugf("Continue in next repository because of error %v\n", serr)
-		} else {
-			if adabasMap != nil {
-				adatypes.Central.Log.Debugf("Result map found: %s", adabasMap.String())
-				adatypes.Central.Log.Debugf("in repository %s/%d", mr.URL.String(), mr.Fnr)
-				return
-			}
-		}
-		adatypes.Central.Log.Debugf("Not found in repository using Adabas %s/%03d", adabas.URL.String(), mr.Fnr)
-	}
-	adatypes.Central.Log.Debugf("No map found error\n")
-	err = adatypes.NewGenericError(16, mapName)
-	return
-}
-
-// AllGlobalMaps search in map repository all maps
-func AllGlobalMaps(adabas *Adabas) (maps []*Map, err error) {
-	mm := make(map[string]string)
-	for mn, mr := range repositories {
-		adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
-		adatypes.Central.Log.Debugf("Read in repository using Adabas %s for %s/%03d in %s",
-			adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr, mn)
-		adabasMaps, serr := mr.LoadAllMaps(adabas)
-		if serr != nil {
-			adatypes.Central.Log.Debugf("Continue in next repository because of error %v\n", serr)
-		} else {
-			for _, m := range adabasMaps {
-				if _, ok := mm[m.Name]; !ok {
-					mm[m.Name] = m.Name
-					maps = append(maps, m)
-				}
-			}
-		}
-		adatypes.Central.Log.Debugf("Found %d in repository using Adabas %s/%03d", len(maps), adabas.URL.String(), mr.Fnr)
-	}
-	return
-}
-
-// AllGlobalMapNames search in map repositories global defined, all map names
-func AllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
-	maps = make([]string, 0)
-	for mn, mr := range repositories {
-		adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
-		adatypes.Central.Log.Debugf("Read in repository using Adabas %s for %s/%03d in %s",
-			adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr, mn)
-		if mr.MapNames == nil {
-			err = mr.LoadMapRepository(adabas)
-			if err != nil {
-				continue
-			}
-		}
-		for mn := range mr.MapNames {
-			maps = append(maps, mn)
-		}
-		adatypes.Central.Log.Debugf("Found %d map names in repository using Adabas %s/%03d", len(maps), adabas.URL.String(), mr.Fnr)
-	}
-	return
-}
-
 // parseMap Adabas read parser of the Map names used during read
 func parseMapNames(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	repository := x.(*Repository)
 	v := adabasRequest.Definition.Search(mapFieldName.fieldName())
 	name := v.String()
-	repository.MapNames[name] = adabasRequest.Isn
+	repository.Lock()
+	defer repository.Unlock()
+	if f, ok := repository.mapNames[name]; ok {
+		f.found = true
+	} else {
+		repository.mapNames[name] = &mapNameFlags{isn: adabasRequest.Isn, found: true}
+	}
 	return
 }
 
 // parseMap Adabas read parser of the Map definition used during read
 func parseMaps(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	repository := x.(*Repository)
-	adabasMap := &Map{Repository: &repository.DatabaseURL, Data: &DatabaseURL{}}
+	adabasMap := NewAdabasMap(&repository.DatabaseURL, &DatabaseURL{})
 	err = parseMap(adabasRequest, adabasMap)
 	if err != nil {
 		return
@@ -453,15 +313,20 @@ func parseMaps(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	adabasMap.createFieldMap()
 
 	repository.CachedMaps[adabasMap.Name] = adabasMap
-	repository.MapNames[adabasMap.Name] = adabasRequest.Isn
+	repository.Lock()
+	defer repository.Unlock()
+	repository.mapNames[adabasMap.Name] = &mapNameFlags{isn: adabasRequest.Isn, found: true}
 	return
 }
 
 // LoadMapRepository read an index for names of all Adabas maps in the repository into memory
 func (repository *Repository) LoadMapRepository(adabas *Adabas) (err error) {
+	// if repository.mapNames != nil {
+	// 	return nil
+	// }
 	adatypes.Central.Log.Debugf("Read all data from dbid=%d(%s) of %s/%d\n",
 		adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.DatabaseURL.URL.String(), repository.Fnr)
-	repository.MapNames = make(map[string]adatypes.Isn)
+	repository.mapNames = make(map[string]*mapNameFlags)
 
 	adabas.Acbx.Acbxdbid = repository.DatabaseURL.URL.Dbid
 	request, _ := NewReadRequest(adabas, repository.Fnr)
@@ -469,10 +334,12 @@ func (repository *Repository) LoadMapRepository(adabas *Adabas) (err error) {
 	request.QueryFields(mapFieldName.fieldName())
 	err = request.ReadLogicalByWithParser(mapFieldName.fieldName(), parseMapNames, repository)
 	if err != nil {
+		repository.online = false
 		adatypes.Central.Log.Debugf("Err %v Read all map names from dbid=%d(%s) / %d\n", err, adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.Fnr)
 		return err
 	}
 	adatypes.Central.Log.Debugf("Done Read all map names from dbid=%d(%s) / %d\n", adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.Fnr)
+	repository.online = true
 
 	return
 }
@@ -531,4 +398,13 @@ func (repository *Repository) writeAdabasMapsWithAdabas(adabas *Adabas, adabasMa
 	}
 	err = request.EndTransaction()
 	return
+}
+
+// RemoveMap remove map from hash
+func (repository *Repository) RemoveMap(mapName string) (err error) {
+	repository.Lock()
+	defer repository.Unlock()
+
+	delete(repository.mapNames, mapName)
+	return nil
 }

@@ -25,7 +25,6 @@ import (
 	"regexp"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,13 +32,12 @@ var mainframe = NewPlatform(0x00)
 var opensystem = NewPlatform(0x20)
 
 func TestSearchSimpleTree(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA='XXXXX' AND BC='2'")
 	assert.Equal(t, "XXXXX", searchInfo.constants[0])
@@ -50,13 +48,12 @@ func TestSearchSimpleTree(t *testing.T) {
 }
 
 func TestSearchExtraTree(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA='XX\\'XXX' AND BC='2'")
 	assert.Equal(t, "XX\\'XXX", searchInfo.constants[0])
@@ -67,13 +64,12 @@ func TestSearchExtraTree(t *testing.T) {
 }
 
 func TestSearchSecondTree(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 AND BC='12342'")
 	searchValue := &SearchValue{}
@@ -91,56 +87,56 @@ func TestSearchSecondTree(t *testing.T) {
 }
 
 func TestSearchExtractAndBinding(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 AND BC=2")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	Central.Log.Debugf(tree.String())
 	assert.Equal(t, "AA,8,B,EQ,D,BC,1,B,EQ.", tree.SearchBuffer())
-	assert.True(t, searchInfo.NeedSearch)
+	//assert.True(t, searchInfo.NeedSearch)
 
 }
 
 func TestSearchExtractOrBinding(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 OR BC=2")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	Central.Log.Debugf(tree.String())
 	assert.Equal(t, "AA,8,B,EQ,R,BC,1,B,EQ.", tree.SearchBuffer())
-	assert.True(t, searchInfo.NeedSearch)
+	//assert.True(t, searchInfo.NeedSearch)
 
 }
 
 func TestSearchStringValue(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AD='ABCDEF' AND BC=2")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	assert.Equal(t, "AD,6,A,EQ,D,BC,1,B,EQ.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
@@ -149,23 +145,23 @@ func TestSearchStringValue(t *testing.T) {
 	assert.Equal(t, uint8('A'), valueBuffer[0])
 	assert.Equal(t, uint8('F'), valueBuffer[5])
 	assert.Equal(t, uint8(2), valueBuffer[6])
-	assert.True(t, searchInfo.NeedSearch)
+	//assert.True(t, searchInfo.NeedSearch)
 
 }
 
 func TestSearchVarStringValue(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AD='ABCDEF' AND BC=2")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	assert.Equal(t, "AD,6,A,EQ,D,BC,1,B,EQ.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
@@ -174,72 +170,79 @@ func TestSearchVarStringValue(t *testing.T) {
 	assert.Equal(t, uint8('A'), valueBuffer[0])
 	assert.Equal(t, uint8('F'), valueBuffer[5])
 	assert.Equal(t, uint8(2), valueBuffer[6])
-	assert.True(t, searchInfo.NeedSearch)
+	//assert.True(t, searchInfo.NeedSearch)
 
 }
 
 func TestSearchTwoStringValue(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AE='ABCDEF' AND AD='X123'")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
-	assert.Equal(t, "AE,0,A,EQ,D,AD,6,A,EQ.", tree.SearchBuffer())
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
+	assert.Equal(t, 2, len(fields))
+	assert.Equal(t, "AE,6,A,EQ,D,AD,4,A,EQ.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
 	fmt.Println(valueBuffer)
-	assert.Equal(t, uint8(7), valueBuffer[0])
-	assert.Equal(t, uint8('A'), valueBuffer[1])
-	assert.Equal(t, uint8('F'), valueBuffer[6])
-	assert.Equal(t, uint8('X'), valueBuffer[7])
-	assert.True(t, searchInfo.NeedSearch)
+	assert.Equal(t, uint8('A'), valueBuffer[0])
+	assert.Equal(t, uint8('F'), valueBuffer[5])
+	assert.Equal(t, uint8('X'), valueBuffer[6])
+	//assert.True(t, searchInfo.NeedSearch)
 
 }
 
 func TestSearchFails(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "ABCDEF")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
 
 }
 
 func TestSearchRange(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=[12:44]")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	assert.NotNil(t, searchInfo.platform)
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
+	assert.NotNil(t, tree.platform)
 	assert.Equal(t, "AA,8,B,GE,S,AA,8,B,LE.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
 	fmt.Println(valueBuffer)
-	assert.Equal(t, uint8(12), valueBuffer[0])
-	assert.Equal(t, uint8(44), valueBuffer[8])
+	if bigEndian() {
+		assert.Equal(t, uint8(12), valueBuffer[7])
+		assert.Equal(t, uint8(44), valueBuffer[15])
+	} else {
+		assert.Equal(t, uint8(12), valueBuffer[0])
+		assert.Equal(t, uint8(44), valueBuffer[8])
+	}
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)
 	assert.False(t, searchInfo.NeedSearch)
@@ -247,19 +250,20 @@ func TestSearchRange(t *testing.T) {
 }
 
 func TestSearchRangeMf(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "AA=[12:44]")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	assert.Equal(t, "AA,8,B,S,AA,8,B.", tree.SearchBuffer())
+	assert.Equal(t, 1, len(fields))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
@@ -267,8 +271,13 @@ func TestSearchRangeMf(t *testing.T) {
 	if !assert.Len(t, valueBuffer, 16) {
 		return
 	}
-	assert.Equal(t, uint8(12), valueBuffer[0])
-	assert.Equal(t, uint8(44), valueBuffer[8])
+	if bigEndian() {
+		assert.Equal(t, uint8(12), valueBuffer[7])
+		assert.Equal(t, uint8(44), valueBuffer[15])
+	} else {
+		assert.Equal(t, uint8(12), valueBuffer[0])
+		assert.Equal(t, uint8(44), valueBuffer[8])
+	}
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)
 	assert.True(t, searchInfo.NeedSearch)
@@ -276,18 +285,18 @@ func TestSearchRangeMf(t *testing.T) {
 }
 
 func TestSearchRangeMfNoLower(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "AA=(12:44]")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	assert.Equal(t, "AA,8,B,S,AA,8,B,N,AA,8,B.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
@@ -296,9 +305,15 @@ func TestSearchRangeMfNoLower(t *testing.T) {
 	if !assert.Len(t, valueBuffer, 24) {
 		return
 	}
-	assert.Equal(t, uint8(12), valueBuffer[0])
-	assert.Equal(t, uint8(44), valueBuffer[8])
-	assert.Equal(t, uint8(12), valueBuffer[16])
+	if bigEndian() {
+		assert.Equal(t, uint8(12), valueBuffer[7])
+		assert.Equal(t, uint8(44), valueBuffer[15])
+		assert.Equal(t, uint8(12), valueBuffer[23])
+	} else {
+		assert.Equal(t, uint8(12), valueBuffer[0])
+		assert.Equal(t, uint8(44), valueBuffer[8])
+		assert.Equal(t, uint8(12), valueBuffer[16])
+	}
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)
 	assert.True(t, searchInfo.NeedSearch)
@@ -306,18 +321,18 @@ func TestSearchRangeMfNoLower(t *testing.T) {
 }
 
 func TestSearchRangeMfNoHigher(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "AA=[12:44)")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	assert.Equal(t, "AA,8,B,S,AA,8,B,N,AA,8,B.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
@@ -326,9 +341,15 @@ func TestSearchRangeMfNoHigher(t *testing.T) {
 	if !assert.Len(t, valueBuffer, 24) {
 		return
 	}
-	assert.Equal(t, uint8(12), valueBuffer[0])
-	assert.Equal(t, uint8(44), valueBuffer[8])
-	assert.Equal(t, uint8(44), valueBuffer[16])
+	if bigEndian() {
+		assert.Equal(t, uint8(12), valueBuffer[7])
+		assert.Equal(t, uint8(44), valueBuffer[15])
+		assert.Equal(t, uint8(44), valueBuffer[23])
+	} else {
+		assert.Equal(t, uint8(12), valueBuffer[0])
+		assert.Equal(t, uint8(44), valueBuffer[8])
+		assert.Equal(t, uint8(44), valueBuffer[16])
+	}
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)
 	assert.True(t, searchInfo.NeedSearch)
@@ -336,18 +357,18 @@ func TestSearchRangeMfNoHigher(t *testing.T) {
 }
 
 func TestSearchRangeAlpha(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "SA=[10111011:10111101]")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	assert.Equal(t, "SA,8,A,GE,S,SA,8,A,LE.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
@@ -364,18 +385,18 @@ func TestSearchRangeAlpha(t *testing.T) {
 }
 
 func TestSearchRangeMfNoHigherAlpha(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "SA=[10111011:10111013)")
 	searchInfo.Definition = tDefinition()
-	tree := &SearchTree{}
-	searchInfo.extractBinding(tree, searchInfo.search)
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	assert.Equal(t, "SA,8,A,S,SA,8,A,N,SA,8,A.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
@@ -394,13 +415,12 @@ func TestSearchRangeMfNoHigherAlpha(t *testing.T) {
 }
 
 func TestSearchRangeMfNoBorder(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(mainframe, "AA=(12:44)")
 	searchInfo.Definition = tDefinition()
@@ -415,10 +435,17 @@ func TestSearchRangeMfNoBorder(t *testing.T) {
 	if !assert.Len(t, valueBuffer, 32) {
 		return
 	}
-	assert.Equal(t, uint8(12), valueBuffer[0])
-	assert.Equal(t, uint8(44), valueBuffer[8])
-	assert.Equal(t, uint8(12), valueBuffer[16])
-	assert.Equal(t, uint8(44), valueBuffer[24])
+	if bigEndian() {
+		assert.Equal(t, uint8(12), valueBuffer[7])
+		assert.Equal(t, uint8(44), valueBuffer[15])
+		assert.Equal(t, uint8(12), valueBuffer[23])
+		assert.Equal(t, uint8(44), valueBuffer[31])
+	} else {
+		assert.Equal(t, uint8(12), valueBuffer[0])
+		assert.Equal(t, uint8(44), valueBuffer[8])
+		assert.Equal(t, uint8(12), valueBuffer[16])
+		assert.Equal(t, uint8(44), valueBuffer[24])
+	}
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)
 	assert.Equal(t, 1, len(descriptors))
@@ -428,13 +455,12 @@ func TestSearchRangeMfNoBorder(t *testing.T) {
 }
 
 func TestSearchValue(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=123")
 	searchInfo.Definition = tDefinition()
@@ -449,7 +475,11 @@ func TestSearchValue(t *testing.T) {
 	fmt.Println("Value Buffer: ", valueBuffer)
 	assert.Equal(t, 8, len(valueBuffer))
 	if len(valueBuffer) == 8 {
-		assert.Equal(t, uint8(123), valueBuffer[0])
+		if bigEndian() {
+			assert.Equal(t, uint8(123), valueBuffer[7])
+		} else {
+			assert.Equal(t, uint8(123), valueBuffer[0])
+		}
 	}
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)
@@ -464,11 +494,10 @@ func TestSearchValue(t *testing.T) {
 }
 
 func TestSearchFields(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	searchInfo := NewSearchInfo(opensystem, "AA=123 AND BC=1")
 	searchInfo.Definition = tDefinition()
@@ -483,7 +512,11 @@ func TestSearchFields(t *testing.T) {
 	fmt.Println(valueBuffer)
 	assert.Equal(t, 9, len(valueBuffer))
 	if len(valueBuffer) == 9 {
-		assert.Equal(t, uint8(123), valueBuffer[0])
+		if bigEndian() {
+			assert.Equal(t, uint8(123), valueBuffer[7])
+		} else {
+			assert.Equal(t, uint8(123), valueBuffer[0])
+		}
 	}
 	descriptors := tree.OrderBy()
 	fmt.Println("Descriptors ", descriptors)
@@ -504,6 +537,10 @@ func tDefinition() *Definition {
 		NewTypeWithLength(FieldTypeString, "AD", 6),
 		NewType(FieldTypePacked, "AC"),
 	}
+	st := NewSuperType("S1", 0)
+	st.AddSubEntry("AD", 1, 2)
+	st.FdtFormat = 'A'
+
 	layout := []IAdaType{
 		NewType(FieldTypeUInt4, "U4"),
 		NewType(FieldTypeByte, "B1"),
@@ -513,9 +550,12 @@ func tDefinition() *Definition {
 		NewStructureList(FieldTypeGroup, "AB", OccNone, groupLayout),
 		NewTypeWithLength(FieldTypeString, "SA", 8),
 		NewType(FieldTypeUInt8, "AA"),
+		NewTypeWithLength(FieldTypeString, "SD", 20),
+		st,
 	}
 	layout[7].AddOption(FieldOptionUQ)
 	layout[7].AddOption(FieldOptionDE)
+	layout[8].AddOption(FieldOptionDE)
 
 	testDefinition := NewDefinitionWithTypes(layout)
 	for _, t := range layout {
@@ -528,7 +568,7 @@ func tDefinition() *Definition {
 }
 
 func TestRegularSearch(t *testing.T) {
-	var re = regexp.MustCompile(`(?m)(\w+)=(\w+|'.+'|\[\w+:\w+\])( AND | OR )?`)
+	var re = regexp.MustCompile(`(?m)(\w+)==?(\w+|'.+'|\[\w+:\w+\])( AND | OR )?`)
 	var str = `XX=123
 CC=3443
 DD=ABC
@@ -542,13 +582,12 @@ AA=ABC AND BB=XDE AND CC='123' OR AA=[123:123]`
 }
 
 func TestSearchComplex(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=(12:44] AND AD='SMITH'")
 	searchInfo.Definition = tDefinition()
@@ -558,16 +597,21 @@ func TestSearchComplex(t *testing.T) {
 	}
 	Central.Log.Debugf("Search Tree:", tree.String())
 
-	assert.Equal(t, "AA,8,B,GT,S,AA,8,B,LE,D,AD,6,A,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "AA,8,B,GT,S,AA,8,B,LE,D,AD,5,A,EQ.", tree.SearchBuffer())
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
-	if !assert.Len(t, valueBuffer, 22) {
+	if !assert.Len(t, valueBuffer, 21) {
 		return
 	}
-	assert.Equal(t, uint8(12), valueBuffer[0])
-	assert.Equal(t, uint8(44), valueBuffer[8])
-	assert.Equal(t, "SMITH ", string(valueBuffer[16:]))
+	if bigEndian() {
+		assert.Equal(t, uint8(12), valueBuffer[7])
+		assert.Equal(t, uint8(44), valueBuffer[15])
+	} else {
+		assert.Equal(t, uint8(12), valueBuffer[0])
+		assert.Equal(t, uint8(44), valueBuffer[8])
+	}
+	assert.Equal(t, "SMITH", string(valueBuffer[16:]))
 	descriptors := tree.OrderBy()
 	assert.Equal(t, 1, len(descriptors))
 	assert.Equal(t, "AA", descriptors[0])
@@ -576,13 +620,12 @@ func TestSearchComplex(t *testing.T) {
 }
 
 func TestSearchExtractOr2Binding(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 OR BC=2 OR AC=1")
 	searchInfo.Definition = tDefinition()
@@ -597,13 +640,12 @@ func TestSearchExtractOr2Binding(t *testing.T) {
 }
 
 func TestSearchExtractOr2BindingError(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=1 OR BC=2 OR CC=1 OR  DD=2")
 	searchInfo.Definition = tDefinition()
@@ -613,13 +655,12 @@ func TestSearchExtractOr2BindingError(t *testing.T) {
 }
 
 func TestSearchMixedValue(t *testing.T) {
-	f, err := initLogWithFile("search_tree.log")
+	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 
 	searchInfo := NewSearchInfo(opensystem, "AA=0x00'ABCD'0")
 	searchValue := &SearchValue{}
@@ -632,5 +673,254 @@ func TestSearchMixedValue(t *testing.T) {
 	xerr := searchInfo.expandConstants(searchValue, "0x00#{1}0")
 	assert.Equal(t, []byte{0, 65, 66, 67, 68, 0}, searchValue.value.Bytes())
 	assert.NoError(t, xerr)
+
+}
+
+func TestSuperDescriptor(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "S1=EMPL")
+	searchInfo.Definition = tDefinition()
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
+	assert.NoError(t, err)
+	Central.Log.Debugf(tree.String())
+	assert.Equal(t, "S1,4,A,EQ.", tree.SearchBuffer())
+	var buffer bytes.Buffer
+	tree.ValueBuffer(&buffer)
+	assert.Equal(t, "EMPL", buffer.String())
+	assert.False(t, searchInfo.NeedSearch)
+}
+
+func TestTwoFields(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "S1=EMPL OR S1=ABC")
+	searchInfo.Definition = tDefinition()
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
+	assert.NoError(t, err)
+	Central.Log.Debugf(tree.String())
+	assert.Equal(t, "S1,4,A,EQ,O,S1,3,A,EQ.", tree.SearchBuffer())
+	var buffer bytes.Buffer
+	tree.ValueBuffer(&buffer)
+	assert.Equal(t, "EMPLABC", buffer.String())
+	assert.False(t, searchInfo.NeedSearch)
+}
+
+func TestMainframeEqual(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "SA='ABC'")
+	searchInfo.Definition = tDefinition()
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
+	assert.NoError(t, err)
+	Central.Log.Debugf(tree.String())
+	assert.Equal(t, "SA,3,A,EQ.", tree.SearchBuffer())
+	var buffer bytes.Buffer
+	tree.ValueBuffer(&buffer)
+	assert.Equal(t, "ABC", buffer.String())
+	assert.True(t, searchInfo.NeedSearch)
+
+	searchInfo = NewSearchInfo(mainframe, "SA='ABC'")
+	searchInfo.Definition = tDefinition()
+	tree, serr = searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
+	assert.NoError(t, err)
+	Central.Log.Debugf(tree.String())
+	assert.Equal(t, "SA,3,A,S,SA,3,A.", tree.SearchBuffer())
+	buffer = bytes.Buffer{}
+	tree.ValueBuffer(&buffer)
+	assert.Equal(t, "ABCABC", buffer.String())
+	assert.True(t, searchInfo.NeedSearch)
+
+}
+
+func TestSingleLessLength(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "SA='ABC'")
+	searchInfo.Definition = tDefinition()
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
+	assert.NoError(t, err)
+	Central.Log.Debugf(tree.String())
+	assert.Equal(t, "SA,3,A,EQ.", tree.SearchBuffer())
+	var buffer bytes.Buffer
+	tree.ValueBuffer(&buffer)
+	assert.Equal(t, "ABC", buffer.String())
+	assert.True(t, searchInfo.NeedSearch)
+
+}
+
+var searchTest = []struct {
+	platform     *Platform
+	searchQuery  string
+	searchBuffer string
+	valueBuffer  string
+	needSearch   bool
+}{
+	{opensystem, "SA='1'", "SA,1,A,EQ.", "1", true},
+	{opensystem, "SD='1' AND SD='2'", "SD,1,A,EQ,D,SD,1,A,EQ.", "12", false},
+	{mainframe, "SD='1' AND SD='2'", "SD,1,A,S,SD,1,A,D,SD,1,A,S,SD,1,A.", "1122", false},
+	{opensystem, "SD='1' OR SD='2'", "SD,1,A,EQ,O,SD,1,A,EQ.", "12", false},
+	{mainframe, "SD='1' OR SD='2'", "SD,1,A,S,SD,1,A,O,SD,1,A,S,SD,1,A.", "1122", false},
+	{opensystem, "SD<='SMITH'", "SD,5,A,LE.", "SMITH", false},
+	{opensystem, "SA='ABC'", "SA,3,A,EQ.", "ABC", true},
+	{mainframe, "SA='ABC'", "SA,3,A,S,SA,3,A.", "ABCABC", true},
+	{opensystem, "S1=EMPL OR S1=ABC", "S1,4,A,EQ,O,S1,3,A,EQ.", "EMPLABC", false},
+	{mainframe, "S1=EMPL OR S1=ABC", "S1,4,A,S,S1,4,A,O,S1,3,A,S,S1,3,A.", "EMPLEMPLABCABC", false},
+	{opensystem, "SD=['A':'B']", "SD,1,A,GE,S,SD,1,A,LE.", "AB", false},
+	{mainframe, "SD=['A':'B']", "SD,1,A,S,SD,1,A.", "AB", true},
+	{opensystem, "SD=('A':'B']", "SD,1,A,GT,S,SD,1,A,LE.", "AB", false},
+	{mainframe, "SD=('A':'B']", "SD,1,A,S,SD,1,A,N,SD,1,A.", "ABA", true},
+	{opensystem, "SD=['A':'B')", "SD,1,A,GE,S,SD,1,A,LT.", "AB", false},
+	{mainframe, "SD=['A':'B')", "SD,1,A,S,SD,1,A,N,SD,1,A.", "ABB", true},
+}
+
+func TestSearchTest(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	tdefinition := tDefinition()
+	fmt.Println(tdefinition)
+	for _, search := range searchTest {
+		fmt.Println("Check: ", search.searchQuery)
+		searchInfo := NewSearchInfo(search.platform, search.searchQuery)
+		searchInfo.Definition = tdefinition
+		tree, serr := searchInfo.GenerateTree()
+		if !assert.NoError(t, serr) {
+			return
+		}
+		Central.Log.Debugf(tree.String())
+		if !assert.Equal(t, search.searchBuffer, tree.SearchBuffer()) {
+			return
+		}
+		var buffer bytes.Buffer
+		tree.ValueBuffer(&buffer)
+		if !assert.Equal(t, search.valueBuffer, buffer.String()) {
+			return
+		}
+		if !assert.Equal(t, search.needSearch, searchInfo.NeedSearch) {
+			return
+		}
+	}
+
+}
+
+var complesSearchTest = []struct {
+	platform     *Platform
+	searchQuery  string
+	searchBuffer string
+	valueBuffer  []byte
+	needSearch   bool
+}{
+	{opensystem, "S1=['BVEHICLE '0x00:'BVEHICLE '0xFF]", "S1,10,A,GE,S,S1,10,A,LE.", []byte{0x42, 0x56, 0x45, 0x48, 0x49, 0x43, 0x4c, 0x45, 0x20, 0x0, 0x42, 0x56, 0x45, 0x48, 0x49, 0x43, 0x4c, 0x45, 0x20, 0xff}, false},
+	{opensystem, "SD=[0x00'VEHICLE '0x01(10):0x00'VEHICLE '0xFF(5)]", "SD,19,A,GE,S,SD,14,A,LE.", []byte{0x0, 0x56, 0x45, 0x48, 0x49, 0x43, 0x4c, 0x45, 0x20, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x0, 0x56, 0x45, 0x48, 0x49, 0x43, 0x4c, 0x45, 0x20, 0xff, 0xff, 0xff, 0xff, 0xff}, false},
+	{opensystem, "SD=['ABC'0x20(13)'0000':'DEFG'0x20(12)'9999']", "SD,20,A,GE,S,SD,20,A,LE.", []byte{0x41, 0x42, 0x43, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x30, 0x30, 0x30, 0x30, 0x44, 0x45, 0x46, 0x47, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x39, 0x39, 0x39, 0x39}, false},
+}
+
+func TestComplexSearchTest(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	tdefinition := tDefinition()
+	fmt.Println(tdefinition.String())
+	for _, search := range complesSearchTest {
+		fmt.Println("Check : ", search.searchQuery)
+		searchInfo := NewSearchInfo(search.platform, search.searchQuery)
+		searchInfo.Definition = tdefinition
+		fmt.Println("Generate tree : ", search.searchQuery)
+		tree, serr := searchInfo.GenerateTree()
+		if !assert.NoError(t, serr) {
+			fmt.Println("Error generate tree")
+			return
+		}
+		fmt.Println("Got Tree : ", search.searchQuery)
+		Central.Log.Debugf(tree.String())
+		if !assert.Equal(t, search.searchBuffer, tree.SearchBuffer()) {
+			fmt.Println("Search buffer mismatch")
+			return
+		}
+		var buffer bytes.Buffer
+		tree.ValueBuffer(&buffer)
+		if !assert.Equal(t, search.valueBuffer, buffer.Bytes()) {
+			return
+		}
+		if !assert.Equal(t, search.needSearch, searchInfo.NeedSearch) {
+			return
+		}
+	}
+	fmt.Println("Done")
+
+}
+
+func TestSearchEqual(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "AA=12 AND AA==34 AND AA>123")
+	searchInfo.Definition = tDefinition()
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
+	Central.Log.Debugf("Search Tree:", tree.String())
+
+	assert.Equal(t, "AA,8,B,EQ,D,AA,8,B,EQ,D,AA,8,B,GT.", tree.SearchBuffer())
+	var buffer bytes.Buffer
+	tree.ValueBuffer(&buffer)
+	valueBuffer := buffer.Bytes()
+	if !assert.Len(t, valueBuffer, 24) {
+		return
+	}
+	if bigEndian() {
+		assert.Equal(t, uint8(12), valueBuffer[7])
+		assert.Equal(t, uint8(34), valueBuffer[15])
+	} else {
+		assert.Equal(t, uint8(12), valueBuffer[0])
+		assert.Equal(t, uint8(34), valueBuffer[8])
+	}
+	descriptors := tree.OrderBy()
+	assert.Equal(t, 1, len(descriptors))
+	assert.Equal(t, "AA", descriptors[0])
+	assert.False(t, searchInfo.NeedSearch)
 
 }

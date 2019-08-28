@@ -20,71 +20,40 @@
 package main
 
 import (
-	"encoding/binary"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"runtime"
 	"runtime/pprof"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/SoftwareAG/adabas-go-api/adabas"
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type caller struct {
-	url        string
-	file       uint32
-	counter    int
-	name       string
-	threadNr   uint32
-	credential string
+	url         string
+	counter     int
+	mapName     string
+	name        string
+	search      string
+	fields      string
+	threadNr    uint32
+	limit       uint64
+	credentials string
 }
 
 var wg sync.WaitGroup
 var output = false
 var close = false
 
-func displayResult(isn adatypes.Isn, buffer []byte, received uint64) {
-	if !output {
-		return
-	}
-	helper := adatypes.NewHelper(buffer, int(received), binary.LittleEndian)
-	aa, err := helper.ReceiveString(8)
-	if err != nil {
-		fmt.Println("Error receiving AA", err)
-		return
-	}
-	ac, err := helper.ReceiveString(20)
-	if err != nil {
-		fmt.Println("Error receiving AC", err)
-		return
-	}
-	ad, err := helper.ReceiveString(20)
-	if err != nil {
-		fmt.Println("Error receiving AD", err)
-		return
-	}
-	ae, err := helper.ReceiveString(20)
-	if err != nil {
-		fmt.Println("Error receiving AE", err)
-		return
-	}
-	as, err := helper.ReceiveInt32()
-	if err != nil {
-		fmt.Println("Error receiving AS", err)
-		return
-	}
-
-	fmt.Printf("ISN=%-4d AA=%s AC=%s AD=%s AE=%s AS=%d\n", isn, aa, ac, ad, ae, as)
-}
-
 func (c caller) createConnection() (*adabas.Connection, error) {
-	connStr := fmt.Sprintf("acj;target=%s;auth=NONE,id=%d,user=user%04d", c.url, c.threadNr, c.threadNr)
+	connStr := fmt.Sprintf("acj;map;auth=NONE,id=%d,user=user%04d", c.threadNr, c.threadNr)
 	connection, err := adabas.NewConnection(connStr)
 	if err != nil {
 		fmt.Println("Open connection error", err)
@@ -106,8 +75,8 @@ func callAdabas(c caller) {
 		}
 		defer connection.Close()
 
-		if c.credential != "" {
-			c := strings.Split(c.credential, ":")
+		if c.credentials != "" {
+			c := strings.Split(c.credentials, ":")
 			if len(c) != 2 {
 				fmt.Printf("User credentials invalid format")
 				return
@@ -129,21 +98,16 @@ func callAdabas(c caller) {
 	maxTime := 1.0
 
 	last := time.Now()
-	tid := strconv.Itoa(int(c.threadNr))
 
 	for i := 0; i < c.counter; i++ {
-		l := adatypes.Central.Log.(*log.Logger)
-		l.WithFields(log.Fields{
-			"thread": tid,
-		}).Debugf("Start counter")
 		if close {
 			connection, err = c.createConnection()
 			if err != nil {
 				fmt.Printf("Error create connection to thread %d\n", c.threadNr)
 				return
 			}
-			if c.credential != "" {
-				c := strings.Split(c.credential, ":")
+			if c.credentials != "" {
+				c := strings.Split(c.credentials, ":")
 				if len(c) != 2 {
 					fmt.Printf("User credentials invalid format")
 					return
@@ -157,12 +121,13 @@ func callAdabas(c caller) {
 				return
 			}
 		}
-		readRequest, rerr := connection.CreateFileReadRequest(adabas.Fnr(c.file))
+		readRequest, rerr := connection.CreateMapReadRequest(c.mapName)
 		if rerr != nil {
 			fmt.Println("Error creating read reference of database:", rerr)
 			return
 		}
-		err = readRequest.QueryFields("AA,AB,AS[N]")
+		readRequest.Limit = c.limit
+		err = readRequest.QueryFields(c.fields)
 		if err != nil {
 			fmt.Println("Error query fields of database file:", err)
 			return
@@ -180,12 +145,32 @@ func callAdabas(c caller) {
 			//			last = newTime
 		}
 		var result *adabas.Response
-		result, err = readRequest.ReadLogicalWith("AE=" + c.name)
-		if err != nil {
-			fmt.Printf("Error reading thread %d with %d loops: %v\n", c.threadNr, i, err)
-			return
+		switch {
+		case c.search != "":
+			fmt.Println("Search for ", c.search)
+			result, err = readRequest.ReadLogicalWith(c.search)
+			if err != nil {
+				fmt.Printf("Error reading thread %d with %d loops: %v\n", c.threadNr, i, err)
+				return
+			}
+		case c.name != "":
+			fmt.Println("Order by ", c.name)
+			result, err = readRequest.ReadLogicalBy(c.name)
+			if err != nil {
+				fmt.Printf("Error reading thread %d with %d loops: %v\n", c.threadNr, i, err)
+				return
+			}
+		default:
+			fmt.Println("Physical read")
+			result, err = readRequest.ReadPhysicalSequence()
+			if err != nil {
+				fmt.Printf("Error reading thread %d with %d loops: %v\n", c.threadNr, i, err)
+				return
+			}
+
 		}
 		if output {
+			fmt.Printf("Result of query search=%s descriptor=%s and fields=%s\n", c.search, c.name, c.fields)
 			result.DumpValues()
 		}
 		if close {
@@ -198,70 +183,93 @@ func callAdabas(c caller) {
 
 }
 
-func initLogLevelWithFile(fileName string, level log.Level) (file *os.File, err error) {
+func initLogLevelWithFile(fileName string, level zapcore.Level) (err error) {
 	p := os.Getenv("LOGPATH")
 	if p == "" {
 		p = "."
 	}
 	name := p + string(os.PathSeparator) + fileName
-	file, err = os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		return
+
+	rawJSON := []byte(`{
+		"level": "error",
+		"encoding": "console",
+		"outputPaths": [ "XXX"],
+		"errorOutputPaths": ["stderr"],
+		"encoderConfig": {
+		  "messageKey": "message",
+		  "levelKey": "level",
+		  "levelEncoder": "lowercase"
+		}
+	  }`)
+
+	var cfg zap.Config
+	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
+		panic(err)
 	}
-	log.SetLevel(level)
+	cfg.Level.SetLevel(level)
+	cfg.OutputPaths = []string{name}
+	logger, err := cfg.Build()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
 
-	log.SetOutput(file)
-	myLog := log.New()
-	myLog.SetLevel(level)
-	myLog.Out = file
+	sugar := logger.Sugar()
 
-	// log.SetOutput(file)
-	adatypes.Central.Log = myLog
+	sugar.Infof("Start logging with level", level)
+	adatypes.Central.Log = sugar
 
 	return
 }
 
 func main() {
-	level := log.ErrorLevel
+	level := zapcore.ErrorLevel
 	ed := os.Getenv("ENABLE_DEBUG")
 	switch ed {
 	case "1":
-		level = log.DebugLevel
+		level = zapcore.DebugLevel
 		adatypes.Central.SetDebugLevel(true)
 	case "2":
-		level = log.InfoLevel
-	default:
-		level = log.ErrorLevel
+		level = zapcore.InfoLevel
 	}
 
-	f, err := initLogLevelWithFile("testsuite.log", level)
+	err := initLogLevelWithFile("querym.log", level)
 	if err != nil {
 		fmt.Printf("Error opening log file: %v\n", err)
 		return
 	}
-	defer f.Close()
 	defer TimeTrack(time.Now(), "Done testsuite test")
 
 	var countValue int
 	var threadValue int
-	var file int
+	var repository string
+	var limit int
 	var name string
-	var credential string
+	var search string
+	var fields string
+	var showMaps bool
+	var showMap bool
+	var credentials string
 	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 	var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
 	//flag.StringVar(&gopherType, "gopher_type", defaultGopher, usage)
-	flag.IntVar(&countValue, "c", 1, "Number of loops")
-	flag.IntVar(&threadValue, "t", 1, "Number of threads")
-	flag.StringVar(&name, "n", "SMITH", "Test search for employee names separated by ','")
-	flag.StringVar(&credential, "p", "", "Define user and password credentials of type 'user:password'")
-	flag.IntVar(&file, "f", 11, "Adabas file used to read, should be Employees file")
+	flag.IntVar(&countValue, "c", 1, "Number of loops [default 1]")
+	flag.IntVar(&threadValue, "t", 1, "Number of threads [default 1]")
+	flag.IntVar(&limit, "l", 10, "Number of records maximal read  [default 10]")
+	flag.StringVar(&name, "n", "", "Read descriptor order")
+	flag.StringVar(&search, "s", "", "Search request like 'name=SMITH'")
+	flag.StringVar(&credentials, "p", "", "Define user and password credentials of type 'user:password'")
+	flag.StringVar(&fields, "d", "", "Query field list like 'name,personnel-id', '*' queries all fields, [default is '']")
+	flag.StringVar(&repository, "r", "", "Adabas map repository used for search. Need to be defined using '<db target>,fnr'")
 	flag.BoolVar(&output, "o", false, "display output")
+	flag.BoolVar(&showMaps, "M", false, "List all maps available")
+	flag.BoolVar(&showMap, "m", false, "List all map fields of given map")
 	flag.BoolVar(&close, "C", false, "Close Adabas connection in each loop")
 	flag.Parse()
 	args := flag.Args()
-	if len(args) < 1 {
-		fmt.Printf("Usage: %s <url>\n", os.Args[0])
+	if !showMaps && len(args) < 1 {
+		fmt.Printf("Usage: %s <map name>\n", os.Args[0])
 		flag.PrintDefaults()
 		return
 	}
@@ -269,22 +277,44 @@ func main() {
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
 		if err != nil {
-			log.Fatal("could not create CPU profile: ", err)
+			panic("could not create CPU profile: " + err.Error())
 		}
 		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatal("could not start CPU profile: ", err)
+			panic("could not start CPU profile: " + err.Error())
 		}
 		defer pprof.StopCPUProfile()
 	}
 
 	names := strings.Split(name, ",")
 
+	err = adabas.AddGlobalMapRepositoryReference(repository)
+	if err != nil {
+		fmt.Println(err.Error())
+		panic("Error repository:" + err.Error())
+	}
+
+	if showMaps {
+		adabas.DumpGlobalMapRepositories()
+		if len(args) < 1 {
+			return
+		}
+	}
+	if showMap {
+		ada, _ := adabas.NewAdabas(1)
+		m, merr := adabas.SearchMapRepository(ada, args[0])
+		if merr != nil {
+			fmt.Println("Searched map not found", merr)
+			return
+		}
+		fmt.Println(m.String())
+	}
+
 	wg.Add(threadValue)
 	for i := uint32(0); i < uint32(threadValue); i++ {
 		fmt.Printf("Start thread %d/%d\n", i+1, threadValue)
-		c := caller{url: args[0], counter: countValue, threadNr: i + 1,
-			name: names[int(i)%len(names)], file: uint32(file),
-			credential: credential}
+		c := caller{mapName: args[0], counter: countValue, threadNr: i + 1,
+			name: names[int(i)%len(names)], limit: uint64(limit), search: search,
+			fields: fields, credentials: credentials}
 		go callAdabas(c)
 
 	}
@@ -292,11 +322,11 @@ func main() {
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
 		if err != nil {
-			log.Fatal("could not create memory profile: ", err)
+			panic("could not create memory profile: " + err.Error())
 		}
 		runtime.GC() // get up-to-date statistics
 		if err := pprof.WriteHeapProfile(f); err != nil {
-			log.Fatal("could not write memory profile: ", err)
+			panic("could not write memory profile: " + err.Error())
 		}
 		defer f.Close()
 		fmt.Println("Start testsuite test")

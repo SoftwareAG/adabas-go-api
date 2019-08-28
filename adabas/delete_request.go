@@ -61,7 +61,7 @@ func NewMapDeleteRequest(adabas *Adabas, adabasMap *Map) (request *DeleteRequest
 	if adabas.URL.String() == adabasMap.Data.URL.String() {
 		dataAdabas = NewClonedAdabas(adabas)
 	} else {
-		dataAdabas, err = NewAdabasWithURL(&adabasMap.Data.URL, adabas.ID)
+		dataAdabas, err = NewAdabas(&adabasMap.Data.URL, adabas.ID)
 		if err != nil {
 			return nil, err
 		}

@@ -79,6 +79,9 @@ $(BIN)/%: $(BIN); $(info $(M) building $(REPOSITORY)…)
 GOLINT = $(BIN)/golint
 $(BIN)/golint: REPOSITORY=golang.org/x/lint/golint
 
+GOCILINT = $(BIN)/golangci-lint
+$(BIN)/golangci-lint: REPOSITORY=github.com/golangci/golangci-lint/cmd/golangci-lint
+
 GOCOVMERGE = $(BIN)/gocovmerge
 $(BIN)/gocovmerge: REPOSITORY=github.com/wadey/gocovmerge
 
@@ -94,12 +97,15 @@ $(BIN)/go2xunit: REPOSITORY=github.com/tebeka/go2xunit
 COBERTURA = $(BIN)/gocover-cobertura
 $(BIN)/gocover-cobertura: REPOSITORY=github.com/t-yuki/gocover-cobertura
 
+GOJUNITREPORT = $(BIN)/go-junit-report
+$(BIN)/go-junit-report: REPOSITORY=github.com/jstemmer/go-junit-report
+
 # Tests
 $(TESTOUTPUT):
 	mkdir $(TESTOUTPUT)
 
 test-build: $(OBJECTS) ; $(info $(M) building $(NAME:%=% )tests…) @ ## Build tests
-	$Q cd $(CURDIR) && for pkg in $(TESTDIR); do echo "Build $$pkg in $(CURDIR)"; \
+	$Q cd $(CURDIR) && for pkg in $(TESTPKGSDIR); do echo "Build $$pkg in $(CURDIR)"; \
 	LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 		DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
@@ -120,22 +126,38 @@ check test tests: fmt lint ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run 
 		DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
 	    TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) REFERENCES=$(REFERENCES) \
-	    $(GO) test -timeout $(TIMEOUT)s -v -tags $(GO_TAGS) $(ARGS) ./...
+	    $(GO) test -timeout $(TIMEOUT)s -count=1 -v -tags $(GO_TAGS) $(ARGS) ./...
 
 TEST_XML_TARGETS := test-xml-bench
 .PHONY: $(TEST_XML_TARGETS) test-xml
 test-xml-bench:     ARGS=-run=__absolutelynothing__ -bench=. ## Run benchmarks
 $(TEST_XML_TARGETS): NAME=$(MAKECMDGOALS:test-xml-%=%)
 $(TEST_XML_TARGETS): test-xml
-test-xml: prepare fmt lint $(TESTOUTPUT) | $(GO2XUNIT) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
-	sh $(CURDIR)/sh/evaluateQueues.sh
+test-xml: prepare fmt lint $(TESTOUTPUT) | $(GO2XUNIT) $(GOJUNITREPORT) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
+	sh $(CURDIR)/scripts/evaluateQueues.sh
 	$Q cd $(CURDIR) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
 	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
 	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
-	    $(GO) test -timeout $(TIMEOUT)s -count=1 $(GO_FLAGS) -v $(ARGS) ./... | tee $(TESTOUTPUT)/tests.output
-	sh $(CURDIR)/sh/evaluateQueues.sh
-	$(GO2XUNIT) -input $(TESTOUTPUT)/tests.output -output $(TESTOUTPUT)/tests.xml
+	    $(GO) test -timeout $(TIMEOUT)s -count=1 $(GO_FLAGS) -v $(ARGS) ./... 2>&1 | tee $(TESTOUTPUT)/tests.$(HOST).output
+	sh $(CURDIR)/scripts/evaluateQueues.sh
+	cat $(TESTOUTPUT)/tests.$(HOST).output | $(GOJUNITREPORT) > $(TESTOUTPUT)/tests.xml
+
+test-adatypes-pprof: prepare | ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
+	$Q cd $(CURDIR) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
+	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
+	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
+	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
+	    $(GO) test -timeout $(TIMEOUT)s -count=1 -memprofile adatypes-memprofile.out -cpuprofile adatypes-profile.out $(GO_FLAGS) -v $(ARGS) ./adatypes 2>&1 | tee $(TESTOUTPUT)/tests.$(HOST).output
+
+test-adabas-pprof: prepare |  ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
+	$Q cd $(CURDIR) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
+	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
+	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
+	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
+	    $(GO) test -timeout $(TIMEOUT)s -count=1 -memprofile adabas-memprofile.out -cpuprofile adabas-profile.out $(GO_FLAGS) -v $(ARGS) ./adabas 2>&1 | tee $(TESTOUTPUT)/tests.$(HOST).output
+
+test-pprof: test-adatypes-pprof test-adabas-pprof
 
 COVERAGE_MODE = atomic
 COVERAGE_PROFILE = $(COVERAGE_DIR)/profile.out
@@ -170,9 +192,10 @@ test-coverage: fmt lint test-coverage-tools ; $(info $(M) running coverage tests
 .PHONY: lint
 lint: | $(GOLINT) ; $(info $(M) running golint…) @ ## Run golint
 	$Q cd $(CURDIR) && $(GOLINT) -set_exit_status ./...
-#	$Q cd $(CURDIR) && ret=0 && for pkg in $(PKGS); do \
-#		test -z "$$($(GOLINT) $$pkg | tee /dev/stderr)" || ret=1 ; \
-#	 done ; exit $$ret
+
+.PHONY: cilint
+cilint: | $(GOCILINT) ; $(info $(M) running golint…) @ ## Run golint
+	$Q cd $(CURDIR) && $(GOCILINT) run
 
 .PHONY: fmt
 fmt: ; $(info $(M) running fmt…) @ ## Run go fmt on all source files
@@ -194,6 +217,7 @@ clean: cleanModules; $(info $(M) cleaning…)	@ ## Cleanup everything
 	@rm -rf $(CURDIR)/bin $(CURDIR)/pkg $(CURDIR)/logs $(CURDIR)/test
 	@rm -rf test/tests.* test/coverage.*
 	@rm -f $(CURDIR)/adabas.test $(CURDIR)/adatypes.test $(CURDIR)/*.log $(CURDIR)/*.output
+
 
 .PHONY: help
 help:

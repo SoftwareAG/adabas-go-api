@@ -22,19 +22,18 @@ import (
 	"fmt"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
 )
 
 func BenchmarkConnection_noMultifetch(b *testing.B) {
-	f, ferr := initLogWithFile("connection_bench.log")
+	ferr := initLogWithFile("connection_bench.log")
 	if ferr != nil {
 		fmt.Println("Error creating log")
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", b.Name())
+	adatypes.Central.Log.Infof("TEST: %s", b.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(b, err) {
 		return
@@ -59,14 +58,13 @@ func BenchmarkConnection_noMultifetch(b *testing.B) {
 }
 
 func BenchmarkConnection_Multifetch(b *testing.B) {
-	f, ferr := initLogWithFile("connection_bench.log")
+	ferr := initLogWithFile("connection_bench.log")
 	if ferr != nil {
 		fmt.Println("Error creating log")
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", b.Name())
+	adatypes.Central.Log.Infof("TEST: %s", b.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(b, err) {
 		return

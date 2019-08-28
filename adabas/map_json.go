@@ -41,8 +41,8 @@ func ParseJSONFileForFields(file *os.File) (mapList []*Map, err error) {
 	var mapFile MapFile
 	err = json.Unmarshal([]byte(byteValue), &mapFile)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		adatypes.Central.Log.Debugf("Parse JSON error: %v", err)
+		return nil, err
 	}
 	adatypes.Central.Log.Debugf("Number map entries %d", len(mapFile.Maps))
 	mapList = mapFile.Maps

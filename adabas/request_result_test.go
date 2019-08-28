@@ -236,11 +236,10 @@ func ExampleResponse_jsonMarshal() {
 }
 
 func ExampleResponse_xmlMarshal() {
-	f, ferr := initLogWithFile("request_result.log")
+	ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
 	}
-	defer f.Close()
 
 	result := generateResult()
 	res, err := xml.Marshal(result)
@@ -253,11 +252,10 @@ func ExampleResponse_xmlMarshal() {
 }
 
 func TestRequestResult(t *testing.T) {
-	f, ferr := initLogWithFile("request_result.log")
+	ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
 	}
-	defer f.Close()
 
 	result := generateResult()
 	record := result.Isn(10)
@@ -273,11 +271,10 @@ func TestRequestResult(t *testing.T) {
 }
 
 func TestRequestResultWithMU(t *testing.T) {
-	f, ferr := initLogWithFile("request_result.log")
+	ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
 	}
-	defer f.Close()
 
 	d := generateMUDefinitionTest()
 	record, err := NewRecord(d)
@@ -298,11 +295,10 @@ func TestRequestResultWithMU(t *testing.T) {
 }
 
 func TestRequestResultWithMUWithContent(t *testing.T) {
-	f, ferr := initLogWithFile("request_result.log")
+	ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
 	}
-	defer f.Close()
 
 	d := generateMUDefinitionTest()
 	record, err := NewRecord(d)
@@ -347,11 +343,10 @@ func TestRequestResultWithMUWithContent(t *testing.T) {
 }
 
 func TestRequestResultWithPEMUWithoutContent(t *testing.T) {
-	f, ferr := initLogWithFile("request_result.log")
+	ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
 	}
-	defer f.Close()
 
 	d := generatePEMUDefinitionTest()
 	record, err := NewRecord(d)
@@ -372,11 +367,10 @@ func TestRequestResultWithPEMUWithoutContent(t *testing.T) {
 }
 
 func TestRequestResultWithPEMUWithContent(t *testing.T) {
-	f, ferr := initLogWithFile("request_result.log")
+	ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
 	}
-	defer f.Close()
 
 	d := generatePEMUDefinitionTest()
 	record, err := NewRecord(d)
@@ -431,11 +425,10 @@ func TestRequestResultWithPEMUWithContent(t *testing.T) {
 }
 
 func ExampleRecord_dumpZeroValues() {
-	f, ferr := initLogWithFile("request_result.log")
+	ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
 	}
-	defer f.Close()
 
 	d := generatePEMUDefinitionTest()
 	record, err := NewRecord(d)
@@ -457,11 +450,10 @@ func ExampleRecord_dumpZeroValues() {
 }
 
 func ExampleRecord_setValueWithIndex() {
-	f, ferr := initLogWithFile("request_result.log")
+	ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
 	}
-	defer f.Close()
 
 	d := generatePEMUDefinitionTest()
 	record, err := NewRecord(d)
@@ -498,11 +490,10 @@ func ExampleRecord_setValueWithIndex() {
 }
 
 func ExampleRecord_setValue() {
-	f, ferr := initLogWithFile("request_result.log")
+	ferr := initLogWithFile("request_result.log")
 	if ferr != nil {
 		return
 	}
-	defer f.Close()
 
 	d := generatePEMUDefinitionTest()
 

@@ -103,9 +103,7 @@ func (repository *Repository) ImportMapRepository(adabas *Adabas, filter string,
 	}
 	defer file.Close()
 
-	if repository.MapNames == nil {
-		repository.LoadMapRepository(adabas)
-	}
+	repository.LoadMapRepository(adabas)
 
 	suffixCheck := strings.ToLower(fileName)
 	switch {
@@ -135,7 +133,7 @@ func (repository *Repository) ImportMapRepository(adabas *Adabas, filter string,
 	for _, m := range maps {
 		m.Repository = &repository.DatabaseURL
 		m.Data = &dataRepository.DatabaseURL
-		repository.MapNames[m.Name] = 0
+		repository.RemoveMap(m.Name)
 		repository.CachedMaps[m.Name] = m
 	}
 
@@ -193,7 +191,7 @@ func parseSystransFileForFields(file *os.File) (maps []*Map, err error) {
 		// 		while (line != null && !end) {
 		// 			try {
 		lineNumber++
-		var ddmEntries []*entry
+		//		var ddmEntries []*entry
 		phoneticDescriptor := false
 		if len(line) > 4 {
 			if strings.HasPrefix(line, "*C**") {
@@ -201,9 +199,9 @@ func parseSystransFileForFields(file *os.File) (maps []*Map, err error) {
 				// Only parse DDM views (V)
 				if line[76] == 'V' {
 					curEntry = &entry{libName: line[36:44], ddmName: line[44 : 44+32], rootField: &field{}, stack: adatypes.NewStack(),
-						adabasMap: &Map{Name: line[44 : 44+32]}}
+						adabasMap: NewAdabasMap(line[44 : 44+32])}
 					shortNames = make(map[string]bool)
-					ddmEntries = append(ddmEntries, curEntry)
+					//					ddmEntries = append(ddmEntries, curEntry)
 					// fmt.Printf("Current entry: %#v\n", *curEntry)
 					maps = append(maps, curEntry.adabasMap)
 					// fmt.Println("Add map", curEntry.adabasMap.Name)
@@ -270,7 +268,7 @@ func parseSystransFileForFields(file *os.File) (maps []*Map, err error) {
 								/* Parse length */
 								length, cerr :=
 									strconv.Atoi(line[42:44])
-								if err != nil {
+								if cerr != nil {
 									err = cerr
 									return
 								}

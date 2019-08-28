@@ -32,11 +32,10 @@ func TestStringNil(t *testing.T) {
 }
 
 func TestStringValue(t *testing.T) {
-	f, err := initLogWithFile("string_value.log")
+	err := initLogWithFile("string_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeString, "XX")
 	typ.length = 0
 	adaValue := newStringValue(typ)
@@ -51,11 +50,10 @@ func TestStringValue(t *testing.T) {
 }
 
 func TestStringTruncate(t *testing.T) {
-	f, err := initLogWithFile("string_value.log")
+	err := initLogWithFile("string_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeString, "XX")
 	typ.length = 2
 	adaValue := newStringValue(typ)
@@ -63,11 +61,15 @@ func TestStringTruncate(t *testing.T) {
 	v := []byte{0x20, 0x20}
 	assert.Equal(t, v, adaValue.Value())
 	assert.Equal(t, "  ", adaValue.String())
-	adaValue.SetValue("ABC")
+	adaValue.SetValue("AB")
 	v = []byte{0x41, 0x42}
 	assert.Equal(t, v, adaValue.Value())
 	assert.Equal(t, "AB", adaValue.String())
 	err = adaValue.SetValue("ABCD")
+	if !assert.Error(t, err) {
+		return
+	}
+	err = adaValue.SetValue("AB")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -85,11 +87,10 @@ func TestStringTruncate(t *testing.T) {
 }
 
 func TestStringSpaces(t *testing.T) {
-	f, err := initLogWithFile("string_value.log")
+	err := initLogWithFile("string_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeString, "XX")
 	typ.length = 10
 	adaValue := newStringValue(typ)
@@ -120,11 +121,10 @@ func TestStringSpaces(t *testing.T) {
 }
 
 func TestStringInvalid(t *testing.T) {
-	f, err := initLogWithFile("string_value.log")
+	err := initLogWithFile("string_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeString, "XX")
 	typ.length = 10
 	adaValue := newStringValue(typ)
@@ -146,11 +146,10 @@ func TestStringInvalid(t *testing.T) {
 }
 
 func TestStringFormatBuffer(t *testing.T) {
-	f, err := initLogWithFile("string_value.log")
+	err := initLogWithFile("string_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeString, "XX")
 	typ.length = 10
 	adaValue := newStringValue(typ)
@@ -163,11 +162,10 @@ func TestStringFormatBuffer(t *testing.T) {
 }
 
 func TestStringFormatBufferVariable(t *testing.T) {
-	f, err := initLogWithFile("string_value.log")
+	err := initLogWithFile("string_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeString, "XX")
 	typ.length = 0
 	adaValue := newStringValue(typ)
@@ -180,11 +178,10 @@ func TestStringFormatBufferVariable(t *testing.T) {
 }
 
 func TestStringLBFormatBufferVariable(t *testing.T) {
-	f, err := initLogWithFile("string_value.log")
+	err := initLogWithFile("string_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeLBString, "XX")
 	typ.length = 0
 	adaValue := newStringValue(typ)
@@ -197,11 +194,10 @@ func TestStringLBFormatBufferVariable(t *testing.T) {
 }
 
 func TestStringStoreBuffer(t *testing.T) {
-	f, err := initLogWithFile("string_value.log")
+	err := initLogWithFile("string_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeString, "XX")
 	typ.length = 10
 	adaValue := newStringValue(typ)
@@ -225,11 +221,10 @@ func TestStringStoreBuffer(t *testing.T) {
 }
 
 func TestStringStoreBufferVariable(t *testing.T) {
-	f, err := initLogWithFile("string_value.log")
+	err := initLogWithFile("string_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeString, "XX")
 	typ.length = 0
 	adaValue := newStringValue(typ)
@@ -253,11 +248,10 @@ func TestStringStoreBufferVariable(t *testing.T) {
 }
 
 func TestStringParseBufferVariable(t *testing.T) {
-	f, err := initLogWithFile("string_value.log")
+	err := initLogWithFile("string_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeString, "XX")
 	typ.length = 0
 	adaValue := newStringValue(typ)
@@ -283,11 +277,10 @@ func TestStringParseBufferVariable(t *testing.T) {
 }
 
 func TestStringLBParseBufferVariable(t *testing.T) {
-	f, err := initLogWithFile("string_value.log")
+	err := initLogWithFile("string_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeLBString, "LB")
 	typ.length = 0
 	adaValue := newStringValue(typ)

@@ -66,7 +66,7 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 
 	Central.Log.Debugf("Start parsing value .... %s offset=%d/%X type=%s", adaValue.Type().Name(),
 		parameter.helper.offset, parameter.helper.offset, adaValue.Type().Type().name())
-	Central.Log.Debugf("Parse value %s .... second=%v need second=%v pe=%v", adaValue.Type().Name(),
+	Central.Log.Debugf("Parse value %s/%s .... second=%v need second=%v pe=%v", adaValue.Type().ShortName(), adaValue.Type().Name(),
 		parameter.option.SecondCall, parameter.option.NeedSecondCall, adaValue.Type().HasFlagSet(FlagOptionPE))
 	// On second call, to collect MU fields in an PE group, skip all other parser tasks
 	if !(adaValue.Type().HasFlagSet(FlagOptionPE) && adaValue.Type().Type() == FieldTypeMultiplefield) {
@@ -126,8 +126,8 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 	}
 	Central.Log.Debugf("================== Parse Buffer for IAdaTypes of %s -> value avail.=%v index=%d need second=%v",
 		parent.Name(), (parentStructure != nil), peIndex, option.NeedSecondCall)
-	var types []IAdaType
-	types = parent.SubTypes
+
+	types := parent.SubTypes
 	var conditionMatrix []byte
 
 	// First get reference field index if index is needed for conditional parsing
@@ -180,10 +180,11 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 		Central.Log.Debugf("Call parse buffer of field %s", types[i].Name())
 		_, err = value.parseBuffer(helper, option)
 		if err != nil {
+			Central.Log.Debugf("Error parse buffer %v", err)
 			return
 		}
-		var at IAdaType
-		at = parent
+		//var at IAdaType
+		at := parent
 		// TODO Check why parent not used
 		types[i].SetParent(at)
 
@@ -219,7 +220,7 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 		Central.Log.Debugf("Condition matrix %v", conditionMatrix)
 		for _, ref := range conditionMatrix {
 			if Central.IsDebugLevel() {
-				Central.Log.Debugf("Get reference field %s %v %d offset=%d", types[ref].String(), ref, len(types), helper.offset)
+				Central.Log.Debugf("Get reference field %s %v %d offset=%d(%X)", types[ref].String(), ref, len(types), helper.offset, helper.offset)
 			}
 			value, subErr := types[ref].Value()
 			if subErr != nil {
@@ -242,11 +243,14 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 			}
 			adaValues = append(adaValues, value)
 		}
+	} else {
+		Central.Log.Debugf("No condition matrix step")
 	}
 	if lengthFieldIndex > 0 {
 		pos, posErr := helper.position(endOfBuffer)
 		if posErr != nil {
 			err = posErr
+			Central.Log.Debugf("Position error %v", posErr)
 			return
 		}
 		if pos == -1 {
@@ -272,9 +276,7 @@ func NewDefinition() *Definition {
 func NewDefinitionWithTypes(types []IAdaType) *Definition {
 	def := NewDefinition()
 	def.activeFieldTree.SubTypes = types
-	def.activeFieldTree.condition = FieldCondition{
-		lengthFieldIndex: -1,
-		refField:         NoReferenceField}
+	def.activeFieldTree.condition = NewFieldCondition()
 	def.fileFieldTree = def.activeFieldTree
 	def.InitReferences()
 	def.activeFields = make(map[string]IAdaType)
@@ -349,17 +351,24 @@ func adaptFlags(adaType IAdaType, parentType IAdaType, level int, x interface{})
 func (def *Definition) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("Definition types:\n")
-	for _, value := range def.activeFieldTree.SubTypes {
-		output := fmt.Sprintf("%s\n", value.String())
+	t := TraverserMethods{EnterFunction: func(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+		output := fmt.Sprintf("%s\n", adaType.String())
 		buffer.WriteString(output)
-	}
-	if len(def.Values) > 0 {
-		buffer.WriteString("Definition IAdaTypes:\n")
-		for index, value := range def.Values {
-			output := fmt.Sprintf("%03d %s=%s\n", (index + 1), value.Type().Name(), value.String())
-			buffer.WriteString(output)
-		}
-	}
+		return nil
+	}}
+
+	def.TraverseTypes(t, true, nil)
+	// for _, value := range def.activeFieldTree.SubTypes {
+	// 	output := fmt.Sprintf("%s\n", value.String())
+	// 	buffer.WriteString(output)
+	// }
+	// if len(def.Values) > 0 {
+	// 	buffer.WriteString("Definition IAdaTypes:\n")
+	// 	for index, value := range def.Values {
+	// 		output := fmt.Sprintf("%03d %s=%s\n", (index + 1), value.Type().Name(), value.String())
+	// 		buffer.WriteString(output)
+	// 	}
+	// }
 	return buffer.String()
 }
 
@@ -422,7 +431,7 @@ func createValue(adaType IAdaType, parentType IAdaType, level int, x interface{}
 		return nil
 	}
 	Central.Log.Debugf("Create value for level=%d %s -> %d", level, adaType.Name(), adaType.Level())
-	if adaType.IsStructure() {
+	if adaType.IsStructure() && adaType.Type() != FieldTypeRedefinition {
 		if adaType.Type() != FieldTypePeriodGroup && adaType.HasFlagSet(FlagOptionPE) {
 			return nil
 		}
@@ -483,6 +492,7 @@ func (def *Definition) CreateValues(forStoring bool) (err error) {
 	t := TraverserMethods{EnterFunction: createValue}
 	err = def.TraverseTypes(t, true, parameter)
 	Central.Log.Debugf("Done creating values ... %v", err)
+	Central.Log.Debugf("Created %d values", len(def.Values))
 	return
 }
 

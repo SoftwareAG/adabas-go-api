@@ -159,7 +159,7 @@ func (value *byteArrayValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 			return
 		}
 		if len == 0 {
-			return EndTraverser, NewGenericError(0)
+			return EndTraverser, NewGenericError(88)
 		}
 		len--
 	}

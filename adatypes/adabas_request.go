@@ -35,19 +35,47 @@ const (
 	HoldNone HoldType = iota
 	// HoldWait wait for hold released
 	HoldWait
-	// HoldResponse receive response code
+	// HoldResponse receive response code if record is in hold state
 	HoldResponse
+	// HoldAccess check during read that the record is not in hold (shared lock 'C')
+	HoldAccess
+	// HoldRead use shared lock until next read operation (shared lock 'Q')
+	HoldRead
+	// HoldTransaction use shared lock until end of transaction (shared lock 'S')
+	HoldTransaction
 )
+
+var holdOption = []byte{' ', ' ', ' ', 'C', 'Q', 'S'}
+
+// HoldOption return hold option for Adabas option 3
+func (ht HoldType) HoldOption() byte {
+	return holdOption[ht]
+}
+
+// IsHold check if hold type is hold
+func (ht HoldType) IsHold() bool {
+	return ht != HoldNone
+}
 
 const (
 	// DefaultMultifetchLimit default number of multifetch entries
 	DefaultMultifetchLimit = 10
+	// AdaNormal Adabas success response code
+	AdaNormal = 0
 )
+
+// IAdaCallInterface caller interface
+type IAdaCallInterface interface {
+	SecondCall(adabasRequest *Request, x interface{}) (err error)
+	CallAdabas() (err error)
+}
 
 // Request contains all relevant buffer and parameters for a Adabas call
 type Request struct {
+	Caller             IAdaCallInterface
 	FormatBuffer       bytes.Buffer
 	RecordBuffer       *BufferHelper
+	MultifetchBuffer   *BufferHelper
 	RecordBufferLength uint32
 	RecordBufferShift  uint32
 	PeriodLength       uint32
@@ -59,16 +87,21 @@ type Request struct {
 	Descriptors        []string
 	Definition         *Definition
 	Response           uint16
+	CmdCode            [2]byte
+	IsnIncrease        bool
+	StoreIsn           bool
+	CbIsn              Isn
 	Isn                Isn
 	IsnQuantity        uint64
 	Option             *BufferOption
 	Parameter          interface{}
+	Reference          string
 }
 
-func (adabasRequest *Request) reset() {
-	adabasRequest.SearchTree = nil
-	adabasRequest.Definition = nil
-}
+// func (adabasRequest *Request) reset() {
+// 	adabasRequest.SearchTree = nil
+// 	adabasRequest.Definition = nil
+// }
 
 type valueSearch struct {
 	name     string
@@ -101,7 +134,7 @@ func (adabasRequest *Request) GetValue(name string) (IAdaValue, error) {
 // Traverser callback to create format buffer per field type
 func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
 	adabasRequest := x.(*Request)
-	if adaValue.Type().HasFlagSet(FlagOptionReference) {
+	if adaValue.Type().HasFlagSet(FlagOptionReadOnly) || adaValue.Type().HasFlagSet(FlagOptionReference) {
 		return Continue, nil
 	}
 	Central.Log.Debugf("Add format buffer for %s", adaValue.Type().Name())
@@ -120,6 +153,9 @@ func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResu
 	}
 	if adabasRequest.Option.SecondCall &&
 		adaValue.Type().Type() == FieldTypeMultiplefield && adaValue.Type().HasFlagSet(FlagOptionPE) {
+		return SkipTree, nil
+	}
+	if adaValue.Type().Type() == FieldTypeRedefinition {
 		return SkipTree, nil
 	}
 	Central.Log.Debugf("After %s current Record length %d -> %s", adaValue.Type().Name(), adabasRequest.RecordBufferLength,
@@ -147,8 +183,8 @@ func formatBufferTraverserLeave(adaValue IAdaValue, x interface{}) (TraverseResu
 }
 
 func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
-	Central.Log.Debugf("Format Buffer Read traverser: %s-%s level=%d/%d", adaType.Name(), adaType.ShortName(),
-		adaType.Level(), level)
+	Central.Log.Debugf("Format Buffer Read traverser: %s-%s level=%d/%d -> %T", adaType.Name(), adaType.ShortName(),
+		adaType.Level(), level, adaType)
 	if adaType.HasFlagSet(FlagOptionReference) {
 		return nil
 	}
@@ -165,7 +201,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 		Central.Log.Debugf("------->>>>>> Range %s=%s%s %p", structureType.name, structureType.shortName, r, structureType)
 		buffer.WriteString(adaType.ShortName() + "C,4,B")
 		adabasRequest.RecordBufferLength += 4
-		if !adaType.HasFlagSet(FlagOptionMU) {
+		if !adaType.HasFlagSet(FlagOptionMU) && !adaType.HasFlagSet(FlagOptionPart) {
 			Central.Log.Debugf("No MU field, use general range group query")
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")
@@ -197,7 +233,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
 		}
 	case FieldTypeSuperDesc, FieldTypeHyperDesc:
-		if !(adaType.IsOption(FieldOptionPE) || adaType.IsOption(FieldOptionPE)) {
+		if !adaType.IsOption(FieldOptionPE) {
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")
 			}
@@ -206,33 +242,45 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			adabasRequest.RecordBufferLength += adaType.Length()
 		}
 	case FieldTypePhonetic, FieldTypeCollation, FieldTypeReferential:
+	case FieldTypeRedefinition:
+		if buffer.Len() > 0 {
+			buffer.WriteString(",")
+		}
+		genType := adaType.(*RedefinitionType).MainType
+		buffer.WriteString(fmt.Sprintf("%s,%d,%s", genType.ShortName(),
+			genType.Length(), genType.Type().FormatCharacter()))
 	default:
 		if !adaType.IsStructure() {
 			if !adaType.HasFlagSet(FlagOptionMUGhost) && (!adaType.HasFlagSet(FlagOptionPE) ||
-				(adaType.HasFlagSet(FlagOptionPE) && adaType.HasFlagSet(FlagOptionMU))) {
+				(adaType.HasFlagSet(FlagOptionPE) && (adaType.HasFlagSet(FlagOptionMU) || adaType.HasFlagSet(FlagOptionPart)))) {
 				if buffer.Len() > 0 {
 					buffer.WriteString(",")
 				}
 				fieldIndex := ""
+				genType := adaType
+				if adaType.Type() == FieldTypeRedefinition {
+					genType = adaType.(*RedefinitionType).MainType
+				}
 				if adaType.Type() == FieldTypeLBString {
 					buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(1,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
 						PartialLobSize))
 					adabasRequest.RecordBufferLength += (4 + PartialLobSize)
 				} else {
-					if adaType.HasFlagSet(FlagOptionPE) {
-						t := adaType.(*AdaType)
+					if genType.HasFlagSet(FlagOptionPE) {
+						t := genType.(*AdaType)
 						// fieldIndex = "1-N"
 						fieldIndex = t.peRange.FormatBuffer()
 						adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
 					} else {
-						if adaType.Length() == uint32(0) {
+						if genType.Length() == uint32(0) {
 							adabasRequest.RecordBufferLength += 512
 						} else {
 							adabasRequest.RecordBufferLength += adaType.Length()
 						}
 					}
-					buffer.WriteString(fmt.Sprintf("%s%s,%d,%s", adaType.ShortName(), fieldIndex,
-						adaType.Length(), adaType.Type().FormatCharacter()))
+					Central.Log.Debugf("FB generate %T %s -> %s", adaType, genType.ShortName(), genType.Type().FormatCharacter())
+					buffer.WriteString(fmt.Sprintf("%s%s,%d,%s", genType.ShortName(), fieldIndex,
+						genType.Length(), genType.Type().FormatCharacter()))
 				}
 			}
 		}
@@ -267,5 +315,116 @@ func (def *Definition) CreateAdabasRequest(store bool, secondCall bool, mainfram
 	}
 	Central.Log.Debugf("Generated FB: %s", adabasRequest.FormatBuffer.String())
 	Central.Log.Debugf("RB size=%d", adabasRequest.RecordBufferLength)
+	return
+}
+
+// ParseBuffer parse given record buffer and multifetch buffer
+func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (responseCode uint32, err error) {
+	Central.Log.Debugf("Parse Adabas request buffers")
+	// If parser is available, use the parser to extract content
+	if adabasRequest.Parser != nil {
+		Central.Log.Debugf("Parser method found")
+		var multifetchHelper *BufferHelper
+		nrMultifetchEntries := uint32(1)
+		if adabasRequest.Multifetch > 1 {
+			Central.Log.Debugf("Multifetch %d", adabasRequest.Multifetch)
+			multifetchHelper = adabasRequest.MultifetchBuffer
+			nrMultifetchEntries, err = multifetchHelper.ReceiveUInt32()
+			if err != nil {
+				Central.Log.Debugf("Error evaluate multifetch entries %v", err)
+				return
+			}
+			if nrMultifetchEntries > 10000 {
+				Central.Log.Debugf("multifetch entries mismatch, panic ...")
+				panic("Too many multifetch entries")
+			}
+			Central.Log.Debugf("Nr of multifetch entries %d", nrMultifetchEntries)
+		}
+		Central.Log.Debugf("Nr Multifetch entries %d", nrMultifetchEntries)
+		for nrMultifetchEntries > 0 {
+			(*count)++
+			if multifetchHelper != nil {
+				responseCode, err = adabasRequest.readMultifetch(multifetchHelper)
+				if err != nil {
+					Central.Log.Debugf("Multifetch parse error: %v", err)
+					return
+				}
+				if responseCode != AdaNormal {
+					Central.Log.Debugf("Adabas response received %d", responseCode)
+					break
+				}
+			}
+
+			Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values != nil))
+			var prefix string
+			prefix = fmt.Sprintf("/image/%s/%d/", adabasRequest.Reference, adabasRequest.Isn)
+			_, err = adabasRequest.Definition.ParseBuffer(adabasRequest.RecordBuffer, adabasRequest.Option, prefix)
+			if err != nil {
+				return
+			}
+			err = adabasRequest.Caller.SecondCall(adabasRequest, x)
+			if err != nil {
+				return
+			}
+			Central.Log.Debugf("Found parser .... values avail.=%v", (adabasRequest.Definition.Values == nil))
+			err = adabasRequest.Parser(adabasRequest, x)
+			if err != nil {
+				return
+			}
+			nrMultifetchEntries--
+
+			// If multifetch on, create values for next parse step, only possible on read calls
+			if nrMultifetchEntries > 0 {
+				//adabasRequest.Definition.Values = nil
+				err = adabasRequest.Definition.CreateValues(false)
+				if err != nil {
+					return
+				}
+			}
+		}
+		Central.Log.Debugf("Parser ended")
+	} else {
+		Central.Log.Debugf("Found no parser")
+	}
+	return
+}
+
+// Parse multifetch values
+func (adabasRequest *Request) readMultifetch(multifetchHelper *BufferHelper) (responseCode uint32, err error) {
+	recordLength, rErr := multifetchHelper.ReceiveUInt32()
+	if rErr != nil {
+		err = rErr
+		return
+	}
+	Central.Log.Debugf("Record length %d", recordLength)
+	responseCode, err = multifetchHelper.ReceiveUInt32()
+	if err != nil {
+		Central.Log.Debugf("Response parser error in MF %v", err)
+		return
+	}
+	if responseCode != AdaNormal {
+		adabasRequest.Response = uint16(responseCode) // adabas.Acbx.Acbxrsp
+		Central.Log.Debugf("Response code in MF %v", adabasRequest.Response)
+		return
+	}
+	Central.Log.Debugf("Response code %d", responseCode)
+	isn, isnErr := multifetchHelper.ReceiveUInt32()
+	if isnErr != nil {
+		err = isnErr
+		return
+	}
+	Central.Log.Debugf("Got ISN %d", isn)
+	adabasRequest.Isn = Isn(isn)
+	if adabasRequest.StoreIsn {
+		adabasRequest.CbIsn = Isn(isn)
+	}
+	quantity, qerr := multifetchHelper.ReceiveUInt32()
+	if qerr != nil {
+		Central.Log.Debugf("Quantity buffer error %v", qerr)
+		err = qerr
+		return
+	}
+	Central.Log.Debugf("ISN quantity=%d", quantity)
+	adabasRequest.IsnQuantity = uint64(quantity)
 	return
 }

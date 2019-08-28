@@ -20,14 +20,10 @@ package adabas
 
 import (
 	"fmt"
-	//	log "github.com/sirupsen/logrus"
-	//	"github.com/stretchr/testify/assert"
-	//	"testing"
 )
 
 func ExampleConnection_periodGroup2() {
-	f, _ := initLogWithFile("connection.log")
-	defer f.Close()
+	initLogWithFile("connection.log")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -154,8 +150,7 @@ func ExampleConnection_periodGroup2() {
 }
 
 func ExampleConnection_periodGroupPart() {
-	f, _ := initLogWithFile("connection.log")
-	defer f.Close()
+	initLogWithFile("connection.log")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -220,8 +215,7 @@ func ExampleConnection_periodGroupPart() {
 }
 
 func ExampleConnection_periodGroupLastEntry() {
-	f, _ := initLogWithFile("connection.log")
-	defer f.Close()
+	initLogWithFile("connection.log")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -276,8 +270,7 @@ func ExampleConnection_periodGroupLastEntry() {
 }
 
 func ExampleConnection_multiplefieldIndex() {
-	f, _ := initLogWithFile("connection.log")
-	defer f.Close()
+	initLogWithFile("connection.log")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {

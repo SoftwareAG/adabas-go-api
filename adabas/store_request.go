@@ -20,7 +20,7 @@
 package adabas
 
 import (
-	"encoding/binary"
+	"fmt"
 	"strconv"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -32,18 +32,62 @@ type StoreRequest struct {
 }
 
 // NewStoreRequest create a new store Request instance
-func NewStoreRequest(url string, fnr Fnr) (*StoreRequest, error) {
-	var adabas *Adabas
-	if dbid, err := strconv.Atoi(url); err == nil {
-		adabas, err = NewAdabas(Dbid(dbid))
-		if err != nil {
-			return nil, err
+func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
+	switch param[0].(type) {
+	case string:
+		if len(param) > 1 {
+			url := param[0].(string)
+			switch param[1].(type) {
+			case *Adabas:
+				ada := param[1].(*Adabas)
+				repo := param[2].(*Repository)
+				adaMap, err := repo.SearchMapInRepository(ada, url)
+				if err != nil {
+					return nil, err
+				}
+				dataRepository := &Repository{DatabaseURL: *adaMap.Data}
+				request := &StoreRequest{commonRequest: commonRequest{MapName: url,
+					adabas: ada, adabasMap: adaMap, repository: dataRepository}}
+				return request, nil
+			default:
+				fnr, err := evaluateFnr(param[1])
+				if err != nil {
+					return nil, err
+				}
+				var adabas *Adabas
+				if dbid, aerr := strconv.Atoi(url); aerr == nil {
+					adabas, err = NewAdabas(Dbid(dbid))
+					if err != nil {
+						return nil, err
+					}
+				} else {
+					return nil, aerr
+				}
+				return &StoreRequest{commonRequest: commonRequest{adabas: adabas,
+					repository: &Repository{DatabaseURL: DatabaseURL{Fnr: Fnr(fnr)}}}}, nil
+			}
 		}
-	} else {
-		return nil, err
+	default:
 	}
-	return &StoreRequest{commonRequest: commonRequest{adabas: adabas,
-		repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}, nil
+	return nil, fmt.Errorf("XXXX")
+}
+
+func evaluateFnr(p interface{}) (Fnr, error) {
+	switch p.(type) {
+	case int:
+		i := p.(int)
+		return Fnr(i), nil
+	case int32:
+		i := p.(int32)
+		return Fnr(i), nil
+	case int64:
+		i := p.(int64)
+		return Fnr(i), nil
+	case Fnr:
+		return p.(Fnr), nil
+	default:
+	}
+	return 0, fmt.Errorf("Cannot evaluate Fnr")
 }
 
 // NewStoreRequestAdabas create a new Request instance
@@ -80,27 +124,34 @@ func (request *StoreRequest) prepareRequest() (adabasRequest *adatypes.Request, 
 }
 
 // StoreFields create record field definition for the next store
-func (request *StoreRequest) StoreFields(fields string) (err error) {
+func (request *StoreRequest) StoreFields(param ...interface{}) (err error) {
+	if len(param) == 0 {
+		return adatypes.NewGenericError(0)
+	}
 	err = request.Open()
 	if err != nil {
 		return
 	}
-	// if request.definition == nil {
-	// 	err = request.loadDefinition()
-	// 	if err != nil {
-	// 		return
-	// 	}
-	// }
 	adatypes.Central.Log.Debugf("Check store fields Definition values %#v", request.definition.Values)
 	adatypes.Central.Log.Debugf("Dump all fields")
 	request.definition.DumpTypes(true, true)
-	adatypes.Central.Log.Debugf("Store restrict fields to %s", fields)
-	err = request.definition.ShouldRestrictToFields(fields)
-	if err != nil {
-		return
+	switch f := param[0].(type) {
+	case string:
+		adatypes.Central.Log.Debugf("Store restrict fields to %s", f)
+		err = request.definition.ShouldRestrictToFields(f)
+		if err != nil {
+			return
+		}
+	case []string:
+		adatypes.Central.Log.Debugf("Store restrict fields to %v", f)
+		err = request.definition.ShouldRestrictToFieldSlice(f)
+		if err != nil {
+			return
+		}
 	}
 	request.definition.DumpTypes(true, true)
 	adatypes.Central.Log.Debugf("Definition values %#v", request.definition.Values)
+
 	return
 }
 
@@ -128,7 +179,7 @@ func (request *StoreRequest) Store(storeRecord *Record) error {
 		return prepareErr
 	}
 	//	storeRecord
-	helper := adatypes.NewDynamicHelper(binary.LittleEndian)
+	helper := adatypes.NewDynamicHelper(Endian())
 	err := storeRecord.createRecordBuffer(helper)
 	if err != nil {
 		return err
@@ -165,7 +216,7 @@ func (request *StoreRequest) Exchange(storeRecord *Record) error {
 // update update a record
 func (request *StoreRequest) update(adabasRequest *adatypes.Request, storeRecord *Record) error {
 	//	storeRecord
-	helper := adatypes.NewDynamicHelper(binary.LittleEndian)
+	helper := adatypes.NewDynamicHelper(Endian())
 	err := storeRecord.createRecordBuffer(helper)
 	if err != nil {
 		return err

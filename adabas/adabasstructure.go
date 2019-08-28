@@ -28,10 +28,10 @@ import (
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
-const acbxEyecatcher = 'F'   /*      F - EYECATCHER              */
-const acbxVersion = '2'      /*      2 - VERSION                 */
-const eAcbxEyecatcher = 0xc6 /* EBCDIC F - EYECATCHER            */
-const eAcbxVersion = 0xf2    /* EBCDIC 2 - VERSION               */
+const acbxEyecatcher = 'F' /*      F - EYECATCHER              */
+const acbxVersion = '2'    /*      2 - VERSION                 */
+//const eAcbxEyecatcher = 0xc6 /* EBCDIC F - EYECATCHER            */
+//const eAcbxVersion = 0xf2    /* EBCDIC 2 - VERSION               */
 const acbxLength = 192
 
 // Dbid Adabas database identifier
@@ -212,14 +212,14 @@ func (acbx *Acbx) String() string {
 	buffer.WriteString(fmt.Sprintf("  Dbid: %d  Filenr: %d", acbx.Acbxdbid, acbx.Acbxfnr))
 	buffer.WriteString(fmt.Sprintf("  Responsecode: %d Subcode: %d\n", acbx.Acbxrsp, acbx.Acbxerrc))
 	buffer.WriteString(fmt.Sprintln("  Isn: ", acbx.Acbxisn, " ISN Lower Limit: ", acbx.Acbxisl, "ISN Quantity: ", acbx.Acbxisq))
-	buffer.WriteString(adatypes.FormatBytes("  CmdOption: ", acbx.Acbxcop[:], 1, -1))
-	buffer.WriteString(adatypes.FormatBytes("  Add1: ", acbx.Acbxadd1[:], 1, -1))
-	buffer.WriteString(adatypes.FormatBytes("  Add2: ", acbx.Acbxadd2[:], 1, -1))
-	buffer.WriteString(adatypes.FormatBytes("  Add3: ", acbx.Acbxadd3[:], 1, -1))
-	buffer.WriteString(adatypes.FormatBytes("  Add4: ", acbx.Acbxadd4[:], 1, -1))
-	buffer.WriteString(adatypes.FormatBytes("  Add5: ", acbx.Acbxadd5[:], 1, -1))
-	buffer.WriteString(adatypes.FormatBytes("  Add6: ", acbx.Acbxadd6[:], 1, -1))
-	buffer.WriteString(adatypes.FormatBytes("  User Area: ", acbx.Acbxuser[:], 0, -1))
+	buffer.WriteString(adatypes.FormatBytes("  CmdOption: ", acbx.Acbxcop[:], len(acbx.Acbxcop[:]), 1, -1, false))
+	buffer.WriteString(adatypes.FormatBytes("  Add1: ", acbx.Acbxadd1[:], len(acbx.Acbxadd1[:]), 1, -1, false))
+	buffer.WriteString(adatypes.FormatBytes("  Add2: ", acbx.Acbxadd2[:], len(acbx.Acbxadd2[:]), 1, -1, false))
+	buffer.WriteString(adatypes.FormatBytes("  Add3: ", acbx.Acbxadd3[:], len(acbx.Acbxadd3[:]), 1, -1, false))
+	buffer.WriteString(adatypes.FormatBytes("  Add4: ", acbx.Acbxadd4[:], len(acbx.Acbxadd4[:]), 1, -1, false))
+	buffer.WriteString(adatypes.FormatBytes("  Add5: ", acbx.Acbxadd5[:], len(acbx.Acbxadd5[:]), 1, -1, false))
+	buffer.WriteString(adatypes.FormatBytes("  Add6: ", acbx.Acbxadd6[:], len(acbx.Acbxadd6[:]), 1, -1, false))
+	buffer.WriteString(adatypes.FormatBytes("  User Area: ", acbx.Acbxuser[:], len(acbx.Acbxuser[:]), 0, -1, false))
 	return buffer.String()
 }
 
@@ -295,9 +295,9 @@ func (adaid *ID) status(url string) *Status {
 	return s
 }
 
-func (adaid *ID) changePlatform(url string, platform *adatypes.Platform) {
-	adaid.status(url).platform = platform
-}
+// func (adaid *ID) changePlatform(url string, platform *adatypes.Platform) {
+// 	adaid.status(url).platform = platform
+// }
 
 func (adaid *ID) platform(url string) *adatypes.Platform {
 	return adaid.status(url).platform

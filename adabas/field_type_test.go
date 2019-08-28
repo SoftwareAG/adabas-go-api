@@ -27,15 +27,13 @@ import (
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 const recordNamePrefix = "FIELD-TYPE-TEST"
 
 func TestFieldTypeStore(t *testing.T) {
-	f := initTestLogWithFile(t, "field_type.log")
-	defer f.Close()
+	initTestLogWithFile(t, "field_type.log")
 
 	cErr := clearFile(270)
 	if !assert.NoError(t, cErr) {
@@ -190,10 +188,9 @@ func TestFieldTypeRead(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "field_type.log")
-	defer f.Close()
+	initTestLogWithFile(t, "field_type.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, cerr) {
 		return
@@ -234,7 +231,11 @@ func TestFieldTypeRead(t *testing.T) {
 		kaVal = result.Values[1].HashFields["S4"]
 		assert.Equal(t, "-100000", kaVal.String())
 		kaVal = result.Values[1].HashFields["BR"]
-		assert.Equal(t, []byte{0x0, 0x10, 0x20}, kaVal.Value())
+		if bigEndian() {
+			assert.Equal(t, []byte{0x10, 0x20}, kaVal.Value())
+		} else {
+			assert.Equal(t, []byte{0x0, 0x10, 0x20}, kaVal.Value())
+		}
 		db := []byte{0xff, 0x10, 0x5, 0x0, 0x10, 0x20}
 		b := make([]byte, 122)
 		copy(b[:len(db)], db)
@@ -246,6 +247,56 @@ func TestFieldTypeRead(t *testing.T) {
 		assert.Equal(t, "21.100000", kaVal.String())
 		kaVal = result.Values[1].HashFields["F8"]
 		assert.Equal(t, float64(123456.100000), kaVal.Value())
+		err = jsonOutput(result.Values[0])
+		if !assert.NoError(t, err) {
+			return
+		}
+		jsonOutput(result.Values[1])
+		if !assert.NoError(t, err) {
+			return
+		}
+	}
+}
+
+func TestFieldTypeReadBR(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "field_type.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	openErr := connection.Open()
+	assert.NoError(t, openErr)
+	request, err := connection.CreateFileReadRequest(270)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = request.QueryFields("BR")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	request.Limit = 0
+	result, rerr := request.ReadLogicalWith("AF=" + recordNamePrefix)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	if assert.NotNil(t, result) {
+		assert.Equal(t, 2, len(result.Values))
+		assert.Equal(t, 2, result.NrRecords())
+		err = result.DumpValues()
+		assert.NoError(t, err)
+		kaVal := result.Values[1].HashFields["BR"]
+		if bigEndian() {
+			assert.Equal(t, []byte{0x10, 0x20}, kaVal.Value())
+		} else {
+			assert.Equal(t, []byte{0x0, 0x10, 0x20}, kaVal.Value())
+		}
 		err = jsonOutput(result.Values[0])
 		if !assert.NoError(t, err) {
 			return
@@ -306,17 +357,16 @@ func dumpFieldTypeValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 	return adatypes.Continue, nil
 }
 
-func ExampleConnection_fieldType() {
-	f, err := initLogWithFile("field_type.log")
+func TestConnection_fieldType(t *testing.T) {
+	err := initLogWithFile("field_type.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 	url := "23"
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
-	if cerr != nil {
+	if !assert.NoError(t, cerr) {
 		fmt.Println("Error creating database connection", cerr)
 		return
 	}
@@ -324,103 +374,34 @@ func ExampleConnection_fieldType() {
 
 	fmt.Println(connection)
 	openErr := connection.Open()
-	if openErr != nil {
+	if !assert.NoError(t, openErr) {
 		fmt.Println("Error opening database", openErr)
 		return
 	}
 	request, err := connection.CreateFileReadRequest(270)
-	if err != nil {
+	if !assert.NoError(t, err) {
 		fmt.Println("Error creating read request", err)
 		return
 	}
-	//err = request.QueryFields("S1,U1,S2,U2,S4,U4,S8,U8,AF,BR,B1,F4,F8,A1")
 	err = request.QueryFields("IT,BB,TY,AA,WC,PI,UI")
-	//err = request.QueryFields("*")
-	if err != nil {
+	if !assert.NoError(t, err) {
 		fmt.Println("Error query fields", err)
 		return
 	}
 	request.Limit = 0
 	request.RecordBufferShift = 64000
 	result, rerr := request.ReadLogicalWith("AF=" + recordNamePrefix)
-	if rerr != nil {
+	if !assert.NoError(t, rerr) {
 		fmt.Println("Error reading records", rerr)
 		return
 	}
-	t := adatypes.TraverserValuesMethods{PrepareFunction: dumpFieldTypeTestPrepare, EnterFunction: dumpFieldTypeValues}
-	_, err = result.TraverseValues(t, nil)
-	if err != nil {
-		fmt.Println("Error traversing records", err)
-		return
-	}
-	//Output: Connect to  23
-	// Adabas url=23 fnr=0
-	// Record found:
-	//   IT = [ 1 ]
-	//    S1 = > 0 <
-	//    U1 = > 0 <
-	//    S2 = > 0 <
-	//    U2 = > 0 <
-	//    S4 = > 0 <
-	//    U4 = > 0 <
-	//    S8 = > 0 <
-	//    U8 = > 0 <
-	//   BB = [ 1 ]
-	//    BR = > [0] <
-	//    B1 = > [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0] <
-	//   TY = [ 1 ]
-	//    F4 = > 0.000000 <
-	//    F8 = > 0.000000 <
-	//   AA = [ 1 ]
-	//    A1 = >   <
-	//    AS = >   <
-	//    A2 = >   <
-	//    AB = >  <
-	//    AF = > FIELD-TYPE-TEST      <
-	//   WC = [ 1 ]
-	//    WU = >   <
-	//    WL = >   <
-	//    W4 = >   <
-	//    WF = >                                                    <
-	//   PI = [ 1 ]
-	//    PA = > 0 <
-	//    PF = > 0 <
-	//   UI = [ 1 ]
-	//    UP = > 0 <
-	//    UF = > 0 <
-	//    UE = > 0 <
-	// Record found:
-	//   IT = [ 1 ]
-	//    S1 = > -1 <
-	//    U1 = > 1 <
-	//    S2 = > -1000 <
-	//    U2 = > 1000 <
-	//    S4 = > -100000 <
-	//    U4 = > 1000 <
-	//    S8 = > -1000 <
-	//    U8 = > 1000 <
-	//   BB = [ 1 ]
-	//    BR = > [0 16 32] <
-	//    B1 = > [255 16 5 0 16 32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0] <
-	//   TY = [ 1 ]
-	//    F4 = > 21.100000 <
-	//    F8 = > 123456.100000 <
-	//   AA = [ 1 ]
-	//    A1 = > X <
-	//    AS = > NORMALSTRING <
-	//    A2 = > LARGESTRING <
-	//    AB = > LOBST <
-	//    AF = > FIELD-TYPE-TEST      <
-	//   WC = [ 1 ]
-	//    WU = > Санкт-Петербург <
-	//    WL = > அ-8பவனி கொம்பிலேக் <
-	//    W4 = > ಸೆನಿಓರ್ ಪ್ರೋಗ್ೃಾಮ್ಮೇರ್ <
-	//    WF = > директор                                   <
-	//   PI = [ 1 ]
-	//    PA = > 123 <
-	//    PF = > 1234 <
-	//   UI = [ 1 ]
-	//    UP = > 51234 <
-	//    UF = > 542 <
-	//    UE = > 1234 <
+	// tv := adatypes.TraverserValuesMethods{PrepareFunction: dumpFieldTypeTestPrepare, EnterFunction: dumpFieldTypeValues}
+	// _, err = result.TraverseValues(tv, nil)
+	// if !assert.NoError(t, err) {
+	// 	fmt.Println("Error traversing records", err)
+	// 	return
+	// }
+	fmt.Println("Endian:", Endian())
+	err = validateResult(t, "field_Types_"+Endian().String(), result)
+	assert.NoError(t, err)
 }

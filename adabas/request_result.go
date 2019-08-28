@@ -36,6 +36,9 @@ type storeRecordTraverserStructure struct {
 }
 
 func createStoreRecordBuffer(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
+	if adaValue.Type().HasFlagSet(adatypes.FlagOptionReadOnly) {
+		return adatypes.Continue, nil
+	}
 	record := x.(*storeRecordTraverserStructure)
 	adatypes.Central.Log.Debugf("Store record buffer for %s current helper position is %d/%x",
 		adaValue.Type().Name(), record.helper.Offset(), record.helper.Offset())
@@ -98,19 +101,18 @@ func traverseDumpRecord(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Tr
 		brackets = fmt.Sprintf("[%02d]", adaValue.MultipleIndex())
 	default:
 	}
-
-	if adaValue.Type().IsStructure() {
+	switch {
+	case adaValue.Type().Type() == adatypes.FieldTypeRedefinition:
+		buffer.WriteString(fmt.Sprintf("%s %s%s \n", y, adaValue.Type().Name(), brackets))
+	case adaValue.Type().IsStructure():
 		adatypes.Central.Log.Debugf("Use structure dump")
 		structureValue := adaValue.(*adatypes.StructureValue)
 		buffer.WriteString(fmt.Sprintf("%s %s%s = [ %d ]\n", y, adaValue.Type().Name(), brackets, structureValue.NrElements()))
-	} else {
+	default:
 		adatypes.Central.Log.Debugf("Use string dump")
 		buffer.WriteString(fmt.Sprintf("%s %s%s = > %s <\n", y, adaValue.Type().Name(), brackets, adaValue.String()))
 	}
-	// } else {
-	// 	buffer := x.(*bytes.Buffer)
-	// 	buffer.WriteString(fmt.Sprintln(y, adaValue.Type().Name(), "= >", adaValue.String(), "<"))
-	// }
+
 	return adatypes.Continue, nil
 }
 
@@ -205,12 +207,12 @@ func (Response *Response) MarshalXML(e *xml.Encoder, start xml.StartElement) err
 	return nil
 }
 
-type dataValue struct {
-	Isn   adatypes.Isn `json:"ISN"`
-	Value map[string]string
-}
+// type dataValue struct {
+// 	Isn   adatypes.Isn `json:"ISN"`
+// 	Value map[string]string
+// }
 
-type request struct {
+type responseJSON struct {
 	Values         []*map[string]interface{} `json:"Records"`
 	dataMap        *map[string]interface{}
 	stack          *adatypes.Stack
@@ -221,9 +223,16 @@ type request struct {
 
 func evaluateValue(adaValue adatypes.IAdaValue) (interface{}, error) {
 	switch adaValue.Type().Type() {
+	case adatypes.FieldTypeDouble, adatypes.FieldTypeFloat:
+		v, err := adaValue.Float()
+		if err != nil {
+			adatypes.Central.Log.Debugf("Error marshal JSON %s: %v", adaValue.Type().Name(), err)
+			return adatypes.EndTraverser, err
+		}
+		return v, nil
 	case adatypes.FieldTypePacked, adatypes.FieldTypeUnpacked, adatypes.FieldTypeByte, adatypes.FieldTypeUByte,
 		adatypes.FieldTypeUInt2, adatypes.FieldTypeInt2, adatypes.FieldTypeUInt4, adatypes.FieldTypeInt4,
-		adatypes.FieldTypeUInt8, adatypes.FieldTypeInt8, adatypes.FieldTypeDouble, adatypes.FieldTypeFloat:
+		adatypes.FieldTypeUInt8, adatypes.FieldTypeInt8:
 		v, err := adaValue.Int64()
 		if err != nil {
 			adatypes.Central.Log.Debugf("Error marshal JSON %s: %v", adaValue.Type().Name(), err)
@@ -236,7 +245,7 @@ func evaluateValue(adaValue adatypes.IAdaValue) (interface{}, error) {
 }
 
 func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
-	req := x.(*request)
+	req := x.(*responseJSON)
 	if !adaValue.Type().IsSpecialDescriptor() && !adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost) {
 		adatypes.Central.Log.Debugf("Marshal JSON level=%d %s -> type=%T MU ghost=%v", adaValue.Type().Level(),
 			adaValue.Type().Name(), adaValue, adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost))
@@ -300,7 +309,7 @@ func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 
 func traverseElementMarshalJSON(adaValue adatypes.IAdaValue, nr, max int, x interface{}) (adatypes.TraverseResult, error) {
 	if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup {
-		req := x.(*request)
+		req := x.(*responseJSON)
 		if req.structureArray == nil {
 			req.stack.Push(req.dataMap)
 		}
@@ -314,7 +323,7 @@ func traverseElementMarshalJSON(adaValue adatypes.IAdaValue, nr, max int, x inte
 func traverseMarshalJSONEnd(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	if adaValue.Type().IsStructure() && adaValue.Type().Type() != adatypes.FieldTypeMultiplefield {
 		sv := adaValue.(*adatypes.StructureValue)
-		req := x.(*request)
+		req := x.(*responseJSON)
 		if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup && len(sv.Elements) == 0 {
 			(*req.dataMap)[adaValue.Type().Name()] = make([]interface{}, 0)
 			adatypes.Central.Log.Debugf("JSON end skip for %s->%d", adaValue.Type().Name(), req.stack.Size)
@@ -341,7 +350,7 @@ func traverseMarshalJSONEnd(adaValue adatypes.IAdaValue, x interface{}) (adatype
 
 // MarshalJSON provide JSON
 func (Response *Response) MarshalJSON() ([]byte, error) {
-	req := &request{special: true}
+	req := &responseJSON{special: true}
 	adatypes.Central.Log.Debugf("Marshal JSON go through records -> %d", len(Response.Values))
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalJSON, LeaveFunction: traverseMarshalJSONEnd,
 		ElementFunction: traverseElementMarshalJSON}
@@ -376,8 +385,8 @@ func (Response *Response) Isn(isn adatypes.Isn) *Record {
 	return nil
 }
 
-type rrecord struct {
-	stack       *adatypes.Stack
-	buffer      bytes.Buffer
-	hasElements bool
-}
+// type rrecord struct {
+// 	stack       *adatypes.Stack
+// 	buffer      bytes.Buffer
+// 	hasElements bool
+// }

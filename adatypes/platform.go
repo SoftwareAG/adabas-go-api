@@ -51,7 +51,17 @@ func NewPlatformIsl(isl uint64) *Platform {
 
 // NewPlatform create a new platform instance
 func NewPlatform(arch byte) *Platform {
-	pl := &Platform{architecture: arch}
+	space := byte(0x20)
+	if arch == PlatformMainframe {
+		space = byte(0x40)
+	}
+	var order binary.ByteOrder
+	if arch == PlatformLUWLowOrder {
+		order = binary.LittleEndian
+	} else {
+		order = binary.BigEndian
+	}
+	pl := &Platform{architecture: arch, spaceByte: space, order: order}
 	Central.Log.Debugf("New platform mainframe=%v(%d)", pl.IsMainframe(), arch)
 	return pl
 }

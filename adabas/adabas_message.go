@@ -28,7 +28,7 @@ import (
 
 const messagePrefix = "ADAGE"
 
-type errorCode int
+//type errorCode int
 
 // getAdabasMessage get the current Adabas message dependent on the response and sub code
 func (adabas *Adabas) getAdabasMessage() []string {

@@ -21,10 +21,11 @@ package adabas
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -204,13 +205,25 @@ func ExampleConnection_readNoMaximumMainframe() {
 	fmt.Println("Connection : ", connection)
 
 	fmt.Println("Limit query data:")
-	request.QueryFields("AA,AB")
+	err = request.QueryFields("AA,AB")
+	if err != nil {
+		fmt.Println("Error query fields : ", err)
+		return
+	}
 	request.Limit = 2
 	fmt.Println("Read logical data:")
 	var result *Response
 	result, err = request.ReadLogicalWith("AA=[1100301:11100303)")
 	if err != nil {
 		fmt.Println("Error reading", err)
+		return
+	}
+	if result == nil {
+		fmt.Println("Result empty")
+		return
+	}
+	if result.Values == nil {
+		fmt.Println("Values empty")
 		return
 	}
 	fmt.Println("Result data:")
@@ -238,8 +251,7 @@ func ExampleConnection_readNoMaximumMainframe() {
 }
 
 func ExampleConnection_periodGroupMfPart() {
-	f, _ := initLogWithFile("connection.log")
-	defer f.Close()
+	initLogWithFile("connection.log")
 
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
@@ -314,10 +326,13 @@ func TestConnectionPEMUMfMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "connection.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
 		fmt.Println("Mainframe database not defined")
@@ -328,7 +343,7 @@ func TestConnectionPEMUMfMap(t *testing.T) {
 		return
 	}
 	defer connection.Close()
-	log.Debug("Created connection : ", connection)
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
 	if assert.NoError(t, err) {
 		fmt.Println("Limit query data:")
@@ -340,10 +355,10 @@ func TestConnectionPEMUMfMap(t *testing.T) {
 		// fmt.Println("Result data:")
 		// result.DumpValues()
 		fmt.Println("Check size ...", len(result.Values))
-		if assert.Equal(t, 1092, len(result.Values)) {
-			ae := result.Values[1].HashFields["name"]
-			fmt.Println("Check HAIBACH ...")
-			assert.Equal(t, "HAIBACH", strings.TrimSpace(ae.String()))
+		if assert.Equal(t, 1, len(result.Values)) {
+			ae := result.Values[0].HashFields["name"]
+			fmt.Println("Check BERGMANN ...")
+			assert.Equal(t, "BERGMANN", strings.TrimSpace(ae.String()))
 			ei64, xErr := ae.Int64()
 			assert.Error(t, xErr, "Error should be send if value is string")
 			assert.Equal(t, int64(0), ei64)
@@ -354,12 +369,15 @@ func TestConnectionPEMUMfMap(t *testing.T) {
 
 func TestConnectionPEShiftMfMap(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping malloc count in short mode")
+		t.Skip("skipping mainframe tests in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "connection.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
 		fmt.Println("Mainframe database not defined")
@@ -370,7 +388,7 @@ func TestConnectionPEShiftMfMap(t *testing.T) {
 		return
 	}
 	defer connection.Close()
-	log.Debug("Created connection : ", connection)
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
 	if assert.NoError(t, err) {
 		fmt.Println("Limit query data:")
@@ -384,21 +402,36 @@ func TestConnectionPEShiftMfMap(t *testing.T) {
 		fmt.Println("Check size ...", len(result.Values))
 		if assert.Equal(t, 5, len(result.Values)) {
 			ae := result.Values[1].HashFields["name"]
-			fmt.Println("Check HAIBACH ...")
+			fmt.Println("Check SCHILLING ...")
 			assert.Equal(t, "SCHILLING", strings.TrimSpace(ae.String()))
+			ae = result.Values[2].HashFields["name"]
+			val := result.Values[2]
+			fmt.Println("Check FREI ...")
+			assert.Equal(t, "FREI", strings.TrimSpace(ae.String()))
+			nv, _ := val.searchValue("name")
+			assert.Equal(t, "FREI", strings.TrimSpace(nv.String()))
+			assert.Equal(t, int32(3), val.ValueQuantity("income"))
+			assert.Equal(t, int32(3), val.ValueQuantity("bonus"))
+			assert.Equal(t, int32(0), val.ValueQuantity("bonus", 2))
+			assert.Equal(t, int32(0), val.ValueQuantity("bonus", 3))
+			_, aerr := val.SearchValueIndex("bonus", []uint32{3, 12})
+			assert.Error(t, aerr)
 		}
 	}
 
 }
 
-func TestConnectionAllMfMap(t *testing.T) {
+func TestConnectionPEShiftMfMapShort(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping malloc count in short mode")
+		t.Skip("skipping mainframe tests in short mode")
 	}
-	f := initTestLogWithFile(t, "connection.log")
-	defer f.Close()
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "connection.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
 		fmt.Println("Mainframe database not defined")
@@ -409,7 +442,61 @@ func TestConnectionAllMfMap(t *testing.T) {
 		return
 	}
 	defer connection.Close()
-	log.Debug("Created connection : ", connection)
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
+	if assert.NoError(t, err) {
+		fmt.Println("Limit query data:")
+		request.QueryFields("personnnel-id,income,leave-date")
+		request.Limit = 0
+		fmt.Println("Read logigcal data:")
+		result, err := request.ReadLogicalWith("personnnel-id=[11400327:11500303]")
+		assert.NoError(t, err)
+		// fmt.Println("Result data:")
+		// result.DumpValues()
+		fmt.Println("Check size ...", len(result.Values))
+		if assert.Equal(t, 5, len(result.Values)) {
+			ae := result.Values[1].HashFields["personnnel-id"]
+			fmt.Println("Check 11400328 ...")
+			assert.Equal(t, "11400328", strings.TrimSpace(ae.String()))
+			ae = result.Values[2].HashFields["personnnel-id"]
+			val := result.Values[2]
+			fmt.Println("Check 11500301 ...")
+			assert.Equal(t, "11500301", strings.TrimSpace(ae.String()))
+			nv, _ := val.searchValue("personnnel-id")
+			assert.Equal(t, "11500301", strings.TrimSpace(nv.String()))
+			assert.Equal(t, int32(3), val.ValueQuantity("income"))
+			assert.Equal(t, int32(3), val.ValueQuantity("bonus"))
+			assert.Equal(t, int32(0), val.ValueQuantity("bonus", 2))
+			assert.Equal(t, int32(0), val.ValueQuantity("bonus", 3))
+			_, aerr := val.SearchValueIndex("bonus", []uint32{3, 12})
+			assert.Error(t, aerr)
+		}
+	}
+
+}
+
+func TestConnectionAllMfMap(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	network := os.Getenv("ADAMFDBID")
+	if network == "" {
+		fmt.Println("Mainframe database not defined")
+		return
+	}
+	connection, cerr := NewConnection("acj;map;config=[" + network + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
 	if assert.NoError(t, err) {
 		fmt.Println("Limit query data:")

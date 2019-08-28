@@ -25,17 +25,15 @@ import (
 	"math"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInt4Byte(t *testing.T) {
-	f, err := initLogWithFile("int4.log")
+	err := initLogWithFile("int4.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt4, "XX")
 	int4 := newInt4Value(adaType)
 	assert.Equal(t, int32(0), int4.value)
@@ -46,12 +44,17 @@ func TestInt4Byte(t *testing.T) {
 	assert.Equal(t, 4, len(bint4))
 	int4.SetValue(math.MaxInt32)
 	assert.Equal(t, int32(math.MaxInt32), int4.value)
-	maxBuffer := []byte{0xff, 0xff, 0xff, 0x7f}
+	var maxBuffer []byte
+	if bigEndian() {
+		maxBuffer = []byte{0x7f, 0xff, 0xff, 0xff}
+	} else {
+		maxBuffer = []byte{0xff, 0xff, 0xff, 0x7f}
+	}
 	assert.Equal(t, maxBuffer, int4.Bytes())
 	int4.SetStringValue("2000")
 	assert.Equal(t, int32(2000), int4.value)
 
-	helper := NewHelper(maxBuffer, 4, binary.LittleEndian)
+	helper := NewHelper(maxBuffer, 4, endian())
 	int4.parseBuffer(helper, NewBufferOption(false, false))
 	assert.Equal(t, int32(math.MaxInt32), int4.value)
 	assert.Equal(t, maxBuffer, int4.Bytes())
@@ -76,13 +79,12 @@ func TestInt4Byte(t *testing.T) {
 }
 
 func TestInt4Variable(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt4, "I4")
 	adaType.SetLength(0)
 	up := newInt4Value(adaType)
@@ -90,23 +92,29 @@ func TestInt4Variable(t *testing.T) {
 	checkValueInt64(t, up, []byte{2, 255}, -1)
 	checkValueInt64(t, up, []byte{3, 1, 1}, 0x101)
 	checkValueInt64(t, up, []byte{4, 1, 1, 1}, 65793)
-	checkValueInt64(t, up, []byte{4, 255, 1, 1}, 66047)
-	checkValueInt64(t, up, []byte{4, 1, 1, 255}, 16711937)
-	checkValueInt64(t, up, []byte{5, 1, 1, 255, 255}, -65279)
-	checkValueInt64(t, up, []byte{4, 0, 0, 255}, 16711680)
+	if bigEndian() {
+		checkValueInt64(t, up, []byte{4, 1, 1, 255}, 66047)
+		checkValueInt64(t, up, []byte{4, 255, 1, 1}, 16711937)
+		checkValueInt64(t, up, []byte{5, 255, 255, 1, 1}, -65279)
+		checkValueInt64(t, up, []byte{4, 255, 0, 0}, 16711680)
+	} else {
+		checkValueInt64(t, up, []byte{4, 255, 1, 1}, 66047)
+		checkValueInt64(t, up, []byte{4, 1, 1, 255}, 16711937)
+		checkValueInt64(t, up, []byte{5, 1, 1, 255, 255}, -65279)
+		checkValueInt64(t, up, []byte{4, 0, 0, 255}, 16711680)
+	}
 }
 
 func TestUInt4Variable(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt4, "I4")
 	adaType.SetLength(0)
-	up := newUInt8Value(adaType)
+	up := newUInt4Value(adaType)
 	checkValueUInt64(t, up, []byte{2, 1}, 1)
 	checkValueUInt64(t, up, []byte{3, 1, 1}, 0x101)
 	checkValueUInt64(t, up, []byte{4, 1, 1, 1}, 0x10101)
@@ -120,19 +128,17 @@ func TestInt4Max(t *testing.T) {
 	endian().PutUint32(v, uint32(4294967295))
 	fmt.Printf("%x\n", v)
 
-	assert.Equal(t, false, bigEndian())
 	endian().PutUint32(v, uint32(4294967295))
 	fmt.Printf("%x\n", v)
 
 }
 
 func TestUInt4Byte(t *testing.T) {
-	f, err := initLogWithFile("int4.log")
+	err := initLogWithFile("int4.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt4, "XX")
 	int4 := newUInt4Value(adaType)
 	assert.Equal(t, uint32(0), int4.value)

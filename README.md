@@ -106,6 +106,16 @@ See detailed documentation [here](.//doc//AdabasMap.md)
 A detailed description how to do the first steps using the Adabas Docker community edition is provided [here](.//doc//FirstSteps.md).
 Independent of the used environment of Docker (like Kubernetes or others), it describe how to call Adabas.
 
+## Log output
+
+To enable logging output in example executables, please set `ENABLE_DEBUG` environment variable to 1. This will enable the logging.
+
+To use logging in your code with the Adabas API, you can enable logging by setting the log instance with your `logger` instances with
+
+```go
+	adatypes.Central.Log = logger
+```
+
 ## Summary
 
 The Go Adabas-API offers easy access to store or read data in or out of Adabas. The Go API should help developers to work with data in Adabas without having the need of being an Adabas expert knowing special Adabas Database features.

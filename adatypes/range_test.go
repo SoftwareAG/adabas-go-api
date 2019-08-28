@@ -26,8 +26,7 @@ import (
 )
 
 func TestRangeInt(t *testing.T) {
-	f := initTestLogWithFile(t, "range.log")
-	defer f.Close()
+	initTestLogWithFile(t, "range.log")
 	r := NewRange(1, 2)
 	assert.Equal(t, "1-2", r.FormatBuffer())
 	assert.Equal(t, 2, r.multiplier())
@@ -67,8 +66,7 @@ func TestRangeInt(t *testing.T) {
 }
 
 func TestRangeParser(t *testing.T) {
-	f := initTestLogWithFile(t, "range.log")
-	defer f.Close()
+	initTestLogWithFile(t, "range.log")
 	r := NewRangeParser("1-N")
 	assert.Equal(t, "1-N", r.FormatBuffer())
 	assert.Equal(t, allEntries, r.multiplier())

@@ -42,11 +42,14 @@ type Record struct {
 	adabasMap  *Map
 }
 
-func hashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
+func traverseHashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	record := x.(*Record)
-	if _, ok := record.HashFields[adaValue.Type().Name()]; !ok {
+	//if _, ok := record.HashFields[adaValue.Type().Name()]; !ok {
+	if !adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost) {
+		adatypes.Central.Log.Debugf("Add hash to %s", adaValue.Type().Name())
 		record.HashFields[adaValue.Type().Name()] = adaValue
 	}
+	//}
 
 	return adatypes.Continue, nil
 }
@@ -66,7 +69,7 @@ func NewRecord(definition *adatypes.Definition) (*Record, error) {
 	record := &Record{Value: definition.Values, definition: definition}
 	definition.Values = nil
 	record.HashFields = make(map[string]adatypes.IAdaValue)
-	t := adatypes.TraverserValuesMethods{EnterFunction: hashValues}
+	t := adatypes.TraverserValuesMethods{EnterFunction: traverseHashValues}
 	record.traverse(t, record)
 	return record, nil
 }
@@ -129,7 +132,7 @@ func (record *Record) traverse(t adatypes.TraverserValuesMethods, x interface{})
 		}
 		if value.Type().IsStructure() {
 			adatypes.Central.Log.Debugf("Go through structure %s %d", value.Type().Name(), value.Type().Type())
-			ret, err = value.(*adatypes.StructureValue).Traverse(t, x)
+			ret, err = value.(adatypes.StructureValueTraverser).Traverse(t, x)
 			if err != nil || ret == adatypes.EndTraverser {
 				return
 			}
@@ -232,6 +235,10 @@ func (record *Record) SearchValue(parameter ...interface{}) (adatypes.IAdaValue,
 			index = []uint32{0, 0}
 		}
 	}
+
+	if v, ok := record.HashFields[name]; ok && !v.Type().HasFlagSet(adatypes.FlagOptionPE) {
+		return v, nil
+	}
 	adatypes.Central.Log.Debugf("Search %s index: %#v", name, index)
 	return record.SearchValueIndex(name, index)
 }
@@ -241,6 +248,60 @@ func (record *Record) SearchValueIndex(name string, index []uint32) (adatypes.IA
 	record.definition.Values = record.Value
 	adatypes.Central.Log.Debugf("Record value : %#v", record.Value)
 	return record.definition.SearchByIndex(name, index, false)
+}
+
+// PeriodGroup period group of field value
+func PeriodGroup(v adatypes.IAdaValue) adatypes.IAdaValue {
+	if v.Type().HasFlagSet(adatypes.FlagOptionPE) {
+		c := v
+		for c.Type().Type() != adatypes.FieldTypePeriodGroup {
+			c = c.Parent()
+		}
+		return c
+	}
+	return nil
+}
+
+// ValueQuantity provide number of quantity in an PE or MU field
+func (record *Record) ValueQuantity(param ...interface{}) int32 {
+	if len(param) == 0 {
+		return -1
+	}
+	fieldName := param[0].(string)
+	if v, ok := record.HashFields[fieldName]; ok {
+		if v.Type().HasFlagSet(adatypes.FlagOptionPE) {
+			adatypes.Central.Log.Debugf("%s PE", v.Type().Name())
+			if len(param) == 1 {
+				p := PeriodGroup(v)
+				pv := p.(*adatypes.StructureValue)
+				return int32(pv.NrElements())
+			}
+			var index []uint32
+			for i := 1; i < len(param); i++ {
+				switch w := param[i].(type) {
+				case uint32:
+					index = append(index, w)
+				case int:
+					index = append(index, uint32(w))
+				default:
+				}
+			}
+			var err error
+			v, err = record.SearchValueIndex(fieldName, index)
+			if err != nil {
+				adatypes.Central.Log.Debugf("Error %s/%v: %v", fieldName, index, err)
+				return -1
+			}
+
+		}
+		if v.Type().Type() == adatypes.FieldTypeMultiplefield {
+			adatypes.Central.Log.Debugf("%s MU", v.Type().Name())
+			mv := v.(*adatypes.StructureValue)
+			return int32(mv.NrElements())
+		}
+		return 1
+	}
+	return -1
 }
 
 // Scan scan for different field entries
@@ -282,21 +343,31 @@ func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 			enc.EncodeToken(start)
 		case adatypes.FieldTypeMultiplefield:
 			muName := "Multiple"
-			start := xml.StartElement{Name: xml.Name{Local: muName}}
 			if adaValue.Type().Name() != adaValue.Type().ShortName() {
 				muName = adaValue.Type().Name()
+				start := xml.StartElement{Name: xml.Name{Local: muName}}
+				enc.EncodeToken(start)
 			} else {
+				start := xml.StartElement{Name: xml.Name{Local: muName}}
 				attrs := make([]xml.Attr, 0)
 				attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})
 				start.Attr = attrs
+				enc.EncodeToken(start)
 			}
-			enc.EncodeToken(start)
 		default:
 			start := xml.StartElement{Name: xml.Name{Local: adaValue.Type().Name()}}
 			enc.EncodeToken(start)
 		}
 	} else {
-		start := xml.StartElement{Name: xml.Name{Local: adaValue.Type().Name()}}
+		isLink := strings.HasPrefix(adaValue.Type().Name(), "@")
+		name := adaValue.Type().Name()
+		if isLink {
+			name = adaValue.Type().Name()[1:]
+		}
+		start := xml.StartElement{Name: xml.Name{Local: name}}
+		if isLink {
+			start.Attr = []xml.Attr{xml.Attr{Name: xml.Name{Local: "type"}, Value: "link"}}
+		}
 		enc.EncodeToken(start)
 		x := adaValue.String()
 		x = strings.Trim(x, " ")
@@ -372,7 +443,7 @@ func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 // MarshalJSON provide JSON
 func (record *Record) MarshalJSON() ([]byte, error) {
 	adatypes.Central.Log.Debugf("Marshal JSON record: %d", record.Isn)
-	req := &request{special: true}
+	req := &responseJSON{special: true}
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalJSON, LeaveFunction: traverseMarshalJSONEnd,
 		ElementFunction: traverseElementMarshalJSON}
 	req.stack = adatypes.NewStack()
@@ -396,40 +467,3 @@ func (record *Record) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(req.dataMap)
 }
-
-// UnmarshalJSON parse JSON
-// func (record *Record) UnmarshalJSON(b []byte) error {
-// 	var stuff map[string]interface{}
-// 	err := json.Unmarshal(b, &stuff)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if record.Value == nil {
-// 		if record.definition.Values == nil {
-// 			record.definition.CreateValues(false)
-// 		}
-// 		record.Value = record.definition.Values
-// 	}
-// 	for key, value := range stuff {
-// 		fmt.Println("JSON:", key, "=", value)
-// 		if key == "ISN" {
-// 			isn, ierr := strconv.Atoi(value.(string))
-// 			if ierr != nil {
-// 				return ierr
-// 			}
-// 			record.Isn = adatypes.Isn(isn)
-// 		} else {
-// 			switch value.(type) {
-// 			case map[string]interface{}:
-// 				fmt.Println("JSON:", key, "=", value)
-// 			default:
-// 				err = record.SetValue(key, value)
-// 				if err != nil {
-// 					fmt.Println("Error setting key:", key)
-// 					return err
-// 				}
-// 			}
-// 		}
-// 	}
-// 	return nil
-// }

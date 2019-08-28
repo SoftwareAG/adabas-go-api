@@ -23,20 +23,19 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"runtime"
 	"strconv"
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMapFieldFieldName(t *testing.T) {
-	f := initTestLogWithFile(t, "map.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	tests := []struct {
 		name string
 		cc   mapField
@@ -56,15 +55,14 @@ func TestMapFieldFieldName(t *testing.T) {
 }
 
 func TestMapFields(t *testing.T) {
-	f := initTestLogWithFile(t, "map.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
 	defer adabas.Close()
 
 	mr := NewMapRepository(adabas, 4)
-	log.Debugf("Repository %#v\n", *mr)
+	adatypes.Central.Log.Debugf("Repository %#v\n", mr)
 	m, err := mr.readAdabasMap(adabas, "EMPLOYEES-NAT-DDM")
 	if !assert.NoError(t, err) {
 		fmt.Println("Error found", err)
@@ -98,10 +96,9 @@ func TestMapFields(t *testing.T) {
 }
 
 func TestMaps(t *testing.T) {
-	f := initTestLogWithFile(t, "map.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 
@@ -112,9 +109,9 @@ func TestMaps(t *testing.T) {
 		fmt.Println(err)
 	} else {
 		nr := 1
-		for name, isn := range mr.MapNames {
-			if assert.NotZero(t, isn) {
-				fmt.Printf("%s: ISN: %d\n", name, isn)
+		for name, f := range mr.mapNames {
+			if assert.NotZero(t, f.isn) {
+				fmt.Printf("%s: ISN: %d\n", name, f.isn)
 			} else {
 				fmt.Printf("%s: Empty\n", name)
 			}
@@ -124,10 +121,9 @@ func TestMaps(t *testing.T) {
 }
 
 func TestMapCreate(t *testing.T) {
-	f := initTestLogWithFile(t, "map.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(adabasModDBID)
 	defer adabas.Close()
 
@@ -146,10 +142,13 @@ func TestMapCreate(t *testing.T) {
 }
 
 func TestMapFieldsMainframe(t *testing.T) {
-	f := initTestLogWithFile(t, "map.log")
-	defer f.Close()
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "map.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
 		fmt.Println("Mainframe database not defined")
@@ -164,7 +163,7 @@ func TestMapFieldsMainframe(t *testing.T) {
 	defer adabas.Close()
 
 	mr := NewMapRepository(adabas, 4)
-	log.Debugf("Repository %#v\n", *mr)
+	adatypes.Central.Log.Debugf("Repository %#v\n", mr)
 	m, err := mr.readAdabasMap(adabas, "EMPLOYEES-NAT-MF")
 	if !assert.NoError(t, err) {
 		fmt.Println("Error found", err)
@@ -173,5 +172,6 @@ func TestMapFieldsMainframe(t *testing.T) {
 		fmt.Println(err)
 		return
 	}
+	assert.Equal(t, "EMPLOYEES-NAT-MF", m.Name)
 	fmt.Println(m)
 }

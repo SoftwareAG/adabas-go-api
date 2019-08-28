@@ -23,62 +23,14 @@ import (
 	"fmt"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMapRepository(t *testing.T) {
-	f := initTestLogWithFile(t, "map_repositories.log")
-	defer f.Close()
-
-	log.Infof("TEST: %s", t.Name())
-	ada, _ := NewAdabas(24)
-	defer ada.Close()
-	AddGlobalMapRepositoryReference("24,4")
-	defer DelGlobalMapRepository(ada, 4)
-	adabas, _ := NewAdabas(1)
-	defer adabas.Close()
-	adabasMap, err := SearchMapRepository(adabas, "EMPLOYEES-NAT-DDM")
-	assert.NoError(t, err)
-	assert.NotNil(t, adabasMap)
-
-}
-
-func TestGlobalMapRepository(t *testing.T) {
-	f := initTestLogWithFile(t, "map_repositories.log")
-	defer f.Close()
-
-	log.Infof("TEST: %s", t.Name())
-	ada, _ := NewAdabas(23)
-	defer ada.Close()
-	AddGlobalMapRepository(ada.URL, 4)
-	defer DelGlobalMapRepository(ada.URL, 4)
-	ada.SetDbid(24)
-	AddGlobalMapRepository(ada.URL, 4)
-	defer DelGlobalMapRepository(ada.URL, 4)
-
-	ada2, _ := NewAdabas(1)
-	defer ada2.Close()
-	adabasMaps, err := AllGlobalMaps(ada2)
-	assert.NoError(t, err)
-	assert.NotNil(t, adabasMaps)
-	for _, m := range adabasMaps {
-		fmt.Printf("%s -> %d\n", m.Name, m.Isn)
-	}
-	listMaps, lerr := AllGlobalMapNames(ada2)
-	assert.NoError(t, lerr)
-	assert.NotNil(t, listMaps)
-	for _, m := range listMaps {
-		fmt.Printf("%s\n", m)
-	}
-
-}
-
 func TestMapRepositoryReadAll(t *testing.T) {
-	f := initTestLogWithFile(t, "map_repositories.log")
-	defer f.Close()
+	initTestLogWithFile(t, "map_repositories.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(24)
 	defer adabas.Close()
 	mr := NewMapRepository(adabas, 4)
@@ -89,60 +41,4 @@ func TestMapRepositoryReadAll(t *testing.T) {
 	for _, m := range adabasMaps {
 		fmt.Println(m.Name)
 	}
-}
-
-func TestGlobalMapConnectionString(t *testing.T) {
-	f := initTestLogWithFile(t, "map_repositories.log")
-	defer f.Close()
-
-	log.Infof("TEST: %s", t.Name())
-	ada, _ := NewAdabas(24)
-	defer ada.Close()
-	AddGlobalMapRepository(ada.URL, 4)
-	defer DelGlobalMapRepository(ada.URL, 4)
-
-	connection, cerr := NewConnection("acj;map=EMPLOYEES")
-	if !assert.NoError(t, cerr) {
-		return
-	}
-	defer connection.Close()
-
-	request, rerr := connection.CreateReadRequest()
-	if !assert.NoError(t, rerr) {
-		return
-	}
-	request.QueryFields("name,personnel-id")
-	result, err := request.ReadLogicalWith("personnel-id=[11100301:11100303]")
-	if !assert.NoError(t, err) {
-		return
-	}
-	result.DumpValues()
-}
-
-func TestGlobalMapConnectionDirect(t *testing.T) {
-	f := initTestLogWithFile(t, "map_repositories.log")
-	defer f.Close()
-
-	log.Infof("TEST: %s", t.Name())
-	ada, _ := NewAdabas(24)
-	defer ada.Close()
-	AddGlobalMapRepository(ada.URL, 4)
-	defer DelGlobalMapRepository(ada, 4)
-
-	connection, cerr := NewConnection("acj;map")
-	if !assert.NoError(t, cerr) {
-		return
-	}
-	defer connection.Close()
-
-	request, rerr := connection.CreateMapReadRequest("EMPLOYEES")
-	if !assert.NoError(t, rerr) {
-		return
-	}
-	request.QueryFields("name,personnel-id")
-	result, err := request.ReadLogicalWith("personnel-id=[11100301:11100303]")
-	if !assert.NoError(t, err) {
-		return
-	}
-	result.DumpValues()
 }

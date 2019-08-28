@@ -27,11 +27,10 @@ import (
 )
 
 func TestStructureValueGroup(t *testing.T) {
-	f, err := initLogWithFile("structure_value.log")
+	err := initLogWithFile("structure_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
@@ -47,7 +46,7 @@ func TestStructureValueGroup(t *testing.T) {
 	}
 	sl := NewStructureList(FieldTypeGroup, "GR", OccByte, groupLayout)
 	assert.Equal(t, "GR", sl.Name())
-	assert.Equal(t, " 1, GR  ; GR  PE=false MU=false REMOVE=true", sl.String())
+	assert.Equal(t, " 1, GR  ; GR", sl.String())
 	v, err := sl.Value()
 	vsl := v.(*StructureValue)
 	vsl.initSubValues(0, 0, true)
@@ -77,11 +76,10 @@ func TestStructureValueGroup(t *testing.T) {
 }
 
 func TestStructureValuePeriod(t *testing.T) {
-	f, err := initLogWithFile("structure_value.log")
+	err := initLogWithFile("structure_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	groupLayout := []IAdaType{
 		NewTypeWithLength(FieldTypeCharacter, "GC", 1),
@@ -90,12 +88,16 @@ func TestStructureValuePeriod(t *testing.T) {
 	}
 	sl := NewStructureList(FieldTypePeriodGroup, "PE", OccByte, groupLayout)
 	assert.Equal(t, "PE", sl.Name())
-	assert.Equal(t, " 1, PE ,PE ; PE  PE=true MU=false REMOVE=true PE=1-N", sl.String())
+	assert.Equal(t, " 1, PE ,PE ; PE", sl.String())
 	v, err := sl.Value()
 	assert.NoError(t, err)
 	vsl := v.(*StructureValue)
 	b := make([]byte, 100)
-	b[0] = 2
+	if bigEndian() {
+		b[3] = 2
+	} else {
+		b[0] = 2
+	}
 	b[4] = 'X'
 	b[5] = 0x1c
 	helper := NewHelper(b, 100, endian())
@@ -134,11 +136,10 @@ func TestStructureValuePeriod(t *testing.T) {
 }
 
 func TestStructureValuePeriodMU(t *testing.T) {
-	f, err := initLogWithFile("structure_value.log")
+	err := initLogWithFile("structure_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
@@ -167,12 +168,16 @@ func TestStructureValuePeriodMU(t *testing.T) {
 	sl.AddFlag(FlagOptionMUGhost)
 	sl.AddFlag(FlagOptionMU)
 	assert.Equal(t, "PE", sl.Name())
-	assert.Equal(t, " 1, PE ,PE ; PE  PE=true MU=true REMOVE=true PE=1-N", sl.String())
+	assert.Equal(t, " 1, PE ,PE ; PE", sl.String())
 	v, err := sl.Value()
 	assert.NoError(t, err)
 	vsl := v.(*StructureValue)
 	b := make([]byte, 100)
-	b[0] = 2
+	if bigEndian() {
+		b[3] = 2
+	} else {
+		b[0] = 2
+	}
 	b[4] = 'X'
 	b[5] = 0x1c
 	helper := NewHelper(b, 100, endian())
@@ -227,11 +232,10 @@ func TestStructureValuePeriodMU(t *testing.T) {
 }
 
 func TestStructureValuePeriodLast(t *testing.T) {
-	f, err := initLogWithFile("structure_value.log")
+	err := initLogWithFile("structure_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	groupLayout := []IAdaType{
 		NewTypeWithLength(FieldTypeCharacter, "GC", 1),
@@ -241,12 +245,16 @@ func TestStructureValuePeriodLast(t *testing.T) {
 	sl := NewStructureList(FieldTypePeriodGroup, "PE", OccByte, groupLayout)
 	sl.SetRange(NewRange(1, 2))
 	assert.Equal(t, "PE", sl.Name())
-	assert.Equal(t, " 1, PE ,PE ; PE  PE=true MU=false REMOVE=true PE=1-2", sl.String())
+	assert.Equal(t, " 1, PE ,PE ; PE", sl.String())
 	v, err := sl.Value()
 	assert.NoError(t, err)
 	vsl := v.(*StructureValue)
 	b := make([]byte, 100)
-	b[0] = 2
+	if bigEndian() {
+		b[3] = 2
+	} else {
+		b[0] = 2
+	}
 	b[4] = 'X'
 	b[5] = 0x1c
 	helper := NewHelper(b, 100, endian())

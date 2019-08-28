@@ -33,11 +33,10 @@ func TestUnicodeNil(t *testing.T) {
 }
 
 func TestUnicodeValue(t *testing.T) {
-	f, err := initLogWithFile("unicode_value.log")
+	err := initLogWithFile("unicode_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeUnicode, "XX")
 	typ.length = 0
 	adaValue := newUnicodeValue(typ)
@@ -60,11 +59,10 @@ func TestUnicodeValue(t *testing.T) {
 }
 
 func TestUnicodeTruncate(t *testing.T) {
-	f, err := initLogWithFile("unicode_value.log")
+	err := initLogWithFile("unicode_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeUnicode, "XX")
 	typ.length = 2
 	adaValue := newUnicodeValue(typ)
@@ -95,11 +93,10 @@ func TestUnicodeTruncate(t *testing.T) {
 }
 
 func TestUnicodeSpaces(t *testing.T) {
-	f, err := initLogWithFile("unicode_value.log")
+	err := initLogWithFile("unicode_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeUnicode, "XX")
 	typ.length = 10
 	adaValue := newUnicodeValue(typ)
@@ -126,11 +123,10 @@ func TestUnicodeSpaces(t *testing.T) {
 }
 
 func TestUnicodeInvalid(t *testing.T) {
-	f, err := initLogWithFile("unicode_value.log")
+	err := initLogWithFile("unicode_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeUnicode, "XX")
 	typ.length = 10
 	adaValue := newUnicodeValue(typ)
@@ -152,11 +148,10 @@ func TestUnicodeInvalid(t *testing.T) {
 }
 
 func TestUnicodeFormatBuffer(t *testing.T) {
-	f, err := initLogWithFile("unicode_value.log")
+	err := initLogWithFile("unicode_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeUnicode, "XX")
 	typ.length = 10
 	adaValue := newUnicodeValue(typ)
@@ -169,11 +164,10 @@ func TestUnicodeFormatBuffer(t *testing.T) {
 }
 
 func TestUnicodeFormatBufferVariable(t *testing.T) {
-	f, err := initLogWithFile("unicode_value.log")
+	err := initLogWithFile("unicode_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeUnicode, "XX")
 	typ.length = 0
 	adaValue := newUnicodeValue(typ)
@@ -186,11 +180,10 @@ func TestUnicodeFormatBufferVariable(t *testing.T) {
 }
 
 func TestUnicodeStoreBuffer(t *testing.T) {
-	f, err := initLogWithFile("unicode_value.log")
+	err := initLogWithFile("unicode_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeUnicode, "XX")
 	typ.length = 10
 	adaValue := newUnicodeValue(typ)
@@ -218,11 +211,10 @@ func TestUnicodeStoreBuffer(t *testing.T) {
 }
 
 func TestUnicodeStoreBufferVariable(t *testing.T) {
-	f, err := initLogWithFile("unicode_value.log")
+	err := initLogWithFile("unicode_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeUnicode, "XX")
 	typ.length = 0
 	adaValue := newUnicodeValue(typ)
@@ -246,11 +238,10 @@ func TestUnicodeStoreBufferVariable(t *testing.T) {
 }
 
 func TestUnicodeParseBufferVariable(t *testing.T) {
-	f, err := initLogWithFile("unicode_value.log")
+	err := initLogWithFile("unicode_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeUnicode, "XX")
 	typ.length = 0
 	adaValue := newUnicodeValue(typ)
@@ -276,11 +267,10 @@ func TestUnicodeParseBufferVariable(t *testing.T) {
 }
 
 func TestUnicodeLBParseBufferVariable(t *testing.T) {
-	f, err := initLogWithFile("unicode_value.log")
+	err := initLogWithFile("unicode_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	typ := NewType(FieldTypeLBUnicode, "LB")
 	typ.length = 0
 	adaValue := newUnicodeValue(typ)
@@ -306,11 +296,10 @@ func TestUnicodeLBParseBufferVariable(t *testing.T) {
 }
 
 func TestUnicodeLBVariable(t *testing.T) {
-	f, err := initLogWithFile("unicode_value.log")
+	err := initLogWithFile("unicode_value.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	typ := NewType(FieldTypeLBUnicode, "XX")
 	typ.length = 0

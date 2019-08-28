@@ -27,19 +27,19 @@ import (
 	"strings"
 )
 
-// OccByte Occurence identifier indicating that the occurence is defined as byte
+// OccByte Occurrence identifier indicating that the occurrence is defined as byte
 const OccByte = -12
 
-// OccUInt2 Occurence identifier indicating that the occurence is defined as uint32
+// OccUInt2 Occurrence identifier indicating that the occurrence is defined as uint32
 const OccUInt2 = -11
 
-// OccNone Occurence identifier indicating that the occurence is not used
+// OccNone Occurrence identifier indicating that the occurrence is not used
 const OccNone = -10
 
-// OccSingle Occurence identifier indicating that the occurence single
+// OccSingle Occurrence identifier indicating that the occurrence single
 const OccSingle = -9
 
-// OccCapacity Occurence identifier indicating that the occurence capactity of 2 or PE fields
+// OccCapacity Occurrence identifier indicating that the occurrence capactity of 2 or PE fields
 const OccCapacity = -8
 
 // NoReferenceField field out of range of given field possibilities
@@ -94,33 +94,57 @@ type FieldCondition struct {
 	conditionMatrix  map[byte][]byte
 }
 
-// NewFieldCondition creates a new field condition
-func NewFieldCondition(index int, ref int, condition map[byte][]byte) FieldCondition {
-	Central.Log.Debugf("New field condition lengthFieldIndex=%d refField=%d", index, ref)
-	return FieldCondition{
-		lengthFieldIndex: index,
-		refField:         ref,
-		conditionMatrix:  condition,
-	}
-}
+//func NewFieldCondition(index int, ref int, condition map[byte][]byte) FieldCondition {
 
-// StructureType creates a new structure type
-type StructureType struct {
-	CommonType
-	//	fieldType FieldType
-	//	name      string
-	//	length    uint32
-	occ       int
-	condition FieldCondition
-	SubTypes  []IAdaType
-	// peRange   AdaRange
-	// muRange   AdaRange
-	fieldMap map[string]IAdaType
+// NewFieldCondition creates a new field condition
+func NewFieldCondition(param ...interface{}) FieldCondition {
+	lengthFieldIndex := -1
+	refField := NoReferenceField
+	var conditionMatrix map[byte][]byte
+	if len(param) > 0 {
+		lengthFieldIndex = param[0].(int)
+		refField = param[1].(int)
+		conditionMatrix = param[2].(map[byte][]byte)
+	}
+	Central.Log.Debugf("New field condition lengthFieldIndex=%d refField=%d", lengthFieldIndex, refField)
+	return FieldCondition{
+		lengthFieldIndex: lengthFieldIndex,
+		refField:         refField,
+		conditionMatrix:  conditionMatrix,
+	}
+	// return FieldCondition{
+	// 	lengthFieldIndex: index,
+	// 	refField:         ref,
+	// 	conditionMatrix:  condition,
+	// }
 }
 
 // NewType Define new type with length equal 1
-func NewType(fType FieldType, name string) *AdaType {
+func NewType(param ...interface{}) *AdaType {
+	fType := param[0].(FieldType)
+	name := param[1].(string)
+	longName := name
 	length := uint32(1)
+	if len(param) > 2 {
+		for i := 2; i < len(param); i++ {
+			switch p := param[i].(type) {
+			case int:
+				length = uint32(p)
+			case uint32:
+				length = p
+			case string:
+				longName = p
+			default:
+				Central.Log.Debugf("Unknown parameter type %T", param[2])
+				//panic("Error for type parameter")
+				return nil
+			}
+		}
+	}
+	flags := FlagOptionToBeRemoved.Bit()
+	if len(param) > 3 {
+		flags = flags | FlagOptionLengthNotIncluded.Bit()
+	}
 	switch fType {
 	case FieldTypeUByte, FieldTypeByte:
 	case FieldTypeUInt2, FieldTypeInt2:
@@ -133,8 +157,8 @@ func NewType(fType FieldType, name string) *AdaType {
 	return &AdaType{CommonType: CommonType{
 		fieldType: fType,
 		level:     1,
-		name:      name,
-		flags:     uint8(1 << FlagOptionToBeRemoved),
+		name:      longName,
+		flags:     flags,
 		shortName: name,
 		peRange:   *NewEmptyRange(),
 		muRange:   *NewEmptyRange(),
@@ -144,50 +168,25 @@ func NewType(fType FieldType, name string) *AdaType {
 
 // NewLongNameType Define new type with length equal 1
 func NewLongNameType(fType FieldType, name string, shortName string) *AdaType {
-	t := NewType(fType, name)
-	t.shortName = shortName
-	return t
+	return NewType(fType, shortName, name)
 }
 
 // NewTypeWithLength Definen new type
 func NewTypeWithLength(fType FieldType, name string, length uint32) *AdaType {
-	return &AdaType{CommonType: CommonType{
-		fieldType: fType,
-		level:     1,
-		name:      name,
-		flags:     uint8(1 << FlagOptionToBeRemoved),
-		shortName: name,
-		length:    length,
-	}}
+	return NewType(fType, name, length)
+	// return &AdaType{CommonType: CommonType{
+	// 	fieldType: fType,
+	// 	level:     1,
+	// 	name:      name,
+	// 	flags:     uint32(1 << FlagOptionToBeRemoved),
+	// 	shortName: name,
+	// 	length:    length,
+	// }}
 }
 
 // NewLongNameTypeWithLength Definen new type
 func NewLongNameTypeWithLength(fType FieldType, name string, shortName string, length uint32) *AdaType {
-	t := NewTypeWithLength(fType, name, length)
-	t.shortName = shortName
-	return t
-}
-
-func (commonType *CommonType) flagString() string {
-	flags := fmt.Sprintf(" PE=%v MU=%v REMOVE=%v%s", commonType.HasFlagSet(FlagOptionPE),
-		commonType.HasFlagSet(FlagOptionMU), commonType.HasFlagSet(FlagOptionToBeRemoved),
-		commonType.rangeString())
-	return flags
-}
-
-func (commonType *CommonType) rangeString() string {
-	pe := commonType.peRange.FormatBuffer()
-	r := ""
-	if pe != "" {
-		pe = " PE=" + pe
-		r = pe
-	}
-	mu := commonType.muRange.FormatBuffer()
-	if mu != "" {
-		mu = " MU=" + mu
-		r = r + mu
-	}
-	return r
+	return NewType(fType, shortName, name, length)
 }
 
 // String return the name of the field
@@ -195,16 +194,10 @@ func (adaType *AdaType) String() string {
 	y := strings.Repeat(" ", int(adaType.level))
 	options := adaType.Option()
 	if options != "" {
-		options = "," + options
+		options = "," + strings.Replace(options, " ", ",", -1)
 	}
-	return fmt.Sprintf("%s%d, %s, %d, %s %s ; %s %s", y, adaType.level, adaType.shortName, adaType.length,
-		adaType.fieldType.FormatCharacter(), options, adaType.name, adaType.flagString())
-	// if adaType.shortName == adaType.name {
-	// 	return fmt.Sprintf("%s%d %s %d %s %s -> %s", y, adaType.level, adaType.shortName, adaType.length,
-	// 		adaType.fieldType.FormatCharacter(), adaType.Option(), adaType.flagString())
-	// }
-	// return fmt.Sprintf("%s%d %s %s %d %s %s -> %s", y, adaType.level, adaType.name, adaType.shortName, adaType.length,
-	// 	adaType.fieldType.FormatCharacter(), adaType.Option(), adaType.flagString())
+	return fmt.Sprintf("%s%d, %s, %d, %s %s ; %s", y, adaType.level, adaType.shortName, adaType.length,
+		adaType.fieldType.FormatCharacter(), options, adaType.name)
 }
 
 // Length return the length of the field
@@ -279,7 +272,7 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 		adaValue = newByteArrayValue(adaType)
 		return
 	case FieldTypeLength, FieldTypeUByte, FieldTypeCharacter:
-		Central.Log.Debugf("Return byte value")
+		Central.Log.Debugf("Return unsigned byte value")
 		adaValue = newUByteValue(adaType)
 		return
 	case FieldTypeString:
@@ -375,6 +368,8 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 		adaValue = newFillerValue(adaType)
 	case FieldTypePhonetic:
 		adaValue = newPhoneticValue(adaType)
+	case FieldTypeSuperDesc:
+		adaValue = newSuperDescriptorValue(adaType)
 	// Should not come here for structure types
 	//	case FieldTypeStructure,FieldTypeGroup:
 	//		Central.Log.Debugf("Return Structure value")
@@ -387,317 +382,6 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 		Central.Log.Debugf("Return nil value %v %s", adaType.fieldType, adaType.String())
 		return nil, NewGenericError(102, adaType.fieldType.name(), adaType.Name())
 	}
-	return
-}
-
-// NewStructure Creates a new object of structured list types
-func NewStructure() *StructureType {
-	Central.Log.Debugf("Create structure list")
-	return &StructureType{
-		CommonType: CommonType{
-			flags: uint8(1 << FlagOptionToBeRemoved),
-		},
-		condition: FieldCondition{
-			lengthFieldIndex: -1,
-			refField:         NoReferenceField,
-		},
-	}
-}
-
-// NewStructureEmpty Creates a new object of structured list types
-func NewStructureEmpty(fType FieldType, name string, occByteShort int16,
-	level uint8) *StructureType {
-	Central.Log.Debugf("Create empty structure list %s with type %d ", name, fType)
-	var pr *AdaRange
-	var mr *AdaRange
-	switch fType {
-	case FieldTypePeriodGroup:
-		pr = NewRange(1, lastEntry)
-		mr = NewEmptyRange()
-	case FieldTypeMultiplefield:
-		pr = NewEmptyRange()
-		mr = NewRange(1, lastEntry)
-	default:
-		pr = NewEmptyRange()
-		mr = NewEmptyRange()
-	}
-	st := &StructureType{
-		CommonType: CommonType{
-			fieldType: fType,
-			name:      name,
-			flags:     uint8(1 << FlagOptionToBeRemoved),
-			shortName: name,
-			length:    0,
-			peRange:   *pr,
-			muRange:   *mr,
-			level:     level,
-		},
-		occ: int(occByteShort),
-		condition: FieldCondition{
-			lengthFieldIndex: -1,
-			refField:         NoReferenceField,
-		},
-	}
-	st.adaptSubFields()
-	Central.Log.Debugf("Got structure list Range [%s,%s]", st.peRange.FormatBuffer(), st.muRange.FormatBuffer())
-	return st
-}
-
-// NewStructureList Creates a new object of structured list types
-func NewStructureList(fType FieldType, name string, occByteShort int16, subFields []IAdaType) *StructureType {
-	Central.Log.Debugf("Create new structure list %s types=%d type=%s", name, len(subFields), fType.name())
-	st := &StructureType{
-		CommonType: CommonType{fieldType: fType,
-			name:      name,
-			shortName: name,
-			flags:     uint8(1 << FlagOptionToBeRemoved),
-			level:     1,
-			length:    0},
-		occ: int(occByteShort),
-		condition: FieldCondition{
-			lengthFieldIndex: -1,
-			refField:         NoReferenceField,
-		},
-		SubTypes: subFields,
-	}
-	switch fType {
-	case FieldTypePeriodGroup:
-		st.peRange = *NewRange(1, lastEntry)
-	case FieldTypeMultiplefield:
-		st.muRange = *NewRange(1, lastEntry)
-	default:
-	}
-	st.adaptSubFields()
-	// Central.Log.Debugf("Got structure list Range %s %s", st.peRange.FormatBuffer(), st.muRange.FormatBuffer())
-
-	return st
-}
-
-// NewLongNameStructureList Creates a new object of structured list types
-func NewLongNameStructureList(fType FieldType, name string, shortName string, occByteShort int16, subFields []IAdaType) *StructureType {
-	st := NewStructureList(fType, name, occByteShort, subFields)
-	st.shortName = shortName
-	return st
-}
-
-// NewStructureCondition Creates a new object of structured list types
-func NewStructureCondition(fType FieldType, name string, subFields []IAdaType, condition FieldCondition) *StructureType {
-	Central.Log.Debugf("Create new structure with condition %s types=%d type=%d", name, len(subFields), fType)
-	for _, t := range subFields {
-		t.SetLevel(2)
-	}
-	return &StructureType{
-		CommonType: CommonType{fieldType: fType,
-			name:      name,
-			shortName: name,
-			flags:     uint8(1 << FlagOptionToBeRemoved),
-			level:     1,
-			length:    0},
-		condition: condition,
-		SubTypes:  subFields,
-	}
-}
-
-func (adaType *StructureType) adaptSubFields() {
-	if adaType.Type() == FieldTypePeriodGroup {
-		Central.Log.Debugf("%s: set PE flag", adaType.Name())
-		adaType.AddFlag(FlagOptionPE)
-		adaType.occ = OccCapacity
-	}
-	if adaType.Type() == FieldTypeMultiplefield {
-		Central.Log.Debugf("%s: set MU flag", adaType.Name())
-		adaType.AddFlag(FlagOptionMU)
-		adaType.occ = OccCapacity
-	}
-	for _, s := range adaType.SubTypes {
-		s.SetParent(adaType)
-		s.SetRange(&adaType.peRange)
-		if adaType.Type() == FieldTypePeriodGroup {
-			s.AddFlag(FlagOptionPE)
-		}
-		if adaType.HasFlagSet(FlagOptionPE) {
-			s.AddFlag(FlagOptionPE)
-		}
-
-		if adaType.Type() == FieldTypeMultiplefield {
-			Central.Log.Debugf("%s: set MU flag", adaType.Name())
-			adaType.AddFlag(FlagOptionMU)
-			s.AddFlag(FlagOptionMUGhost)
-			if adaType.HasFlagSet(FlagOptionPE) {
-				s.AddFlag(FlagOptionSecondCall)
-			}
-		}
-
-	}
-}
-
-// String return the name of the field
-func (adaType *StructureType) String() string {
-
-	y := strings.Repeat(" ", int(adaType.level))
-	Central.Log.Debugf("FS: %s -> %d", adaType.Name(), len(adaType.SubTypes))
-	if adaType.fieldType == FieldTypeMultiplefield {
-		if len(adaType.SubTypes) == 0 {
-			return fmt.Sprintf("%s%d %s deleted", y, adaType.level, adaType.shortName)
-		}
-		return fmt.Sprintf("%s%d, %s, %d, %s %s,MU; %s %s", y, adaType.level, adaType.shortName, adaType.SubTypes[0].Length(),
-			adaType.SubTypes[0].Type().FormatCharacter(), adaType.SubTypes[0].Option(), adaType.name, adaType.flagString())
-
-	}
-	options := adaType.Option()
-	if options != "" {
-		options = "," + options
-	}
-	return fmt.Sprintf("%s%d, %s %s ; %s %s", y, adaType.level, adaType.shortName, options,
-		adaType.name, adaType.flagString())
-}
-
-// Length returns the length of the field
-func (adaType *StructureType) Length() uint32 {
-	return adaType.length
-}
-
-// SetLength set the length of the field
-func (adaType *StructureType) SetLength(length uint32) {
-	adaType.length = length
-}
-
-// IsStructure return the structure of the field
-func (adaType *StructureType) IsStructure() bool {
-	return true
-}
-
-// NrFields number of fields contained in the structure
-func (adaType *StructureType) NrFields() int {
-	return len(adaType.SubTypes)
-}
-
-func (adaType *StructureType) parseBuffer(helper *BufferHelper, option *BufferOption) {
-	Central.Log.Debugf("Parse Structure type offset=%d", helper.offset)
-}
-
-// Traverse Traverse through the definition tree calling a callback method for each node
-func (adaType *StructureType) Traverse(t TraverserMethods, level int, x interface{}) (err error) {
-	Central.Log.Debugf("Current structure -> %s", adaType.name)
-	Central.Log.Debugf("Nr of structure types -> %v", len(adaType.SubTypes))
-	for _, v := range adaType.SubTypes {
-		Central.Log.Debugf("Traverse on %s/%s", v.Name(), v.ShortName())
-		err = t.EnterFunction(v, adaType, level, x)
-		if err != nil {
-			return
-		}
-		if v.IsStructure() {
-			Central.Log.Debugf("Traverse into structure %s", v.Name())
-			err = v.(*StructureType).Traverse(t, level+1, x)
-			if err != nil {
-				return
-			}
-			if t.leaveFunction != nil {
-				err = t.leaveFunction(v, adaType, level, x)
-				if err != nil {
-					return
-				}
-			}
-		}
-	}
-	return nil
-}
-
-// AddField add a new field type into the structure type
-func (adaType *StructureType) AddField(fieldType IAdaType) {
-	Central.Log.Debugf("Add sub field %s on parent %s", fieldType.Name(), adaType.Name())
-	fieldType.SetLevel(adaType.level + 1)
-	fieldType.SetParent(adaType)
-	fieldType.SetRange(&adaType.peRange)
-	Central.Log.Debugf("Parent of %s is %s ", fieldType.Name(), fieldType.GetParent())
-	if adaType.HasFlagSet(FlagOptionPE) {
-		Central.Log.Debugf("Add sub field PE of parent %s field %s", adaType.Name(), fieldType.Name())
-		fieldType.AddFlag(FlagOptionPE)
-	}
-	adaType.SubTypes = append(adaType.SubTypes, fieldType)
-	if adaType.fieldMap == nil {
-		adaType.fieldMap = make(map[string]IAdaType)
-	}
-	adaType.fieldMap[fieldType.Name()] = fieldType
-	if fieldType.IsStructure() {
-		st := fieldType.(*StructureType)
-		st.fieldMap = adaType.fieldMap
-	}
-}
-
-// RemoveField remote field of the structure type
-func (adaType *StructureType) RemoveField(fieldType *CommonType) {
-	Central.Log.Debugf("Remove field %s out of %s nrFields=%d", fieldType.Name(), adaType.Name(), adaType.NrFields())
-	// if adaType.NrFields() < 2 && adaType.GetParent() != nil {
-	// 	Central.Log.Debugf("Only one left, remove last ", fieldType.Name())
-	// 	commonType := &adaType.CommonType
-	// 	adaType.GetParent().(*StructureType).RemoveField(commonType)
-	// } else {
-	Central.Log.Debugf("Rearrange, left=%d", adaType.NrFields())
-	var newTypes []IAdaType
-	for _, t := range adaType.SubTypes {
-		if t.Name() != fieldType.Name() {
-			newTypes = append(newTypes, t)
-		}
-	}
-	adaType.SubTypes = newTypes
-	// }
-}
-
-// SetRange set Adabas range
-func (adaType *StructureType) SetRange(r *AdaRange) {
-	adaType.peRange = *r
-}
-
-// Option return structure option as a string
-func (adaType *StructureType) Option() string {
-	switch adaType.fieldType {
-	case FieldTypeMultiplefield:
-		return "MU"
-	case FieldTypePeriodGroup:
-		return "PE"
-	default:
-	}
-	return ""
-}
-
-// SetFractional set fractional part
-func (adaType *StructureType) SetFractional(x uint32) {
-}
-
-// Fractional get fractional part
-func (adaType *StructureType) Fractional() uint32 {
-	return 0
-}
-
-// SetCharset set fractional part
-func (adaType *StructureType) SetCharset(x string) {
-}
-
-// SetFormatType set format type
-func (adaType *StructureType) SetFormatType(x rune) {
-}
-
-// FormatType get format type
-func (adaType *StructureType) FormatType() rune {
-	return adaType.FormatTypeCharacter
-}
-
-// SetFormatLength set format length
-func (adaType *StructureType) SetFormatLength(x uint32) {
-}
-
-// Value return type specific value structure object
-func (adaType *StructureType) Value() (adaValue IAdaValue, err error) {
-	Central.Log.Debugf("Create structure type of %v", adaType.fieldType.name())
-	switch adaType.fieldType {
-	case FieldTypeStructure, FieldTypeGroup, FieldTypePeriodGroup, FieldTypeMultiplefield:
-		Central.Log.Debugf("Return Structure value")
-		adaValue = newStructure(adaType)
-		return
-	}
-	Central.Log.Debugf("Return nil structure", adaType.String())
-	err = NewGenericError(104, adaType.String())
 	return
 }
 
@@ -782,258 +466,95 @@ func (adaType *AdaType) Option() string {
 	return buffer.String()
 }
 
-type subSuperEntries struct {
-	Name [2]byte
-	From uint16
-	To   uint16
-}
-
-// AdaSuperType data type structure for super or sub descriptor field types, no structures
-type AdaSuperType struct {
+// RedefinitionType creates a new redefinition type
+type RedefinitionType struct {
 	CommonType
-	FdtFormat byte
-	Entries   []subSuperEntries
+	MainType IAdaType
+	SubTypes []IAdaType
+	fieldMap map[string]IAdaType
 }
 
-// NewSuperType new super or sub descriptor field type
-func NewSuperType(name string, option byte) *AdaSuperType {
-
-	superType := &AdaSuperType{CommonType: CommonType{fieldType: FieldTypeSuperDesc,
-		flags: uint8(1 << FlagOptionToBeRemoved),
-		name:  name, shortName: name}}
-	if (option & 0x08) > 0 {
-		Central.Log.Debugf("%s super/sub descriptor found PE", name)
-		superType.AddOption(FieldOptionPE)
+// NewRedefinitionType Creates a new object of redefootopm types
+func NewRedefinitionType(mainType IAdaType) *RedefinitionType {
+	if mainType == nil {
+		//panic("Main type of redefinition nil")
+		return nil
 	}
-	if (option & 0x20) > 0 {
-		superType.AddOption(FieldOptionMU)
-	}
-	return superType
+	return &RedefinitionType{MainType: mainType,
+		CommonType: CommonType{level: mainType.Level(), name: mainType.Name(),
+			FormatTypeCharacter: mainType.FormatType(), shortName: mainType.ShortName(),
+			length: mainType.Length(), fieldType: FieldTypeRedefinition}}
 }
 
-// IsStructure return the structure of the field
-func (adaType *AdaSuperType) IsStructure() bool {
-	return false
+// AddSubType add redefinition sub types used for the field
+func (adaType *RedefinitionType) AddSubType(subType IAdaType) {
+	subType.SetLevel(adaType.MainType.Level() + 1)
+	adaType.SubTypes = append(adaType.SubTypes, subType)
 }
 
-// AddSubEntry add sub field entry on super or sub descriptors
-func (adaType *AdaSuperType) AddSubEntry(name string, from uint16, to uint16) {
-	var code [2]byte
-	copy(code[:], name)
-	entry := subSuperEntries{Name: code, From: from, To: to}
-	adaType.Entries = append(adaType.Entries, entry)
-	adaType.calcLength()
+// Value return type specific value structure object
+func (adaType *RedefinitionType) Value() (adaValue IAdaValue, err error) {
+	return newRedefinition(adaType), nil
+
 }
 
-func (adaType *AdaSuperType) calcLength() {
-	len := uint32(0)
-	for _, entry := range adaType.Entries {
-		Central.Log.Debugf("%s: super descriptor entry %s len=%d add [%d:%d] -> %d", adaType.name, entry.Name,
-			len, entry.From, entry.To, uint32(entry.To-entry.From+1))
-		len += uint32(entry.To - entry.From + 1)
-	}
-	Central.Log.Debugf("len=%d", len)
-	adaType.length = len
+// SetFormatType set format type
+func (adaType *RedefinitionType) SetFormatType(x rune) {
 }
 
-// Length return the length of the field
-func (adaType *AdaSuperType) Length() uint32 {
-	return adaType.length
-}
-
-// SetLength set the length of the field
-func (adaType *AdaSuperType) SetLength(length uint32) {
-}
-
-// Option string representation of all option of Sub or super descriptors
-func (adaType *AdaSuperType) Option() string {
-	return ""
+// FormatType get format type
+func (adaType *RedefinitionType) FormatType() rune {
+	Central.Log.Debugf("Redefinition format type %c", adaType.MainType.FormatType())
+	return adaType.MainType.FormatType()
 }
 
 // SetFractional set fractional part
-func (adaType *AdaSuperType) SetFractional(x uint32) {
+func (adaType *RedefinitionType) SetFractional(x uint32) {
 }
 
 // Fractional get fractional part
-func (adaType *AdaSuperType) Fractional() uint32 {
+func (adaType *RedefinitionType) Fractional() uint32 {
 	return 0
 }
 
 // SetCharset set fractional part
-func (adaType *AdaSuperType) SetCharset(x string) {
-}
-
-// SetFormatType set format type
-func (adaType *AdaSuperType) SetFormatType(x rune) {
-}
-
-// FormatType get format type
-func (adaType *AdaSuperType) FormatType() rune {
-	return adaType.FormatTypeCharacter
+func (adaType *RedefinitionType) SetCharset(x string) {
 }
 
 // SetFormatLength set format length
-func (adaType *AdaSuperType) SetFormatLength(x uint32) {
+func (adaType *RedefinitionType) SetFormatLength(x uint32) {
 }
 
-// String string representation of the sub or super descriptor
-func (adaType *AdaSuperType) String() string {
-	var buffer bytes.Buffer
-	if adaType.shortName == adaType.name {
-		buffer.WriteString(adaType.shortName + "=")
-	} else {
-		buffer.WriteString(adaType.name + "[" + adaType.shortName + "] =")
+// Length return the length of the field
+func (adaType *RedefinitionType) Length() uint32 {
+	return adaType.MainType.Length()
+}
+
+// IsStructure return if it is an structure
+func (adaType *RedefinitionType) IsStructure() bool {
+	return true
+}
+
+// Option output all options of a field in an string
+func (adaType *RedefinitionType) Option() string {
+	return ""
+}
+
+// SetLength set the length of the field
+func (adaType *RedefinitionType) SetLength(length uint32) {
+	adaType.MainType.SetLength(length)
+	adaType.CommonType.length = length
+}
+
+// String return the name of the field
+func (adaType *RedefinitionType) String() string {
+	if adaType.MainType == nil {
+		return "Main type in redefinition nil"
 	}
-	for index, s := range adaType.Entries {
-		if index > 0 {
-			buffer.WriteByte(',')
-		}
-		buffer.WriteString(fmt.Sprintf("%s(%d-%d)", s.Name, s.From, s.To))
-	}
-	buffer.WriteString(fmt.Sprintf(" ; %s %s", adaType.name, adaType.flagString()))
-	return buffer.String()
+	return adaType.MainType.String()
 }
 
-// Value value of the sub or super descriptor
-func (adaType *AdaSuperType) Value() (adaValue IAdaValue, err error) {
-	Central.Log.Debugf("Return super descriptor value")
-	adaValue = newSuperDescriptorValue(adaType)
-	return
-}
-
-// AdaPhoneticType data type phonetic descriptor for field types, no structures
-type AdaPhoneticType struct {
-	AdaType
-	descriptorLength uint16
-	parentName       [2]byte
-}
-
-// NewPhoneticType new phonetic descriptor type
-func NewPhoneticType(name string, descriptorLength uint16, parentName string) *AdaPhoneticType {
-	var code [2]byte
-	copy(code[:], parentName)
-	return &AdaPhoneticType{AdaType: AdaType{CommonType: CommonType{fieldType: FieldTypePhonetic, name: name,
-		flags:     uint8(1 << FlagOptionToBeRemoved),
-		shortName: name}},
-		descriptorLength: descriptorLength, parentName: code}
-}
-
-// String string representation of the phonetic type
-func (fieldType *AdaPhoneticType) String() string {
-	return fmt.Sprintf("%s=PHON(%s) ; %s %s", fieldType.shortName, fieldType.parentName, fieldType.name, fieldType.flagString())
-}
-
-// AdaCollationType data type structure for field types, no structures
-type AdaCollationType struct {
-	AdaType
-	length        uint16
-	parentName    [2]byte
-	collAttribute string
-}
-
-// NewCollationType creates new collation type instance
-func NewCollationType(name string, length uint16, parentName string, collAttribute string) *AdaCollationType {
-	var code [2]byte
-	copy(code[:], parentName)
-	return &AdaCollationType{AdaType: AdaType{CommonType: CommonType{fieldType: FieldTypeCollation,
-		flags: uint8(1 << FlagOptionToBeRemoved),
-		name:  name, shortName: name}}, length: length,
-		parentName: code, collAttribute: collAttribute}
-}
-
-// String string representation of the collation type
-func (fieldType *AdaCollationType) String() string {
-	options := ""
-	if fieldType.IsOption(FieldOptionLA) {
-		options = ",LA"
-	} else {
-		if fieldType.IsOption(FieldOptionLB) {
-			options = ",L4"
-		}
-	}
-	if fieldType.IsOption(FieldOptionHE) {
-		options = ",HE"
-	}
-	if fieldType.IsOption(FieldOptionUQ) {
-		options = ",UQ"
-	}
-	return fmt.Sprintf("%s%s=COLLATING(%s,%s) ; %s %s", fieldType.shortName, options, fieldType.parentName,
-		fieldType.collAttribute, fieldType.name, fieldType.flagString())
-}
-
-// AdaHyperExitType data type structure for field types, no structures
-type AdaHyperExitType struct {
-	AdaType
-	fdtFormat   byte
-	nr          byte
-	parentNames []string
-}
-
-// NewHyperExitType new hyper exit type
-func NewHyperExitType(name string, length uint32, fdtFormat byte, nr uint8, parentNames []string) *AdaHyperExitType {
-	return &AdaHyperExitType{AdaType: AdaType{CommonType: CommonType{fieldType: FieldTypeHyperDesc,
-		flags: uint8(1 << FlagOptionToBeRemoved),
-		name:  name, shortName: name, length: length}},
-		fdtFormat: fdtFormat, nr: nr, parentNames: parentNames}
-}
-
-// String string representation of the hyper exit type
-func (fieldType *AdaHyperExitType) String() string {
-	options := fieldType.Option()
-	if len(options) > 0 {
-		options = "," + options
-	}
-	parents := ""
-	for _, p := range fieldType.parentNames {
-		if len(parents) > 0 {
-			parents += ","
-		}
-		parents += p
-	}
-	return fmt.Sprintf("%s %d %c%s=HYPER(%d,%s) ; %s %s", fieldType.shortName, fieldType.length, fieldType.fdtFormat,
-		options, fieldType.nr, parents, fieldType.name, fieldType.flagString())
-}
-
-// AdaReferentialType data type structure for referential integrity types, no structures
-type AdaReferentialType struct {
-	AdaType
-	refFile         uint32
-	keys            [2]string
-	refType         uint8
-	refUpdateAction uint8
-	refDeleteAction uint8
-}
-
-// NewReferentialType new referential integrity type
-func NewReferentialType(name string, refFile uint32, keys [2]string, refType uint8, refUpdateAction uint8, refDeleteAction uint8) *AdaReferentialType {
-	return &AdaReferentialType{AdaType: AdaType{CommonType: CommonType{fieldType: FieldTypeReferential,
-		flags: uint8(1 << FlagOptionToBeRemoved),
-		name:  name, shortName: name, length: 0}}, refFile: refFile, keys: keys, refType: refType,
-		refUpdateAction: refUpdateAction, refDeleteAction: refDeleteAction}
-
-}
-
-// String string representation of the hyper exit type
-func (fieldType *AdaReferentialType) String() string {
-	var buffer bytes.Buffer
-	buffer.WriteString(fmt.Sprintf("%s=REFINT(%s,%d,%s", fieldType.shortName, fieldType.keys[1], fieldType.refFile, fieldType.keys[0]))
-	switch fieldType.refDeleteAction {
-	case 0:
-		buffer.WriteString("/DX")
-	case 1:
-		buffer.WriteString("/DC")
-	case 2:
-		buffer.WriteString("/DN")
-	}
-	switch fieldType.refUpdateAction {
-	case 0:
-		buffer.WriteString(",UX")
-	case 1:
-		buffer.WriteString(",UC")
-	case 2:
-		buffer.WriteString(",UN")
-	}
-	buffer.WriteString(")")
-	buffer.WriteString(fmt.Sprintf(" ; %s %s", fieldType.name, fieldType.flagString()))
-	return buffer.String()
+// Traverse Traverse through the definition tree calling a callback method for each node
+func (adaType *RedefinitionType) Traverse(t TraverserMethods, level int, x interface{}) (err error) {
+	return nil
 }

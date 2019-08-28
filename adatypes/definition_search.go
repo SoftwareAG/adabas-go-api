@@ -100,7 +100,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 			}
 		}
 		strv := v.(*StructureValue)
-		if index == nil || len(index) == 0 {
+		if len(index) == 0 {
 			err = NewGenericError(121)
 			return
 		}
@@ -139,13 +139,14 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 					Central.Log.Debugf("Found value searching %s under %s", x.found.Type().Name(), strv.Type().Name())
 					if x.found.Type().Type() == FieldTypeMultiplefield {
 						if len(index) < 2 {
-							return nil, NewGenericError(61)
-						}
-						strv := x.found.(*StructureValue)
-						element := strv.elementMap[index[1]]
-						if element == nil {
-							err = NewGenericError(123)
-							return
+							//return nil, NewGenericError(61)
+						} else {
+							strv := x.found.(*StructureValue)
+							element := strv.elementMap[index[1]]
+							if element == nil {
+								err = NewGenericError(123)
+								return
+							}
 						}
 					}
 					value = x.found
@@ -205,16 +206,16 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 	return
 }
 
-func traverserFindType(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
-	search := x.(*search)
-	Central.Log.Debugf("Check search %s:%s search=%s", adaType.Name(), adaType.ShortName(), search.name)
-	if adaType.Name() == search.name {
-		search.adaType = adaType
-		Central.Log.Debugf("Found type ...return error find")
-		return NewGenericError(126, search.name)
-	}
-	return nil
-}
+// func traverserFindType(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+// 	search := x.(*search)
+// 	Central.Log.Debugf("Check search %s:%s search=%s", adaType.Name(), adaType.ShortName(), search.name)
+// 	if adaType.Name() == search.name {
+// 		search.adaType = adaType
+// 		Central.Log.Debugf("Found type ...return error find")
+// 		return NewGenericError(126, search.name)
+// 	}
+// 	return nil
+// }
 
 // SearchType search for a type definition in the tree
 func (def *Definition) SearchType(fieldName string) (adaType IAdaType, err error) {

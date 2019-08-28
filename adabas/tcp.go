@@ -80,7 +80,7 @@ const (
 	adatcpLittleEndian = byte(2)
 
 	adatcpASCII8 = byte(1)
-	adatcpEBCDIC = byte(2)
+	//adatcpEBCDIC = byte(2)
 
 	adatcpFloatIEEE = byte(1)
 )
@@ -127,7 +127,8 @@ const adatcpDataHeaderVersion = "0001"
 
 const (
 	adabasRequest = uint32(1)
-	adabasReply   = uint32(2)
+
+//	adabasReply   = uint32(2)
 )
 
 // AdaTCPDataHeader Adabas TCP header
@@ -147,10 +148,11 @@ func adatcpTCPClientHTON8(l uint64) uint64 {
 	return uint64(
 		((uint64(l) >> 56) & uint64(0x00000000000000ff)) | ((uint64(l) >> 40) & uint64(0x000000000000ff00)) | ((uint64(l) >> 24) & uint64(0x0000000000ff0000)) | ((uint64(l) >> 8) & uint64(0x00000000ff000000)) | ((uint64(l) << 8) & uint64(0x000000ff00000000)) | ((uint64(l) << 24) & uint64(0x0000ff0000000000)) | ((uint64(l) << 40) & uint64(0x00ff000000000000)) | ((uint64(l) << 56) & uint64(0xff00000000000000)))
 }
-func adatcpTCPClientHTON4(l uint32) uint32 {
-	return uint32(
-		((uint32(l) >> 24) & uint32(0x000000ff)) | ((uint32(l) >> 8) & uint32(0x0000ff00)) | ((uint32(l) << 8) & uint32(0x00ff0000)) | ((uint32(l) << 24) & uint32(0xff000000)))
-}
+
+// func adatcpTCPClientHTON4(l uint32) uint32 {
+// 	return uint32(
+// 		((uint32(l) >> 24) & uint32(0x000000ff)) | ((uint32(l) >> 8) & uint32(0x0000ff00)) | ((uint32(l) << 8) & uint32(0x00ff0000)) | ((uint32(l) << 24) & uint32(0xff000000)))
+// }
 
 // NewAdatcpHeader new Adabas TCP header
 func NewAdatcpHeader(bufferType BufferType) AdaTCPHeader {
@@ -170,10 +172,7 @@ func newAdatcpDataHeader(dataType uint32) AdaTCPDataHeader {
 func bigEndian() (ret bool) {
 	i := 0x1
 	bs := (*[4]byte)(unsafe.Pointer(&i))
-	if bs[0] == 0 {
-		return true
-	}
-	return false
+	return bs[0] == 0
 }
 
 // Endian current byte order of the client system
@@ -258,8 +257,10 @@ func connect(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 		return
 	}
 	if bigEndian() {
+		adatypes.Central.Log.Debugf("Write TCP payload for big endian")
 		payload.Endianness = adatcpBigEndian
 	} else {
+		adatypes.Central.Log.Debugf("Write TCP payload for little endian")
 		payload.Endianness = adatcpLittleEndian
 	}
 	adatypes.Central.Log.Debugf("Buffer size after header=%d", buffer.Len())
@@ -272,7 +273,11 @@ func connect(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 	}
 	adatypes.Central.Log.Debugf("Buffer size after payload=%d", buffer.Len())
 
-	_, err = connection.connection.Write(buffer.Bytes())
+	send := buffer.Bytes()
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.LogMultiLineString(adatypes.FormatBytes("PAYLOAD:", send, len(send), len(send), 8, true))
+	}
+	_, err = connection.connection.Write(send)
 	if err != nil {
 		adatypes.Central.Log.Debugf("Error writing data %s", err)
 		return
@@ -284,6 +289,11 @@ func connect(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 		adatypes.Central.Log.Debugf("Error reading data %v", err)
 		return
 	}
+
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV PAYLOAD:", rcvBuffer, len(rcvBuffer), len(rcvBuffer), 8, true))
+	}
+
 	buf := bytes.NewBuffer(rcvBuffer)
 	err = binary.Read(buf, binary.BigEndian, &header)
 	if err != nil {
@@ -394,7 +404,7 @@ func (connection *adatcp) SendData(buffer bytes.Buffer, nrAbdBuffers uint32) (er
 	headerBuffer.Write(buffer.Bytes())
 	send := headerBuffer.Bytes()
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatBytesWithLength("SND:", send, len(send), 8, true))
+		adatypes.LogMultiLineString(adatypes.FormatBytes("SND:", send, len(send), len(send), 8, true))
 	}
 	var n int
 	adatypes.Central.Log.Debugf("Write TCP data of length=%d capacity=%d netto bytes send=%d", headerBuffer.Len(), headerBuffer.Cap(), len(send))
@@ -432,7 +442,7 @@ func (connection *adatcp) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32
 	}
 	if adatypes.Central.IsDebugLevel() {
 		adatypes.Central.Log.Debugf("Receive got header .... size=%d/%d", n, len(rcvHeaderBuffer))
-		adatypes.LogMultiLineString(adatypes.FormatBytesWithLength("RCV Header BUFFER:", rcvHeaderBuffer, len(rcvHeaderBuffer), 8, true))
+		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV Header BUFFER:", rcvHeaderBuffer, len(rcvHeaderBuffer), len(rcvHeaderBuffer), 8, true))
 	}
 	if n < hl {
 		return 0, adatypes.NewGenericError(92)
@@ -477,7 +487,7 @@ func (connection *adatcp) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32
 		adatypes.Central.Log.Debugf("Current size of buffer=%d", buffer.Len())
 	}
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV DATA BUFFER:", buffer.Bytes(), buffer.Len(), 8))
+		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV DATA BUFFER:", buffer.Bytes(), buffer.Len(), buffer.Len(), 8, false))
 	}
 
 	return

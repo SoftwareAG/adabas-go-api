@@ -1,3 +1,22 @@
+/*
+* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+*
+* SPDX-License-Identifier: Apache-2.0
+*
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+ */
+
 package adabas
 
 import (
@@ -5,15 +24,13 @@ import (
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRequestLogicalWithQueryFieldsScan1(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(adabasStatDBID)
 	if !assert.NoError(t, err) {
 		fmt.Println("Error new adabas", err)
@@ -87,10 +104,9 @@ func TestRequestLogicalWithQueryFieldsScan1(t *testing.T) {
 }
 
 func TestRequestLogicalWithQueryFieldsScan2(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(adabasStatDBID)
 	if !assert.NoError(t, err) {
 		fmt.Println("Error new adabas", err)
@@ -127,10 +143,9 @@ func TestRequestLogicalWithQueryFieldsScan2(t *testing.T) {
 }
 
 func TestRequestLogicalWithQueryFieldsScan3(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(adabasStatDBID)
 	if !assert.NoError(t, err) {
 		fmt.Println("Error new adabas", err)
@@ -163,10 +178,9 @@ func TestRequestLogicalWithQueryFieldsScan3(t *testing.T) {
 }
 
 func TestRequestLogicalWithQueryFieldsScan4(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(adabasStatDBID)
 	if !assert.NoError(t, err) {
 		fmt.Println("Error new adabas", err)
@@ -204,10 +218,9 @@ func TestRequestLogicalWithQueryFieldsScan4(t *testing.T) {
 }
 
 func TestHistogramByQueryFieldsScan(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(adabasStatDBID)
 	if !assert.NoError(t, err) {
 		fmt.Println("Error new adabas", err)
@@ -277,10 +290,9 @@ func TestHistogramByQueryFieldsScan(t *testing.T) {
 }
 
 func TestHistogramWithQueryFieldsScan(t *testing.T) {
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, err := NewAdabas(adabasStatDBID)
 	if !assert.NoError(t, err) {
 		fmt.Println("Error new adabas", err)
@@ -335,10 +347,9 @@ func TestConnectionSimpleScan(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs + ";auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
 	if !assert.NoError(t, err) {
 		return
@@ -375,10 +386,9 @@ func TestConnectionSimpleScanGroupReference(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs + ";auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
 	if !assert.NoError(t, err) {
 		return
@@ -415,10 +425,9 @@ func TestConnectionSimpleScanGroupAndField(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "request.log")
-	defer f.Close()
+	initTestLogWithFile(t, "request.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs + ";auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
 	if !assert.NoError(t, err) {
 		return

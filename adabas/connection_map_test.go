@@ -25,17 +25,15 @@ import (
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func BenchmarkConnection_cached(b *testing.B) {
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	adatypes.InitDefinitionCache()
 	defer adatypes.FinitDefinitionCache()
@@ -79,12 +77,11 @@ func readAll(b *testing.B) error {
 }
 
 func BenchmarkConnection_noreconnect(b *testing.B) {
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if !assert.NoError(b, cerr) {
@@ -119,12 +116,11 @@ func BenchmarkConnection_noreconnect(b *testing.B) {
 }
 
 func TestAuth(t *testing.T) {
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	//connection, cerr := NewConnection("acj;map;config=[177(adatcp://pinas:60177),4]")
 	connection, cerr := NewConnection("acj;target=" + adabasStatDBIDs + ";auth=NONE,user=TestAuth,id=4,host=xx")
@@ -146,14 +142,14 @@ func TestConnectionRemoteMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
-	//connection, cerr := NewConnection("acj;map;config=[177(adatcp://pinas:60177),4]")
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
 	connection, cerr := NewConnection("acj;map;config=[177(adatcp://" + adabasTCPLocation() + "),4];auth=NONE,user=TCRemMap")
 	if !assert.NoError(t, cerr) {
 		return
@@ -186,12 +182,11 @@ func TestConnectionMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	connection, cerr := NewConnection("acj;map=EMPLOYEES-NAT-DDM;config=[" + adabasStatDBIDs + ",4];auth=NONE,user=XMAP")
 	if !assert.NoError(t, cerr) {
@@ -223,12 +218,11 @@ func TestConnectionMap(t *testing.T) {
 }
 
 func BenchmarkConnection_noreconnectremote(b *testing.B) {
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	connection, cerr := NewConnection("acj;map;config=[177(adatcp://" + adabasTCPLocation() + "),4]")
 	if !assert.NoError(b, cerr) {
@@ -292,14 +286,13 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection_map.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection_map.log")
 
 	cerr := checkVehicleMap("VehicleMap", "VehicleMap.json")
 	if !assert.NoError(t, cerr) {
 		return
 	}
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if !assert.NoError(t, cerr) {
 		return
@@ -350,15 +343,14 @@ func TestConnectionMapPointingToRemote(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection_map.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection_map.log")
 
 	cerr := checkVehicleMap("REMPL11", "rempl11.json")
 	if !assert.NoError(t, cerr) {
 		return
 	}
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4];auth=NONE,user=TCMapPoin,id=4,host=REMOTE")
 	if !assert.NoError(t, cerr) {
 		return
@@ -426,10 +418,9 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection_map.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection_map.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	cErr := clearFile(16)
 	if !assert.NoError(t, cErr) {
 		return
@@ -492,14 +483,13 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 }
 
 func ExampleConnection_readWithMap() {
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+	adatypes.Central.Log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -520,6 +510,11 @@ func ExampleConnection_readWithMap() {
 	var result *Response
 	fmt.Println("Read logigcal data:")
 	result, err = request.ReadLogicalWith("PERSONNEL-ID=[11100314:11100317]")
+	if err != nil {
+		fmt.Println("Error read logical data", err)
+		return
+	}
+
 	result.DumpValues()
 	// Output:Read logigcal data:
 	// Dump all result values
@@ -546,14 +541,13 @@ func ExampleConnection_readWithMap() {
 }
 
 func ExampleConnection_readWithMapFormatted() {
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+	adatypes.Central.Log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -574,6 +568,10 @@ func ExampleConnection_readWithMapFormatted() {
 	var result *Response
 	fmt.Println("Read logigcal data:")
 	result, err = request.ReadLogicalWith("PERSONNEL-ID=[11100314:11100317]")
+	if err != nil {
+		fmt.Println("Error reading", err)
+		return
+	}
 	result.DumpValues()
 	// Output:Read logigcal data:
 	// Dump all result values
@@ -604,12 +602,11 @@ func ExampleConnection_readWithMapFormatted() {
 }
 
 func ExampleConnection_readFileDefinitionMapGroup() {
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -657,12 +654,11 @@ func ExampleConnection_readFileDefinitionMapGroup() {
 }
 
 func BenchmarkConnection_simple(b *testing.B) {
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	for i := 0; i < 100; i++ {
 		// fmt.Print(".")
@@ -742,10 +738,9 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
-	f := initTestLogWithFile(t, "connection_map.log")
-	defer f.Close()
+	initTestLogWithFile(t, "connection_map.log")
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	cErr := clearFile(16)
 	if !assert.NoError(t, cErr) {
@@ -756,7 +751,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 		return
 	}
 
-	log.Infof("Prepare create test map")
+	adatypes.Central.Log.Infof("Prepare create test map")
 	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
 	perr := prepareCreateTestMap(massLoadSystransStore, massLoadSystrans, dataRepository)
 	if !assert.NoError(t, perr) {
@@ -769,7 +764,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 		return
 	}
 
-	log.Infof("Create connection...")
+	adatypes.Central.Log.Infof("Create connection...")
 	connection, err := NewConnection("acj;map;config=[" + adabasModDBIDs + ",250]")
 	if !assert.NoError(t, err) {
 		return
@@ -816,18 +811,18 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	connection.EndTransaction()
 	fmt.Println("Check stored data")
 
-	log.Infof("Check stored data")
+	adatypes.Central.Log.Infof("Check stored data")
 	checkStoreByFile(t, adabasModDBIDs, 16, multipleTransactionRefName)
 	checkStoreByFile(t, adabasModDBIDs, 19, multipleTransactionRefName2)
 
 }
 
 func ExampleConnection_mapStore() {
-	f, err := initLogWithFile("connection.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	if cErr := clearFile(16); cErr != nil {
 		return
@@ -847,7 +842,7 @@ func ExampleConnection_mapStore() {
 		return
 	}
 
-	log.Infof("Create connection...")
+	adatypes.Central.Log.Infof("Create connection...")
 	connection, err := NewConnection("acj;map;config=[" + adabasModDBIDs + ",250]")
 	if err != nil {
 		return
@@ -855,15 +850,19 @@ func ExampleConnection_mapStore() {
 	defer connection.Close()
 	connection.Open()
 	storeRequest16, rErr := connection.CreateMapStoreRequest(massLoadSystransStore)
-	if err != nil {
+	if rErr != nil {
 		return
 	}
 	storeRequest16.StoreFields("PERSONNEL-ID,NAME")
 	record, err := storeRequest16.CreateRecord()
-	err = record.SetValueWithIndex("PERSONNEL-ID", nil, "26555_0")
-	err = record.SetValueWithIndex("NAME", nil, "WABER")
-	err = record.SetValueWithIndex("FIRST-NAME", nil, "EMIL")
-	err = record.SetValueWithIndex("MIDDLE-I", nil, "MERK")
+	if err != nil {
+		fmt.Println("Error create record", err)
+		return
+	}
+	_ = record.SetValueWithIndex("PERSONNEL-ID", nil, "26555_0")
+	_ = record.SetValueWithIndex("NAME", nil, "WABER")
+	_ = record.SetValueWithIndex("FIRST-NAME", nil, "EMIL")
+	_ = record.SetValueWithIndex("MIDDLE-I", nil, "MERK")
 	err = storeRequest16.Store(record)
 	if err != nil {
 		fmt.Println("Error store record", err)
@@ -881,6 +880,10 @@ func ExampleConnection_mapStore() {
 	}
 
 	record, err = storeRequest19.CreateRecord()
+	if err != nil {
+		fmt.Println("Create record", err)
+		return
+	}
 	err = record.SetValueWithIndex("REG-NUM", nil, "29555_0")
 	if err != nil {
 		fmt.Println("Error", err)
@@ -982,14 +985,13 @@ func dumpMapStoredData(target string, mapName string, search string) error {
 }
 
 func ExampleConnection_readShortMap() {
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+	adatypes.Central.Log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -1010,6 +1012,10 @@ func ExampleConnection_readShortMap() {
 	var result *Response
 	fmt.Println("Read logigcal data:")
 	result, err = request.ReadLogicalWith("ID=[11100314:11100317]")
+	if err != nil {
+		fmt.Println("Error read logical", err)
+		return
+	}
 	result.DumpValues()
 	// Output:Read logigcal data:
 	// Dump all result values
@@ -1040,14 +1046,13 @@ func ExampleConnection_readShortMap() {
 }
 
 func ExampleConnection_readLongMapIsn() {
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+	adatypes.Central.Log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -1069,11 +1074,19 @@ func ExampleConnection_readLongMapIsn() {
 	var result *Response
 	fmt.Println("Read logigcal data:")
 	result, err = request.ReadISN(1)
+	if err != nil {
+		fmt.Println("Error search value", err)
+		return
+	}
 	for _, v := range result.Values {
 		f, e := v.SearchValue("creation_time")
+		if e != nil {
+			fmt.Println("Error search value", e)
+			return
+		}
 		f.SetValue(0)
 		f, e = v.SearchValue("Last_Updates[01]")
-		if err != nil || f == nil {
+		if e != nil || f == nil {
 			fmt.Println(e)
 			return
 		}
@@ -1135,14 +1148,13 @@ func ExampleConnection_readLongMapIsn() {
 }
 
 func ExampleConnection_readLongMapRange() {
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+	adatypes.Central.Log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -1163,11 +1175,19 @@ func ExampleConnection_readLongMapRange() {
 	var result *Response
 	fmt.Println("Read logigcal data:")
 	result, err = request.ReadLogicalWith("personnel-id=[50005800:50005801]")
+	if err != nil {
+		fmt.Println("Read error", err)
+		return
+	}
 	for _, v := range result.Values {
 		f, e := v.SearchValue("creation_time")
+		if e != nil {
+			fmt.Println("Search error", e)
+			return
+		}
 		f.SetValue(0)
 		f, e = v.SearchValue("Last_Updates[01]")
-		if err != nil || f == nil {
+		if e != nil || f == nil {
 			fmt.Println(e)
 			return
 		}
@@ -1283,14 +1303,13 @@ func ExampleConnection_readLongMapRange() {
 }
 
 func TestConnection_readAllMap(t *testing.T) {
-	f, err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if !assert.NoError(t, cerr) {
@@ -1326,14 +1345,13 @@ func TestConnection_readAllMap(t *testing.T) {
 }
 
 func TestConnection_readReference(t *testing.T) {
-	f, err := initLogWithFile("connection_map.log")
-	if !assert.NoError(t, err) {
+	err := initLogWithFile("connection_map.log")
+	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if !assert.NoError(t, cerr) {
@@ -1392,14 +1410,13 @@ func TestConnection_readReference(t *testing.T) {
 }
 
 func TestConnection_readReferenceList(t *testing.T) {
-	f, err := initLogWithFile("connection_map.log")
-	if !assert.NoError(t, err) {
+	err := initLogWithFile("connection_map.log")
+	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if !assert.NoError(t, cerr) {
@@ -1460,11 +1477,11 @@ func TestConnection_readReferenceList(t *testing.T) {
 }
 
 func ExampleConnection_mapReadUnicode() {
-	f, err := initLogWithFile("connection.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -1515,11 +1532,11 @@ func ExampleConnection_mapReadUnicode() {
 }
 
 func ExampleConnection_mapReadUnicodeNew() {
-	f, err := initLogWithFile("connection.log")
+	err := initLogWithFile("connection_map.log")
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
-	defer f.Close()
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -1570,4 +1587,104 @@ func ExampleConnection_mapReadUnicodeNew() {
 	//    first-name = > विनोद <
 	//    middle-name = > अभगे <
 	//    name = > अरविद <
+}
+
+func TestConnection_readGroup(t *testing.T) {
+	err := initLogWithFile("connection_map.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err = request.QueryFields("FULL-ADDRESS")
+	if !assert.NoError(t, err) {
+		return
+	}
+	var result *Response
+	fmt.Println("Read logigcal data:")
+	result, err = request.ReadISN(1)
+	if !assert.NoError(t, err) {
+		return
+	}
+	result.DumpValues()
+	v, verr := result.Values[0].SearchValue("CITY")
+	if !assert.NoError(t, verr) {
+		return
+	}
+	assert.Equal(t, "JOIGNY              ", v.String())
+	v, verr = result.Values[0].SearchValue("ZIP")
+	if !assert.NoError(t, verr) {
+		return
+	}
+	assert.Equal(t, "89300     ", v.String())
+	v, verr = result.Values[0].SearchValue("COUNTRY")
+	if !assert.NoError(t, verr) {
+		return
+	}
+	assert.Equal(t, "F  ", v.String())
+
+}
+
+func ExampleConnection_mapReadDisjunctSearch() {
+	err := initLogWithFile("connection_map.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if cerr != nil {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest("EMPLOYEES")
+	if rerr != nil {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err = request.QueryFields("personnel-id")
+	if err != nil {
+		return
+	}
+	request.Limit = 0
+	var result *Response
+	fmt.Println("Read using ISN order:")
+	result, err = request.ReadLogicalWith("name=SMITH")
+	if err != nil {
+		fmt.Println("Error reading ISN order", err)
+		return
+	}
+	result.DumpValues()
+
+	// Output: Read using ISN order:
+	// Dump all result values
+	// Record Isn: 0579
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 20009300 <
+	// Record Isn: 0634
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 20015400 <
+	// Record Isn: 0670
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 20018800 <
+	// Record Isn: 0727
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 20025200 <
+	// Record Isn: 0787
+	//   personnel-data = [ 1 ]
+	//    personnel-id = > 20000400 <
 }

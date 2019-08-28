@@ -181,10 +181,12 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 			}
 		}
 		if !value.Type().HasFlagSet(FlagOptionSecondCall) {
-			Central.Log.Debugf("Skip parsing %s offset=%d", value.Type().Name(), helper.offset)
+			Central.Log.Debugf("Skip parsing %s offset=%d, no second call flag", value.Type().Name(), helper.offset)
 			return
 		}
 	}
+	Central.Log.Debugf("Start parsing value unicode .... %s offset=%d/%X type=%s", value.Type().Name(),
+		helper.offset, helper.offset, value.Type().Type().name())
 
 	fieldLength := value.adatype.Length()
 	if fieldLength == 0 {

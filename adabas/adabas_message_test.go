@@ -28,8 +28,7 @@ import (
 )
 
 func TestAdabasMessageGeneric(t *testing.T) {
-	f := initTestLogWithFile(t, "messages.log")
-	defer f.Close()
+	initTestLogWithFile(t, "messages.log")
 
 	err := adatypes.NewGenericError(2, "XX")
 	assert.Equal(t, "ADG0000002: Invalid Adabas command send: XX", err.Error())
@@ -39,8 +38,7 @@ func TestAdabasMessageGeneric(t *testing.T) {
 }
 
 func TestAdabasMessage(t *testing.T) {
-	f := initTestLogWithFile(t, "messages.log")
-	defer f.Close()
+	initTestLogWithFile(t, "messages.log")
 
 	// Return: Hello, i18n
 	assert.Equal(t, "Normal successful completion", adatypes.Translate("en", "ADAGE00000"))
@@ -51,8 +49,7 @@ func TestAdabasMessage(t *testing.T) {
 }
 
 func TestAdabasMessageError(t *testing.T) {
-	f := initTestLogWithFile(t, "messages.log")
-	defer f.Close()
+	initTestLogWithFile(t, "messages.log")
 
 	ada, err := NewAdabas(21)
 	assert.NoError(t, err)

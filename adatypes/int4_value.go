@@ -80,13 +80,13 @@ func (value *uint32Value) StoreBuffer(helper *BufferHelper) error {
 
 func (value *uint32Value) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 	if value.Type().Length() == 0 {
-		len, lerr := helper.ReceiveInt8()
+		rbLen, lerr := helper.ReceiveInt8()
 		if lerr != nil {
 			return EndTraverser, lerr
 		}
-		len--
-		Central.Log.Debugf("Buffer get variable length=%d", len)
-		switch len {
+		rbLen--
+		Central.Log.Debugf("Buffer get variable length=%d", rbLen)
+		switch rbLen {
 		case 1:
 			vba, verr := helper.ReceiveUInt8()
 			if verr != nil {
@@ -99,6 +99,19 @@ func (value *uint32Value) parseBuffer(helper *BufferHelper, option *BufferOption
 				return EndTraverser, verr
 			}
 			value.value = uint32(vba)
+		case 3:
+			vba, verr := helper.ReceiveBytes(uint32(rbLen))
+			if verr != nil {
+				return EndTraverser, verr
+			}
+			value.value = 0
+			for i := range vba {
+				ei := i
+				if bigEndian() {
+					ei = 3 - 1 - i
+				}
+				value.value = value.value + uint32(vba[ei])<<(uint32(i)*8)
+			}
 		case 4:
 			vba, verr := helper.ReceiveUInt32()
 			if verr != nil {
@@ -106,14 +119,7 @@ func (value *uint32Value) parseBuffer(helper *BufferHelper, option *BufferOption
 			}
 			value.value = uint32(vba)
 		default:
-			vba, verr := helper.ReceiveBytes(uint32(len))
-			if verr != nil {
-				return EndTraverser, verr
-			}
-			value.value = 0
-			for i, v := range vba {
-				value.value = value.value + uint32(v)<<(uint32(i)*8)
-			}
+			return EndTraverser, NewGenericError(89)
 		}
 	} else {
 		value.value, err = helper.ReceiveUInt32()
@@ -196,13 +202,13 @@ func (value *int32Value) StoreBuffer(helper *BufferHelper) error {
 
 func (value *int32Value) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 	if value.Type().Length() == 0 {
-		len, lerr := helper.ReceiveInt8()
+		rbLen, lerr := helper.ReceiveInt8()
 		if lerr != nil {
 			return EndTraverser, lerr
 		}
-		len--
-		Central.Log.Debugf("Buffer get variable length=%d", len)
-		switch len {
+		rbLen--
+		Central.Log.Debugf("Buffer get variable length=%d", rbLen)
+		switch rbLen {
 		case 1:
 			vba, verr := helper.ReceiveInt8()
 			if verr != nil {
@@ -222,12 +228,16 @@ func (value *int32Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 			}
 			value.value = int32(vba)
 		default:
-			vba, verr := helper.ReceiveBytes(uint32(len))
+			vba, verr := helper.ReceiveBytes(uint32(rbLen))
 			if verr != nil {
 				return EndTraverser, verr
 			}
 			v4 := make([]byte, 4)
-			copy(v4[:len], vba[:])
+			if bigEndian() {
+				copy(v4[4-rbLen:], vba[:])
+			} else {
+				copy(v4[:rbLen], vba[:])
+			}
 			buf := bytes.NewBuffer(v4)
 			binary.Read(buf, helper.order, &value.value)
 		}

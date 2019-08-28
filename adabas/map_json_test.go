@@ -27,12 +27,11 @@ import (
 )
 
 func ExampleParseJSONFileForFields() {
-	f, lerr := initLogWithFile("mapjson.log")
+	lerr := initLogWithFile("mapjson.log")
 	if lerr != nil {
 		fmt.Println("Init log error", lerr)
 		return
 	}
-	defer f.Close()
 
 	p := os.Getenv("TESTFILES")
 	if p == "" {
@@ -542,8 +541,7 @@ func ExampleParseJSONFileForFields() {
 }
 
 func TestImportMaps(t *testing.T) {
-	f := initTestLogWithFile(t, "mapjson.log")
-	defer f.Close()
+	initTestLogWithFile(t, "mapjson.log")
 
 	clearFile(4)
 	maps, err := LoadJSONMap("Maps.json")

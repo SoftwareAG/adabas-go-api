@@ -22,6 +22,7 @@ package adatypes
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"math"
 	"reflect"
@@ -70,6 +71,7 @@ type IAdaValue interface {
 	FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32
 	Value() interface{}
 	SetParent(parentAdaValue IAdaValue)
+	Parent() IAdaValue
 	SetStringValue(string)
 	SetValue(interface{}) error
 	StoreBuffer(*BufferHelper) error
@@ -86,6 +88,7 @@ type adaValue struct {
 	parent  IAdaValue
 	peIndex uint32
 	muIndex uint32
+	//	searchLength uint32
 }
 
 func (adavalue adaValue) Type() IAdaType {
@@ -95,10 +98,7 @@ func (adavalue adaValue) Type() IAdaType {
 func bigEndian() (ret bool) {
 	i := 0x1
 	bs := (*[4]byte)(unsafe.Pointer(&i))
-	if bs[0] == 0 {
-		return true
-	}
-	return false
+	return bs[0] == 0
 }
 
 func endian() binary.ByteOrder {
@@ -135,6 +135,7 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 	}
 	if option.StoreCall {
 		Central.Log.Debugf("Common store call for %s len=%d", adavalue.Type().Name(), adavalue.Type().Length())
+		// debug.PrintStack()
 		if buffer.Len() > 0 {
 			buffer.WriteString(",")
 		}
@@ -166,9 +167,11 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 			adavalue.muIndex, adavalue.Type().Length(), adavalue.Type().Type().FormatCharacter()))
 		return adavalue.Type().Length()
 	}
-	if adavalue.adatype.HasFlagSet(FlagOptionPE) && !adavalue.Type().HasFlagSet(FlagOptionMU) {
-		Central.Log.Debugf("Skip ... because PE and not MU")
-		return 0
+	if adavalue.adatype.HasFlagSet(FlagOptionPE) {
+		if !adavalue.Type().HasFlagSet(FlagOptionMU) && !adavalue.Type().HasFlagSet(FlagOptionPart) {
+			Central.Log.Debugf("Skip ... because PE and not MU")
+			return 0
+		}
 	}
 	if buffer.Len() > 0 {
 		buffer.WriteString(",")
@@ -203,24 +206,21 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 // common format buffer generation
 func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 	var val uint64
-	switch x.(type) {
+	switch v := x.(type) {
 	case string:
-		s := x.(string)
-		sval, err := strconv.Atoi(s)
+		sval, err := strconv.Atoi(v)
 		if err != nil {
 			return 0, err
 		}
 		val = uint64(sval)
 	case uint64:
-		val = x.(uint64)
+		val = v
 	case int64:
-		v := x.(int64)
 		if v < 0 {
 			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
 		val = uint64(v)
 	case int:
-		v := x.(int)
 		if v < 0 {
 			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
@@ -228,29 +228,36 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 	case uint32:
 		val = uint64(x.(uint32))
 	case int32:
-		v := x.(int32)
 		if v < 0 {
 			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
 		val = uint64(v)
 	case uint16:
-		val = uint64(x.(uint16))
+		val = uint64(v)
 	case int16:
-		v := x.(int16)
 		if v < 0 {
 			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
 		val = uint64(v)
 	case uint8:
-		val = uint64(x.(uint8))
+		val = uint64(v)
 	case int8:
-		v := x.(int8)
 		if v < 0 {
 			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
 		}
 		val = uint64(v)
+	case float64:
+		if v < 0 {
+			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
+		}
+		val = uint64(v)
+	case json.Number:
+		i64, err := v.Int64()
+		if err != nil {
+			return 0, err
+		}
+		val = uint64(i64)
 	case []byte:
-		v := x.([]byte)
 		switch len(v) {
 		case 1:
 			buf := bytes.NewBuffer(v)
@@ -296,44 +303,41 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 
 // common format buffer generation
 func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
-	Central.Log.Debugf("Convert common value %s %v %s", adavalue.Type().Name(), x, reflect.TypeOf(x).Name())
+	Central.Log.Debugf("Convert common int64 value %s %v %s %T", adavalue.Type().Name(), x, reflect.TypeOf(x).Name(), x)
 	var val int64
 	multiplier := math.Pow10(int(adavalue.Type().Fractional()))
-	switch x.(type) {
+	switch v := x.(type) {
 	case string:
-		s := x.(string)
-		sval, err := strconv.Atoi(s)
+		sval, err := strconv.Atoi(v)
 		if err != nil {
 			return 0, err
 		}
 		val = int64(sval) * int64(multiplier)
 	case int8:
-		v := x.(int8)
 		val = int64(v) * int64(multiplier)
 	case int16:
-		v := x.(int16)
 		val = int64(v) * int64(multiplier)
 	case int32:
-		v := x.(int32)
 		val = int64(v) * int64(multiplier)
 	case int64:
-		val = x.(int64) * int64(multiplier)
+		val = v * int64(multiplier)
 	case uint8:
-		v := x.(uint8)
 		val = int64(v) * int64(multiplier)
 	case uint16:
-		v := x.(uint16)
 		val = int64(v) * int64(multiplier)
 	case uint32:
-		v := x.(uint32)
 		val = int64(v) * int64(multiplier)
 	case uint64:
-		v := x.(uint64)
 		val = int64(v) * int64(multiplier)
 	case int:
-		val = int64(x.(int)) * int64(multiplier)
+		val = int64(v) * int64(multiplier)
+	case json.Number:
+		i64, err := v.Int64()
+		if err != nil {
+			return 0, err
+		}
+		val = i64 * int64(multiplier)
 	case []byte:
-		v := x.([]byte)
 		switch len(v) {
 		case 1:
 			buf := bytes.NewBuffer(v)
@@ -373,13 +377,13 @@ func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 		return 0, NewGenericError(104, len(v), adavalue.Type().Name())
 	case float64:
 		if adavalue.Type().Fractional() == 0 {
-			Central.Log.Debugf("Error converting %v", x)
-			return 0, NewGenericError(103, fmt.Sprintf("%T", x), adavalue.Type().Name())
+			if v != float64(int64(v)) {
+				Central.Log.Debugf("Error converting %v", x)
+				return 0, NewGenericError(103, fmt.Sprintf("%T", x), adavalue.Type().Name())
+			}
 		}
-		fl := x.(float64)
-		//multiplier := math.Pow(float64(10), float64(adavalue.Type().Fractional()))
-		v := int64(fl * multiplier)
-		return v, nil
+		val := int64(v * multiplier)
+		return val, nil
 	default:
 		Central.Log.Debugf("Error converting %v", x)
 		return 0, NewGenericError(103, fmt.Sprintf("%T", x), adavalue.Type().Name())
@@ -417,6 +421,10 @@ func (adavalue *adaValue) setMultipleIndex(index uint32) {
 
 func (adavalue *adaValue) SetParent(parentAdaValue IAdaValue) {
 	adavalue.parent = parentAdaValue
+}
+
+func (adavalue *adaValue) Parent() IAdaValue {
+	return adavalue.parent
 }
 
 func (value *fillerValue) ByteValue() byte {

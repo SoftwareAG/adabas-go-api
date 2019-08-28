@@ -98,27 +98,51 @@ type MapField struct {
 
 // Map Adabas map structure defining repository where the Map is stored at
 type Map struct {
-	Name       string       `json:"Name"`
-	Isn        adatypes.Isn `json:"Isn"`
-	Repository *DatabaseURL
-	Data       *DatabaseURL `json:"Data"`
-	Fields     []*MapField  `json:"Fields"`
+	Name               string       `json:"Name"`
+	Version            string       `json:"Version"`
+	Isn                adatypes.Isn `json:"Isn"`
+	Repository         *DatabaseURL
+	Data               *DatabaseURL `json:"Data"`
+	Fields             []*MapField  `json:"Fields"`
+	RedefinitionFields []*MapField  `json:"RedefinitionFields"`
 	// Time of last modification of the map
-	Generated        uint64
-	ModificationTime []uint64
-	fieldMap         map[string]*MapField
+	Generated            uint64
+	ModificationTime     []uint64
+	fieldMap             map[string]*MapField
+	redefinitionFieldMap map[string][]*MapField
 }
 
 // NewAdabasMap create new Adabas map instance
-func NewAdabasMap(name string, repository *DatabaseURL) *Map {
-	return &Map{Name: name, Repository: repository}
+func NewAdabasMap(param ...interface{}) *Map {
+	redefinitionFieldMap := make(map[string][]*MapField)
+	switch param[0].(type) {
+	case string:
+		name := param[0].(string)
+		if len(param) == 1 {
+			return &Map{Name: name, redefinitionFieldMap: redefinitionFieldMap}
+		}
+		repository := param[1].(*DatabaseURL)
+		return &Map{Name: name, Repository: repository,
+			redefinitionFieldMap: redefinitionFieldMap}
+	case *DatabaseURL:
+		repository := param[0].(*DatabaseURL)
+		dataRepository := param[1].(*DatabaseURL)
+		redefinitionFieldMap := make(map[string][]*MapField)
+		return &Map{Repository: repository, Data: dataRepository,
+			redefinitionFieldMap: redefinitionFieldMap}
+	}
+	return nil
 }
 
 // addFields Add a field to the Map
 func (adabasMap *Map) addFields(shortName string, longName string) *MapField {
 	adatypes.Central.Log.Debugf("Add map name %s to %s", shortName, longName)
 	mField := &MapField{ShortName: shortName, LongName: longName}
-	adabasMap.Fields = append(adabasMap.Fields, mField)
+	if strings.HasPrefix(shortName, "#") {
+		adabasMap.addRedefinitionField(mField)
+	} else {
+		adabasMap.Fields = append(adabasMap.Fields, mField)
+	}
 	return mField
 }
 
@@ -129,6 +153,22 @@ func (adabasMap *Map) FieldNames() []string {
 		fields = append(fields, f.LongName)
 	}
 	return fields
+}
+
+func (adabasMap *Map) addRedefinitionField(mField *MapField) {
+	adabasMap.RedefinitionFields = append(adabasMap.RedefinitionFields, mField)
+	adatypes.Central.Log.Debugf("%s add redefinition -> %s", mField.ShortName, mField.ShortName[1:])
+	if rf, ok := adabasMap.redefinitionFieldMap[mField.ShortName[1:]]; ok {
+		adatypes.Central.Log.Debugf("Insert %s", mField.ShortName[1:])
+		rf = append(rf, mField)
+		adabasMap.redefinitionFieldMap[mField.ShortName[1:]] = rf
+	} else {
+		adatypes.Central.Log.Debugf("Add %s", mField.ShortName[1:])
+		rf = make([]*MapField, 0)
+		rf = append(rf, mField)
+		adabasMap.redefinitionFieldMap[mField.ShortName[1:]] = rf
+	}
+
 }
 
 // FieldShortNames list of fields of map
@@ -199,6 +239,9 @@ func traverseExtractMapField(adaValue adatypes.IAdaValue, x interface{}) (adatyp
 		switch adaValue.Type().Name() {
 		case mapFieldShortname.fieldName():
 			mapField.ShortName = strings.TrimSpace(adaValue.String())
+			if strings.HasPrefix(mapField.ShortName, "#") {
+				adabasMap.addRedefinitionField(mapField)
+			}
 		case mapFieldLongname.fieldName():
 			mapField.LongName = adaValue.String()
 		case mapFieldLength.fieldName():
@@ -218,6 +261,13 @@ func traverseExtractMapField(adaValue adatypes.IAdaValue, x interface{}) (adatyp
 		}
 	} else {
 		switch adaValue.Type().Name() {
+		case mapFieldVersion.fieldName():
+			adabasMap.Version = adaValue.String()
+			switch adabasMap.Version {
+			case "1", "2":
+			default:
+				return adatypes.EndTraverser, adatypes.NewGenericError(94, adabasMap.Version)
+			}
 		case mapFieldName.fieldName():
 			adabasMap.Name = adaValue.String()
 		case mapFieldReferenceURL.fieldName():
@@ -273,17 +323,30 @@ func parseMap(adabasRequest *adatypes.Request, x interface{}) (err error) {
 func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, level int, x interface{}) error {
 	adabasMap := x.(*Map)
 	sn := adaType.ShortName()[0:2]
-	adatypes.Central.Log.Debugf("Adapt type %s %s", adaType.Name(), sn)
+	adatypes.Central.Log.Debugf("Adapt type %s/%s", adaType.Name(), sn)
 	f := adabasMap.fieldMap[sn]
 	if f == nil {
 		adaType.AddFlag(adatypes.FlagOptionToBeRemoved)
 		adatypes.Central.Log.Debugf("Field %s flag to be removed", adaType.Name())
 		return nil
 	}
-	adatypes.Central.Log.Debugf("Field map does contains %s -> %s/%s", f.LongName, adaType.Name(), adaType.ShortName())
+	adatypes.Central.Log.Debugf("Field map does contains %s -> %s/%s format type=>%s<", f.LongName, adaType.Name(), adaType.ShortName(), f.FormatType)
 	adaType.RemoveFlag(adatypes.FlagOptionToBeRemoved)
 	adaType.SetName(f.LongName)
-	if f.FormatType != "" {
+
+	switch strings.Trim(f.FormatType, " ") {
+	case "#":
+		adatypes.Central.Log.Debugf("Replace %s on parent %s", adaType.ShortName(), parentType.ShortName())
+		nt := adatypes.NewRedefinitionType(adaType)
+		adaptRedefintionFields(nt, adabasMap.redefinitionFieldMap[adaType.ShortName()])
+		st := parentType.(*adatypes.StructureType)
+		err := st.ReplaceType(adaType, nt)
+		if err != nil {
+			return err
+		}
+		return nil
+	case "":
+	default:
 		adaType.SetFormatType([]rune(f.FormatType)[0])
 	}
 	adaType.SetFormatLength(uint32(f.Length))
@@ -292,9 +355,9 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 			adatypes.Central.Log.Debugf("Set %s length to 0", adaType.Name())
 			adaType.SetLength(0)
 		} else {
-			adatypes.Central.Log.Debugf("Set %s length to %d", adaType.Name(), f.Length)
+			adatypes.Central.Log.Debugf("Set %s length to %d, check content type=%s",
+				adaType.Name(), f.Length, f.ContentType)
 			adaType.SetLength(uint32(f.Length))
-			adatypes.Central.Log.Debugf("Check content type=%s", f.ContentType)
 			ct := strings.Split(f.ContentType, ",")
 			for _, c := range ct {
 				p := strings.Split(c, "=")
@@ -331,6 +394,18 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 	return nil
 }
 
+func adaptRedefintionFields(redType *adatypes.RedefinitionType, fields []*MapField) {
+	adatypes.Central.Log.Debugf("Fields: %#v", fields)
+	for _, f := range fields {
+		adatypes.Central.Log.Debugf("%s %s %s %d", f.ShortName, f.LongName, f.FormatType, f.Length)
+		fieldType := adatypes.EvaluateFieldType([]rune(f.FormatType)[0], f.Length)
+		subType := adatypes.NewType(fieldType, f.ShortName, uint32(f.Length))
+		subType.SetName(f.LongName)
+		adatypes.Central.Log.Debugf("%s:%s %s %d %d", f.LongName, f.ShortName, f.FormatType, f.Length, subType.Length())
+		redType.AddSubType(subType)
+	}
+}
+
 // adaptFieldType base class starting the traverser through the fields to adapt field types
 func (adabasMap *Map) adaptFieldType(definition *adatypes.Definition) (err error) {
 	if definition == nil {
@@ -355,7 +430,7 @@ func (adabasMap *Map) Store() error {
 	if adabasMap.Repository == nil {
 		return adatypes.NewGenericError(65)
 	}
-	adabas, err := NewAdabasWithURL(&adabasMap.Repository.URL, ID)
+	adabas, err := NewAdabas(&adabasMap.Repository.URL, ID)
 	if err != nil {
 		return err
 	}

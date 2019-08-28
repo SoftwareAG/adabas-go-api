@@ -26,11 +26,10 @@ import (
 )
 
 func TestFloating32(t *testing.T) {
-	f, err := initLogWithFile("float.log")
+	err := initLogWithFile("float.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 	adaType := NewType(FieldTypeFloat, "FL")
 	adaType.length = 4
 	fl := newFloatValue(adaType)
@@ -38,18 +37,34 @@ func TestFloating32(t *testing.T) {
 	fl.SetStringValue("0.1")
 	assert.Equal(t, float32(0.1), fl.Value())
 	fl.SetStringValue("10.1")
-	assert.Equal(t, []byte{0x9a, 0x99, 0x21, 0x41}, fl.Bytes())
+	if bigEndian() {
+		assert.Equal(t, []byte{0x41, 0x21, 0x99, 0x9a}, fl.Bytes())
+	} else {
+		assert.Equal(t, []byte{0x9a, 0x99, 0x21, 0x41}, fl.Bytes())
+	}
 	assert.Equal(t, float32(10.1), fl.Value())
 	fl.SetStringValue("-10.1")
-	assert.Equal(t, []byte{0x9a, 0x99, 0x21, 0xc1}, fl.Bytes())
+	if bigEndian() {
+		assert.Equal(t, []byte{0xc1, 0x21, 0x99, 0x9a}, fl.Bytes())
+	} else {
+		assert.Equal(t, []byte{0x9a, 0x99, 0x21, 0xc1}, fl.Bytes())
+	}
 	assert.Equal(t, float32(-10.1), fl.Value())
 	fl.SetValue(0.5)
 	assert.Equal(t, float32(0.5), fl.Value())
 	_, serr := fl.Int32()
 	assert.Error(t, serr)
-	assert.Equal(t, []byte{0x0, 0x0, 0x0, 0x3f}, fl.Bytes())
+	if bigEndian() {
+		assert.Equal(t, []byte{0x3f, 0x0, 0x0, 0x0}, fl.Bytes())
+	} else {
+		assert.Equal(t, []byte{0x0, 0x0, 0x0, 0x3f}, fl.Bytes())
+	}
 	fl.SetValue("10.0")
-	assert.Equal(t, []byte{0x0, 0x0, 0x20, 0x41}, fl.Bytes())
+	if bigEndian() {
+		assert.Equal(t, []byte{0x41, 0x20, 0x0, 0x0}, fl.Bytes())
+	} else {
+		assert.Equal(t, []byte{0x0, 0x0, 0x20, 0x41}, fl.Bytes())
+	}
 	assert.Equal(t, float32(10.0), fl.Value())
 	u32int, e32err := fl.UInt32()
 	assert.NoError(t, e32err)
@@ -71,6 +86,10 @@ func TestFloating32(t *testing.T) {
 	assert.Equal(t, float32(22.0), fl.Value())
 	fl.SetValue(uint64(23))
 	assert.Equal(t, float32(23.0), fl.Value())
-	fl.SetValue([]byte{0x9a, 0x99, 0x21, 0xc1})
+	if bigEndian() {
+		fl.SetValue([]byte{0xc1, 0x21, 0x99, 0x9a})
+	} else {
+		fl.SetValue([]byte{0x9a, 0x99, 0x21, 0xc1})
+	}
 	assert.Equal(t, float32(-10.1), fl.Value())
 }

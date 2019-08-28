@@ -24,30 +24,27 @@ import (
 	"fmt"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUnpackedNil(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	up := newUnpackedValue(nil)
 	assert.Nil(t, up)
 }
 
 func TestUnpacked(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUnpacked, "UP")
 	adaType.length = 4
 	up := newUnpackedValue(adaType)
@@ -59,8 +56,6 @@ func TestUnpacked(t *testing.T) {
 	assert.NoError(t, i32err)
 	assert.Equal(t, int32(1), i32)
 	up.SetValue(uint32(2))
-	i32, i32err = up.Int32()
-	assert.NoError(t, i32err)
 	i32, i32err = up.Int32()
 	assert.NoError(t, i32err)
 	assert.Equal(t, int32(2), i32)
@@ -88,13 +83,12 @@ func TestUnpacked(t *testing.T) {
 }
 
 func TestUnpackedFormatBuffer(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUnpacked, "UP")
 	adaType.length = 4
 	up := newUnpackedValue(adaType)
@@ -107,13 +101,12 @@ func TestUnpackedFormatBuffer(t *testing.T) {
 }
 
 func TestUnpackedCheckFractional(t *testing.T) {
-	f, err := initLogWithFile("packed.log")
+	err := initLogWithFile("packed.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUnpacked, "UP")
 	adaType.length = 10
 	adaType.SetFractional(2)

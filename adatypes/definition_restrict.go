@@ -95,6 +95,11 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 	newStructure.SubTypes = []IAdaType{}
 	fieldMap.evaluateTopLevelStructure(newStructure.Level())
 	fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newStructure)
+	Central.Log.Debugf("%s part flag %v", fieldMap.lastStructure.Name(), fieldMap.lastStructure.HasFlagSet(FlagOptionPart))
+	if fieldMap.lastStructure.HasFlagSet(FlagOptionPart) {
+		newStructure.AddFlag(FlagOptionPart)
+		Central.Log.Debugf("Set %s part flag %v", newStructure.Name(), newStructure.HasFlagSet(FlagOptionPart))
+	}
 	newStructure.SetParent(fieldMap.lastStructure)
 	if fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved) {
 		if !ok {
@@ -105,8 +110,8 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 	} else {
 		newStructure.RemoveFlag(FlagOptionToBeRemoved)
 	}
-	Central.Log.Debugf("Add structure for active tree %d >%s< %d >%s<", newStructure.Level(),
-		adaType.Name(), fieldMap.lastStructure.Level(), fieldMap.lastStructure.Name())
+	Central.Log.Debugf("Add structure for active tree %d >%s< remove=%v parent %d >%s<", newStructure.Level(),
+		adaType.Name(), newStructure.HasFlagSet(FlagOptionToBeRemoved), fieldMap.lastStructure.Level(), fieldMap.lastStructure.Name())
 	fieldMap.lastStructure = newStructure
 	fieldMap.stackStructure.Push(fieldMap.lastStructure)
 	fieldMap.strCount[adaType.Name()] = newStructure
@@ -126,14 +131,27 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 		fieldMap.definition.activeFields[adaType.Name()] = adaType
 	}
 	// Structure need to be copied each time because of tree to nodes of fields
-	if adaType.IsStructure() {
+	switch {
+	case adaType.Type() == FieldTypeRedefinition:
+		Central.Log.Debugf("Check redefintion %s", adaType.Name())
+		if ok {
+			redType := adaType.(*RedefinitionType)
+			adaType.RemoveFlag(FlagOptionToBeRemoved)
+			for _, s := range redType.SubTypes {
+				Central.Log.Debugf("Sub redefintion %s", s.Name())
+				delete(fieldMap.set, s.Name())
+			}
+			fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, redType)
+		}
+	case adaType.IsStructure():
 		if adaType.Type() == FieldTypeMultiplefield && !ok && fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved) {
 			Central.Log.Debugf("Skip removing MU field %s", adaType.Name())
 			return nil
 		}
+		Central.Log.Debugf("Remove structure %s ok=%v", adaType.Name(), ok)
 		removeStructure(adaType, fieldMap, fq, ok, parentType.Name() != "" && fieldMap.lastStructure.Name() == parentType.Name())
-	} else {
-		Central.Log.Debugf("In map=%v Level=%d < %d", ok, fieldMap.lastStructure.Level(),
+	default:
+		Central.Log.Debugf("Field %s in map=%v Level=%d < %d", adaType.Name(), ok, fieldMap.lastStructure.Level(),
 			adaType.Level())
 		fieldMap.evaluateTopLevelStructure(adaType.Level())
 
@@ -145,9 +163,25 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 
 		// Needed to check if not group is selected in query
 		remove := fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved)
+		// But not if root node
+		if fieldMap.lastStructure.Name() == "" {
+			remove = true
+		}
+		Central.Log.Debugf("Parent node %s has %v", fieldMap.lastStructure.Name(), remove)
 		if !ok && remove {
 			Central.Log.Debugf("Skip copy to active field, because field %s is not part of map map=%v remove=%v",
 				adaType.Name(), ok, remove)
+			var p IAdaType
+			p = fieldMap.lastStructure
+			for {
+				if p.GetParent() == nil || p.GetParent().Name() == "" {
+					break
+				}
+				p = p.GetParent()
+			}
+			if p.Name() != "" {
+				p.(*StructureType).addPart()
+			}
 		} else {
 			Central.Log.Debugf("Current parent %d %s -> %d %s map=%v remove=%v", fieldMap.lastStructure.Level(), fieldMap.lastStructure.Name(),
 				adaType.Level(), adaType.Name(), ok, remove)
@@ -180,6 +214,10 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 				Central.Log.Debugf("Add type to %s value=%p count=%d", fieldMap.lastStructure.Name(), fieldMap.lastStructure, fieldMap.lastStructure.NrFields())
 				Central.Log.Debugf("Add type entry in structure %s", newType.Name())
 				newType.RemoveFlag(FlagOptionToBeRemoved)
+				if fieldMap.lastStructure.HasFlagSet(FlagOptionPart) {
+					newType.AddFlag(FlagOptionPart)
+					Central.Log.Debugf("Set %s part flag %v", newType.Name(), newType.HasFlagSet(FlagOptionPart))
+				}
 			}
 		}
 	}
@@ -205,7 +243,7 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 	fieldMap.set = make(map[string]*fieldQuery)
 	fieldMap.strCount = make(map[string]*StructureType)
 	fieldMap.stackStructure = NewStack()
-	if field != nil {
+	if len(field) != 0 {
 		for _, f := range field {
 			fl := strings.Trim(f, " ")
 			if fl != "" && !strings.HasPrefix(fl, "#ISN") {
@@ -217,14 +255,14 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 				b := strings.Index(fl, "[")
 				var r *AdaRange
 				if b > 0 {
-					fl = fl[:b]
+					fn := fl[:b]
 					e := strings.Index(fl, "]")
 					r = NewRangeParser(fl[b+1 : e])
 					if r == nil {
 						return nil, NewGenericError(129, f)
 					}
-					Central.Log.Debugf("Add to map: %s -> %s reference=%v", fl, r.FormatBuffer(), rf)
-					fieldMap.set[fl] = &fieldQuery{name: fl, fieldRange: []*AdaRange{r}, reference: rf}
+					Central.Log.Debugf("Add to map: %s -> %s reference=%v", fn, r.FormatBuffer(), rf)
+					fieldMap.set[fn] = &fieldQuery{name: fn, fieldRange: []*AdaRange{r}, reference: rf}
 				} else {
 					Central.Log.Debugf("Add to map: %s reference=%v", fl, rf)
 					fieldMap.set[fl] = &fieldQuery{name: fl, reference: rf}
@@ -233,7 +271,9 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 		}
 	}
 	fieldMap.parentStructure = NewStructure()
+	fieldMap.parentStructure.AddFlag(FlagOptionToBeRemoved)
 	fieldMap.lastStructure = fieldMap.parentStructure
+	Central.Log.Debugf("Init parent structure %v", fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved))
 	return fieldMap, nil
 }
 
@@ -269,6 +309,7 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	def.DumpTypes(true, false, "remove restrict restrict")
 
 	if len(fieldMap.set) > 0 {
+		Central.Log.Debugf("Field map ... %v", fieldMap.set)
 		for f := range fieldMap.set {
 			err = NewGenericError(50, f)
 			if Central.IsDebugLevel() {

@@ -24,12 +24,12 @@ import (
 )
 
 func ExampleDefinition_ShouldRestrictToFields() {
-	f, err := initLogWithFile("definition.log")
+	err := initLogWithFile("definition.log")
 	if err != nil {
 		fmt.Println("Init log error:", err)
 		return
 	}
-	defer f.Close()
+
 	InitDefinitionCache()
 	testDefinition := createPeriodGroupMultiplerField()
 	testDefinition.PutCache("AA")
@@ -54,49 +54,49 @@ func ExampleDefinition_ShouldRestrictToFields() {
 	definition.DumpTypes(false, true)
 
 	// Output: Dump all file field types:
-	//   1, U4, 4, B  ; U4  PE=false MU=false REMOVE=true
-	//   1, B1, 1, F  ; B1  PE=false MU=false REMOVE=true
-	//   1, UB, 1, B  ; UB  PE=false MU=false REMOVE=true
-	//   1, I2, 2, B  ; I2  PE=false MU=false REMOVE=true
-	//   1, U8, 8, B  ; U8  PE=false MU=false REMOVE=true
-	//   1, GR ,PE ; GR  PE=true MU=true REMOVE=true PE=1-N
-	//     2, GC, 1, A  ; GC  PE=true MU=true REMOVE=true PE=1-N
-	//     2, GM, 5, P ,MU; GM  PE=true MU=true REMOVE=true PE=1-N MU=1-N
-	//       3, GM, 5, P  ; GM  PE=true MU=true REMOVE=true
-	//     2, GS, 1, A  ; GS  PE=true MU=true REMOVE=true PE=1-N
-	//     2, GP, 1, P  ; GP  PE=true MU=true REMOVE=true PE=1-N
-	//   1, I8, 8, B  ; I8  PE=false MU=false REMOVE=true
+	//   1, U4, 4, B  ; U4
+	//   1, B1, 1, F  ; B1
+	//   1, UB, 1, B  ; UB
+	//   1, I2, 2, B  ; I2
+	//   1, U8, 8, B  ; U8
+	//   1, GR ,PE ; GR
+	//     2, GC, 1, A  ; GC
+	//     2, GM, 5, P ,MU; GM
+	//       3, GM, 5, P  ; GM
+	//     2, GS, 1, A  ; GS
+	//     2, GP, 1, P  ; GP
+	//   1, I8, 8, B  ; I8
 	//
 	// Dump all active field types:
-	//   1, U4, 4, B  ; U4  PE=false MU=false REMOVE=true
-	//   1, B1, 1, F  ; B1  PE=false MU=false REMOVE=true
-	//   1, UB, 1, B  ; UB  PE=false MU=false REMOVE=true
-	//   1, I2, 2, B  ; I2  PE=false MU=false REMOVE=true
-	//   1, U8, 8, B  ; U8  PE=false MU=false REMOVE=true
-	//   1, GR ,PE ; GR  PE=true MU=true REMOVE=true PE=1-N
-	//     2, GC, 1, A  ; GC  PE=true MU=true REMOVE=true PE=1-N
-	//     2, GM, 5, P ,MU; GM  PE=true MU=true REMOVE=true PE=1-N MU=1-N
-	//       3, GM, 5, P  ; GM  PE=true MU=true REMOVE=true
-	//     2, GS, 1, A  ; GS  PE=true MU=true REMOVE=true PE=1-N
-	//     2, GP, 1, P  ; GP  PE=true MU=true REMOVE=true PE=1-N
-	//   1, I8, 8, B  ; I8  PE=false MU=false REMOVE=true
+	//   1, U4, 4, B  ; U4
+	//   1, B1, 1, F  ; B1
+	//   1, UB, 1, B  ; UB
+	//   1, I2, 2, B  ; I2
+	//   1, U8, 8, B  ; U8
+	//   1, GR ,PE ; GR
+	//     2, GC, 1, A  ; GC
+	//     2, GM, 5, P ,MU; GM
+	//       3, GM, 5, P  ; GM
+	//     2, GS, 1, A  ; GS
+	//     2, GP, 1, P  ; GP
+	//   1, I8, 8, B  ; I8
 	//
 	// Dump all file field types:
-	//   1, U4, 4, B  ; U4  PE=false MU=false REMOVE=true
-	//   1, B1, 1, F  ; B1  PE=false MU=false REMOVE=true
-	//   1, UB, 1, B  ; UB  PE=false MU=false REMOVE=true
-	//   1, I2, 2, B  ; I2  PE=false MU=false REMOVE=true
-	//   1, U8, 8, B  ; U8  PE=false MU=false REMOVE=true
-	//   1, GR ,PE ; GR  PE=true MU=true REMOVE=true PE=1-N
-	//     2, GC, 1, A  ; GC  PE=true MU=true REMOVE=true PE=1-N
-	//     2, GM, 5, P ,MU; GM  PE=true MU=true REMOVE=true PE=1-N MU=1-N
-	//       3, GM, 5, P  ; GM  PE=true MU=true REMOVE=true
-	//     2, GS, 1, A  ; GS  PE=true MU=true REMOVE=true PE=1-N
-	//     2, GP, 1, P  ; GP  PE=true MU=true REMOVE=true PE=1-N
-	//   1, I8, 8, B  ; I8  PE=false MU=false REMOVE=true
+	//   1, U4, 4, B  ; U4
+	//   1, B1, 1, F  ; B1
+	//   1, UB, 1, B  ; UB
+	//   1, I2, 2, B  ; I2
+	//   1, U8, 8, B  ; U8
+	//   1, GR ,PE ; GR
+	//     2, GC, 1, A  ; GC
+	//     2, GM, 5, P ,MU; GM
+	//       3, GM, 5, P  ; GM
+	//     2, GS, 1, A  ; GS
+	//     2, GP, 1, P  ; GP
+	//   1, I8, 8, B  ; I8
 	//
 	// Dump all active field types:
-	//   1, GR ,PE ; GR  PE=true MU=true REMOVE=true PE=1-N
-	//     2, GC, 1, A  ; GC  PE=true MU=true REMOVE=false PE=1-N
-	//   1, I8, 8, B  ; I8  PE=false MU=false REMOVE=false
+	//   1, GR ,PE ; GR
+	//     2, GC, 1, A  ; GC
+	//   1, I8, 8, B  ; I8
 }

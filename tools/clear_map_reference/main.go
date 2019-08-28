@@ -1,6 +1,26 @@
+/*
+* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+*
+* SPDX-License-Identifier: Apache-2.0
+*
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+ */
+
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -9,31 +29,48 @@ import (
 
 	"github.com/SoftwareAG/adabas-go-api/adabas"
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var output = false
 var url string
 
-func initLogLevelWithFile(fileName string, level log.Level) (file *os.File, err error) {
+func initLogLevelWithFile(fileName string, level zapcore.Level) (err error) {
 	p := os.Getenv("LOGPATH")
 	if p == "" {
 		p = "."
 	}
 	name := p + string(os.PathSeparator) + fileName
-	file, err = os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		return
+
+	rawJSON := []byte(`{
+		"level": "error",
+		"encoding": "console",
+		"outputPaths": [ "XXX"],
+		"errorOutputPaths": ["stderr"],
+		"encoderConfig": {
+		  "messageKey": "message",
+		  "levelKey": "level",
+		  "levelEncoder": "lowercase"
+		}
+	  }`)
+
+	var cfg zap.Config
+	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
+		panic(err)
 	}
-	log.SetLevel(level)
+	cfg.Level.SetLevel(level)
+	cfg.OutputPaths = []string{name}
+	logger, err := cfg.Build()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
 
-	log.SetOutput(file)
-	myLog := log.New()
-	myLog.SetLevel(level)
-	myLog.Out = file
+	sugar := logger.Sugar()
 
-	// log.SetOutput(file)
-	adatypes.Central.Log = myLog
+	sugar.Infof("Start logging with level", level)
+	adatypes.Central.Log = sugar
 
 	return
 }
@@ -53,24 +90,21 @@ func dumpStream(record *adabas.Record, x interface{}) error {
 }
 
 func main() {
-	level := log.ErrorLevel
+	level := zapcore.ErrorLevel
 	ed := os.Getenv("ENABLE_DEBUG")
 	switch ed {
 	case "1":
-		level = log.DebugLevel
+		level = zapcore.DebugLevel
 		adatypes.Central.SetDebugLevel(true)
 	case "2":
-		level = log.InfoLevel
-	default:
-		level = log.ErrorLevel
+		level = zapcore.InfoLevel
 	}
 
-	f, err := initLogLevelWithFile("clear_map_reference.log", level)
+	err := initLogLevelWithFile("clear_map_reference.log", level)
 	if err != nil {
 		fmt.Printf("Error opening log file: %v\n", err)
 		return
 	}
-	defer f.Close()
 	defer TimeTrack(time.Now(), "Done testsuite test")
 
 	var file int

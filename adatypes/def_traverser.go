@@ -104,7 +104,7 @@ func (def *Definition) TraverseValues(t TraverserValuesMethods, x interface{}) (
 		}
 		if value.Type().IsStructure() && ret != SkipTree {
 			Central.Log.Debugf("Go through structure")
-			ret, err = value.(*StructureValue).Traverse(t, x)
+			ret, err = value.(StructureValueTraverser).Traverse(t, x)
 			if err != nil {
 				Central.Log.Debugf("Error traverse structure of %s -> %v", value.Type().Name(), err)
 				return

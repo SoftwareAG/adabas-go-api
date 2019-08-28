@@ -25,30 +25,27 @@ import (
 	"math"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInt8Nil(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	up := newInt8Value(nil)
 	assert.Nil(t, up)
 }
 
 func TestInt8(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt8, "I8")
 	up := newInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
@@ -67,7 +64,11 @@ func TestInt8(t *testing.T) {
 	assert.Equal(t, int64(-1), up.Value())
 	up.SetValue(0)
 	assert.Equal(t, int64(0), up.Value())
-	v = []byte{0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
+	if bigEndian() {
+		v = []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1}
+	} else {
+		v = []byte{0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
+	}
 	up.SetValue(v)
 	assert.Equal(t, int64(1), up.Value())
 	up.SetValue(1024)
@@ -107,26 +108,29 @@ func TestInt8(t *testing.T) {
 }
 
 func TestInt8Variable(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
-	adaType := NewType(FieldTypeUInt8, "U8")
+	Central.Log.Infof("TEST: %s", t.Name())
+	adaType := NewType(FieldTypeInt8, "I8")
 	adaType.SetLength(0)
 	up := newInt8Value(adaType)
 	checkValueInt64(t, up, []byte{2, 1}, 1)
 	checkValueInt64(t, up, []byte{2, 255}, -1)
 	checkValueInt64(t, up, []byte{3, 1, 1}, 0x101)
 	checkValueInt64(t, up, []byte{4, 1, 1, 1}, 65793)
-	checkValueInt64(t, up, []byte{4, 0, 0, 255}, 16711680)
+	if bigEndian() {
+		checkValueInt64(t, up, []byte{4, 255, 0, 0}, 16711680)
+	} else {
+		checkValueInt64(t, up, []byte{4, 0, 0, 255}, 16711680)
+	}
 	checkValueInt64(t, up, []byte{5, 1, 1, 1, 1}, 0x1010101)
 }
 
 func checkValueInt64(t *testing.T, up IAdaValue, input []byte, expect int64) {
-	helper := NewDynamicHelper(binary.LittleEndian)
+	helper := NewDynamicHelper(endian())
 	helper.putBytes(input)
 	helper.offset = 0
 	option := &BufferOption{}
@@ -139,12 +143,11 @@ func checkValueInt64(t *testing.T, up IAdaValue, input []byte, expect int64) {
 }
 
 func ExampleIAdaType_setValue() {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if err != nil {
 		fmt.Println("Error enable log")
 		return
 	}
-	defer f.Close()
 
 	adaType := NewType(FieldTypeInt8, "I8")
 	up := newInt8Value(adaType)
@@ -209,13 +212,21 @@ func ExampleIAdaType_setValue() {
 		return
 	}
 	fmt.Printf("Integer -2 (1-byte array) value : %d %T\n", up.value, up.value)
-	err = up.SetValue([]byte{0x50, 0x2})
+	if bigEndian() {
+		err = up.SetValue([]byte{0x2, 0x50})
+	} else {
+		err = up.SetValue([]byte{0x50, 0x2})
+	}
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Printf("Integer 592 (2-byte array) value : %d %T\n", up.value, up.value)
-	err = up.SetValue([]byte{0x50, 0x2, 0x3, 0x4})
+	if bigEndian() {
+		err = up.SetValue([]byte{0x4, 0x3, 0x2, 0x50})
+	} else {
+		err = up.SetValue([]byte{0x50, 0x2, 0x3, 0x4})
+	}
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -240,13 +251,12 @@ func ExampleIAdaType_setValue() {
 }
 
 func TestInt8FormatBuffer(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt8, "I8")
 	up := newInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
@@ -258,19 +268,23 @@ func TestInt8FormatBuffer(t *testing.T) {
 }
 
 func TestInt8ParseBuffer(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt8, "I8")
 	up := newInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
 	option := &BufferOption{}
 	helper := &BufferHelper{order: binary.LittleEndian, buffer: []byte{0x5, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}}
 	var res TraverseResult
+	res, err = up.parseBuffer(helper, option)
+	assert.NoError(t, err)
+	assert.Equal(t, TraverseResult(0), res)
+	assert.Equal(t, int64(5), up.Value())
+	helper = &BufferHelper{order: binary.BigEndian, buffer: []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5}}
 	res, err = up.parseBuffer(helper, option)
 	assert.NoError(t, err)
 	assert.Equal(t, TraverseResult(0), res)
@@ -283,25 +297,23 @@ func TestInt8ParseBuffer(t *testing.T) {
 }
 
 func TestUInt8Nil(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	up := newUInt8Value(nil)
 	assert.Nil(t, up)
 }
 
 func TestUInt8(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt8, "I8")
 	up := newUInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)
@@ -327,7 +339,12 @@ func TestUInt8(t *testing.T) {
 	assert.NoError(t, flerr)
 	assert.Equal(t, 1024.0, fl)
 
-	v := []byte{0x00, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
+	var v []byte
+	if bigEndian() {
+		v = []byte{0x00, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0}
+	} else {
+		v = []byte{0x00, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
+	}
 	assert.Equal(t, v, up.Bytes())
 	assert.Equal(t, "1024", up.String())
 
@@ -354,13 +371,12 @@ func TestUInt8(t *testing.T) {
 }
 
 func TestUInt8Variable(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt8, "I8")
 	adaType.SetLength(0)
 	up := newUInt8Value(adaType)
@@ -384,12 +400,11 @@ func checkValueUInt64(t *testing.T, up IAdaValue, input []byte, expect uint64) {
 }
 
 func ExampleIAdaType_uint8SetValue() {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if err != nil {
 		fmt.Println("Error enable log")
 		return
 	}
-	defer f.Close()
 
 	adaType := NewType(FieldTypeUInt8, "U8")
 	up := newUInt8Value(adaType)
@@ -458,13 +473,21 @@ func ExampleIAdaType_uint8SetValue() {
 		return
 	}
 	fmt.Printf("Integer 254 (1-byte array) value : %d %T\n", up.value, up.value)
-	err = up.SetValue([]byte{0x50, 0x2})
+	if bigEndian() {
+		err = up.SetValue([]byte{0x2, 0x50})
+	} else {
+		err = up.SetValue([]byte{0x50, 0x2})
+	}
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Printf("Integer 592 (2-byte array) value : %d %T\n", up.value, up.value)
-	err = up.SetValue([]byte{0x50, 0x2, 0x3, 0x4})
+	if bigEndian() {
+		err = up.SetValue([]byte{0x4, 0x3, 0x2, 0x50})
+	} else {
+		err = up.SetValue([]byte{0x50, 0x2, 0x3, 0x4})
+	}
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -489,13 +512,12 @@ func ExampleIAdaType_uint8SetValue() {
 }
 
 func TestUInt8FormatBuffer(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt8, "U8")
 	up := newUInt8Value(adaType)
 	fmt.Println("Integer 8 value ", up.value)

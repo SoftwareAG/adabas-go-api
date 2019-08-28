@@ -22,7 +22,6 @@
 package adabas
 
 import (
-	"fmt"
 	"os"
 	"os/user"
 	"sync/atomic"
@@ -30,8 +29,6 @@ import (
 	"unsafe"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
-
-	log "github.com/sirupsen/logrus"
 )
 
 /*
@@ -258,16 +255,15 @@ func (adabas *Adabas) CallAdabas() (err error) {
 		adatypes.LogMultiLineString(adabas.Acbx.String())
 		if adabas.Acbx.Acbxrsp != 0 {
 			if adabas.Acbx.Acbxrsp == 60 {
-				fmt.Println(adabas.Acbx.String())
+				adatypes.Central.Log.Debugf("%s", adabas.Acbx.String())
 				for index := range adabas.AdabasBuffers {
-					fmt.Println(adabas.AdabasBuffers[index].String())
+					adatypes.Central.Log.Debugf("%s", adabas.AdabasBuffers[index].String())
 				}
 			}
 		}
 	} else {
 		adatypes.Central.Log.Debugf("Call Adabas using native link: %v", adatypes.Central.IsDebugLevel())
 		pabdArray := C.create_abd(C.int(len(adabas.AdabasBuffers)))
-		adatypes.Central.Log.Debugf("Create ABD : %v", log.GetLevel())
 		for index := range adabas.AdabasBuffers {
 			adabas.AdabasBuffers[index].abd.Abdrecv = adabas.AdabasBuffers[index].abd.Abdsize
 			adabas.AdabasBuffers[index].createCAbd(pabdArray, index)

@@ -27,8 +27,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // ConstantIndicator constant indicator is replaced with constants
@@ -107,6 +105,7 @@ type ISearchNode interface {
 	addNode(*SearchNode)
 	addValue(*SearchValue)
 	String() string
+	Platform() *Platform
 }
 
 // SearchInfo structure containing search parameters
@@ -120,6 +119,7 @@ type SearchInfo struct {
 
 // SearchTree tree entry point
 type SearchTree struct {
+	platform          *Platform
 	node              *SearchNode
 	value             *SearchValue
 	uniqueDescriptors []string
@@ -155,18 +155,24 @@ func (tree *SearchTree) ValueBuffer(buffer *bytes.Buffer) {
 	}
 	var intBuffer []byte
 	helper := NewHelper(intBuffer, math.MaxInt8, endian())
+	helper.search = true
 	Central.Log.Debugf("Tree value value buffer %s", tree.value.value.String())
 	tree.value.value.StoreBuffer(helper)
+	if tree.platform.IsMainframe() && tree.value.comp == EQ {
+		tree.value.value.StoreBuffer(helper)
+	}
 	buffer.Write(helper.buffer)
 	//buffer.Write(tree.value.value.Bytes())
 }
 
 func (tree *SearchTree) addNode(node *SearchNode) {
 	tree.node = node
+	node.platform = tree.platform
 }
 
 func (tree *SearchTree) addValue(value *SearchValue) {
 	tree.value = value
+	value.platform = tree.platform
 }
 
 // OrderBy provide list of descriptor names for this search
@@ -174,38 +180,22 @@ func (tree *SearchTree) OrderBy() []string {
 	return tree.uniqueDescriptors
 }
 
-func (tree *SearchTree) evalueDescriptors() bool {
-	if tree.node != nil {
-		Central.Log.Debugf("Search node descriptor")
-		descriptors := tree.node.orderBy()
-		Central.Log.Debugf("Descriptor list: %v", descriptors)
-		for _, d := range descriptors {
-			add := true
-			for _, ud := range tree.uniqueDescriptors {
-				Central.Log.Debugf("Check descriptor %s to unique descriptor %s", d, ud)
-				if d == ud {
-					add = false
-					break
-				}
-			}
-			if add {
-				Central.Log.Debugf("Add node descriptor : %s", d)
-				tree.uniqueDescriptors = append(tree.uniqueDescriptors, d)
-			}
-		}
-	} else {
-		Central.Log.Debugf("Empty node use value descriptor")
-		if tree.value == nil {
-			return false
-		}
-		descriptor := tree.value.orderBy()
-		if descriptor != "" {
-			Central.Log.Debugf("Add value descriptor : %s", descriptor)
-			tree.uniqueDescriptors = append(tree.uniqueDescriptors, descriptor)
+func (tree *SearchTree) evaluateDescriptors(fields map[string]bool) bool {
+	Central.Log.Debugf("Evaluate node descriptors")
+	needSearch := false
+	for k, v := range fields {
+		if v {
+			tree.uniqueDescriptors = append(tree.uniqueDescriptors, k)
+		} else {
+			needSearch = true
 		}
 	}
-	Central.Log.Debugf("Unique descriptor list: %v", tree.uniqueDescriptors)
-	return len(tree.uniqueDescriptors) != 1
+	return needSearch || (len(tree.uniqueDescriptors) != 1)
+}
+
+// Platform returns current os platform
+func (tree *SearchTree) Platform() *Platform {
+	return tree.platform
 }
 
 // SearchFields provide list of field names for this search
@@ -236,16 +226,19 @@ func (tree *SearchTree) SearchFields() []string {
 
 // SearchNode node entry in the searchtree
 type SearchNode struct {
-	nodes  []*SearchNode
-	values []*SearchValue
-	logic  logicBound
+	platform *Platform
+	nodes    []*SearchNode
+	values   []*SearchValue
+	logic    logicBound
 }
 
 func (node *SearchNode) addNode(childNode *SearchNode) {
+	childNode.platform = node.platform
 	node.nodes = append(node.nodes, childNode)
 }
 
 func (node *SearchNode) addValue(value *SearchValue) {
+	value.platform = node.platform
 	node.values = append(node.values, value)
 }
 
@@ -309,6 +302,9 @@ func (node *SearchNode) valueBuffer(buffer *bytes.Buffer) {
 		helper.search = true
 		Central.Log.Debugf("Tree value value buffer %s", v.value.String())
 		v.value.StoreBuffer(helper)
+		if node.platform.IsMainframe() && v.comp == EQ {
+			v.value.StoreBuffer(helper)
+		}
 		buffer.Write(helper.buffer)
 		Central.Log.Debugf("%d Len buffer %d", i, buffer.Len())
 	}
@@ -317,21 +313,6 @@ func (node *SearchNode) valueBuffer(buffer *bytes.Buffer) {
 			n.valueBuffer(buffer)
 		}
 	}
-}
-
-func (node *SearchNode) orderBy() []string {
-	var descriptors []string
-	for _, n := range node.nodes {
-		subDescriptors := n.orderBy()
-		descriptors = append(descriptors, subDescriptors...)
-	}
-	for _, v := range node.values {
-		subDescriptor := v.orderBy()
-		if subDescriptor != "" {
-			descriptors = append(descriptors, subDescriptor)
-		}
-	}
-	return descriptors
 }
 
 func (node *SearchNode) searchFields() []string {
@@ -349,12 +330,18 @@ func (node *SearchNode) searchFields() []string {
 	return fields
 }
 
+// Platform returns current os platform
+func (node *SearchNode) Platform() *Platform {
+	return node.platform
+}
+
 // SearchValue value endpoint
 type SearchValue struct {
-	field   string
-	adaType IAdaType
-	value   IAdaValue
-	comp    comparator
+	platform *Platform
+	field    string
+	adaType  IAdaType
+	value    IAdaValue
+	comp     comparator
 }
 
 // String shows the current value of the search value
@@ -367,6 +354,11 @@ func (value *SearchValue) String() string {
 	}
 	return fmt.Sprintf("%s %s %s(%d)", value.field, value.comp.String(),
 		value.value.String(), value.value.Type().Length())
+}
+
+// Platform returns current os platform
+func (value *SearchValue) Platform() *Platform {
+	return value.platform
 }
 
 func (value *SearchValue) orderBy() string {
@@ -385,17 +377,25 @@ func (value *SearchValue) searchFields() string {
 
 func (value *SearchValue) searchBuffer(buffer *bytes.Buffer) {
 	Central.Log.Debugf("Before value %s", buffer.String())
+	curLen := buffer.Len()
+	if curLen > 0 {
+		curLen++
+	}
 	value.value.FormatBuffer(buffer, &BufferOption{})
 	if value.comp != NONE {
-		buffer.WriteByte(',')
-		buffer.WriteString(value.comp.String())
+		if value.platform.IsMainframe() && value.comp == EQ {
+			buffer.WriteString(",S," + buffer.String()[curLen:])
+		} else {
+			buffer.WriteByte(',')
+			buffer.WriteString(value.comp.String())
+		}
 	}
 	Central.Log.Debugf("After value %s", buffer.String())
 }
 
 func checkComparator(comp string) comparator {
 	switch comp {
-	case "=":
+	case "=", "==":
 		return EQ
 	case "!=":
 		return NE
@@ -474,12 +474,13 @@ func NewSearchInfo(platform *Platform, search string) *SearchInfo {
 // GenerateTree generate tree search information
 func (searchInfo *SearchInfo) GenerateTree() (tree *SearchTree, err error) {
 	Central.Log.Debugf("Generate search tree: %#v", searchInfo)
-	tree = &SearchTree{}
-	err = searchInfo.extractBinding(tree, searchInfo.search)
+	tree = &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	err = searchInfo.extractBinding(tree, searchInfo.search, fields)
 	if err != nil {
 		return nil, err
 	}
-	searchNeeded := tree.evalueDescriptors()
+	searchNeeded := tree.evaluateDescriptors(fields)
 	if !searchInfo.NeedSearch {
 		searchInfo.NeedSearch = searchNeeded
 	}
@@ -487,7 +488,7 @@ func (searchInfo *SearchInfo) GenerateTree() (tree *SearchTree, err error) {
 	return
 }
 
-func (searchInfo *SearchInfo) extractBinding(parentNode ISearchNode, bind string) (err error) {
+func (searchInfo *SearchInfo) extractBinding(parentNode ISearchNode, bind string, fields map[string]bool) (err error) {
 	var node *SearchNode
 
 	Central.Log.Debugf("Extract binding of: %s in parent Node: %s", bind, parentNode.String())
@@ -495,30 +496,37 @@ func (searchInfo *SearchInfo) extractBinding(parentNode ISearchNode, bind string
 	binds := regexp.MustCompile(" AND | and ").Split(bind, -1)
 	if len(binds) > 1 {
 		Central.Log.Debugf("Found AND binds: %d", len(binds))
-		node = &SearchNode{logic: AND}
-		searchInfo.NeedSearch = true
+		node = &SearchNode{logic: AND, platform: parentNode.Platform()}
+		//searchInfo.NeedSearch = true
 	} else {
 		Central.Log.Debugf("Check or bindings")
 		binds = regexp.MustCompile(" OR | or ").Split(bind, -1)
 		if len(binds) > 1 {
 			Central.Log.Debugf("Found OR binds: %d", len(binds))
-			node = &SearchNode{logic: OR}
-			searchInfo.NeedSearch = true
+			node = &SearchNode{logic: OR, platform: parentNode.Platform()}
+			//searchInfo.NeedSearch = true
 		}
 	}
 	if node != nil {
 		Central.Log.Debugf("Go through nodes")
 		parentNode.addNode(node)
+		subFields := make(map[string]bool)
 		for _, bind := range binds {
 			Central.Log.Debugf("Go through bind: %s", bind)
-			err = searchInfo.extractBinding(node, bind)
+			err = searchInfo.extractBinding(node, bind, subFields)
 			if err != nil {
 				return
 			}
 		}
+		if node.logic == OR && len(subFields) == 1 {
+			node.logic = MOR
+		}
+		for k, v := range subFields {
+			fields[k] = v
+		}
 	} else {
 		Central.Log.Debugf("Go through value bind: %s", bind)
-		err = searchInfo.extractComparator(bind, parentNode)
+		err = searchInfo.extractComparator(bind, parentNode, fields)
 		if err != nil {
 			return
 		}
@@ -526,19 +534,19 @@ func (searchInfo *SearchInfo) extractBinding(parentNode ISearchNode, bind string
 	return
 }
 
-func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode) (err error) {
-	Central.Log.Debugf("Search: %s", search)
+func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode, fields map[string]bool) (err error) {
+	Central.Log.Debugf("Extract comparator %s", search)
 	parameter := regexp.MustCompile("!=|=|<=|>=|<>|<|>").Split(search, -1)
 	field := parameter[0]
 	value := parameter[len(parameter)-1]
-	lowerLevel := &SearchValue{field: field}
+	lowerLevel := &SearchValue{field: field, platform: node.Platform()}
 	Central.Log.Debugf("Field: %s Value: %s from %v", lowerLevel.field, value, parameter)
 
 	/* Check for range information */
-	if regexp.MustCompile("^[\\[\\(].*:.*[\\]\\)]$").MatchString(value) {
+	if regexp.MustCompile(`^[\[\(].*:.*[\]\)]$`).MatchString(value) {
 		/* Found range definition, will add lower and upper limit */
 		Central.Log.Debugf("Range found")
-		rangeNode := &SearchNode{logic: RANGE}
+		rangeNode := &SearchNode{logic: RANGE, platform: node.Platform()}
 
 		/*
 		 * Check for lower level and upper level comparator
@@ -574,9 +582,10 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 			return
 		}
 		rangeNode.addValue(lowerLevel)
+		fields[lowerLevel.adaType.Name()] = lowerLevel.adaType.IsSpecialDescriptor() || lowerLevel.adaType.IsOption(FieldOptionDE)
 
 		/* Generate upper level value */
-		upperLevel := &SearchValue{field: strings.TrimSpace(field), comp: maximumRange}
+		upperLevel := &SearchValue{field: strings.TrimSpace(field), comp: maximumRange, platform: node.Platform()}
 		endValue := value[columnIndex+1 : len(value)-1]
 		Central.Log.Debugf("Search range end value: %s", startValue)
 
@@ -590,7 +599,7 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 			searchInfo.NeedSearch = true
 			var notLowerLevel *SearchValue
 			if value[0] == '(' {
-				notLowerLevel = &SearchValue{field: strings.TrimSpace(field), comp: NONE}
+				notLowerLevel = &SearchValue{field: strings.TrimSpace(field), comp: NONE, platform: node.Platform()}
 				err = searchInfo.searchFieldValue(notLowerLevel, startValue)
 				if err != nil {
 					return
@@ -601,17 +610,17 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 				rangeNode.addNode(notRangeNode)
 			}
 			if value[len(value)-1] == ')' {
-				notUpperLevel := &SearchValue{field: strings.TrimSpace(field), comp: NONE}
+				notUpperLevel := &SearchValue{field: strings.TrimSpace(field), comp: NONE, platform: node.Platform()}
 				err = searchInfo.searchFieldValue(notUpperLevel, endValue)
 				if err != nil {
 					return
 				}
 				if notLowerLevel == nil {
-					notRangeNode := &SearchNode{logic: NOT}
+					notRangeNode := &SearchNode{logic: NOT, platform: node.Platform()}
 					notRangeNode.addValue(notUpperLevel)
 					rangeNode.addNode(notRangeNode)
 				} else {
-					notRangeNode := &SearchNode{logic: AND}
+					notRangeNode := &SearchNode{logic: AND, platform: node.Platform()}
 					notUpperLevel.comp = NE
 					notRangeNode.addValue(notUpperLevel)
 					rangeNode.addNode(notRangeNode)
@@ -636,6 +645,7 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 		if err != nil {
 			return
 		}
+		fields[lowerLevel.adaType.Name()] = lowerLevel.adaType.IsSpecialDescriptor() || lowerLevel.adaType.IsOption(FieldOptionDE)
 		node.addValue(lowerLevel)
 	}
 	return
@@ -643,11 +653,27 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode)
 
 func (searchInfo *SearchInfo) searchFieldValue(searchValue *SearchValue, value string) (err error) {
 	Central.Log.Debugf("Search for type %s", searchValue.field)
-	searchValue.adaType, err = searchInfo.Definition.SearchType(searchValue.field)
-	if err != nil {
+	adaType, xerr := searchInfo.Definition.SearchType(searchValue.field)
+	if xerr != nil {
 		Central.Log.Debugf("Search error: %v", err)
-		return
+		return xerr
 	}
+	switch adaType.(type) {
+	case *AdaType:
+		t := adaType.(*AdaType)
+		var xType AdaType
+		xType = *t
+		searchValue.adaType = &xType
+	case *AdaSuperType:
+		t := adaType.(*AdaSuperType)
+		var xType AdaSuperType
+		xType = *t
+		searchValue.adaType = &xType
+	default:
+		return NewGenericError(0)
+	}
+
+	Central.Log.Debugf("Search value type: %T", searchValue.adaType)
 	searchValue.value, err = searchValue.adaType.Value()
 	if err != nil {
 		return
@@ -672,60 +698,81 @@ func (searchInfo *SearchInfo) expandConstants(searchValue *SearchValue, value st
 	}
 	numPart := false
 	for strings.Contains(expandedValue, ConstantIndicator) {
-		posIndicator = strings.IndexByte(expandedValue, ConstantIndicator[0])
-		constantString := regexp.MustCompile(".*#{").ReplaceAllString(expandedValue, "")
+		Central.Log.Debugf("Work on expanded value %s", expandedValue)
+		posIndicator = strings.Index(expandedValue, ConstantIndicator+"{")
+		//posIndicator = strings.IndexByte(expandedValue, ConstantIndicator[0])
+		constantString := expandedValue[posIndicator+2:]
 		Central.Log.Debugf("Constant without indicator id: %s", constantString)
 		constantString = regexp.MustCompile("}.*").ReplaceAllString(constantString, "")
-		Central.Log.Debugf("Constant id: %s", constantString)
 		postIndicator = strings.IndexByte(expandedValue, '}') + 1
+		Central.Log.Debugf("Constant id: %s pos=%d post=%d", constantString, posIndicator, postIndicator)
 		index, error := strconv.Atoi(constantString)
 		if error != nil {
 			err = error
 			return
 		}
 		if posIndicator > 0 {
-			appendNumericValue(&buffer, value[:posIndicator])
+			Central.Log.Debugf("Check numeric value %s", expandedValue[:posIndicator])
+			appendNumericValue(&buffer, expandedValue[:posIndicator])
 			numPart = true
 		}
-		expandedValue = value[postIndicator:]
+		expandedValue = expandedValue[postIndicator:]
 		buffer.WriteString(searchInfo.constants[index-1])
-		Central.Log.Debugf("Expand start=%s -> %d->%v ->end=%s", value[:posIndicator], posIndicator,
-			expandedValue, value[postIndicator:])
+		Central.Log.Debugf("Expand end=%s", expandedValue)
 	}
 	Central.Log.Debugf("Rest value=%s", value[postIndicator:])
-	if value[postIndicator:] != "" {
-		appendNumericValue(&buffer, value[postIndicator:])
+	if expandedValue != "" {
+		appendNumericValue(&buffer, expandedValue)
 		numPart = true
 	}
 	if numPart {
 		Central.Log.Debugf("Numeric part available ....")
+		searchValue.value.Type().SetLength(uint32(buffer.Len()))
 		err = searchValue.value.SetValue(buffer.Bytes())
 	} else {
 		Central.Log.Debugf("No Numeric part available ....%s", string(expandedValue))
+		searchValue.value.Type().SetLength(uint32(buffer.Len()))
 		searchValue.value.SetStringValue(buffer.String())
 	}
 	return
 }
 
 func appendNumericValue(buffer *bytes.Buffer, v string) {
-	Central.Log.Debugf("Append numeric offset=%d\n", buffer.Len())
+	Central.Log.Debugf("Append numeric offset=%d v=%s\n", buffer.Len(), v)
 	if v != "" {
 		// Work on hexadecimal value
 		if strings.HasPrefix(v, "0x") {
-			src := []byte(v[2:])
-			Central.Log.Debugf("Append numeric %s\n", v[2:])
+			multiplier := 1
+			bm := strings.Index(v, "(")
+			if bm > 0 {
+				em := strings.Index(v, ")")
+				Central.Log.Debugf("Multiplier %v", v[bm+1:em])
+				var err error
+				multiplier, err = strconv.Atoi(v[bm+1 : em])
+				if err != nil {
+					Central.Log.Debugf("Error multiplier %v", err)
+					return
+				}
+			} else {
+				bm = len(v)
+			}
+			Central.Log.Debugf("Range end %d %v", bm, v[2:bm])
+			src := []byte(v[2:bm])
+			Central.Log.Debugf("Append numeric %s\n", v[2:bm])
 			dst := make([]byte, hex.DecodedLen(len(src)))
 			n, err := hex.Decode(dst, src)
 			if err != nil {
-				log.Fatal(err)
+				Central.Log.Fatal(err)
 			}
 
 			Central.Log.Debugf("Byte value %v\n", dst[:n])
-			buffer.Write(dst[:n])
+			for i := 0; i < multiplier; i++ {
+				buffer.Write(dst[:n])
+			}
 		} else {
 			va, err := strconv.Atoi(v)
 			if err != nil {
-				log.Fatal(err)
+				Central.Log.Fatal(err)
 			}
 
 			buffer.WriteByte(byte(va))
@@ -734,58 +781,58 @@ func appendNumericValue(buffer *bytes.Buffer, v string) {
 	}
 }
 
-func (searchInfo *SearchInfo) extractBinarySearchNodeValue(value string, searchTreeNode *SearchValue) int {
-	valuesTrimed := strings.TrimSpace(value)
-	values := strings.Split(valuesTrimed, " ")
-	var binaryValues [][]byte
-	for _, part := range values {
-		/* Check if parser constant found */
-		if strings.Contains(part, ConstantIndicator) {
-			var output bytes.Buffer
-			restString := part
-			Central.Log.Debugf("Work on part : %s", part)
-			for {
-				binaryInterpretation := false
-				if regexp.MustCompile("^-?H#.*").MatchString(restString) {
-					Central.Log.Debugf("Binary value found")
-					binaryInterpretation = true
-				}
-				constantString := regexp.MustCompile("[-H]*#\\{").ReplaceAllString(restString, "")
-				constantString = regexp.MustCompile("}.*").ReplaceAllString(constantString, "")
-				restString = regexp.MustCompile("#\\{[0-9]*\\} *").ReplaceAllString(restString, "")
-				Central.Log.Debugf("Constant string : ",
-					constantString)
-				Central.Log.Debugf("Rest string : ", restString)
+// func (searchInfo *SearchInfo) extractBinarySearchNodeValue(value string, searchTreeNode *SearchValue) int {
+// 	valuesTrimed := strings.TrimSpace(value)
+// 	values := strings.Split(valuesTrimed, " ")
+// 	var binaryValues [][]byte
+// 	for _, part := range values {
+// 		/* Check if parser constant found */
+// 		if strings.Contains(part, ConstantIndicator) {
+// 			var output bytes.Buffer
+// 			restString := part
+// 			Central.Log.Debugf("Work on part : %s", part)
+// 			for {
+// 				binaryInterpretation := false
+// 				if regexp.MustCompile("^-?H#.*").MatchString(restString) {
+// 					Central.Log.Debugf("Binary value found")
+// 					binaryInterpretation = true
+// 				}
+// 				constantString := regexp.MustCompile(`[-H]*#\{`).ReplaceAllString(restString, "")
+// 				constantString = regexp.MustCompile("}.*").ReplaceAllString(constantString, "")
+// 				restString = regexp.MustCompile(`#\{[0-9]*\} *`).ReplaceAllString(restString, "")
+// 				Central.Log.Debugf("Constant string : ",
+// 					constantString)
+// 				Central.Log.Debugf("Rest string : ", restString)
 
-				intTrimed := strings.TrimSpace(constantString)
-				index, err := strconv.Atoi(intTrimed)
-				if err != nil {
-					return -1
-				}
-				index--
-				var binaryValue []byte
-				if binaryInterpretation {
-					binaryValue = []byte(searchInfo.constants[index])
-				} else {
-					//					binaryValue = searchTreeNode.binaryValue(		searchInfo.constants[index])
-				}
-				output.Write(binaryValue)
-				if !strings.Contains(restString, ConstantIndicator) {
-					break
-				}
-			}
-			binaryValues = append(binaryValues, output.Bytes())
-		} else {
-			Central.Log.Debugf("Set value: ", value)
+// 				intTrimed := strings.TrimSpace(constantString)
+// 				index, err := strconv.Atoi(intTrimed)
+// 				if err != nil {
+// 					return -1
+// 				}
+// 				index--
+// 				var binaryValue []byte
+// 				if binaryInterpretation {
+// 					binaryValue = []byte(searchInfo.constants[index])
+// 				// } else {
+// 				// 	//					binaryValue = searchTreeNode.binaryValue(		searchInfo.constants[index])
+// 				}
+// 				output.Write(binaryValue)
+// 				if !strings.Contains(restString, ConstantIndicator) {
+// 					break
+// 				}
+// 			}
+// 			binaryValues = append(binaryValues, output.Bytes())
+// 		// } else {
+// 		// 	Central.Log.Debugf("Set value: ", value)
 
-			//			binaryValues.add(searchTreeNode.binaryValue(part))
-		}
-	}
-	if len(values) > 1 {
-		Central.Log.Debugf("Print binary list: ")
-		//		searchTreeNode.SetValue(binaryValues)
-	} else {
-		//		searchTreeNode.SetValue(binaryValues.get(0))
-	}
-	return 0
-}
+// 		// 	//			binaryValues.add(searchTreeNode.binaryValue(part))
+// 		}
+// 	}
+// 	// if len(values) > 1 {
+// 	// 	Central.Log.Debugf("Print binary list: ")
+// 	// 	//		searchTreeNode.SetValue(binaryValues)
+// 	// } else {
+// 	// 	//		searchTreeNode.SetValue(binaryValues.get(0))
+// 	// }
+// 	return 0
+// }

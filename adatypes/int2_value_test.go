@@ -25,17 +25,15 @@ import (
 	"fmt"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInt2Byte(t *testing.T) {
-	f, err := initLogWithFile("int2.log")
+	err := initLogWithFile("int2.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt2, "XX")
 	int2 := newInt2Value(adaType)
 	assert.Equal(t, int16(0), int2.value)
@@ -65,12 +63,11 @@ func TestInt2Byte(t *testing.T) {
 }
 
 func TestUInt2Byte(t *testing.T) {
-	f, err := initLogWithFile("int2.log")
+	err := initLogWithFile("int2.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt2, "XX")
 	int2 := newUInt2Value(adaType)
 	assert.Equal(t, uint16(0), int2.value)
@@ -82,7 +79,11 @@ func TestUInt2Byte(t *testing.T) {
 	int2.SetStringValue("2000")
 	assert.Equal(t, uint16(2000), int2.value)
 
-	int2.SetValue([]byte{0x18, 0xfc})
+	if bigEndian() {
+		int2.SetValue([]byte{0xfc, 0x18})
+	} else {
+		int2.SetValue([]byte{0x18, 0xfc})
+	}
 	assert.Equal(t, uint16(64536), int2.value)
 
 	int2.SetValue(1024)
@@ -102,41 +103,48 @@ func TestUInt2Byte(t *testing.T) {
 
 	int2.SetValue(64536)
 	assert.Equal(t, uint16(64536), int2.value)
-	assert.Equal(t, []byte{0x18, 0xfc}, int2.Bytes())
+	if bigEndian() {
+		assert.Equal(t, []byte{0xfc, 0x18}, int2.Bytes())
+	} else {
+		assert.Equal(t, []byte{0x18, 0xfc}, int2.Bytes())
+	}
 
 }
 
 func TestInt2Variable(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
 	res := int16(-2)
 	var buf bytes.Buffer
-	binary.Write(&buf, binary.LittleEndian, res)
+	binary.Write(&buf, endian(), res)
 	fmt.Println(buf.Bytes(), buf)
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeInt2, "I2")
 	adaType.SetLength(0)
 	up := newInt2Value(adaType)
 	checkValueInt64(t, up, []byte{2, 1}, 1)
 	checkValueInt64(t, up, []byte{2, 255}, -1)
 	checkValueInt64(t, up, []byte{3, 1, 1}, 0x101)
-	checkValueInt64(t, up, []byte{3, 1, 255}, -255)
-	checkValueInt64(t, up, []byte{3, 0, 255}, -256)
+	if bigEndian() {
+		checkValueInt64(t, up, []byte{3, 255, 1}, -255)
+		checkValueInt64(t, up, []byte{3, 255, 0}, -256)
+	} else {
+		checkValueInt64(t, up, []byte{3, 1, 255}, -255)
+		checkValueInt64(t, up, []byte{3, 0, 255}, -256)
+	}
 }
 
 func TestUInt2Variable(t *testing.T) {
-	f, err := initLogWithFile("unpacked.log")
+	err := initLogWithFile("unpacked.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypeUInt2, "I2")
 	adaType.SetLength(0)
 	up := newUInt2Value(adaType)

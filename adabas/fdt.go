@@ -165,13 +165,13 @@ func createFdtDefintion() *adatypes.Definition {
 }
 
 func traverserFieldDefinitionCreator(adaValue adatypes.IAdaValue, level int, x interface{}) bool {
-	var number *int
+	//var number *int
 	//	if adaValue.Type().IsStructure() {
 	//		for _, value := range adaValue.(*adatypes.StructureValue).Values {
 	//			fmt.Println(value)
 	//		}
 	//	}
-	number = x.(*int)
+	number := x.(*int)
 	(*number)++
 	return true
 }
@@ -210,7 +210,7 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 				return
 			}
 		case fieldIdentifierCollation.code():
-			adatypes.Central.Log.Debugf("Found Super/Sub field %c\n", value.Value().(byte))
+			adatypes.Central.Log.Debugf("Found Collation field %c\n", value.Value().(byte))
 			fieldType, err = createCollationType(fdt, index)
 			if err != nil {
 				return
@@ -222,7 +222,7 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 				return
 			}
 		case fieldIdentifierReferential.code():
-			adatypes.Central.Log.Debugf("Found HyperExit field %c\n", value.Value().(byte))
+			adatypes.Central.Log.Debugf("Found Referential field %c\n", value.Value().(byte))
 			fieldType, err = createReferential(fdt, index)
 			if err != nil {
 				return

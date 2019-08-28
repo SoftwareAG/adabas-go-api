@@ -89,6 +89,8 @@ const (
 	FieldTypeStructure
 	// FieldTypeGroup field type group
 	FieldTypeGroup
+	// FieldTypeRedefinition field type group
+	FieldTypeRedefinition
 	// FieldTypePackedArray field type packed array
 	FieldTypePackedArray
 	// FieldTypePhonetic field type of phonetic descriptor
@@ -141,6 +143,49 @@ func (fieldType FieldType) FormatCharacter() string {
 	return " "
 }
 
+// EvaluateFieldType evaluate field type of format string
+func EvaluateFieldType(fieldType rune, length int32) FieldType {
+	switch fieldType {
+	case 'A':
+		if length == 1 {
+			return FieldTypeByte
+		}
+		return FieldTypeString
+	case 'P':
+		return FieldTypePacked
+	case 'U':
+		return FieldTypeUnpacked
+	case 'G':
+		return FieldTypeFloat
+	case 'B':
+		switch length {
+		case 1:
+			return FieldTypeUByte
+		case 2:
+			return FieldTypeUInt2
+		case 4:
+			return FieldTypeUInt4
+		case 8:
+			return FieldTypeUInt8
+		}
+		return FieldTypeByteArray
+	case 'F':
+		switch length {
+		case 1:
+			return FieldTypeByte
+		case 2:
+			return FieldTypeInt2
+		case 4:
+			return FieldTypeInt4
+		case 8:
+			return FieldTypeInt8
+		}
+		return FieldTypeByteArray
+	default:
+	}
+	return FieldTypeUndefined
+}
+
 // CommonType common data type structure defined for all types
 type CommonType struct {
 	fieldType           FieldType
@@ -148,7 +193,7 @@ type CommonType struct {
 	shortName           string
 	length              uint32
 	level               uint8
-	flags               uint8
+	flags               uint32
 	parentType          IAdaType
 	options             uint32
 	Charset             string
@@ -317,7 +362,7 @@ const (
 var fieldOptions = []string{"UQ", "NU", "FI", "DE", "NC", "NN", "HF", "NV", "NB", "HE", "PE", "MU"}
 
 // FlagOption flag option used to omit traversal through the tree (example is MU and PE)
-type FlagOption uint
+type FlagOption uint32
 
 const (
 	// FlagOptionPE indicate tree is part of period group
@@ -332,15 +377,22 @@ const (
 	FlagOptionSecondCall
 	// FlagOptionReference Field will skip parsing value
 	FlagOptionReference
+	// FlagOptionReadOnly read only field
+	FlagOptionReadOnly
+	// FlagOptionLengthNotIncluded length not include in record buffer
+	FlagOptionLengthNotIncluded
+	// FlagOptionPart structure is request only in parts
+	FlagOptionPart
 )
 
 // Bit return the Bit of the option flag
-func (flagOption FlagOption) Bit() uint8 {
+func (flagOption FlagOption) Bit() uint32 {
 	return (1 << flagOption)
 }
 
 // HasFlagSet check if given flag is set
 func (commonType *CommonType) HasFlagSet(flagOption FlagOption) bool {
+	//Central.Log.Debugf("Check flag %d set %d=%d -> %v", commonType.flags, flagOption.Bit(), flagOption.Bit(), (commonType.flags & flagOption.Bit()))
 	return (commonType.flags & flagOption.Bit()) != 0
 }
 

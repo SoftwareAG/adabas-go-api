@@ -21,21 +21,20 @@ package adatypes
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPackedData(t *testing.T) {
-	f, err := initLogWithFile("packed.log")
+	err := initLogWithFile("packed.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypePacked, "PA")
 	adaType.length = 4
 	pa := newPackedValue(adaType)
@@ -74,7 +73,7 @@ func TestPackedData(t *testing.T) {
 	assert.Equal(t, int64(123), pa.packedToLong())
 	assert.Equal(t, "123", pa.String())
 
-	assert.Equal(t, binary.LittleEndian, pa.Type().Endian())
+	assert.Equal(t, endian(), pa.Type().Endian())
 	pa.Type().SetEndian(binary.LittleEndian)
 	assert.Equal(t, binary.LittleEndian, pa.Type().Endian())
 	pa.Type().SetEndian(binary.BigEndian)
@@ -84,13 +83,12 @@ func TestPackedData(t *testing.T) {
 }
 
 func TestPackedCheckValid(t *testing.T) {
-	f, err := initLogWithFile("packed.log")
+	err := initLogWithFile("packed.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypePacked, "PA")
 	adaType.length = 1
 	pa := newPackedValue(adaType)
@@ -108,13 +106,12 @@ func TestPackedCheckValid(t *testing.T) {
 }
 
 func TestPackedCheckFractional(t *testing.T) {
-	f, err := initLogWithFile("packed.log")
+	err := initLogWithFile("packed.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypePacked, "PA")
 	adaType.length = 10
 	adaType.SetFractional(2)
@@ -164,16 +161,33 @@ func TestPackedCheckFractional(t *testing.T) {
 	assert.Equal(t, 0.01, f64)
 	assert.Equal(t, "0.01", pa.String())
 
+	var f float64
+	f = 10002423.0
+	err = pa.SetValue(f)
+	assert.NoError(t, err)
+	assert.Equal(t, "10002423.00", pa.String())
+	var j json.Number
+	err = pa.SetValue(j)
+
+	f = 10002423.01
+	err = pa.SetValue(f)
+	assert.NoError(t, err)
+	_, err = pa.Int64()
+	assert.Error(t, err)
+
+	adaType.SetFractional(0)
+	err = pa.SetValue(f)
+	assert.Error(t, err)
+
 }
 
 func TestPackedFormatterDate(t *testing.T) {
-	f, err := initLogWithFile("packed.log")
+	err := initLogWithFile("packed.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypePacked, "PA")
 	adaType.length = 10
 	adaType.FormatTypeCharacter = 'D'
@@ -188,18 +202,17 @@ func TestPackedFormatterDate(t *testing.T) {
 }
 
 func TestPackedFormatterDateTime(t *testing.T) {
-	f, err := initLogWithFile("packed.log")
+	err := initLogWithFile("packed.log")
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer f.Close()
 
-	log.Infof("TEST: %s", t.Name())
+	Central.Log.Infof("TEST: %s", t.Name())
 	adaType := NewType(FieldTypePacked, "PA")
 	adaType.length = 12
 	adaType.FormatTypeCharacter = 'T'
 	pa := newPackedValue(adaType)
-	pa.SetValue(635812935348)
+	pa.SetValue(int64(635812935348))
 	assert.Equal(t, "2014/10/24 14:25:34.8", pa.String())
 	err = pa.SetValue("2019/04/16 14:25:34")
 	assert.NoError(t, err)

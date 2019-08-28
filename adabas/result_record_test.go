@@ -31,8 +31,7 @@ import (
 )
 
 func TestRecord(t *testing.T) {
-	f := initTestLogWithFile(t, "Record.log")
-	defer f.Close()
+	initTestLogWithFile(t, "Record.log")
 
 	resultNil, err := NewRecord(nil)
 	assert.Error(t, err)
@@ -79,9 +78,8 @@ func TestRecord(t *testing.T) {
 	}
 }
 
-func TestRecord_MarshalXML(t *testing.T) {
-	f := initTestLogWithFile(t, "Record.log")
-	defer f.Close()
+func TestRecord_Marshal(t *testing.T) {
+	initTestLogWithFile(t, "Record.log")
 
 	resultNil, err := NewRecord(nil)
 	assert.Error(t, err)
@@ -131,4 +129,115 @@ func TestRecord_MarshalXML(t *testing.T) {
 		fmt.Println("JSON:", string(jout))
 
 	}
+}
+
+func TestRecord_MarshalLink(t *testing.T) {
+	initTestLogWithFile(t, "Record.log")
+
+	resultNil, err := NewRecord(nil)
+	assert.Error(t, err)
+	assert.Nil(t, resultNil)
+
+	layout := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypeUInt4, "U4", "UInt4"),
+		adatypes.NewType(adatypes.FieldTypeLBString, "S4", "@Link", 100),
+		adatypes.NewType(adatypes.FieldTypeUInt8, "I8", "Int8"),
+	}
+
+	testDefinition := adatypes.NewDefinitionWithTypes(layout)
+	testDefinition.CreateValues(false)
+	result, err := NewRecord(testDefinition)
+	if assert.NoError(t, err) {
+		verr := result.SetValue("U4", 100)
+		assert.Error(t, verr)
+		verr = result.SetValue("UInt4", 100)
+		assert.NoError(t, verr)
+		verr = result.SetValue("Int8", "1234567")
+		assert.NoError(t, verr)
+		verr = result.SetValue("S4", "1234567")
+		assert.Error(t, verr)
+		verr = result.SetValue("@Link", "4200")
+		assert.NoError(t, verr)
+
+		xout, xerr := xml.Marshal(result)
+		assert.NoError(t, xerr)
+		fmt.Println("XML:", string(xout))
+		assert.Equal(t, "<Record><UInt4>100</UInt4><Link type=\"link\">4200</Link><Int8>1234567</Int8></Record>", string(xout))
+		jout, jerr := json.Marshal(result)
+		assert.NoError(t, jerr)
+		fmt.Println("JSON:", string(jout))
+		assert.Equal(t, "{\"@Link\":\"4200\",\"Int8\":1234567,\"UInt4\":100}", string(jout))
+		result.adabasMap = NewAdabasMap("ABC", &DatabaseURL{})
+		xout, xerr = xml.Marshal(result)
+		assert.NoError(t, xerr)
+		fmt.Println("XML:", string(xout))
+		assert.Equal(t, "<ABC><UInt4>100</UInt4><Link type=\"link\">4200</Link><Int8>1234567</Int8></ABC>", string(xout))
+		jout, jerr = json.Marshal(result)
+		assert.NoError(t, jerr)
+		assert.Equal(t, "{\"@Link\":\"4200\",\"Int8\":1234567,\"UInt4\":100}", string(jout))
+		fmt.Println("JSON:", string(jout))
+
+	}
+}
+
+func TestRecordGroupValues(t *testing.T) {
+	initTestLogWithFile(t, "Record.log")
+
+	resultNil, err := NewRecord(nil)
+	assert.Error(t, err)
+	assert.Nil(t, resultNil)
+
+	groupLayoutLevel3 := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypeUInt2, "U3"),
+		adatypes.NewType(adatypes.FieldTypeInt8, "I3"),
+	}
+
+	groupLayoutLevel2 := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypeUByte, "U2"),
+		adatypes.NewStructureList(adatypes.FieldTypeGroup, "G3", adatypes.OccNone, groupLayoutLevel3),
+		adatypes.NewType(adatypes.FieldTypeUInt2, "I2"),
+	}
+
+	periodGroupLayoutLevel2 := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypeUByte, "UP"),
+		adatypes.NewType(adatypes.FieldTypeUInt2, "IP"),
+	}
+
+	layout := []adatypes.IAdaType{
+		adatypes.NewType(adatypes.FieldTypeString, "UI", 20),
+		adatypes.NewStructureList(adatypes.FieldTypeGroup, "G2", adatypes.OccNone, groupLayoutLevel2),
+		adatypes.NewStructureList(adatypes.FieldTypePeriodGroup, "P2", adatypes.OccCapacity, periodGroupLayoutLevel2),
+		adatypes.NewType(adatypes.FieldTypeByte, "BI"),
+	}
+
+	testDefinition := adatypes.NewDefinitionWithTypes(layout)
+	testDefinition.CreateValues(false)
+	result, err := NewRecord(testDefinition)
+	result.SetValue("UP[1]", 100)
+	result.SetValue("IP[1]", 1023)
+	result.SetValue("BI", 1)
+	result.SetValue("UI", "ANCXXX")
+	result.SetValue("I2", 1231)
+	if assert.NoError(t, err) {
+		assert.NotNil(t, result)
+		assert.Equal(t, "ISN=0 quantity=0\n UI=\"ANCXXX              \"\n G2=\"\"\n U2=\"0\"\n G3=\"\"\n U3=\"0\"\n I3=\"0\"\n I2=\"1231\"\n P2=\"\"\n UP=\"100\"\n IP=\"1023\"\n BI=\"1\"\n", result.String())
+		v, verr := result.SearchValue("G3")
+		assert.NoError(t, verr)
+		assert.NotNil(t, v)
+		assert.Equal(t, "", v.String())
+		v, verr = result.SearchValue("G2")
+		assert.NoError(t, verr)
+		assert.Equal(t, "G2", v.Type().Name())
+		v, verr = result.SearchValue("U3")
+		assert.NoError(t, verr)
+		assert.Equal(t, "U3", v.Type().Name())
+		fieldNames := []string{"UI", "BI", "G2", "U2", "G3", "U3"}
+		for _, s := range fieldNames {
+			fmt.Println("Check field", s)
+			_, ok := result.HashFields[s]
+			assert.True(t, ok)
+		}
+	}
+	result.definition.DumpTypes(false, true)
+	result.DumpValues()
 }
