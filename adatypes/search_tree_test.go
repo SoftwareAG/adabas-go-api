@@ -568,7 +568,7 @@ func tDefinition() *Definition {
 }
 
 func TestRegularSearch(t *testing.T) {
-	var re = regexp.MustCompile(`(?m)(\w+)=(\w+|'.+'|\[\w+:\w+\])( AND | OR )?`)
+	var re = regexp.MustCompile(`(?m)(\w+)==?(\w+|'.+'|\[\w+:\w+\])( AND | OR )?`)
 	var str = `XX=123
 CC=3443
 DD=ABC
