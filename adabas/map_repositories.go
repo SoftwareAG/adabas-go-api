@@ -55,6 +55,7 @@ type Repository struct {
 	online     bool
 	mapNames   map[string]*mapNameFlags
 	CachedMaps map[string]*Map
+	cacheTime time.Time
 }
 
 func init() {
@@ -239,6 +240,14 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 	adatypes.Central.Log.Debugf("with data adabas to %s/%d", adabasMap.Data.URL.String(), adabasMap.Data.Fnr)
 	adatypes.Central.Log.Debugf("out of %s/%d", repository.URL.String(), repository.Fnr)
 	return
+}
+
+// ClearCache clear cache if time frame occur
+func (repository *Repository) ClearCache(maxTime time.Time) {
+	if (repository.cacheTime.Before(maxTime)) {
+		adatypes.Central.Log.Infof("Clear caching ... %v -> %v",maxTime,time.Now())
+		repository.CachedMaps = make(map[string]*Map)
+	}
 }
 
 // LoadAllMaps load all map out of specific map repository

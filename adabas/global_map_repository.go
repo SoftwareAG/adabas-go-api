@@ -33,6 +33,7 @@ var (
 	repositories   map[string]*Repository
 	mapHash        map[string]*Repository
 	mapLoopRunning bool
+	mapMaxMinutesCache := 10
 )
 
 func init() {
@@ -193,8 +194,10 @@ func AllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
 // AllGlobalMapNames search in map repositories global defined, all map names
 func readAllGlobalMapNames(ada *Adabas) (maps []string, err error) {
 	defer ada.Close()
+	maxCacheTime := time.Now().Add(time.Duration(-mapMaxMinutesCache) * time.Minute)
 	// If no map loop running, read through all repositories
 	for ref, mr := range repositories {
+		mr.ClearCache(maxCacheTime)
 		ada.SetDbid(mr.DatabaseURL.URL.Dbid)
 		adatypes.Central.Log.Debugf("Read map names in repository using Adabas %s for %s/%03d in %s",
 			ada.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr, ref)
