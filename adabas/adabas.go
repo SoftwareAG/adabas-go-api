@@ -954,6 +954,18 @@ func (adabas *Adabas) Update(fileNr Fnr, adabasRequest *adatypes.Request) (err e
 	return
 }
 
+// SetURL set new database URL
+func (adabas *Adabas) SetURL(URL *URL) {
+	if adabas.URL == URL {
+		return
+	}
+	adabas.Close()
+	adabas.Acbx.Acbxdbid = URL.Dbid
+	adabas.URL = URL
+	// Different adabas instance, need to update status
+	adabas.status = adabas.ID.status(adabas.URL.String())
+}
+
 // SetDbid set new database id
 func (adabas *Adabas) SetDbid(dbid Dbid) {
 	if dbid == adabas.Acbx.Acbxdbid {

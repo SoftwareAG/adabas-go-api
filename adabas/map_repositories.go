@@ -324,14 +324,19 @@ func (repository *Repository) LoadMapRepository(adabas *Adabas) (err error) {
 	// if repository.mapNames != nil {
 	// 	return nil
 	// }
+	repository.mapNames = make(map[string]*mapNameFlags)
+	adabas.SetURL(&repository.DatabaseURL.URL)
 	adatypes.Central.Log.Debugf("Read all data from dbid=%d(%s) of %s/%d\n",
 		adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.DatabaseURL.URL.String(), repository.Fnr)
-	repository.mapNames = make(map[string]*mapNameFlags)
-
-	adabas.Acbx.Acbxdbid = repository.DatabaseURL.URL.Dbid
+	//	adabas.Acbx.Acbxdbid = repository.DatabaseURL.URL.Dbid
 	request, _ := NewReadRequest(adabas, repository.Fnr)
 	request.Limit = 0
-	request.QueryFields(mapFieldName.fieldName())
+	err = request.QueryFields(mapFieldName.fieldName())
+	if err != nil {
+		repository.online = false
+		adatypes.Central.Log.Debugf("Err %v query fields dbid=%d(%s) / %d\n", err, adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.Fnr)
+		return err
+	}
 	err = request.ReadLogicalByWithParser(mapFieldName.fieldName(), parseMapNames, repository)
 	if err != nil {
 		repository.online = false

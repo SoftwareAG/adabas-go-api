@@ -159,7 +159,7 @@ func (connection *Connection) searchRepository(adabasID *ID, repository *Reposit
 			return adatypes.NewGenericError(85, mapName)
 		}
 	} else {
-		adatypes.Central.Log.Debugf("Search in given repository %v", repository)
+		adatypes.Central.Log.Debugf("Search in given repository %v: %s", repository, repository.DatabaseURL.URL.String())
 		connection.adabasToMap, err = NewAdabas(repository.DatabaseURL.URL.String(), adabasID)
 		if err != nil {
 			adatypes.Central.Log.Debugf("New Adabas to map ID error: %v", err)

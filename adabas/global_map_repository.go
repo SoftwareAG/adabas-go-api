@@ -54,11 +54,11 @@ func EndAsynchronousMapCache() {
 }
 
 func loopMapCache(interval int) {
-	adatypes.Central.Log.Infof("Init loop map cache check")
+	adatypes.Central.Log.Debugf("Init loop map cache check")
 	mapLoopRunning = true
 	defer EndAsynchronousMapCache()
 	for mapLoopRunning {
-		adatypes.Central.Log.Infof("Start loop map cache check")
+		adatypes.Central.Log.Debugf("Start loop map cache check")
 		ada, err := NewAdabas(1)
 		if err != nil {
 			adatypes.Central.Log.Infof("Error loop map cache %v", err)
@@ -68,7 +68,7 @@ func loopMapCache(interval int) {
 		if err != nil {
 			adatypes.Central.Log.Infof("Some map cache name error %v", err)
 		}
-		adatypes.Central.Log.Infof("Number of Hashed maps: %d", len(mapHash))
+		adatypes.Central.Log.Debugf("Number of Hashed maps: %d", len(mapHash))
 		ada.Close()
 		time.Sleep(time.Duration(interval) * time.Second)
 	}
@@ -183,7 +183,7 @@ func AllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
 				maps = append(maps, m)
 			}
 		}
-		adatypes.Central.Log.Infof("All global maps number %d", len(maps))
+		adatypes.Central.Log.Debugf("All global maps number %d", len(maps))
 
 		return maps, nil
 	}
@@ -220,8 +220,8 @@ func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, err er
 	// Check if hash is defined
 	if r, ok := mapHash[mapName]; ok {
 		if r.online {
-			adatypes.Central.Log.Infof("Found in map hash, query map...")
-			adabas.SetDbid(r.DatabaseURL.URL.Dbid)
+			adatypes.Central.Log.Debugf("Found in map hash, query map...")
+			adabas.SetURL(&r.DatabaseURL.URL)
 			adabasMap, err = r.SearchMap(adabas, mapName)
 			if err == nil {
 				return
@@ -229,14 +229,15 @@ func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, err er
 			adatypes.Central.Log.Debugf("Error searching in repository: %v", err)
 		}
 	}
-	adatypes.Central.Log.Infof("Not found in map hash or error accessing repository, go through all repositories len=%d", len(repositories))
+	adatypes.Central.Log.Debugf("Not found in map hash or error accessing repository, go through all repositories len=%d", len(repositories))
 	// Not in hash search repository
 	for _, mr := range repositories {
 		if mr.online {
-			adatypes.Central.Log.Debugf("Search in repository using Adabas %s for %s/%03d",
+			adatypes.Central.Log.Debugf("Search in repository using Adabas %s for %s,%03d",
 				adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr)
 			var serr error
-			adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
+			adabas.SetURL(&mr.DatabaseURL.URL)
+			//adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
 			adabasMap, serr = mr.SearchMapInRepository(adabas, mapName)
 			if serr != nil {
 				adatypes.Central.Log.Debugf("Continue in next repository because of error %v\n", serr)

@@ -132,12 +132,13 @@ func createNewMapReadRequest(mapName string, adabas *Adabas) (request *ReadReque
 	if err != nil {
 		return
 	}
-	dbid, repErr := adabasMap.Repository.dbid()
-	if repErr != nil {
-		err = repErr
-		return
-	}
-	adabas.SetDbid(dbid)
+	// dbid, repErr := adabasMap.Repository.dbid()
+	// if repErr != nil {
+	// 	err = repErr
+	// 	return
+	// }
+	//	adabas.SetDbid(dbid)
+	adabas.SetURL(&adabasMap.Repository.URL)
 	adatypes.Central.Log.Debugf("Read: Adabas new map reference for %s to %d", mapName, adabasMap.Data.Fnr)
 
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
