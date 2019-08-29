@@ -30,10 +30,10 @@ import (
 )
 
 var (
-	repositories   map[string]*Repository
-	mapHash        map[string]*Repository
-	mapLoopRunning bool
-	mapMaxMinutesCache := 10
+	repositories       map[string]*Repository
+	mapHash            map[string]*Repository
+	mapLoopRunning     bool
+	mapMaxMinutesCache = 10
 )
 
 func init() {

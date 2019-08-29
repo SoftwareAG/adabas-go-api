@@ -55,7 +55,7 @@ type Repository struct {
 	online     bool
 	mapNames   map[string]*mapNameFlags
 	CachedMaps map[string]*Map
-	cacheTime time.Time
+	cacheTime  time.Time
 }
 
 func init() {
@@ -244,8 +244,8 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 
 // ClearCache clear cache if time frame occur
 func (repository *Repository) ClearCache(maxTime time.Time) {
-	if (repository.cacheTime.Before(maxTime)) {
-		adatypes.Central.Log.Infof("Clear caching ... %v -> %v",maxTime,time.Now())
+	if repository.cacheTime.Before(maxTime) {
+		adatypes.Central.Log.Infof("Clear caching ... %v -> %v", maxTime, time.Now())
 		repository.CachedMaps = make(map[string]*Map)
 	}
 }
