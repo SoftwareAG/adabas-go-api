@@ -44,7 +44,7 @@ func TestHoldResponse(t *testing.T) {
 	end <- true
 	for w {
 		select {
-		case <-time.After(60 * time.Second):
+		case <-time.After(20 * time.Second):
 			fmt.Println("timeout received")
 			assert.Fail(t, "timeout received")
 			w = false
