@@ -19,9 +19,9 @@ if [ ! "$ACLDIR" == "" ]; then
   CGO_CFLAGS="-DCE_T${SAGTARGET} -I${ADABAS_ACCESS_HOME}/c/SAGENV -I${ADABAS_ACCESS_HOME}/c -I${ACLDIR}/inc"
   CGO_LDFLAGS="-L${ACLDIR}/lib -ladalnkx" 
   export CGO_CFLAGS CGO_LDFLAGS
-  go run -tags "$GO_TAGS" ${TESTS_RUN} -v tests/testsuite/main.go $*
+  go run -timeout 2000s -tags "$GO_TAGS" ${TESTS_RUN} -v tests/testsuite/main.go $*
 else
   GO_TAGS="release"
-  go run -tags "$GO_TAGS" ${TESTS_RUN} -v tests/testsuite/main.go $*
+  go run -timeout 2000s -tags "$GO_TAGS" ${TESTS_RUN} -v tests/testsuite/main.go $*
 fi
 
