@@ -762,6 +762,9 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			adabas.Acbx.Acbxisn++
 		}
 		responseCode, err = adabasRequest.ParseBuffer(&count, x)
+		if err != nil {
+			return
+		}
 		adabas.Acbx.Acbxisn = adabasRequest.CbIsn
 		adatypes.Central.Log.Debugf("Loop step ended Limit=%d count=%d", adabasRequest.Limit, count)
 		if (adabasRequest.Limit > 0) && (count >= adabasRequest.Limit) {

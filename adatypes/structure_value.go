@@ -243,6 +243,10 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 		for i := 0; i < occNumber; i++ {
 			Central.Log.Debugf("Get occurrence : %d -> %d", (i + 1), value.NrElements())
 			v := value.Get(n, i+1)
+			if v == nil {
+				// debug.PrintStack()
+				return EndTraverser, fmt.Errorf("Occurrence index error")
+			}
 			//v.setPeriodIndex(uint32(i + 1))
 			if v.Type().IsStructure() {
 				st := v.Type().(*StructureType)
