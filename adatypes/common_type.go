@@ -21,8 +21,6 @@ package adatypes
 
 import (
 	"encoding/binary"
-	"fmt"
-	"runtime/debug"
 )
 
 // FieldType indicate a field type of the field
@@ -402,10 +400,10 @@ func (commonType *CommonType) HasFlagSet(flagOption FlagOption) bool {
 func (commonType *CommonType) AddFlag(flagOption FlagOption) {
 	commonType.flags |= flagOption.Bit()
 	if flagOption == FlagOptionMU {
-		if commonType.name == "Pictures" {
-			fmt.Println("MU added to", commonType.name)
-			debug.PrintStack()
-		}
+		// if commonType.name == "Pictures" {
+		// 	fmt.Println("MU added to", commonType.name)
+		// 	debug.PrintStack()
+		// }
 		p := commonType.GetParent()
 		for p != nil {
 			p.AddFlag(flagOption)
