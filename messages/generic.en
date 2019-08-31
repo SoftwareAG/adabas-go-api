@@ -75,6 +75,7 @@ ADG0000074=ABD eyecatcher error: {0}
 ADG0000075=ABD buffer error
 ADG0000076=Search generation tree error
 ADG0000077=Input value size of {0} does not fit into field length {1}
+ADG0000078=Constructor parameter error StoreRequest
 ADG0000080=Type {0} for {1} not supported for structure extraction
 ADG0000081=No values in result list
 ADG0000082=Error reading map {0} out of map repository

@@ -15,7 +15,6 @@ type StructureType struct {
 	CommonType
 	occ       int
 	condition FieldCondition
-	SubTypes  []IAdaType
 	fieldMap  map[string]IAdaType
 }
 
@@ -75,10 +74,11 @@ func NewStructureList(fType FieldType, name string, occByteShort int16, subField
 			shortName: name,
 			flags:     uint32(1 << FlagOptionToBeRemoved),
 			level:     1,
-			length:    0},
+			length:    0,
+			SubTypes:  subFields,
+		},
 		occ:       int(occByteShort),
 		condition: NewFieldCondition(),
-		SubTypes:  subFields,
 	}
 	switch fType {
 	case FieldTypePeriodGroup:
@@ -112,9 +112,10 @@ func NewStructureCondition(fType FieldType, name string, subFields []IAdaType, c
 			shortName: name,
 			flags:     uint32(1 << FlagOptionToBeRemoved),
 			level:     1,
-			length:    0},
+			length:    0,
+			SubTypes:  subFields,
+		},
 		condition: condition,
-		SubTypes:  subFields,
 	}
 }
 

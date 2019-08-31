@@ -207,13 +207,16 @@ func (adaType *AdaType) Length() uint32 {
 
 // SetLength set the length of the field
 func (adaType *AdaType) SetLength(length uint32) {
+	if adaType.length == length {
+		return
+	}
 	Central.Log.Debugf("Set length for %s from %d to %d type=%s", adaType.Name(), adaType.length, length, adaType.fieldType.name())
 
 	//fmt.Printf("Set length for %s from %d to %d type=%s", adaType.Name(), adaType.length, length, adaType.fieldType.name())
 	if (adaType.fieldType != FieldTypeFloat && adaType.fieldType != FieldTypeDouble) || length > 0 {
 		if adaType.HasFlagSet(FlagOptionPE) {
 			Central.Log.Debugf("Period length change, %s/%s CANNNOT use collected FB entry!!!!", adaType.Name(), adaType.ShortName())
-			//adaType.AddFlag(FlagOptionMU)
+			adaType.AddFlag(FlagOptionMU)
 		}
 		adaType.length = length
 	} else {

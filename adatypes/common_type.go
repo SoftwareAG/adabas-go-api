@@ -202,6 +202,7 @@ type CommonType struct {
 	muRange             AdaRange
 	FormatTypeCharacter rune
 	FormatLength        uint32
+	SubTypes            []IAdaType
 }
 
 // Type returns field type of the field
@@ -398,6 +399,9 @@ func (commonType *CommonType) HasFlagSet(flagOption FlagOption) bool {
 
 // AddFlag add the flag to the type flag set
 func (commonType *CommonType) AddFlag(flagOption FlagOption) {
+	if commonType.HasFlagSet(flagOption) {
+		return
+	}
 	commonType.flags |= flagOption.Bit()
 	if flagOption == FlagOptionMU {
 		// if commonType.name == "Pictures" {
@@ -408,6 +412,9 @@ func (commonType *CommonType) AddFlag(flagOption FlagOption) {
 		for p != nil {
 			p.AddFlag(flagOption)
 			p = p.GetParent()
+		}
+		for _, s := range commonType.SubTypes {
+			s.AddFlag(flagOption)
 		}
 	}
 }
