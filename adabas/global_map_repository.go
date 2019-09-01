@@ -219,7 +219,7 @@ func readAllGlobalMapNames(ada *Adabas) (maps []string, err error) {
 }
 
 // SearchMapRepository search in map repository for a specific map name
-func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, err error) {
+func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, repository *Repository, err error) {
 	// Check if hash is defined
 	if r, ok := mapHash[mapName]; ok {
 		if r.online {
@@ -227,6 +227,7 @@ func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, err er
 			adabas.SetURL(&r.DatabaseURL.URL)
 			adabasMap, err = r.SearchMap(adabas, mapName)
 			if err == nil {
+				repository = r
 				return
 			}
 			adatypes.Central.Log.Debugf("Error searching in repository: %v", err)
@@ -249,7 +250,7 @@ func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, err er
 					adatypes.Central.Log.Debugf("Result map found: %s", adabasMap.String())
 					adatypes.Central.Log.Debugf("in repository %s/%d", mr.URL.String(), mr.Fnr)
 					mapHash[mapName] = mr
-					return adabasMap, nil
+					return adabasMap, mr, nil
 				}
 			}
 			adatypes.Central.Log.Debugf("Not found in repository using Adabas %s/%03d", adabas.URL.String(), mr.Fnr)

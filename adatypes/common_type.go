@@ -413,8 +413,11 @@ func (commonType *CommonType) AddFlag(flagOption FlagOption) {
 			p.AddFlag(flagOption)
 			p = p.GetParent()
 		}
-		for _, s := range commonType.SubTypes {
-			s.AddFlag(flagOption)
+		// Only work in period group or group
+		if commonType.level > 1 {
+			for _, s := range commonType.SubTypes {
+				s.AddFlag(flagOption)
+			}
 		}
 	}
 }

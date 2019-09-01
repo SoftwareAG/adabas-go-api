@@ -77,7 +77,7 @@ func NewMapDeleteRequest(adabas *Adabas, adabasMap *Map) (request *DeleteRequest
 // NewMapNameDeleteRequest create a new Request instance
 func NewMapNameDeleteRequest(adabas *Adabas, mapName string) (request *DeleteRequest, err error) {
 	var adabasMap *Map
-	adabasMap, err = SearchMapRepository(adabas, mapName)
+	adabasMap, _, err = SearchMapRepository(adabas, mapName)
 	if err != nil {
 		return
 	}

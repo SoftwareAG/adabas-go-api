@@ -19,9 +19,12 @@ func TestMapRepository(t *testing.T) {
 	defer DelGlobalMapRepository(ada, 4)
 	adabas, _ := NewAdabas(1)
 	defer adabas.Close()
-	adabasMap, err := SearchMapRepository(adabas, "EMPLOYEES-NAT-DDM")
+	adabasMap, rep, err := SearchMapRepository(adabas, "EMPLOYEES-NAT-DDM")
 	assert.NoError(t, err)
 	assert.NotNil(t, adabasMap)
+	assert.NotNil(t, rep)
+	assert.Equal(t, Dbid(24), rep.DatabaseURL.URL.Dbid)
+	//assert.Equal(t, "", rep.DatabaseURL.URL.Host)
 
 }
 
@@ -115,7 +118,7 @@ func TestThreadMapCache(t *testing.T) {
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	ada, _ := NewAdabas(23)
 	defer ada.Close()
-	m, err := SearchMapRepository(ada, "VEHICLESGo")
+	m, _, err := SearchMapRepository(ada, "VEHICLESGo")
 	if !assert.Error(t, err) {
 		return
 	}
@@ -124,7 +127,7 @@ func TestThreadMapCache(t *testing.T) {
 	AddGlobalMapRepository(ada.URL, 250)
 	defer DelGlobalMapRepository(ada, 250)
 	time.Sleep(60 * time.Second)
-	m, err = SearchMapRepository(ada, "VEHICLESGo")
+	m, _, err = SearchMapRepository(ada, "VEHICLESGo")
 	if !assert.NoError(t, err) {
 		return
 	}

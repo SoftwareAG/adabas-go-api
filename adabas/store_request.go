@@ -20,7 +20,9 @@
 package adabas
 
 import (
+	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -33,6 +35,9 @@ type StoreRequest struct {
 
 // NewStoreRequest create a new store Request instance
 func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
+	if len(param) == 0 {
+		return nil, adatypes.NewGenericError(78)
+	}
 	switch param[0].(type) {
 	case string:
 		if len(param) > 1 {
@@ -68,8 +73,58 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 			}
 		}
 	default:
+		if reflect.TypeOf(param[0]).Kind() == reflect.Struct {
+			fmt.Println("It's a struct", reflect.TypeOf(param[0]).Name())
+			mapName := reflect.TypeOf(param[0]).Name()
+			if len(param) < 2 {
+				return nil, errors.New("Not enough parameters for NewReadRequest")
+			}
+			var request *StoreRequest
+			ada := param[1].(*Adabas)
+			if len(param) == 2 {
+				adabasMap, _, err := SearchMapRepository(ada, mapName)
+				if err != nil {
+					return nil, err
+				}
+				dataRepository := &Repository{DatabaseURL: *adabasMap.Data}
+				request = &StoreRequest{commonRequest: commonRequest{MapName: mapName,
+					adabas:    ada,
+					adabasMap: adabasMap, repository: dataRepository}}
+			} else {
+				rep := param[2].(*Repository)
+				adabasMap, err := rep.SearchMap(ada, mapName)
+				if err != nil {
+					return nil, err
+				}
+				dataRepository := &Repository{DatabaseURL: *adabasMap.Data}
+				request = &StoreRequest{commonRequest: commonRequest{MapName: mapName,
+					adabas:    ada,
+					adabasMap: adabasMap, repository: dataRepository}}
+			}
+			request.createDynamic(param[0])
+			return request, nil
+		}
+
 	}
+
 	return nil, fmt.Errorf("XXXX")
+}
+
+// NewStoreRequestAdabas create a new Request instance
+func NewStoreRequestAdabas(adabas *Adabas, fnr Fnr) *StoreRequest {
+	clonedAdabas := NewClonedAdabas(adabas)
+	return &StoreRequest{commonRequest: commonRequest{adabas: clonedAdabas,
+		repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}
+}
+
+// NewAdabasMapNameStoreRequest create new map name store request
+func NewAdabasMapNameStoreRequest(adabas *Adabas, adabasMap *Map) (request *StoreRequest, err error) {
+	clonedAdabas := NewClonedAdabas(adabas)
+	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
+	request = &StoreRequest{commonRequest: commonRequest{MapName: adabasMap.Name,
+		adabas:    clonedAdabas,
+		adabasMap: adabasMap, repository: dataRepository}}
+	return
 }
 
 func evaluateFnr(p interface{}) (Fnr, error) {
@@ -88,23 +143,6 @@ func evaluateFnr(p interface{}) (Fnr, error) {
 	default:
 	}
 	return 0, fmt.Errorf("Cannot evaluate Fnr")
-}
-
-// NewStoreRequestAdabas create a new Request instance
-func NewStoreRequestAdabas(adabas *Adabas, fnr Fnr) *StoreRequest {
-	clonedAdabas := NewClonedAdabas(adabas)
-	return &StoreRequest{commonRequest: commonRequest{adabas: clonedAdabas,
-		repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}
-}
-
-// NewAdabasMapNameStoreRequest create new map name store request
-func NewAdabasMapNameStoreRequest(adabas *Adabas, adabasMap *Map) (request *StoreRequest, err error) {
-	clonedAdabas := NewClonedAdabas(adabas)
-	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
-	request = &StoreRequest{commonRequest: commonRequest{MapName: adabasMap.Name,
-		adabas:    clonedAdabas,
-		adabasMap: adabasMap, repository: dataRepository}}
-	return
 }
 
 // Open Open the Adabas session
@@ -233,4 +271,101 @@ func (request *StoreRequest) update(adabasRequest *adatypes.Request, storeRecord
 // EndTransaction end of Adabas database transaction
 func (request *StoreRequest) EndTransaction() error {
 	return request.adabas.EndTransaction()
+}
+
+func (request *StoreRequest) storeValue(record reflect.Value, store bool) error {
+	if request.definition == nil {
+		q := request.dynamic.createQueryFields()
+		request.StoreFields(q)
+	}
+
+	if record.Kind() == reflect.Ptr {
+		record = record.Elem()
+	}
+	storeRecord, serr := request.CreateRecord()
+	if serr != nil {
+		return serr
+	}
+	adatypes.Central.Log.Debugf("Slice index: %v", record)
+	for an, fn := range request.dynamic.fieldNames {
+		v := record.FieldByName(fn)
+		if v.IsValid() {
+			adatypes.Central.Log.Debugf("Set slice value %v = %v", fn, v)
+			err := storeRecord.SetValue(an, v.Interface())
+			if err != nil {
+				return adatypes.NewGenericError(52, err.Error())
+			}
+			adatypes.Central.Log.Debugf("Set value %s: %s = %v", an, fn, v)
+		}
+	}
+	adatypes.Central.Log.Debugf("RECORD ADA: %s", storeRecord.String())
+	if store {
+		err := request.Store(storeRecord)
+		if err != nil {
+			return adatypes.NewGenericError(53, err.Error())
+		}
+	} else {
+		err := request.Update(storeRecord)
+		if err != nil {
+			return adatypes.NewGenericError(53, err.Error())
+		}
+
+	}
+	return nil
+}
+
+// StoreData store interface data, either struct or array
+func (request *StoreRequest) StoreData(data interface{}) error {
+	return request.modifyData(data, true)
+}
+
+// UpdateData update interface data, either struct or array
+func (request *StoreRequest) UpdateData(data interface{}) error {
+	return request.modifyData(data, false)
+}
+
+// StoreData store interface data, either struct or array
+func (request *StoreRequest) modifyData(data interface{}, store bool) error {
+	adatypes.Central.Log.Debugf("Store type = %T %v", data, reflect.TypeOf(data).Kind())
+	switch reflect.TypeOf(data).Kind() {
+	case reflect.Slice:
+		adatypes.Central.Log.Debugf("Work on slice")
+		s := reflect.ValueOf(data)
+		if s.Len() == 0 {
+			return adatypes.NewGenericError(54)
+		}
+		if request.dynamic == nil {
+			request.createDynamic(s.Index(0))
+		}
+
+		for si := 0; si < s.Len(); si++ {
+			err := request.storeValue(s.Index(si), store)
+			if err != nil {
+				return err
+			}
+		}
+	case reflect.Ptr:
+		if request.dynamic == nil {
+			request.createDynamic(data)
+		}
+		ti := reflect.ValueOf(data).Elem()
+		err := request.storeValue(ti, store)
+		if err != nil {
+			return err
+		}
+	case reflect.Struct:
+		if request.dynamic == nil {
+			request.createDynamic(data)
+		}
+		adatypes.Central.Log.Debugf("Type data %T", data)
+		ti := reflect.ValueOf(data)
+		err := request.storeValue(ti, store)
+		if err != nil {
+			return err
+		}
+	default:
+		adatypes.Central.Log.Debugf("Unkown type %v", reflect.TypeOf(data).Kind())
+		return adatypes.NewGenericError(0)
+	}
+	return nil
 }

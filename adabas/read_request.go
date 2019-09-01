@@ -22,6 +22,7 @@ package adabas
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -87,6 +88,26 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 		rep := param[2].(*Repository)
 		return createNewMapReadRequestRepo(mapName, ada, rep)
 	default:
+		fmt.Println("Unknown", reflect.TypeOf(param[0]).Kind())
+		if reflect.TypeOf(param[0]).Kind() == reflect.Struct {
+			fmt.Println("It's a struct", reflect.TypeOf(param[0]).Name())
+			mapName := reflect.TypeOf(param[0]).Name()
+			if len(param) < 2 {
+				return nil, errors.New("Not enough parameters for NewReadRequest")
+			}
+			ada := param[1].(*Adabas)
+			if len(param) == 2 {
+				request, err = createNewMapReadRequest(mapName, ada)
+			} else {
+				rep := param[2].(*Repository)
+				request, err = createNewMapReadRequestRepo(mapName, ada, rep)
+			}
+			if err != nil {
+				return nil, err
+			}
+			request.dynamic = &dynamicInterface{dataType: param[0]}
+			return
+		}
 	}
 	return nil, adatypes.NewGenericError(73)
 }
@@ -128,7 +149,7 @@ func createNewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Rep
 // createNewMapReadRequest create a new Request instance
 func createNewMapReadRequest(mapName string, adabas *Adabas) (request *ReadRequest, err error) {
 	var adabasMap *Map
-	adabasMap, err = SearchMapRepository(adabas, mapName)
+	adabasMap, _, err = SearchMapRepository(adabas, mapName)
 	if err != nil {
 		return
 	}
@@ -349,6 +370,9 @@ func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, er
 	err = request.ReadLogicalWithWithParser(search, parseRead, result)
 	if err != nil {
 		return nil, err
+	}
+	if request.dynamic != nil {
+		result.transform(request.dynamic)
 	}
 	return
 }
@@ -675,6 +699,11 @@ func traverseFieldMap(adaType adatypes.IAdaType, parentType adatypes.IAdaType, l
 
 // QueryFields define the fields queried in that request
 func (request *ReadRequest) QueryFields(fieldq string) (err error) {
+	if request.dynamic != nil {
+		if fieldq == "*" {
+			fieldq = request.dynamic.createQueryFields()
+		}
+	}
 	adatypes.Central.Log.Debugf("Query fields to %s", fieldq)
 	err = request.Open()
 	if err != nil {

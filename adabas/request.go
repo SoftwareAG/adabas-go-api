@@ -30,6 +30,7 @@ type commonRequest struct {
 	repository  *Repository
 	definition  *adatypes.Definition
 	initialized bool
+	dynamic     *dynamicInterface
 }
 
 // StreamFunction function callback used to go through the list of received records

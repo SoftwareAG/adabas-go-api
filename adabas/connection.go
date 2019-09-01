@@ -150,7 +150,7 @@ func (connection *Connection) searchRepository(adabasID *ID, repository *Reposit
 		if err != nil {
 			return err
 		}
-		connection.adabasMap, err = SearchMapRepository(connection.adabasToMap, mapName)
+		connection.adabasMap, _, err = SearchMapRepository(connection.adabasToMap, mapName)
 		if err != nil {
 			adatypes.Central.Log.Debugf("Search in global repositories fail: %v", err)
 			return err
