@@ -74,7 +74,7 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 		}
 	default:
 		if reflect.TypeOf(param[0]).Kind() == reflect.Struct {
-			fmt.Println("It's a struct", reflect.TypeOf(param[0]).Name())
+			adatypes.Central.Log.Debugf("It's a struct %s", reflect.TypeOf(param[0]).Name())
 			mapName := reflect.TypeOf(param[0]).Name()
 			if len(param) < 2 {
 				return nil, errors.New("Not enough parameters for NewReadRequest")

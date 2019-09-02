@@ -413,7 +413,7 @@ func addValueToStructure(parameter *stackParameter, value IAdaValue) {
 }
 
 // create value function used in traverser to create a tree per type element
-func createValue(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
 	parameter := x.(*stackParameter)
 	if parameter.structureValue != nil {
 		Central.Log.Debugf("parent is %s %d for %d", parameter.structureValue.Type().Name(), parameter.structureValue.Type().Level(), adaType.Level())
@@ -490,7 +490,27 @@ func (def *Definition) CreateValues(forStoring bool) (err error) {
 	def.Values = nil
 	Central.Log.Debugf("Create values from types for storing=%v", forStoring)
 	parameter := &stackParameter{definition: def, forStoring: forStoring, stack: NewStack()}
-	t := TraverserMethods{EnterFunction: createValue}
+	t := TraverserMethods{EnterFunction: traverserCreateValue}
+	err = def.TraverseTypes(t, true, parameter)
+	Central.Log.Debugf("Done creating values ... %v", err)
+	Central.Log.Debugf("Created %d values", len(def.Values))
+	return
+}
+
+// create value function used in traverser to create a tree per type element
+func traverseCreateValueToInterface(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+	parameter := x.(*stackParameter)
+	fmt.Println(adaType.Name(), parameter)
+	return nil
+}
+
+// CreateValuesFromInterface Create new value tree using an interface
+func (def *Definition) CreateValuesFromInterface(forStoring bool, dataType interface{}) (err error) {
+	def.Values = nil
+	fmt.Println("Create values from interface %v", dataType)
+	Central.Log.Debugf("Create values from types for storing=%v", forStoring)
+	parameter := &stackParameter{definition: def, forStoring: forStoring, stack: NewStack()}
+	t := TraverserMethods{EnterFunction: traverseCreateValueToInterface}
 	err = def.TraverseTypes(t, true, parameter)
 	Central.Log.Debugf("Done creating values ... %v", err)
 	Central.Log.Debugf("Created %d values", len(def.Values))

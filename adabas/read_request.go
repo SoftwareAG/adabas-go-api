@@ -88,9 +88,8 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 		rep := param[2].(*Repository)
 		return createNewMapReadRequestRepo(mapName, ada, rep)
 	default:
-		fmt.Println("Unknown", reflect.TypeOf(param[0]).Kind())
 		if reflect.TypeOf(param[0]).Kind() == reflect.Struct {
-			fmt.Println("It's a struct", reflect.TypeOf(param[0]).Name())
+			adatypes.Central.Log.Debugf("It's a struct %s", reflect.TypeOf(param[0]).Name())
 			mapName := reflect.TypeOf(param[0]).Name()
 			if len(param) < 2 {
 				return nil, errors.New("Not enough parameters for NewReadRequest")
@@ -105,9 +104,10 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 			if err != nil {
 				return nil, err
 			}
-			request.dynamic = &dynamicInterface{dataType: param[0]}
+			request.createDynamic(param[0])
 			return
 		}
+		adatypes.Central.Log.Debugf("Unknown: %v", reflect.TypeOf(param[0]).Kind())
 	}
 	return nil, adatypes.NewGenericError(73)
 }
@@ -220,6 +220,9 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, e
 	if request.Limit != 0 && request.Limit < uint64(request.Multifetch) {
 		adabasRequest.Multifetch = uint32(request.Limit)
 	}
+	if request.dynamic != nil {
+		adabasRequest.DataType = request.dynamic.dataType
+	}
 
 	return
 }
@@ -230,7 +233,7 @@ func (request *ReadRequest) SetHoldRecords(hold adatypes.HoldType) {
 }
 
 // parses the read record record
-func parseRead(adabasRequest *adatypes.Request, x interface{}) (err error) {
+func parseReadToRecord(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	result := x.(*Response)
 
 	isn := adabasRequest.Isn
@@ -245,6 +248,28 @@ func parseRead(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	result.Values = append(result.Values, record)
 	record.fields = result.fields
 	adatypes.Central.Log.Debugf("Got ISN=%d Quantity=%d record", record.Isn, record.Quantity)
+
+	return
+}
+
+// parses the read record record
+func parseReadToInterface(adabasRequest *adatypes.Request, x interface{}) (err error) {
+	result := x.(*Response)
+
+	adabasRequest.Definition.CreateValuesFromInterface(false, adabasRequest.DataType)
+	// isn := adabasRequest.Isn
+	// isnQuantity := adabasRequest.IsnQuantity
+	// record, xerr := NewRecordIsn(isn, isnQuantity, adabasRequest.Definition)
+	// if xerr != nil {
+	// 	return xerr
+	// }
+	// if adabasRequest.Parameter != nil {
+	// 	record.adabasMap = adabasRequest.Parameter.(*Map)
+	// }
+	// result.Values = append(result.Values, record)
+	// record.fields = result.fields
+	// adatypes.Central.Log.Debugf("Got ISN=%d Quantity=%d record", record.Isn, record.Quantity)
+	result.DumpValues()
 
 	return
 }
@@ -282,9 +307,12 @@ func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes
 		err = prepareErr
 		return
 	}
-	if resultParser == nil {
-		adabasRequest.Parser = parseRead
-	} else {
+	switch {
+	case resultParser == nil:
+		adabasRequest.Parser = parseReadToRecord
+	case adabasRequest.DataType != nil:
+		adabasRequest.Parser = parseReadToInterface
+	default:
 		adabasRequest.Parser = resultParser
 	}
 	adabasRequest.Limit = request.Limit
@@ -319,9 +347,12 @@ func (request *ReadRequest) ReadISNWithParser(isn adatypes.Isn, resultParser ada
 		err = prepareErr
 		return
 	}
-	if resultParser == nil {
-		adabasRequest.Parser = parseRead
-	} else {
+	switch {
+	case resultParser == nil:
+		adabasRequest.Parser = parseReadToRecord
+	case adabasRequest.DataType != nil:
+		adabasRequest.Parser = parseReadToInterface
+	default:
 		adabasRequest.Parser = resultParser
 	}
 	adabasRequest.Limit = 1
@@ -367,7 +398,7 @@ func (request *ReadRequest) ReadLogicalWithStream(search string, streamFunction 
 // ReadLogicalWith read records with a logical order given by a search string
 func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, err error) {
 	result = &Response{Definition: request.definition, fields: request.fields}
-	err = request.ReadLogicalWithWithParser(search, parseRead, result)
+	err = request.ReadLogicalWithWithParser(search, parseReadToRecord, result)
 	if err != nil {
 		return nil, err
 	}
@@ -380,7 +411,7 @@ func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, er
 // ReadByISN read records with a logical order given by a ISN sequence
 func (request *ReadRequest) ReadByISN() (result *Response, err error) {
 	result = &Response{Definition: request.definition, fields: request.fields}
-	err = request.ReadLogicalWithWithParser("", parseRead, result)
+	err = request.ReadLogicalWithWithParser("", parseReadToRecord, result)
 	if err != nil {
 		return nil, err
 	}
@@ -429,9 +460,12 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 			return
 		}
 		adatypes.Central.Log.Debugf("Prepare done ...")
-		if resultParser == nil {
-			adabasRequest.Parser = parseRead
-		} else {
+		switch {
+		case resultParser == nil:
+			adabasRequest.Parser = parseReadToRecord
+		case adabasRequest.DataType != nil:
+			adabasRequest.Parser = parseReadToInterface
+		default:
 			adabasRequest.Parser = resultParser
 		}
 		adabasRequest.Limit = request.Limit
@@ -508,9 +542,12 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 	if request.Limit != 0 && request.Limit < uint64(request.Multifetch) {
 		adabasRequest.Multifetch = uint32(request.Limit)
 	}
-	if resultParser == nil {
-		adabasRequest.Parser = parseRead
-	} else {
+	switch {
+	case resultParser == nil:
+		adabasRequest.Parser = parseReadToRecord
+	case adabasRequest.DataType != nil:
+		adabasRequest.Parser = parseReadToInterface
+	default:
 		adabasRequest.Parser = resultParser
 	}
 	adabasRequest.Limit = request.Limit
@@ -541,7 +578,7 @@ func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, er
 			err = prepareErr
 			return
 		}
-		adabasRequest.Parser = parseRead
+		adabasRequest.Parser = parseReadToRecord
 		adabasRequest.Limit = request.Limit
 		adabasRequest.Descriptors, err = request.definition.Descriptors(descriptor)
 		if err != nil {
@@ -583,7 +620,7 @@ func (request *ReadRequest) HistogramWithStream(search string, streamFunction St
 // HistogramWith read a descriptor given by a search criteria
 func (request *ReadRequest) HistogramWith(search string) (result *Response, err error) {
 	response := &Response{Definition: request.definition, fields: request.fields}
-	err = request.histogramWithWithParser(search, parseRead, response)
+	err = request.histogramWithWithParser(search, parseReadToRecord, response)
 	if err != nil {
 		return nil, err
 	}

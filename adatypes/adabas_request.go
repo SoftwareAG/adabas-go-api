@@ -96,6 +96,7 @@ type Request struct {
 	Option             *BufferOption
 	Parameter          interface{}
 	Reference          string
+	DataType           interface{}
 }
 
 // func (adabasRequest *Request) reset() {
