@@ -127,6 +127,17 @@ func (Response *Response) DumpValues() (err error) {
 	return
 }
 
+// DumpData dumps the result data
+func (Response *Response) DumpData() (err error) {
+	var buffer bytes.Buffer
+	fmt.Println("Dump all result data")
+	for _, v := range Response.Data {
+		buffer.WriteString(fmt.Sprintf("%v\n", v))
+	}
+	fmt.Printf("%s", buffer.String())
+	return
+}
+
 // TraverseValues traverse through the tree of values calling a callback method
 func (Response *Response) TraverseValues(t adatypes.TraverserValuesMethods, x interface{}) (ret adatypes.TraverseResult, err error) {
 	adatypes.Central.Log.Debugf("Traverse result values")
@@ -385,14 +396,3 @@ func (Response *Response) Isn(isn adatypes.Isn) *Record {
 	}
 	return nil
 }
-
-// func (Response *Response) transform(i *dynamicInterface) {
-// 	fmt.Println("Transform record")
-// 	nt := reflect.TypeOf(i.dataType)
-// 	Response.Data = make([]interface{}, 0)
-// 	for r := range Response.Values {
-// 		x := reflect.New(nt)
-// 		Response.Data = append(Response.Data, x)
-// 		fmt.Println(r)
-// 	}
-// }

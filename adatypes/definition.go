@@ -22,6 +22,7 @@ package adatypes
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -578,4 +579,53 @@ func (def *Definition) Descriptors(descriptors string) (desc []string, err error
 	}
 	Central.Log.Debugf("Descriptors: %v", desc)
 	return
+}
+
+func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
+	v := x.(reflect.Value)
+	f := v.FieldByName(adaValue.Type().Name())
+	if f.IsValid() {
+		switch f.Kind() {
+		case reflect.Int64, reflect.Int32:
+			i, err := adaValue.Int64()
+			if err != nil {
+				return EndTraverser, err
+			}
+			f.SetInt(i)
+		case reflect.Uint64, reflect.Uint32:
+			i, err := adaValue.UInt64()
+			if err != nil {
+				return EndTraverser, err
+			}
+			f.SetUint(i)
+		case reflect.Float32, reflect.Float64:
+			fl, err := adaValue.Float()
+			if err != nil {
+				return EndTraverser, err
+			}
+			f.SetFloat(fl)
+		case reflect.Bool:
+			v, err := adaValue.Int32()
+			if err != nil {
+				return EndTraverser, err
+			}
+			b := v > 0
+			f.SetBool(b)
+		case reflect.String:
+			f.SetString(adaValue.String())
+		default:
+			Central.Log.Infof("Unkown kind: %v", f.Kind())
+		}
+		Central.Log.Debugf("%s=%v->%v", adaValue.Type().Name(), v, f)
+	}
+
+	return Continue, nil
+}
+
+// AdaptInterfaceFields adapt field value to interface field
+func (def *Definition) AdaptInterfaceFields(v reflect.Value) error {
+	Central.Log.Debugf("Adapt interface")
+	t := TraverserValuesMethods{EnterFunction: traverseValueToInterface}
+	def.TraverseValues(t, v.Elem())
+	return nil
 }

@@ -102,9 +102,12 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 				request, err = createNewMapReadRequestRepo(mapName, ada, rep)
 			}
 			if err != nil {
+				adatypes.Central.Log.Debugf("Error creating dynamic read request: %v", err)
 				return nil, err
 			}
+			adatypes.Central.Log.Debugf("Success creating dynamic read request: %v", param[0])
 			request.createDynamic(param[0])
+			adatypes.Central.Log.Debugf("Create dynamic %v", request.dynamic)
 			return
 		}
 		adatypes.Central.Log.Debugf("Unknown: %v", reflect.TypeOf(param[0]).Kind())
@@ -220,6 +223,7 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, e
 	if request.Limit != 0 && request.Limit < uint64(request.Multifetch) {
 		adabasRequest.Multifetch = uint32(request.Limit)
 	}
+	adatypes.Central.Log.Debugf("Got dynamic part: %v", request.dynamic)
 	if request.dynamic != nil {
 		adabasRequest.DataType = request.dynamic.dataType
 	}
@@ -234,6 +238,7 @@ func (request *ReadRequest) SetHoldRecords(hold adatypes.HoldType) {
 
 // parses the read record record
 func parseReadToRecord(adabasRequest *adatypes.Request, x interface{}) (err error) {
+	adatypes.Central.Log.Debugf("Parse read to record")
 	result := x.(*Response)
 
 	isn := adabasRequest.Isn
@@ -254,6 +259,7 @@ func parseReadToRecord(adabasRequest *adatypes.Request, x interface{}) (err erro
 
 // parses the read record record
 func parseReadToInterface(adabasRequest *adatypes.Request, x interface{}) (err error) {
+	adatypes.Central.Log.Debugf("Parse read to interface")
 	result := x.(*Response)
 
 	ti := reflect.TypeOf(adabasRequest.DataType)
@@ -261,23 +267,11 @@ func parseReadToInterface(adabasRequest *adatypes.Request, x interface{}) (err e
 		ti = ti.Elem()
 	}
 	newInstance := reflect.New(ti)
-	fmt.Println("Kind:", reflect.TypeOf(newInstance).Kind(), "Elem:", newInstance.Elem())
-	// isn := adabasRequest.Isn
-	// isnQuantity := adabasRequest.IsnQuantity
-	// record, xerr := NewRecordIsn(isn, isnQuantity, adabasRequest.Definition)
-	// if xerr != nil {
-	// 	return xerr
-	// }
-	// if adabasRequest.Parameter != nil {
-	// 	record.adabasMap = adabasRequest.Parameter.(*Map)
-	// }
-	// result.Values = append(result.Values, record)
-	// record.fields = result.fields
-	// adatypes.Central.Log.Debugf("Got ISN=%d Quantity=%d record", record.Isn, record.Quantity)
-	fmt.Printf("Parse read to interface %v <%s> -> %d\n", newInstance, newInstance.String(), len(result.Data))
+	adatypes.Central.Log.Debugf("Kind: %v Elem: %v", reflect.TypeOf(newInstance).Kind(), newInstance.Elem())
+	adabasRequest.Definition.AdaptInterfaceFields(newInstance)
+	adatypes.Central.Log.Debugf("Parse read to interface %v <%s> -> %d\n", newInstance, newInstance.String(), len(result.Data))
 	result.Data = append(result.Data, newInstance.Interface())
-	fmt.Printf("After read to interface %v\n", len(result.Data))
-	result.DumpValues()
+	adatypes.Central.Log.Debugf("After read to interface %v\n", len(result.Data))
 
 	return
 }
@@ -316,12 +310,13 @@ func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes
 		return
 	}
 	switch {
-	case resultParser == nil:
-		adabasRequest.Parser = parseReadToRecord
+	case resultParser != nil:
+		adabasRequest.Parser = resultParser
 	case adabasRequest.DataType != nil:
+		adatypes.Central.Log.Debugf("Set parseReadToInterface for dynamic %v", adabasRequest.DataType)
 		adabasRequest.Parser = parseReadToInterface
 	default:
-		adabasRequest.Parser = resultParser
+		adabasRequest.Parser = parseReadToRecord
 	}
 	adabasRequest.Limit = request.Limit
 	adabasRequest.Multifetch = request.Multifetch
@@ -356,12 +351,12 @@ func (request *ReadRequest) ReadISNWithParser(isn adatypes.Isn, resultParser ada
 		return
 	}
 	switch {
-	case resultParser == nil:
-		adabasRequest.Parser = parseReadToRecord
+	case resultParser != nil:
+		adabasRequest.Parser = resultParser
 	case adabasRequest.DataType != nil:
 		adabasRequest.Parser = parseReadToInterface
 	default:
-		adabasRequest.Parser = resultParser
+		adabasRequest.Parser = parseReadToRecord
 	}
 	adabasRequest.Limit = 1
 	adabasRequest.Multifetch = 1
@@ -372,22 +367,36 @@ func (request *ReadRequest) ReadISNWithParser(isn adatypes.Isn, resultParser ada
 }
 
 type stream struct {
-	streamFunction StreamFunction
-	result         *Response
-	x              interface{}
+	streamFunction    StreamFunction
+	interfaceFunction InterfaceFunction
+	result            *Response
+	x                 interface{}
 }
 
 func streamRecord(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	stream := x.(*stream)
-
-	isn := adabasRequest.Isn
-	isnQuantity := adabasRequest.IsnQuantity
-	adatypes.Central.Log.Debugf("Got ISN %d record", isn)
-	record, xerr := NewRecordIsn(isn, isnQuantity, adabasRequest.Definition)
-	if xerr != nil {
-		return xerr
+	switch {
+	case stream.interfaceFunction != nil:
+		ti := reflect.TypeOf(adabasRequest.DataType)
+		if ti.Kind() == reflect.Ptr {
+			ti = ti.Elem()
+		}
+		newInstance := reflect.New(ti)
+		adatypes.Central.Log.Debugf("Kind: %v Elem: %v", reflect.TypeOf(newInstance).Kind(), newInstance.Elem())
+		adabasRequest.Definition.AdaptInterfaceFields(newInstance)
+		adatypes.Central.Log.Debugf("Parse read to interface %v <%s>\n", newInstance, newInstance.String())
+		err = stream.interfaceFunction(newInstance.Interface(), stream.x)
+	case stream.streamFunction != nil:
+		isn := adabasRequest.Isn
+		isnQuantity := adabasRequest.IsnQuantity
+		adatypes.Central.Log.Debugf("Got ISN %d record", isn)
+		record, xerr := NewRecordIsn(isn, isnQuantity, adabasRequest.Definition)
+		if xerr != nil {
+			return xerr
+		}
+		err = stream.streamFunction(record, stream.x)
+	default:
 	}
-	err = stream.streamFunction(record, stream.x)
 	return
 }
 
@@ -403,6 +412,18 @@ func (request *ReadRequest) ReadLogicalWithStream(search string, streamFunction 
 	return
 }
 
+// ReadLogicalWithInterface read records with a logical order given by a search string and calls interface function
+func (request *ReadRequest) ReadLogicalWithInterface(search string, interfaceFunction InterfaceFunction,
+	x interface{}) (result *Response, err error) {
+	s := &stream{interfaceFunction: interfaceFunction, result: &Response{Definition: request.definition}, x: x}
+	err = request.ReadLogicalWithWithParser(search, streamRecord, s)
+	if err != nil {
+		return nil, err
+	}
+	result = s.result
+	return
+}
+
 // ReadLogicalWith read records with a logical order given by a search string
 func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, err error) {
 	result = &Response{Definition: request.definition, fields: request.fields}
@@ -410,9 +431,6 @@ func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, er
 	if err != nil {
 		return nil, err
 	}
-	// if request.dynamic != nil {
-	// 	result.transform(request.dynamic)
-	// }
 	return
 }
 
@@ -469,12 +487,12 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 		}
 		adatypes.Central.Log.Debugf("Prepare done ...")
 		switch {
-		case resultParser == nil:
-			adabasRequest.Parser = parseReadToRecord
+		case resultParser != nil:
+			adabasRequest.Parser = resultParser
 		case adabasRequest.DataType != nil:
 			adabasRequest.Parser = parseReadToInterface
 		default:
-			adabasRequest.Parser = resultParser
+			adabasRequest.Parser = parseReadToRecord
 		}
 		adabasRequest.Limit = request.Limit
 		//searchInfo.Definition = adabasRequest.Definition
@@ -551,12 +569,12 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 		adabasRequest.Multifetch = uint32(request.Limit)
 	}
 	switch {
-	case resultParser == nil:
-		adabasRequest.Parser = parseReadToRecord
+	case resultParser != nil:
+		adabasRequest.Parser = resultParser
 	case adabasRequest.DataType != nil:
 		adabasRequest.Parser = parseReadToInterface
 	default:
-		adabasRequest.Parser = resultParser
+		adabasRequest.Parser = parseReadToRecord
 	}
 	adabasRequest.Limit = request.Limit
 	adabasRequest.Descriptors, err = request.definition.Descriptors(descriptors)

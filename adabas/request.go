@@ -36,6 +36,9 @@ type commonRequest struct {
 // StreamFunction function callback used to go through the list of received records
 type StreamFunction func(record *Record, x interface{}) error
 
+// InterfaceFunction function callback used to go through the list of received interface instances
+type InterfaceFunction func(data interface{}, x interface{}) error
+
 func (request *commonRequest) loadDefinition() (err error) {
 	if request.definition == nil {
 		adatypes.Central.Log.Debugf("Load file definition ....")
