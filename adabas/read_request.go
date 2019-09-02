@@ -256,7 +256,12 @@ func parseReadToRecord(adabasRequest *adatypes.Request, x interface{}) (err erro
 func parseReadToInterface(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	result := x.(*Response)
 
-	adabasRequest.Definition.CreateValuesFromInterface(false, adabasRequest.DataType)
+	ti := reflect.TypeOf(adabasRequest.DataType)
+	if ti.Kind() == reflect.Ptr {
+		ti = ti.Elem()
+	}
+	newInstance := reflect.New(ti)
+	fmt.Println("Kind:", reflect.TypeOf(newInstance).Kind(), "Elem:", newInstance.Elem())
 	// isn := adabasRequest.Isn
 	// isnQuantity := adabasRequest.IsnQuantity
 	// record, xerr := NewRecordIsn(isn, isnQuantity, adabasRequest.Definition)
@@ -269,6 +274,9 @@ func parseReadToInterface(adabasRequest *adatypes.Request, x interface{}) (err e
 	// result.Values = append(result.Values, record)
 	// record.fields = result.fields
 	// adatypes.Central.Log.Debugf("Got ISN=%d Quantity=%d record", record.Isn, record.Quantity)
+	fmt.Printf("Parse read to interface %v <%s> -> %d\n", newInstance, newInstance.String(), len(result.Data))
+	result.Data = append(result.Data, newInstance.Interface())
+	fmt.Printf("After read to interface %v\n", len(result.Data))
 	result.DumpValues()
 
 	return
@@ -402,9 +410,9 @@ func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, er
 	if err != nil {
 		return nil, err
 	}
-	if request.dynamic != nil {
-		result.transform(request.dynamic)
-	}
+	// if request.dynamic != nil {
+	// 	result.transform(request.dynamic)
+	// }
 	return
 }
 

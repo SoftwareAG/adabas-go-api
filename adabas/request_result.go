@@ -24,7 +24,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -387,13 +386,13 @@ func (Response *Response) Isn(isn adatypes.Isn) *Record {
 	return nil
 }
 
-func (Response *Response) transform(i *dynamicInterface) {
-	fmt.Println("Transform record")
-	nt := reflect.TypeOf(i.dataType)
-	Response.Data = make([]interface{}, 0)
-	for r := range Response.Values {
-		x := reflect.New(nt)
-		Response.Data = append(Response.Data, x)
-		fmt.Println(r)
-	}
-}
+// func (Response *Response) transform(i *dynamicInterface) {
+// 	fmt.Println("Transform record")
+// 	nt := reflect.TypeOf(i.dataType)
+// 	Response.Data = make([]interface{}, 0)
+// 	for r := range Response.Values {
+// 		x := reflect.New(nt)
+// 		Response.Data = append(Response.Data, x)
+// 		fmt.Println(r)
+// 	}
+// }

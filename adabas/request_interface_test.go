@@ -80,5 +80,7 @@ func TestReadInterface(t *testing.T) {
 	if assert.NotNil(t, result) {
 		result.DumpValues()
 	}
-
+	fmt.Println("Length", len(result.Data))
+	assert.Len(t, result.Data, 3)
+	assert.IsType(t, (*Employees)(nil), result.Data[0])
 }

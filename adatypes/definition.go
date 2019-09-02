@@ -497,26 +497,6 @@ func (def *Definition) CreateValues(forStoring bool) (err error) {
 	return
 }
 
-// create value function used in traverser to create a tree per type element
-func traverseCreateValueToInterface(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
-	parameter := x.(*stackParameter)
-	fmt.Println(adaType.Name(), parameter)
-	return nil
-}
-
-// CreateValuesFromInterface Create new value tree using an interface
-func (def *Definition) CreateValuesFromInterface(forStoring bool, dataType interface{}) (err error) {
-	def.Values = nil
-	fmt.Printf("Create values from interface %v\n", dataType)
-	Central.Log.Debugf("Create values from types for storing=%v", forStoring)
-	parameter := &stackParameter{definition: def, forStoring: forStoring, stack: NewStack()}
-	t := TraverserMethods{EnterFunction: traverseCreateValueToInterface}
-	err = def.TraverseTypes(t, true, parameter)
-	Central.Log.Debugf("Done creating values ... %v", err)
-	Central.Log.Debugf("Created %d values", len(def.Values))
-	return
-}
-
 // SetValueWithIndex Add value to an node element
 func (def *Definition) SetValueWithIndex(name string, index []uint32, x interface{}) error {
 	typ, err := def.SearchType(name)
