@@ -427,7 +427,7 @@ func (request *ReadRequest) ReadLogicalWithInterface(search string, interfaceFun
 // ReadLogicalWith read records with a logical order given by a search string
 func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, err error) {
 	result = &Response{Definition: request.definition, fields: request.fields}
-	err = request.ReadLogicalWithWithParser(search, parseReadToRecord, result)
+	err = request.ReadLogicalWithWithParser(search, nil, result)
 	if err != nil {
 		return nil, err
 	}
@@ -437,7 +437,7 @@ func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, er
 // ReadByISN read records with a logical order given by a ISN sequence
 func (request *ReadRequest) ReadByISN() (result *Response, err error) {
 	result = &Response{Definition: request.definition, fields: request.fields}
-	err = request.ReadLogicalWithWithParser("", parseReadToRecord, result)
+	err = request.ReadLogicalWithWithParser("", nil, result)
 	if err != nil {
 		return nil, err
 	}

@@ -60,10 +60,10 @@ func TestReadLogicalInterface(t *testing.T) {
 		return
 	}
 	defer request.Close()
-	err = request.QueryFields("*")
-	if !assert.NoError(t, err) {
-		return
-	}
+	// err = request.QueryFields("*")
+	// if !assert.NoError(t, err) {
+	// 	return
+	// }
 
 	result, err := request.ReadLogicalWith("ID>'ID'")
 	fmt.Println("Read done ...")

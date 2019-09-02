@@ -6,8 +6,11 @@
   - [Introduction](#introduction)
   - [Usage](#usage)
   - [Adabas Go API example](#adabas-go-api-example)
+    - [Standard usage](#standard-usage)
+    - [Using a Go struct](#using-a-go-struct)
   - [New Map repository](#new-map-repository)
   - [First step](#first-step)
+  - [Log output](#log-output)
   - [Summary](#summary)
 
 <!-- /TOC -->
@@ -50,6 +53,8 @@ go build -tags adalnk application.go
 
 ## Adabas Go API example
 
+### Standard usage
+
 A quick example to read data from a database file 11 of Adabas database with database id 23 is here
 
 ```go
@@ -73,6 +78,43 @@ result.Values[0].Scan(&aa,&ac,&ad,&ae)
 ```
 
 The example code is referenced [here](.//tests//simple_read.go). See detailed documentation [here](.//doc//README.md)
+
+### Using a Go struct
+
+The Adabas API can handle simple Go struct definitions to map them to a Adabas Map definition.
+
+For example if the structure is defined like
+
+```go
+type Employees struct {
+  	ID        string
+	Birth     int64
+	Name      string `adabas:"Name"`
+	FirstName string `adabas:"FirstName"`
+}
+```
+
+The struct can be used to read or store data directly. The store of the whole structure will be done
+
+To store the struct record do
+
+```go
+storeRequest, err := NewStoreRequest(Employees{}, ada, repository)
+e:=  &Employees{ID: "ID3", Birth: 456, Name: "Name3", FirstName: "First name3"}
+err = storeRequest.StoreData(e)
+err = storeRequest.EndTransaction()
+```
+
+The read of struct data will be done with
+
+```go
+request, err := NewReadRequest(Employees{}, adabas, mapRepository)
+defer request.Close()
+result, err := request.ReadLogicalWith("ID>'ID'")
+e := result.Data[0].(*Employees)
+```
+
+All fields of the struct are mapped to a Adabas Map field name. The `adabas` tag of the struct definition change the mapped name. 
 
 ## New Map repository
 
