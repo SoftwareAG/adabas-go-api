@@ -507,7 +507,7 @@ func traverseCreateValueToInterface(adaType IAdaType, parentType IAdaType, level
 // CreateValuesFromInterface Create new value tree using an interface
 func (def *Definition) CreateValuesFromInterface(forStoring bool, dataType interface{}) (err error) {
 	def.Values = nil
-	fmt.Println("Create values from interface %v", dataType)
+	fmt.Printf("Create values from interface %v\n", dataType)
 	Central.Log.Debugf("Create values from types for storing=%v", forStoring)
 	parameter := &stackParameter{definition: def, forStoring: forStoring, stack: NewStack()}
 	t := TraverserMethods{EnterFunction: traverseCreateValueToInterface}
