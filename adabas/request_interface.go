@@ -20,43 +20,9 @@
 package adabas
 
 import (
-	"bytes"
-	"reflect"
-
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
-type dynamicInterface struct {
-	dataType   interface{}
-	fieldNames map[string]string
-}
-
 func (request *commonRequest) createDynamic(i interface{}) {
-	request.dynamic = &dynamicInterface{dataType: i, fieldNames: make(map[string]string)}
-	ri := reflect.TypeOf(i)
-	adatypes.Central.Log.Debugf("Dynamic interface %v nrFields=%d", ri, ri.NumField())
-	for fi := 0; fi < ri.NumField(); fi++ {
-		fieldName := ri.Field(fi).Name
-		adabasFieldName := fieldName
-		tag := ri.Field(fi).Tag.Get("adabas")
-		adatypes.Central.Log.Debugf("fieldName=%s/%s -> tag=%s", adabasFieldName, fieldName, tag)
-		if tag != "" {
-			adabasFieldName = tag
-		}
-		request.dynamic.fieldNames[adabasFieldName] = fieldName
-	}
-
-}
-
-func (dynamic *dynamicInterface) createQueryFields() string {
-	var buffer bytes.Buffer
-	for fieldName := range dynamic.fieldNames {
-		if buffer.Len() > 0 {
-			buffer.WriteRune(',')
-		}
-		buffer.WriteString(fieldName)
-	}
-	adatypes.Central.Log.Debugf("Create query fields: %s", buffer.String())
-
-	return buffer.String()
+	request.dynamic = adatypes.CreateDynamicInterface(i)
 }

@@ -9,6 +9,45 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type MapEmployee struct {
+	Id         string
+	FirstName  string
+	LastName   string
+	Department string
+}
+
+func TestStoreRequestInterfaceInstance(t *testing.T) {
+	initTestLogWithFile(t, "request_interface.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	ada, _ := NewAdabas(adabasModDBID)
+	defer ada.Close()
+	repository := NewMapRepository(ada, 4)
+	storeRequest, err := NewStoreRequest(Employees{}, ada, repository)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.NotNil(t, storeRequest)
+	assert.Equal(t, "Employees", storeRequest.dynamic.DataType.Name())
+}
+
+func TestStoreRequestInterfacePointer(t *testing.T) {
+	initTestLogWithFile(t, "request_interface.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	ada, _ := NewAdabas(adabasModDBID)
+	defer ada.Close()
+	repository := NewMapRepository(ada, 4)
+	storeRequest, err := NewStoreRequest((*Employees)(nil), ada, repository)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.NotNil(t, storeRequest)
+	assert.Equal(t, "Employees", storeRequest.dynamic.DataType.Name())
+}
+
 func TestStoreInterface(t *testing.T) {
 	initTestLogWithFile(t, "request_interface.log")
 
@@ -22,6 +61,7 @@ func TestStoreInterface(t *testing.T) {
 		return
 	}
 	assert.NotNil(t, storeRequest)
+	assert.Equal(t, "Employees", storeRequest.dynamic.DataType.Name())
 
 	employees := make([]*Employees, 0)
 	employees = append(employees, &Employees{ID: "ID", Birth: 123, Name: "Name", FirstName: "First name"})
@@ -65,6 +105,7 @@ func TestReadLogicalInterface(t *testing.T) {
 	// if !assert.NoError(t, err) {
 	// 	return
 	// }
+	assert.Equal(t, "Employees", request.dynamic.DataType.Name())
 
 	result, err := request.ReadLogicalWith("ID>'ID'")
 	fmt.Println("Read done ...")
@@ -124,19 +165,30 @@ func TestReadPhysicalInterface(t *testing.T) {
 		result.DumpValues()
 		result.DumpData()
 		fmt.Println("Length", len(result.Data))
-		assert.Len(t, result.Data, 4)
+		assert.True(t, len(result.Data) > 4)
 		if assert.IsType(t, (*Employees)(nil), result.Data[0]) {
-			e := result.Data[0].(*Employees)
-			assert.Equal(t, "ID", strings.Trim(e.ID, " "))
-			assert.Equal(t, int64(123), e.Birth)
-			assert.Equal(t, "Name", strings.Trim(e.Name, " "))
-			e = result.Data[1].(*Employees)
-			assert.Equal(t, "ID2", strings.Trim(e.ID, " "))
-			assert.Equal(t, "Name2", strings.Trim(e.Name, " "))
-			e = result.Data[2].(*Employees)
-			assert.Equal(t, "ID3", strings.Trim(e.ID, " "))
-			assert.Equal(t, "Name3", strings.Trim(e.Name, " "))
+			nrNotFound := 3
+			for _, x := range result.Data {
+				e := x.(*Employees)
+				switch {
+				case strings.HasPrefix(e.ID, "ID "):
+					assert.Equal(t, "ID", strings.Trim(e.ID, " "))
+					assert.Equal(t, int64(123), e.Birth)
+					assert.Equal(t, "Name", strings.Trim(e.Name, " "))
+					nrNotFound--
+				case strings.HasPrefix(e.ID, "ID2 "):
+					assert.Equal(t, "ID2", strings.Trim(e.ID, " "))
+					assert.Equal(t, "Name2", strings.Trim(e.Name, " "))
+					nrNotFound--
+				case strings.HasPrefix(e.ID, "ID3 "):
+					assert.Equal(t, "ID3", strings.Trim(e.ID, " "))
+					assert.Equal(t, "Name3", strings.Trim(e.Name, " "))
+					nrNotFound--
+				default:
+				}
 
+			}
+			assert.Equal(t, 0, nrNotFound)
 		}
 	}
 }

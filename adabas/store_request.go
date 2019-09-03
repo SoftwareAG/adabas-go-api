@@ -73,9 +73,14 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 			}
 		}
 	default:
-		if reflect.TypeOf(param[0]).Kind() == reflect.Struct {
-			adatypes.Central.Log.Debugf("It's a struct %s", reflect.TypeOf(param[0]).Name())
-			mapName := reflect.TypeOf(param[0]).Name()
+		ti := reflect.TypeOf(param[0])
+		adatypes.Central.Log.Debugf("It's a struct %s", ti.Name())
+		if ti.Kind() == reflect.Ptr {
+			ti = ti.Elem()
+		}
+		if ti.Kind() == reflect.Struct {
+			adatypes.Central.Log.Debugf("It's a struct %s", ti.Name())
+			mapName := ti.Name()
 			if len(param) < 2 {
 				return nil, errors.New("Not enough parameters for NewReadRequest")
 			}
@@ -104,10 +109,10 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 			request.createDynamic(param[0])
 			return request, nil
 		}
-
+		adatypes.Central.Log.Debugf("Unknown kind: %s", reflect.TypeOf(param[0]).Kind())
 	}
 
-	return nil, fmt.Errorf("XXXX")
+	return nil, adatypes.NewGenericError(79)
 }
 
 // NewStoreRequestAdabas create a new Request instance
@@ -275,7 +280,7 @@ func (request *StoreRequest) EndTransaction() error {
 
 func (request *StoreRequest) storeValue(record reflect.Value, store bool) error {
 	if request.definition == nil {
-		q := request.dynamic.createQueryFields()
+		q := request.dynamic.CreateQueryFields()
 		request.StoreFields(q)
 	}
 
@@ -287,7 +292,7 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 		return serr
 	}
 	adatypes.Central.Log.Debugf("Slice index: %v", record)
-	for an, fn := range request.dynamic.fieldNames {
+	for an, fn := range request.dynamic.FieldNames {
 		v := record.FieldByName(fn)
 		if v.IsValid() {
 			adatypes.Central.Log.Debugf("Set slice value %v = %v", fn, v)

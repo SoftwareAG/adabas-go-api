@@ -96,7 +96,7 @@ type Request struct {
 	Option             *BufferOption
 	Parameter          interface{}
 	Reference          string
-	DataType           interface{}
+	DataType           *DynamicInterface
 }
 
 // func (adabasRequest *Request) reset() {

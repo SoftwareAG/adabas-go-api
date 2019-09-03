@@ -225,7 +225,7 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, e
 	}
 	adatypes.Central.Log.Debugf("Got dynamic part: %v", request.dynamic)
 	if request.dynamic != nil {
-		adabasRequest.DataType = request.dynamic.dataType
+		adabasRequest.DataType = request.dynamic
 	}
 
 	return
@@ -262,7 +262,7 @@ func parseReadToInterface(adabasRequest *adatypes.Request, x interface{}) (err e
 	adatypes.Central.Log.Debugf("Parse read to interface")
 	result := x.(*Response)
 
-	ti := reflect.TypeOf(adabasRequest.DataType)
+	ti := adabasRequest.DataType.DataType
 	if ti.Kind() == reflect.Ptr {
 		ti = ti.Elem()
 	}
@@ -766,7 +766,7 @@ func traverseFieldMap(adaType adatypes.IAdaType, parentType adatypes.IAdaType, l
 func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	if request.dynamic != nil {
 		if fieldq == "*" {
-			fieldq = request.dynamic.createQueryFields()
+			fieldq = request.dynamic.CreateQueryFields()
 		}
 	}
 	adatypes.Central.Log.Debugf("Query fields to %s", fieldq)
