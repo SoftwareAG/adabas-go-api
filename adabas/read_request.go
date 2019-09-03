@@ -377,11 +377,11 @@ func streamRecord(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	stream := x.(*stream)
 	switch {
 	case stream.interfaceFunction != nil:
-		ti := reflect.TypeOf(adabasRequest.DataType)
-		if ti.Kind() == reflect.Ptr {
-			ti = ti.Elem()
-		}
-		newInstance := reflect.New(ti)
+		// ti := reflect.TypeOf(adabasRequest.DataType)
+		// if ti.Kind() == reflect.Ptr {
+		// 	ti = ti.Elem()
+		// }
+		newInstance := reflect.New(adabasRequest.DataType.DataType)
 		adatypes.Central.Log.Debugf("Kind: %v Elem: %v", reflect.TypeOf(newInstance).Kind(), newInstance.Elem())
 		adabasRequest.Definition.AdaptInterfaceFields(newInstance)
 		adatypes.Central.Log.Debugf("Parse read to interface %v <%s>\n", newInstance, newInstance.String())
