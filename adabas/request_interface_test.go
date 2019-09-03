@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type MapEmployee struct {
-	Id         string
+type EmployeesSalary struct {
+	ID         string `adabas:"Id"`
 	FirstName  string
 	LastName   string
 	Department string
