@@ -452,7 +452,7 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 		if err != nil {
 			return
 		}
-		adatypes.Central.Log.Debugf("Read logical, open done ...%#v", request.adabas.ID.platform)
+		adatypes.Central.Log.Debugf("Read logical, open done ...%#v with search=%s", request.adabas.ID.platform, search)
 		var searchInfo *adatypes.SearchInfo
 		var tree *adatypes.SearchTree
 		if search != "" {
@@ -477,6 +477,8 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 					return
 				}
 			}
+		} else {
+			adatypes.Central.Log.Debugf("No search ...")
 		}
 
 		adatypes.Central.Log.Debugf("Definition generated ...")

@@ -26,6 +26,7 @@ func TestStoreInterface(t *testing.T) {
 	employees := make([]*Employees, 0)
 	employees = append(employees, &Employees{ID: "ID", Birth: 123, Name: "Name", FirstName: "First name"})
 	employees = append(employees, &Employees{ID: "ID2", Birth: 234, Name: "Name2", FirstName: "First name2"})
+	employees = append(employees, &Employees{ID: "ABC", Birth: 978, Name: "XXX", FirstName: "HHHH name"})
 	err = storeRequest.StoreData(employees)
 	if !assert.NoError(t, err) {
 		return
@@ -171,12 +172,12 @@ func TestReadLogicalInterfaceStream(t *testing.T) {
 	}
 
 	i := 0
-	result, err := request.ReadLogicalWithInterface("Name>'ID'", receiveInterface, &i)
+	result, err := request.ReadLogicalWithInterface("ID>'ID'", receiveInterface, &i)
 	fmt.Println("Read done ...")
 	if !assert.NoError(t, err) {
 		return
 	}
-	assert.Equal(t, 4, i)
+	assert.Equal(t, 3, i)
 	assert.Nil(t, result.Values)
 	assert.Nil(t, result.Data)
 }
