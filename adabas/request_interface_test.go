@@ -48,11 +48,44 @@ func TestStoreRequestInterfacePointer(t *testing.T) {
 	assert.Equal(t, "Employees", storeRequest.dynamic.DataType.Name())
 }
 
+func refreshFile(modDbid string, fnr Fnr) error {
+	connection, err := NewConnection("ada;target=" + modDbid)
+	if err != nil {
+		return err
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	connection.Open()
+	readRequest, rErr := connection.CreateFileReadRequest(fnr)
+	if rErr != nil {
+		return rErr
+	}
+	readRequest.QueryFields("")
+	deleteRequest, dErr := connection.CreateDeleteRequest(fnr)
+	if dErr != nil {
+		return dErr
+	}
+	readRequest.Limit = 0
+	err = readRequest.ReadPhysicalSequenceWithParser(deleteRecords, deleteRequest)
+	if err != nil {
+		return err
+	}
+	err = deleteRequest.EndTransaction()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func TestStoreInterface(t *testing.T) {
 	initTestLogWithFile(t, "request_interface.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
+	rerr := refreshFile(adabasModDBIDs, 16)
+	if !assert.NoError(t, rerr) {
+		return
+	}
 	ada, _ := NewAdabas(adabasModDBID)
 	defer ada.Close()
 	repository := NewMapRepository(ada, 4)
