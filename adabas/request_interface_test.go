@@ -107,7 +107,7 @@ func TestReadLogicalInterface(t *testing.T) {
 	// }
 	assert.Equal(t, "Employees", request.dynamic.DataType.Name())
 
-	result, err := request.ReadLogicalWith("ID>'ID'")
+	result, err := request.ReadLogicalWith("ID=['ID':'ID9']")
 	fmt.Println("Read done ...")
 	if !assert.NoError(t, err) {
 		return
@@ -117,28 +117,20 @@ func TestReadLogicalInterface(t *testing.T) {
 	if assert.NotNil(t, result) {
 		result.DumpValues()
 		result.DumpData()
-		nrNotFound := 3
-		for _, x := range result.Data {
-			e := x.(*Employees)
-			switch {
-			case strings.HasPrefix(e.ID, "ID2 "):
-				assert.Equal(t, "ID2", strings.Trim(e.ID, " "))
-				assert.Equal(t, "Name2", strings.Trim(e.Name, " "))
-				nrNotFound--
-			case strings.HasPrefix(e.ID, "ID3 "):
-				assert.Equal(t, "ID3", strings.Trim(e.ID, " "))
-				assert.Equal(t, "Name3", strings.Trim(e.Name, " "))
-				nrNotFound--
-			case strings.HasPrefix(e.ID, "ID4 "):
-				assert.Equal(t, "ID4", strings.Trim(e.ID, " "))
-				assert.Equal(t, int64(789), e.Birth)
-				assert.Equal(t, "Name4", strings.Trim(e.Name, " "))
-				nrNotFound--
-			default:
-			}
-
-		}
-		assert.Equal(t, 0, nrNotFound)
+		assert.Len(t, result.Data, 4)
+		e := result.Data[0].(*Employees)
+		assert.Equal(t, "ID", strings.Trim(e.ID, " "))
+		assert.Equal(t, "Name", strings.Trim(e.Name, " "))
+		e = result.Data[1].(*Employees)
+		assert.Equal(t, "ID2", strings.Trim(e.ID, " "))
+		assert.Equal(t, "Name2", strings.Trim(e.Name, " "))
+		e = result.Data[2].(*Employees)
+		assert.Equal(t, "ID3", strings.Trim(e.ID, " "))
+		assert.Equal(t, "Name3", strings.Trim(e.Name, " "))
+		e = result.Data[3].(*Employees)
+		assert.Equal(t, "ID4", strings.Trim(e.ID, " "))
+		assert.Equal(t, int64(789), e.Birth)
+		assert.Equal(t, "Name4", strings.Trim(e.Name, " "))
 	}
 }
 
@@ -232,12 +224,12 @@ func TestReadLogicalInterfaceStream(t *testing.T) {
 	}
 
 	i := 0
-	result, err := request.ReadLogicalWithInterface("ID>'ID'", receiveInterface, &i)
+	result, err := request.ReadLogicalWithInterface("ID=['ID':'ID9']", receiveInterface, &i)
 	fmt.Println("Read done ...")
 	if !assert.NoError(t, err) {
 		return
 	}
-	assert.Equal(t, 3, i)
+	assert.Equal(t, 4, i)
 	assert.Nil(t, result.Values)
 	assert.Nil(t, result.Data)
 }
