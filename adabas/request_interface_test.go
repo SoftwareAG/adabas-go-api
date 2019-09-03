@@ -117,21 +117,28 @@ func TestReadLogicalInterface(t *testing.T) {
 	if assert.NotNil(t, result) {
 		result.DumpValues()
 		result.DumpData()
-		fmt.Println("Length", len(result.Data))
-		assert.Len(t, result.Data, 3)
-		if assert.IsType(t, (*Employees)(nil), result.Data[0]) {
-			e := result.Data[0].(*Employees)
-			assert.Equal(t, "ID2", strings.Trim(e.ID, " "))
-			assert.Equal(t, int64(234), e.Birth)
-			assert.Equal(t, "Name2", strings.Trim(e.Name, " "))
-			e = result.Data[1].(*Employees)
-			assert.Equal(t, "ID3", strings.Trim(e.ID, " "))
-			assert.Equal(t, "Name3", strings.Trim(e.Name, " "))
-			e = result.Data[2].(*Employees)
-			assert.Equal(t, "ID4", strings.Trim(e.ID, " "))
-			assert.Equal(t, "Name4", strings.Trim(e.Name, " "))
+		nrNotFound := 3
+		for _, x := range result.Data {
+			e := x.(*Employees)
+			switch {
+			case strings.HasPrefix(e.ID, "ID2 "):
+				assert.Equal(t, "ID2", strings.Trim(e.ID, " "))
+				assert.Equal(t, "Name2", strings.Trim(e.Name, " "))
+				nrNotFound--
+			case strings.HasPrefix(e.ID, "ID3 "):
+				assert.Equal(t, "ID3", strings.Trim(e.ID, " "))
+				assert.Equal(t, "Name3", strings.Trim(e.Name, " "))
+				nrNotFound--
+			case strings.HasPrefix(e.ID, "ID4 "):
+				assert.Equal(t, "ID4", strings.Trim(e.ID, " "))
+				assert.Equal(t, int64(789), e.Birth)
+				assert.Equal(t, "Name4", strings.Trim(e.Name, " "))
+				nrNotFound--
+			default:
+			}
 
 		}
+		assert.Equal(t, 0, nrNotFound)
 	}
 }
 
@@ -204,6 +211,7 @@ func receiveInterface(data interface{}, x interface{}) error {
 	fmt.Println(data)
 	return nil
 }
+
 func TestReadLogicalInterfaceStream(t *testing.T) {
 	err := initLogWithFile("request_interface.log")
 	if err != nil {
