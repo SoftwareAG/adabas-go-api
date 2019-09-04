@@ -627,7 +627,7 @@ func (value *StructureValue) SetValue(v interface{}) error {
 					return typeErr
 				}
 				sv.setMultipleIndex(uint32(i + 1))
-				sv.setPeriodIndex(0)
+				sv.setPeriodIndex(value.PeriodIndex())
 				sv.SetValue(vi.Index(i).Interface())
 				value.addValue(sv, uint32(i+1))
 			}
@@ -646,19 +646,23 @@ func (value *StructureValue) SetValue(v interface{}) error {
 				if iv.Kind() == reflect.Ptr {
 					iv = iv.Elem()
 				}
-
 				ti = reflect.TypeOf(iv.Interface())
-				x := value.search(ti.Name())
-				sev := value.Elements[i].valueMap[ti.Name()]
-				fmt.Println(ti.Name(), x, sev)
-				//value.Elements[i].Values[0].SetValue(iv.Interface())
-				Central.Log.Infof("Work on preiod group entry %d -> %s", i, ti.Name())
-				Central.Log.Infof("Work on preiod group entry %d -> %v", i, vi.Index(i))
-				for fi := 0; fi < iv.NumField(); fi++ {
-					sv := iv.Field(fi)
-					Central.Log.Infof("Work on preiod field entry %d -> %v=%v", i, ti.Name(), sv.String())
-
+				for _, x := range value.Elements[i].Values {
+					s := iv.FieldByName(x.Type().Name())
+					fmt.Println(x.Type().Name(), s)
+					x.SetValue(s.Interface())
 				}
+				// x := value.search(ti.Name())
+				// sev := value.Elements[i].valueMap[ti.Name()]
+				// fmt.Println(ti.Name(), x, sev)
+				// //sev.SetValue(iv.Interface())
+				// Central.Log.Infof("Work on preiod group entry %d -> %s", i, ti.Name())
+				// Central.Log.Infof("Work on preiod group entry %d -> %v", i, vi.Index(i))
+				// for fi := 0; fi < iv.NumField(); fi++ {
+				// 	sv := iv.Field(fi)
+				// 	Central.Log.Infof("Work on preiod field entry %d -> %v=%v", i, ti.Name(), sv.String())
+
+				// }
 			}
 		default:
 		}
