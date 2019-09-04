@@ -295,6 +295,7 @@ func searchValue(value reflect.Value, fn []string) (v reflect.Value, ok bool) {
 			} else {
 				adatypes.Central.Log.Debugf("No length in slice found")
 			}
+			return v, true
 		}
 		adatypes.Central.Log.Debugf("New value %v kind=%s", v, v.Kind())
 		ok = v.IsValid()
@@ -318,7 +319,7 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 	adatypes.Central.Log.Debugf("Slice index: %v", record)
 	for an, fn := range request.dynamic.FieldNames {
 		v, ok := searchValue(record, fn)
-		if ok && v.IsValid() {
+		if ok { //&& v.IsValid() {
 			adatypes.Central.Log.Debugf("Set dynamic value %v = %v", an, v.Interface())
 			err := storeRecord.SetValue(an, v.Interface())
 			if err != nil {
