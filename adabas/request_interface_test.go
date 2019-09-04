@@ -9,11 +9,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type FullName struct {
+	FirstName string
+	LastName  string
+}
+
+type Income struct {
+	Salary   uint64
+	Bonus    []uint64
+	Currency string
+}
+
 type EmployeesSalary struct {
 	ID         string `adabas:"Id"`
-	FirstName  string
-	LastName   string
+	FullName   *FullName
+	Birth      uint64
 	Department string
+	Income     []*Income
+	Language   []string
 }
 
 func TestStoreRequestInterfaceInstance(t *testing.T) {
@@ -109,6 +122,44 @@ func TestStoreInterface(t *testing.T) {
 		return
 	}
 	err = storeRequest.StoreData(Employees{ID: "ID4", Birth: 789, Name: "Name4", FirstName: "First name4"})
+	if !assert.NoError(t, err) {
+		return
+	}
+	fmt.Println("End transaction")
+	err = storeRequest.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
+
+}
+
+func TestStorePeriodInterface(t *testing.T) {
+	initTestLogWithFile(t, "request_interface.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	rerr := refreshFile(adabasModDBIDs, 16)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	ada, _ := NewAdabas(adabasModDBID)
+	defer ada.Close()
+	repository := NewMapRepository(ada, 4)
+	storeRequest, err := NewStoreRequest(EmployeesSalary{}, ada, repository)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.NotNil(t, storeRequest)
+	assert.Equal(t, "EmployeesSalary", storeRequest.dynamic.DataType.Name())
+
+	employees := make([]*EmployeesSalary, 0)
+	income := make([]*Income, 0)
+	income = append(income, &Income{Currency: "EUR", Salary: 40000, Bonus: []uint64{123, 123}})
+	income = append(income, &Income{Currency: "EUR", Salary: 60000, Bonus: []uint64{1000, 1500}})
+	employees = append(employees, &EmployeesSalary{ID: "eId123", Birth: 123344,
+		FullName: &FullName{LastName: "Overmeyer", FirstName: "Ottofried"},
+		Income:   income})
+	err = storeRequest.StoreData(employees)
 	if !assert.NoError(t, err) {
 		return
 	}

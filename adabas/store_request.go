@@ -278,6 +278,22 @@ func (request *StoreRequest) EndTransaction() error {
 	return request.adabas.EndTransaction()
 }
 
+func searchValue(value reflect.Value, fn []string) (v reflect.Value, ok bool) {
+	adatypes.Central.Log.Debugf("Search dynamic interface value %v %d", fn, len(fn))
+	v = value
+	ok = false
+	for _, f := range fn {
+		adatypes.Central.Log.Debugf("FieldName search %s", f)
+		v = v.FieldByName(f)
+		if v.Kind() == reflect.Ptr {
+			v = v.Elem()
+		}
+		adatypes.Central.Log.Debugf("New value %v", v)
+		ok = true
+	}
+	return v, ok
+}
+
 func (request *StoreRequest) storeValue(record reflect.Value, store bool) error {
 	if request.definition == nil {
 		q := request.dynamic.CreateQueryFields()
@@ -293,9 +309,9 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 	}
 	adatypes.Central.Log.Debugf("Slice index: %v", record)
 	for an, fn := range request.dynamic.FieldNames {
-		v := record.FieldByName(fn)
-		if v.IsValid() {
-			adatypes.Central.Log.Debugf("Set slice value %v = %v", fn, v)
+		v, ok := searchValue(record, fn)
+		if ok && v.IsValid() {
+			adatypes.Central.Log.Debugf("Set dynamic value %v = %v", an, v.Interface())
 			err := storeRecord.SetValue(an, v.Interface())
 			if err != nil {
 				return adatypes.NewGenericError(52, err.Error())

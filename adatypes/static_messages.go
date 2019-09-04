@@ -823,6 +823,7 @@ var statisMessages = []struct {
 	{"ADG0000076", "en", "Search generation tree error"},
 	{"ADG0000077", "en", "Input value size of {0} does not fit into field length {1}"},
 	{"ADG0000078", "en", "Constructor parameter error StoreRequest"},
+	{"ADG0000079", "en", "Invalid constructor parameter given"},
 	{"ADG0000080", "en", "Type {0} for {1} not supported for structure extraction"},
 	{"ADG0000081", "en", "No values in result list"},
 	{"ADG0000082", "en", "Error reading map {0} out of map repository"},
