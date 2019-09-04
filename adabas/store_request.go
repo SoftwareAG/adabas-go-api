@@ -285,11 +285,19 @@ func searchValue(value reflect.Value, fn []string) (v reflect.Value, ok bool) {
 	for _, f := range fn {
 		adatypes.Central.Log.Debugf("FieldName search %s", f)
 		v = v.FieldByName(f)
-		if v.Kind() == reflect.Ptr {
+		switch v.Kind() {
+		case reflect.Ptr:
 			v = v.Elem()
+		case reflect.Slice:
+			if v.Len() > 0 {
+				adatypes.Central.Log.Debugf("Index in slice found")
+				//v = v.Index(0)
+			} else {
+				adatypes.Central.Log.Debugf("No length in slice found")
+			}
 		}
-		adatypes.Central.Log.Debugf("New value %v", v)
-		ok = true
+		adatypes.Central.Log.Debugf("New value %v kind=%s", v, v.Kind())
+		ok = v.IsValid()
 	}
 	return v, ok
 }

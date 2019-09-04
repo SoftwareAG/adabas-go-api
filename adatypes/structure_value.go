@@ -23,6 +23,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"reflect"
 	"strings"
 )
 
@@ -614,7 +615,25 @@ func (value *StructureValue) SetStringValue(stValue string) {
 
 // SetValue set value for structure
 func (value *StructureValue) SetValue(v interface{}) error {
-	Central.Log.Infof("Structure set string, not implement yet %s -> %v", value.Type().Name(), v)
+	if reflect.TypeOf(v).Kind() == reflect.Slice {
+		switch value.Type().Type() {
+		case FieldTypeMultiplefield:
+			vi := reflect.ValueOf(v)
+			for i := 0; i < vi.Len(); i++ {
+				muStructureType := value.Type().(*StructureType)
+				sv, typeErr := muStructureType.SubTypes[0].Value()
+				if typeErr != nil {
+					return typeErr
+				}
+				sv.setMultipleIndex(uint32(i + 1))
+				sv.setPeriodIndex(0)
+				sv.SetValue(vi.Index(i).Interface())
+				value.addValue(sv, uint32(i+1))
+			}
+		default:
+		}
+	}
+	Central.Log.Infof("Structure set interface, not implement yet %s -> %v", value.Type().Name(), v)
 	return nil
 }
 

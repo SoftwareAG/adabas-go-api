@@ -158,7 +158,7 @@ func TestStorePeriodInterface(t *testing.T) {
 	income = append(income, &Income{Currency: "EUR", Salary: 60000, Bonus: []uint64{1000, 1500}})
 	employees = append(employees, &EmployeesSalary{ID: "eId123", Birth: 123344,
 		FullName: &FullName{LastName: "Overmeyer", FirstName: "Ottofried"},
-		Income:   income})
+		Income:   income, Language: []string{"ENG", "FRA"}})
 	err = storeRequest.StoreData(employees)
 	if !assert.NoError(t, err) {
 		return
