@@ -289,12 +289,6 @@ func searchValue(value reflect.Value, fn []string) (v reflect.Value, ok bool) {
 		case reflect.Ptr:
 			v = v.Elem()
 		case reflect.Slice:
-			if v.Len() > 0 {
-				adatypes.Central.Log.Debugf("Index in slice found")
-				//v = v.Index(0)
-			} else {
-				adatypes.Central.Log.Debugf("No length in slice found")
-			}
 			return v, true
 		}
 		adatypes.Central.Log.Debugf("New value %v kind=%s", v, v.Kind())

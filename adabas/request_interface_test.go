@@ -360,11 +360,14 @@ func TestReadLogicalPeriodInterface(t *testing.T) {
 		return
 	}
 	e := result.Data[0].(*EmployeesSalary)
+	assert.Equal(t, "pId007", strings.Trim(e.ID, " "))
+	if !assert.NotNil(t, e.FullName) {
+		return
+	}
+	assert.Equal(t, "Bond", strings.Trim(e.FullName.LastName, " "))
+	e = result.Data[1].(*EmployeesSalary)
 	assert.Equal(t, "pId123", strings.Trim(e.ID, " "))
 	assert.Equal(t, "Overmeyer", strings.Trim(e.FullName.LastName, " "))
-	e = result.Data[1].(*EmployeesSalary)
-	assert.Equal(t, "pId007", strings.Trim(e.ID, " "))
-	assert.Equal(t, "Bond", strings.Trim(e.FullName.LastName, " "))
-	assert.Equal(t, int64(789), e.Birth)
+	assert.Equal(t, uint64(123344), e.Birth)
 
 }

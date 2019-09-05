@@ -581,9 +581,31 @@ func (def *Definition) Descriptors(descriptors string) (desc []string, err error
 	return
 }
 
+type valueInterface struct {
+	valStack *Stack
+	curVal   reflect.Value
+}
+
 func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
-	v := x.(reflect.Value)
+	tp := x.(*valueInterface)
+	Central.Log.Debugf("Work on value %s", adaValue.Type().Name())
+	// v := x.(reflect.Value)
+	v := tp.curVal
 	f := v.FieldByName(adaValue.Type().Name())
+	if f.Kind() == reflect.Ptr {
+		if f.Elem().IsValid() {
+			f = f.Elem()
+		} else {
+			ft := reflect.TypeOf(f.Interface())
+			x := reflect.New(ft.Elem())
+			f.Set(x)
+			f = x
+			Central.Log.Debugf("Create new instance for %s is ptr, kind = %v", adaValue.Type().Name(), f.Kind())
+		}
+		tp.valStack.Push(tp.curVal)
+		tp.curVal = f.Elem()
+		return Continue, nil
+	}
 	if f.IsValid() {
 		switch f.Kind() {
 		case reflect.Int64, reflect.Int32:
@@ -617,15 +639,30 @@ func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result Travers
 			Central.Log.Infof("Unkown kind: %v", f.Kind())
 		}
 		Central.Log.Debugf("%s=%v->%v", adaValue.Type().Name(), v, f)
+	} else {
+		Central.Log.Debugf("%s is invalid, kind = %v", adaValue.Type().Name(), f.Kind())
 	}
 
+	return Continue, nil
+}
+
+func traverseValueToInterfaceLeave(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
+	if adaValue.Type().IsStructure() {
+		tp := x.(*valueInterface)
+		v, err := tp.valStack.Pop()
+		if err != nil {
+			return EndTraverser, err
+		}
+		tp.curVal = v.(reflect.Value)
+	}
 	return Continue, nil
 }
 
 // AdaptInterfaceFields adapt field value to interface field
 func (def *Definition) AdaptInterfaceFields(v reflect.Value) error {
 	Central.Log.Debugf("Adapt interface")
-	t := TraverserValuesMethods{EnterFunction: traverseValueToInterface}
-	def.TraverseValues(t, v.Elem())
+	tp := &valueInterface{curVal: v.Elem(), valStack: NewStack()}
+	t := TraverserValuesMethods{EnterFunction: traverseValueToInterface, LeaveFunction: traverseValueToInterfaceLeave}
+	def.TraverseValues(t, tp)
 	return nil
 }
