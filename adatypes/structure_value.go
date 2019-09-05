@@ -632,7 +632,7 @@ func (value *StructureValue) SetValue(v interface{}) error {
 				value.addValue(sv, uint32(i+1))
 			}
 		case FieldTypePeriodGroup:
-			Central.Log.Infof("Check preiod group slice possible")
+			Central.Log.Debugf("Check preiod group slice possible")
 			vi := reflect.ValueOf(v)
 			ti := reflect.TypeOf(v)
 			if ti.Kind() == reflect.Ptr {
@@ -641,7 +641,7 @@ func (value *StructureValue) SetValue(v interface{}) error {
 			Central.Log.Infof("Work on group entry %s", ti.Name())
 			for i := 0; i < vi.Len(); i++ {
 				value.initMultipleSubValues(uint32(i), uint32(i+1), 0, false)
-				fmt.Println("Element len", len(value.Elements))
+				Central.Log.Debugf("Element len", len(value.Elements))
 				iv := vi.Index(i)
 				if iv.Kind() == reflect.Ptr {
 					iv = iv.Elem()
@@ -649,20 +649,8 @@ func (value *StructureValue) SetValue(v interface{}) error {
 				ti = reflect.TypeOf(iv.Interface())
 				for _, x := range value.Elements[i].Values {
 					s := iv.FieldByName(x.Type().Name())
-					fmt.Println(x.Type().Name(), s)
 					x.SetValue(s.Interface())
 				}
-				// x := value.search(ti.Name())
-				// sev := value.Elements[i].valueMap[ti.Name()]
-				// fmt.Println(ti.Name(), x, sev)
-				// //sev.SetValue(iv.Interface())
-				// Central.Log.Infof("Work on preiod group entry %d -> %s", i, ti.Name())
-				// Central.Log.Infof("Work on preiod group entry %d -> %v", i, vi.Index(i))
-				// for fi := 0; fi < iv.NumField(); fi++ {
-				// 	sv := iv.Field(fi)
-				// 	Central.Log.Infof("Work on preiod field entry %d -> %v=%v", i, ti.Name(), sv.String())
-
-				// }
 			}
 		default:
 		}

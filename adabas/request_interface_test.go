@@ -156,9 +156,15 @@ func TestStorePeriodInterface(t *testing.T) {
 	income := make([]*Income, 0)
 	income = append(income, &Income{Currency: "EUR", Salary: 40000, Bonus: []uint64{123, 123}})
 	income = append(income, &Income{Currency: "EUR", Salary: 60000, Bonus: []uint64{1000, 1500}})
-	employees = append(employees, &EmployeesSalary{ID: "eId123", Birth: 123344,
-		FullName: &FullName{LastName: "Overmeyer", FirstName: "Ottofried"},
-		Income:   income, Language: []string{"ENG", "FRA"}})
+	employees = append(employees, &EmployeesSalary{ID: "pId123", Birth: 123344,
+		FullName: &FullName{LastName: "Overmeyer", FirstName: "Ottofried"}, Department: "MI5",
+		Income: income, Language: []string{"ENG", "FRA"}})
+	income = make([]*Income, 0)
+	income = append(income, &Income{Currency: "LIR", Salary: 400000, Bonus: []uint64{40000, 5000}})
+	income = append(income, &Income{Currency: "PFD", Salary: 6000000, Bonus: []uint64{100000, 10000000}})
+	employees = append(employees, &EmployeesSalary{ID: "pId007", Birth: 5555555,
+		FullName: &FullName{LastName: "Bond", FirstName: "James"}, Department: "MI5",
+		Income: income, Language: []string{"ENG", "FRA", "GER", "MAN"}})
 	err = storeRequest.StoreData(employees)
 	if !assert.NoError(t, err) {
 		return
@@ -316,4 +322,49 @@ func TestReadLogicalInterfaceStream(t *testing.T) {
 	assert.Equal(t, 4, i)
 	assert.Nil(t, result.Values)
 	assert.Nil(t, result.Data)
+}
+
+func TestReadLogicalPeriodInterface(t *testing.T) {
+	err := initLogWithFile("request_interface.log")
+	if err != nil {
+		return
+	}
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	adabas, _ := NewAdabas(23)
+	mapRepository := NewMapRepository(adabas, 4)
+	request, err := NewReadRequest(EmployeesSalary{}, adabas, mapRepository)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer request.Close()
+	// err = request.QueryFields("*")
+	// if !assert.NoError(t, err) {
+	// 	return
+	// }
+	assert.Equal(t, "EmployeesSalary", request.dynamic.DataType.Name())
+
+	result, err := request.ReadLogicalWith("Id=['pId':'pId9']")
+	fmt.Println("Read done ...")
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Nil(t, result.Values)
+	assert.NotNil(t, result.Data)
+	if !assert.NotNil(t, result) {
+		return
+	}
+	result.DumpValues()
+	result.DumpData()
+	if !assert.Len(t, result.Data, 2) {
+		return
+	}
+	e := result.Data[0].(*EmployeesSalary)
+	assert.Equal(t, "pId123", strings.Trim(e.ID, " "))
+	assert.Equal(t, "Overmeyer", strings.Trim(e.FullName.LastName, " "))
+	e = result.Data[1].(*EmployeesSalary)
+	assert.Equal(t, "pId007", strings.Trim(e.ID, " "))
+	assert.Equal(t, "Bond", strings.Trim(e.FullName.LastName, " "))
+	assert.Equal(t, int64(789), e.Birth)
+
 }
