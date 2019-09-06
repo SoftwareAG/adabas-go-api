@@ -589,9 +589,16 @@ type valueInterface struct {
 
 func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
 	tp := x.(*valueInterface)
-	Central.Log.Debugf("Work on value %s", adaValue.Type().Name())
-	// v := x.(reflect.Value)
+	Central.Log.Debugf("Work on value %s to interface", adaValue.Type().Name())
 	v := tp.curVal
+	if v.Kind() == reflect.Slice {
+		v = v.Index(int(adaValue.PeriodIndex() - 1))
+		if v.Kind() == reflect.Ptr {
+			v = v.Elem()
+		}
+		Central.Log.Debugf("%d %s", adaValue.PeriodIndex(), v.Kind())
+	}
+	Central.Log.Debugf("Current struct value %v", v.Type())
 	var f reflect.Value
 	if fn, ok := tp.fieldNames[adaValue.Type().Name()]; ok {
 		if len(fn) == 0 {
@@ -601,7 +608,40 @@ func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result Travers
 	} else {
 		f = v.FieldByName(adaValue.Type().Name())
 	}
-	if f.Kind() == reflect.Ptr {
+	if adaValue.Type().Type() == FieldTypeMultiplefield {
+	}
+	if adaValue.Type().Type() == FieldTypePeriodGroup {
+		t := v.Type()
+		st, ok := t.FieldByName(adaValue.Type().Name())
+		Central.Log.Debugf("Found MU or PE field t=%v st=%v ok=%v", t, st.Name, ok)
+		if !ok {
+			return Continue, nil
+		}
+		Central.Log.Debugf("Add slice %s %v -> %v %s", st.Name, st.Type, st.Type.String(), st.Type.Kind())
+		stt := st.Type.Elem()
+		Central.Log.Debugf("Use type %s %s %v kind=%v", stt.Name(), stt.String(), stt, stt.Kind())
+		sv := adaValue.(*StructureValue)
+		elemSlice := reflect.MakeSlice(reflect.SliceOf(stt), sv.NrElements(), 10)
+		if stt.Kind() == reflect.Ptr {
+			stt = stt.Elem()
+		}
+		Central.Log.Debugf("Created slice %s", elemSlice.Type().String())
+		Central.Log.Debugf("of slice entry %s - %s %v slice %v", stt.Name(), stt.String(), stt.Kind(), elemSlice.Type())
+
+		for i := 0; i < sv.NrElements(); i++ {
+			entry := reflect.New(stt)
+			Central.Log.Debugf("New entry %s -> %s ok=%v i=%v", entry.Type().Name(), entry.Type().String(), entry.IsValid(), entry.CanInterface())
+			elemSlice.Index(i).Set(entry)
+		}
+		f.Set(elemSlice)
+		tp.valStack.Push(tp.curVal)
+		tp.curVal = elemSlice
+		return Continue, nil
+	}
+	switch f.Kind() {
+	case reflect.Slice:
+		Central.Log.Debugf("Found slice on %s %d,%d", adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex())
+	case reflect.Ptr:
 		if f.Elem().IsValid() {
 			f = f.Elem()
 		} else {
@@ -614,42 +654,44 @@ func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result Travers
 		tp.valStack.Push(tp.curVal)
 		tp.curVal = f.Elem()
 		return Continue, nil
-	}
-	if f.IsValid() {
-		switch f.Kind() {
-		case reflect.Int64, reflect.Int32:
-			i, err := adaValue.Int64()
-			if err != nil {
-				return EndTraverser, err
+
+	default:
+		if f.IsValid() {
+			switch f.Kind() {
+			case reflect.Int64, reflect.Int32:
+				i, err := adaValue.Int64()
+				if err != nil {
+					return EndTraverser, err
+				}
+				f.SetInt(i)
+			case reflect.Uint64, reflect.Uint32:
+				i, err := adaValue.UInt64()
+				if err != nil {
+					return EndTraverser, err
+				}
+				f.SetUint(i)
+			case reflect.Float32, reflect.Float64:
+				fl, err := adaValue.Float()
+				if err != nil {
+					return EndTraverser, err
+				}
+				f.SetFloat(fl)
+			case reflect.Bool:
+				v, err := adaValue.Int32()
+				if err != nil {
+					return EndTraverser, err
+				}
+				b := v > 0
+				f.SetBool(b)
+			case reflect.String:
+				f.SetString(adaValue.String())
+			default:
+				Central.Log.Infof("Unkown kind: %v", f.Kind())
 			}
-			f.SetInt(i)
-		case reflect.Uint64, reflect.Uint32:
-			i, err := adaValue.UInt64()
-			if err != nil {
-				return EndTraverser, err
-			}
-			f.SetUint(i)
-		case reflect.Float32, reflect.Float64:
-			fl, err := adaValue.Float()
-			if err != nil {
-				return EndTraverser, err
-			}
-			f.SetFloat(fl)
-		case reflect.Bool:
-			v, err := adaValue.Int32()
-			if err != nil {
-				return EndTraverser, err
-			}
-			b := v > 0
-			f.SetBool(b)
-		case reflect.String:
-			f.SetString(adaValue.String())
-		default:
-			Central.Log.Infof("Unkown kind: %v", f.Kind())
+			Central.Log.Debugf("%s=%v->%v", adaValue.Type().Name(), v, f)
+		} else {
+			Central.Log.Debugf("%s is invalid, kind = %v", adaValue.Type().Name(), f.Kind())
 		}
-		Central.Log.Debugf("%s=%v->%v", adaValue.Type().Name(), v, f)
-	} else {
-		Central.Log.Debugf("%s is invalid, kind = %v", adaValue.Type().Name(), f.Kind())
 	}
 
 	return Continue, nil
@@ -658,11 +700,13 @@ func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result Travers
 func traverseValueToInterfaceLeave(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
 	if adaValue.Type().IsStructure() {
 		tp := x.(*valueInterface)
+		Central.Log.Debugf("Current %s struct value %v", adaValue.Type().Name(), tp.curVal.Type())
 		v, err := tp.valStack.Pop()
 		if err != nil {
 			return EndTraverser, err
 		}
 		tp.curVal = v.(reflect.Value)
+		Central.Log.Debugf("Reset to struct value %v", tp.curVal.Type())
 	}
 	return Continue, nil
 }

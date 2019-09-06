@@ -157,7 +157,7 @@ func TestStorePeriodInterface(t *testing.T) {
 	income = append(income, &Income{Currency: "EUR", Salary: 40000, Bonus: []uint64{123, 123}})
 	income = append(income, &Income{Currency: "EUR", Salary: 60000, Bonus: []uint64{1000, 1500}})
 	employees = append(employees, &EmployeesSalary{ID: "pId123", Birth: 123344,
-		FullName: &FullName{LastName: "Overmeyer", FirstName: "Ottofried"}, Department: "MI5",
+		FullName: &FullName{LastName: "Overmeyer", FirstName: "Ottofried"}, Department: "FBI",
 		Income: income, Language: []string{"ENG", "FRA"}})
 	income = make([]*Income, 0)
 	income = append(income, &Income{Currency: "LIR", Salary: 400000, Bonus: []uint64{40000, 5000}})
@@ -369,5 +369,17 @@ func TestReadLogicalPeriodInterface(t *testing.T) {
 	assert.Equal(t, "pId123", strings.Trim(e.ID, " "))
 	assert.Equal(t, "Overmeyer", strings.Trim(e.FullName.LastName, " "))
 	assert.Equal(t, uint64(123344), e.Birth)
+	assert.Equal(t, "FBI   ", e.Department)
+	if assert.Len(t, e.Language, 2) {
+		assert.Equal(t, "ENG", e.Language[0])
+	}
+	if assert.Len(t, e.Income, 2) {
+		assert.Equal(t, uint64(40000), e.Income[0].Salary)
+		if assert.Len(t, e.Income[0].Bonus, 2) {
+			assert.Equal(t, 123, e.Income[0].Bonus[0])
+		}
+
+		assert.Equal(t, "EUR", e.Income[0].Currency)
+	}
 
 }
