@@ -268,7 +268,7 @@ func parseReadToInterface(adabasRequest *adatypes.Request, x interface{}) (err e
 	}
 	newInstance := reflect.New(ti)
 	adatypes.Central.Log.Debugf("Kind: %v Elem: %v", reflect.TypeOf(newInstance).Kind(), newInstance.Elem())
-	adabasRequest.Definition.AdaptInterfaceFields(newInstance)
+	adabasRequest.Definition.AdaptInterfaceFields(newInstance, adabasRequest.DataType.FieldNames)
 	adatypes.Central.Log.Debugf("Parse read to interface %v <%s> -> %d\n", newInstance, newInstance.String(), len(result.Data))
 	result.Data = append(result.Data, newInstance.Interface())
 	adatypes.Central.Log.Debugf("After read to interface %v\n", len(result.Data))
@@ -383,7 +383,7 @@ func streamRecord(adabasRequest *adatypes.Request, x interface{}) (err error) {
 		// }
 		newInstance := reflect.New(adabasRequest.DataType.DataType)
 		adatypes.Central.Log.Debugf("Kind: %v Elem: %v", reflect.TypeOf(newInstance).Kind(), newInstance.Elem())
-		adabasRequest.Definition.AdaptInterfaceFields(newInstance)
+		adabasRequest.Definition.AdaptInterfaceFields(newInstance, adabasRequest.DataType.FieldNames)
 		adatypes.Central.Log.Debugf("Parse read to interface %v <%s>\n", newInstance, newInstance.String())
 		err = stream.interfaceFunction(newInstance.Interface(), stream.x)
 	case stream.streamFunction != nil:

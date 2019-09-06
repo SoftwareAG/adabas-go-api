@@ -582,8 +582,9 @@ func (def *Definition) Descriptors(descriptors string) (desc []string, err error
 }
 
 type valueInterface struct {
-	valStack *Stack
-	curVal   reflect.Value
+	valStack   *Stack
+	curVal     reflect.Value
+	fieldNames map[string][]string
 }
 
 func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
@@ -591,7 +592,15 @@ func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result Travers
 	Central.Log.Debugf("Work on value %s", adaValue.Type().Name())
 	// v := x.(reflect.Value)
 	v := tp.curVal
-	f := v.FieldByName(adaValue.Type().Name())
+	var f reflect.Value
+	if fn, ok := tp.fieldNames[adaValue.Type().Name()]; ok {
+		if len(fn) == 0 {
+			panic(fmt.Sprintf("Format name error %s -> %d", adaValue.Type().Name(), len(fn)))
+		}
+		f = v.FieldByName(fn[len(fn)-1])
+	} else {
+		f = v.FieldByName(adaValue.Type().Name())
+	}
 	if f.Kind() == reflect.Ptr {
 		if f.Elem().IsValid() {
 			f = f.Elem()
@@ -659,9 +668,12 @@ func traverseValueToInterfaceLeave(adaValue IAdaValue, x interface{}) (result Tr
 }
 
 // AdaptInterfaceFields adapt field value to interface field
-func (def *Definition) AdaptInterfaceFields(v reflect.Value) error {
+func (def *Definition) AdaptInterfaceFields(v reflect.Value, fm map[string][]string) error {
 	Central.Log.Debugf("Adapt interface")
-	tp := &valueInterface{curVal: v.Elem(), valStack: NewStack()}
+	if fm == nil {
+		panic("Format map not initialized")
+	}
+	tp := &valueInterface{curVal: v.Elem(), valStack: NewStack(), fieldNames: fm}
 	t := TraverserValuesMethods{EnterFunction: traverseValueToInterface, LeaveFunction: traverseValueToInterfaceLeave}
 	def.TraverseValues(t, tp)
 	return nil
