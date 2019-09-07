@@ -191,7 +191,7 @@ func validateUsingMap(a *adabas.Adabas, isn adatypes.Isn) {
 		return
 	}
 	defer request.Close()
-	openErr := request.Open()
+	_, openErr := request.Open()
 	if openErr == nil {
 		err := request.QueryFields("Picture")
 		if err != nil {
