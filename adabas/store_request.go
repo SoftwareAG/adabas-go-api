@@ -152,7 +152,7 @@ func evaluateFnr(p interface{}) (Fnr, error) {
 
 // Open Open the Adabas session
 func (request *StoreRequest) Open() (err error) {
-	err = request.commonOpen()
+	_, err = request.commonOpen()
 	return
 }
 

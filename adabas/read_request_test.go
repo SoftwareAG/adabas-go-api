@@ -484,7 +484,7 @@ func TestRequestWithMapLogicalBy(t *testing.T) {
 		return
 	}
 	defer request.Close()
-	openErr := request.Open()
+	_, openErr := request.Open()
 	if assert.NoError(t, openErr) {
 		err = request.QueryFields("PERSONNEL-ID,FIRST-NAME,NAME")
 		if !assert.NoError(t, err) {
@@ -522,7 +522,7 @@ func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
 		return
 	}
 	defer request.Close()
-	openErr := request.Open()
+	_, openErr := request.Open()
 	fmt.Println("Open database ...", openErr)
 	fmt.Printf("Status ...%#v", request.adabas.status)
 	assert.NotNil(t, request.adabas.status.platform)
@@ -561,7 +561,7 @@ func TestRequestWithMapDirectRepositoryLogicalBy(t *testing.T) {
 		return
 	}
 	defer request.Close()
-	openErr := request.Open()
+	_, openErr := request.Open()
 	if assert.NoError(t, openErr) {
 		err = request.QueryFields("PERSONNEL-ID,FIRST-NAME,NAME")
 		if err != nil {
@@ -602,7 +602,7 @@ func TestMapRequestWithHistogramBy(t *testing.T) {
 		return
 	}
 	defer request.Close()
-	openErr := request.Open()
+	_, openErr := request.Open()
 	if assert.NoError(t, openErr) {
 		result, err := request.HistogramBy("DEPARTMENT")
 		assert.NoError(t, err)
@@ -627,7 +627,7 @@ func TestMapRequestWithHistogramWith(t *testing.T) {
 		return
 	}
 	defer request.Close()
-	openErr := request.Open()
+	_, openErr := request.Open()
 	if assert.NoError(t, openErr) {
 		result, err := request.HistogramWith("DEPARTMENT=ADMA")
 		assert.NoError(t, err)
@@ -651,7 +651,7 @@ func TestMapRequestFractional(t *testing.T) {
 		return
 	}
 	defer request.Close()
-	openErr := request.Open()
+	_, openErr := request.Open()
 	if assert.NoError(t, openErr) {
 		result, err := request.ReadLogicalBy("FRACT1")
 		assert.NoError(t, err)

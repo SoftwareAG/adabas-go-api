@@ -199,9 +199,8 @@ func createNewReadRequestAdabas(adabas *Adabas, fnr Fnr) *ReadRequest {
 }
 
 // Open Open the Adabas session
-func (request *ReadRequest) Open() (err error) {
-	err = request.commonOpen()
-	return
+func (request *ReadRequest) Open() (opened bool, err error) {
+	return request.commonOpen()
 }
 
 // Prepare read request for special parts in read
@@ -210,6 +209,10 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, e
 		err = request.loadDefinition()
 		if err != nil {
 			return
+		}
+		if request.dynamic != nil {
+			q := request.dynamic.CreateQueryFields()
+			request.QueryFields(q)
 		}
 	}
 	adabasRequest, err = request.definition.CreateAdabasRequest(false, false, request.adabas.status.platform.IsMainframe())
@@ -300,7 +303,7 @@ func (request *ReadRequest) ReadPhysicalSequenceStream(streamFunction StreamFunc
 
 // ReadPhysicalSequenceWithParser read records in physical order
 func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes.RequestParser, x interface{}) (err error) {
-	err = request.Open()
+	_, err = request.Open()
 	if err != nil {
 		return
 	}
@@ -341,7 +344,7 @@ func (request *ReadRequest) ReadISN(isn adatypes.Isn) (result *Response, err err
 
 // ReadISNWithParser read record defined by a ISN using request parser
 func (request *ReadRequest) ReadISNWithParser(isn adatypes.Isn, resultParser adatypes.RequestParser, x interface{}) (err error) {
-	err = request.Open()
+	_, err = request.Open()
 	if err != nil {
 		return
 	}
@@ -446,11 +449,19 @@ func (request *ReadRequest) ReadByISN() (result *Response, err error) {
 
 // ReadLogicalWithWithParser read records with a logical order given by a search string
 func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParser adatypes.RequestParser, x interface{}) (err error) {
-
+	adatypes.Central.Log.Debugf("Read logical with parser")
 	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
-		err = request.Open()
-		if err != nil {
+		opened, oErr := request.Open()
+		if oErr != nil {
+			err = oErr
 			return
+		}
+		if opened {
+			if request.dynamic != nil && request.definition == nil {
+				q := request.dynamic.CreateQueryFields()
+				request.QueryFields(q)
+			}
+			adatypes.Central.Log.Debugf("Query fields Definition ...")
 		}
 		adatypes.Central.Log.Debugf("Read logical, open done ...%#v with search=%s", request.adabas.ID.platform, search)
 		var searchInfo *adatypes.SearchInfo
@@ -459,10 +470,16 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 			searchInfo = adatypes.NewSearchInfo(request.adabas.ID.platform(request.adabas.URL.String()), search)
 			adatypes.Central.Log.Debugf("New search info ... %#v", searchInfo)
 			if request.definition == nil {
-				adatypes.Central.Log.Debugf("Load Definition ...")
+				adatypes.Central.Log.Debugf("Load Definition (read logical)...")
 				err = request.loadDefinition()
 				if err != nil {
 					return
+				}
+				adatypes.Central.Log.Debugf("Loaded Definition ...")
+				if request.dynamic != nil {
+					q := request.dynamic.CreateQueryFields()
+					request.QueryFields(q)
+					adatypes.Central.Log.Debugf("Query fields Definition ...")
 				}
 				searchInfo.Definition = request.definition
 				tree, err = searchInfo.GenerateTree()
@@ -552,7 +569,7 @@ func (request *ReadRequest) ReadLogicalByStream(descriptor string, streamFunctio
 
 // ReadLogicalByWithParser read in logical order given by the descriptor argument
 func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultParser adatypes.RequestParser, x interface{}) (err error) {
-	err = request.Open()
+	_, err = request.Open()
 	if err != nil {
 		return
 	}
@@ -593,7 +610,7 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 // HistogramBy read a descriptor in a descriptor order
 func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, err error) {
 	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
-		err = request.Open()
+		_, err = request.Open()
 		if err != nil {
 			return
 		}
@@ -658,7 +675,7 @@ func (request *ReadRequest) HistogramWith(search string) (result *Response, err 
 // histogramWithWithParser read a descriptor given by a search criteria
 func (request *ReadRequest) histogramWithWithParser(search string, resultParser adatypes.RequestParser,
 	x interface{}) (err error) {
-	err = request.Open()
+	_, err = request.Open()
 	if err != nil {
 		return
 	}
@@ -770,7 +787,7 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 		}
 	}
 	adatypes.Central.Log.Debugf("Query fields to %s", fieldq)
-	err = request.Open()
+	_, err = request.Open()
 	if err != nil {
 		adatypes.Central.Log.Debugf("Query fields open error: %v", err)
 		return

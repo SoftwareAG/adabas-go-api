@@ -20,6 +20,7 @@
 package adatypes
 
 import (
+	"reflect"
 	"strings"
 )
 
@@ -356,4 +357,43 @@ func removeFromTree(value *StructureType) {
 			Central.Log.Debugf("Contains %s", t.Name())
 		}
 	}
+}
+
+// SetValueData interface reflection set value
+func SetValueData(s reflect.Value, v IAdaValue) error {
+	Central.Log.Debugf("%s = %s", v.Type().Name(), s.Type().Name())
+	switch s.Interface().(type) {
+	case *int8, *int32, *int64:
+		vi, err := v.Int64()
+		if err != nil {
+			return err
+		}
+		s.Elem().SetInt(vi)
+	case *uint8, *uint32, *uint64:
+		vui, err := v.UInt64()
+		if err != nil {
+			return err
+		}
+		s.Elem().SetUint(vui)
+	case int8, int32, int64:
+		vi, err := v.Int64()
+		if err != nil {
+			return err
+		}
+		s.SetInt(vi)
+	case uint8, uint32, uint64:
+		vui, err := v.UInt64()
+		if err != nil {
+			return err
+		}
+		s.SetUint(vui)
+	case string:
+		s.SetString(v.String())
+	case *string:
+		s.Elem().SetString(v.String())
+	default:
+		Central.Log.Debugf("Unknown conversion %s/%s", s.Type().String(), v.Type().Name())
+		return NewGenericError(80, s.Type(), v.Type().Name())
+	}
+	return nil
 }

@@ -119,14 +119,13 @@ func NewMapNameDeleteRequestRepo(mapName string, adabas *Adabas, mapRepository *
 }
 
 // Open Open the Adabas session
-func (deleteRequest *DeleteRequest) Open() (err error) {
-	err = deleteRequest.commonOpen()
-	return
+func (deleteRequest *DeleteRequest) Open() (opened bool, err error) {
+	return deleteRequest.commonOpen()
 }
 
 // Delete delete a specific isn
 func (deleteRequest *DeleteRequest) Delete(isn adatypes.Isn) (err error) {
-	err = deleteRequest.Open()
+	_, err = deleteRequest.Open()
 	if err != nil {
 		return
 	}

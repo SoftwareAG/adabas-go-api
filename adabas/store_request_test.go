@@ -580,7 +580,7 @@ func validateUsingAdabas(t *testing.T, isn adatypes.Isn) {
 	adabas, _ := NewAdabas(adabasModDBID)
 	request, _ := NewReadRequest(adabas, 202)
 	defer request.Close()
-	openErr := request.Open()
+	_, openErr := request.Open()
 	if assert.NoError(t, openErr) {
 		err := request.QueryFields("DC")
 		if !assert.NoError(t, openErr) {
@@ -627,7 +627,7 @@ func validateUsingMap(t *testing.T, isn adatypes.Isn) {
 		return
 	}
 	defer request.Close()
-	openErr := request.Open()
+	_, openErr := request.Open()
 	if assert.NoError(t, openErr) {
 		err := request.QueryFields("Picture")
 		if !assert.NoError(t, err) {

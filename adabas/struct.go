@@ -21,7 +21,6 @@ package adabas
 
 import (
 	"bytes"
-	"fmt"
 	"reflect"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -35,7 +34,7 @@ type structure struct {
 // parseMap Adabas read parser of one Map definition used during read
 func structParser(adabasRequest *adatypes.Request, x interface{}) error {
 	structResult := x.(*structure)
-	fmt.Println("Got ISN:", adabasRequest.Isn)
+	adatypes.Central.Log.Debugf("Got ISN: %d", adabasRequest.Isn)
 	e := reflect.New(structResult.structType)
 	s := e.Elem()
 	for i := 0; i < structResult.structType.NumField(); i++ {
@@ -43,31 +42,35 @@ func structParser(adabasRequest *adatypes.Request, x interface{}) error {
 		if fieldName == "" {
 			fieldName = structResult.structType.Field(i).Name
 		}
-		fmt.Println(i, s.Field(i))
+		adatypes.Central.Log.Debugf("%d %v", i, s.Field(i))
 		v, err := adabasRequest.GetValue(fieldName)
 		if err != nil {
 			return err
 		}
 		if v != nil {
-			fmt.Println(fieldName, v, s.Field(i), s.Field(i).Type())
-			switch s.Field(i).Interface().(type) {
-			case int8, int32, int64:
-				vi, err := v.Int64()
-				if err != nil {
-					return err
-				}
-				s.Field(i).SetInt(vi)
-			case uint8, uint32, uint64:
-				vui, err := v.UInt64()
-				if err != nil {
-					return err
-				}
-				s.Field(i).SetUint(vui)
-			case string:
-				s.Field(i).SetString(v.String())
-			default:
-				return adatypes.NewGenericError(80, s.Field(i).Type(), fieldName)
+			err = adatypes.SetValueData(s.Field(i), v)
+			if err != nil {
+				return err
 			}
+			// fmt.Println(fieldName, v, s.Field(i), s.Field(i).Type())
+			// switch s.Field(i).Interface().(type) {
+			// case int8, int32, int64:
+			// 	vi, err := v.Int64()
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// 	s.Field(i).SetInt(vi)
+			// case uint8, uint32, uint64:
+			// 	vui, err := v.UInt64()
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// 	s.Field(i).SetUint(vui)
+			// case string:
+			// 	s.Field(i).SetString(v.String())
+			// default:
+			// 	return adatypes.NewGenericError(80, s.Field(i).Type(), fieldName)
+			// }
 		}
 	}
 	structResult.entries = append(structResult.entries, s.Addr().Interface())

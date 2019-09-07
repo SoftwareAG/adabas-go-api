@@ -376,10 +376,36 @@ func TestReadLogicalPeriodInterface(t *testing.T) {
 	if assert.Len(t, e.Income, 2) {
 		assert.Equal(t, uint64(40000), e.Income[0].Salary)
 		if assert.Len(t, e.Income[0].Bonus, 2) {
-			assert.Equal(t, 123, e.Income[0].Bonus[0])
+			assert.Equal(t, uint64(123), e.Income[0].Bonus[0])
 		}
 
 		assert.Equal(t, "EUR", e.Income[0].Currency)
 	}
 
+}
+
+func TestRequestLogicalByEmployeesSalary(t *testing.T) {
+	initTestLogWithFile(t, "request_interface.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	adabas, _ := NewAdabas(23)
+	request, err := NewReadRequest("EmployeesSalary", adabas,
+		NewMapRepository(adabas, 4))
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer request.Close()
+	_, openErr := request.Open()
+	if assert.NoError(t, openErr) {
+		err = request.QueryFields("Id, FullName, FirstName, LastName, MiddleName, Birth, Telephone, AreaCode, Phone,Department, Income, Currency, Salary, Bonus,Language")
+		if err != nil {
+			return
+		}
+		result, err := request.ReadLogicalWith("Id=['pId':'pId9']")
+		assert.NoError(t, err)
+		if assert.NotNil(t, result) {
+			result.DumpValues()
+		}
+	}
 }

@@ -41,7 +41,7 @@ type InterfaceFunction func(data interface{}, x interface{}) error
 
 func (request *commonRequest) loadDefinition() (err error) {
 	if request.definition == nil {
-		adatypes.Central.Log.Debugf("Load file definition ....")
+		adatypes.Central.Log.Debugf("Load file Definition ....")
 		request.definition, err = request.adabas.ReadFileDefinition(request.repository.Fnr)
 		if err != nil {
 			return
@@ -51,6 +51,7 @@ func (request *commonRequest) loadDefinition() (err error) {
 			request.definition.DumpTypes(true, false, "load definition")
 		}
 	}
+	//debug.PrintStack()
 	return
 }
 
@@ -77,7 +78,8 @@ func (request *commonRequest) BackoutTransaction() error {
 }
 
 // Open Open the Adabas session
-func (request *commonRequest) commonOpen() (err error) {
+func (request *commonRequest) commonOpen() (opened bool, err error) {
+	opened = false
 	adatypes.Central.Log.Debugf("Open read request")
 	err = request.adabas.Open()
 	if err != nil {
@@ -129,7 +131,7 @@ func (request *commonRequest) commonOpen() (err error) {
 	request.definition.DumpTypes(true, true, "Database open")
 	adatypes.Central.Log.Debugf("Database open complete")
 	request.initialized = true
-
+	opened = true
 	return
 }
 
