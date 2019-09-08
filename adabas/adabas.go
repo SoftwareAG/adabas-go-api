@@ -231,8 +231,8 @@ func (adabas *Adabas) Close() {
 	adabas.ID.changeOpenState(adabas.URL.String(), false)
 }
 
-// ReleaseCmdId Release any command id resource in the database of the session are released
-func (adabas *Adabas) ReleaseCmdId() (err error) {
+// ReleaseCmdID Release any command id resource in the database of the session are released
+func (adabas *Adabas) ReleaseCmdID() (err error) {
 	adabas.AdabasBuffers = nil
 	adabas.Acbx.Acbxcmd = rc.code()
 	adabas.Acbx.resetCop()

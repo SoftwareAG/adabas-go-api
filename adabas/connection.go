@@ -303,13 +303,13 @@ func (connection *Connection) Release() error {
 // ReleaseCID any database command id resources, like command id caches assigned to a user
 func (connection *Connection) ReleaseCID() error {
 	if connection.adabasToData != nil {
-		err := connection.adabasToData.ReleaseCmdId()
+		err := connection.adabasToData.ReleaseCmdID()
 		if err != nil {
 			return err
 		}
 	}
 	if connection.adabasToMap != nil {
-		err := connection.adabasToMap.ReleaseCmdId()
+		err := connection.adabasToMap.ReleaseCmdID()
 		if err != nil {
 			return err
 		}
