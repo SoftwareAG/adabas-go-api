@@ -98,7 +98,7 @@ func callAdabas(c caller) {
 	maxTime := 1.0
 
 	last := time.Now()
-
+	dumpMessage := true
 	for i := 0; i < c.counter; i++ {
 		if close {
 			connection, err = c.createConnection()
@@ -147,21 +147,30 @@ func callAdabas(c caller) {
 		var result *adabas.Response
 		switch {
 		case c.search != "":
-			fmt.Println("Search for ", c.search)
+			if dumpMessage {
+				fmt.Println("Search for ", c.search)
+				dumpMessage = false
+			}
 			result, err = readRequest.ReadLogicalWith(c.search)
 			if err != nil {
 				fmt.Printf("Error reading thread %d with %d loops: %v\n", c.threadNr, i, err)
 				return
 			}
 		case c.name != "":
-			fmt.Println("Order by ", c.name)
+			if dumpMessage {
+				fmt.Println("Order by ", c.name)
+				dumpMessage = false
+			}
 			result, err = readRequest.ReadLogicalBy(c.name)
 			if err != nil {
 				fmt.Printf("Error reading thread %d with %d loops: %v\n", c.threadNr, i, err)
 				return
 			}
 		default:
-			fmt.Println("Physical read")
+			if dumpMessage {
+				fmt.Println("Physical read")
+				dumpMessage = false
+			}
 			result, err = readRequest.ReadPhysicalSequence()
 			if err != nil {
 				fmt.Printf("Error reading thread %d with %d loops: %v\n", c.threadNr, i, err)

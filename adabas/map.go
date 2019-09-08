@@ -212,6 +212,7 @@ func (adabasMap *Map) createFieldMap() {
 			adabasMap.fieldMap[sn] = f
 		}
 	}
+	adatypes.Central.Log.Debugf("Number of hash map entries %d", len(adabasMap.fieldMap))
 }
 
 // URL current map data URL reference
