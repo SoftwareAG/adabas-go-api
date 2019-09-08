@@ -411,16 +411,22 @@ func (adabasMap *Map) adaptFieldType(definition *adatypes.Definition) (err error
 	if definition == nil {
 		return adatypes.NewGenericError(19)
 	}
-	definition.DumpTypes(true, false, "before adapt field types")
+	if adatypes.Central.IsDebugLevel() {
+		definition.DumpTypes(true, false, "before adapt field types")
+	}
 	adatypes.Central.Log.Debugf("Adapt map long names to type definition %#v", adabasMap.String())
 	tm := adatypes.NewTraverserMethods(traverseAdaptType)
 	err = definition.TraverseTypes(tm, true, adabasMap)
 	if err != nil {
 		return
 	}
-	definition.DumpTypes(true, false, "before restrict slice")
+	if adatypes.Central.IsDebugLevel() {
+		definition.DumpTypes(true, false, "before restrict slice")
+	}
 	err = definition.RestrictFieldSlice(adabasMap.FieldNames())
-	definition.DumpTypes(true, false, "after restrict slice")
+	if adatypes.Central.IsDebugLevel() {
+		definition.DumpTypes(true, false, "after restrict slice")
+	}
 	return
 }
 

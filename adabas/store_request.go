@@ -175,9 +175,11 @@ func (request *StoreRequest) StoreFields(param ...interface{}) (err error) {
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("Check store fields Definition values %#v", request.definition.Values)
-	adatypes.Central.Log.Debugf("Dump all fields")
-	request.definition.DumpTypes(true, true)
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Check store fields Definition values %#v", request.definition.Values)
+		adatypes.Central.Log.Debugf("Dump all fields")
+		request.definition.DumpTypes(true, true)
+	}
 	switch f := param[0].(type) {
 	case string:
 		adatypes.Central.Log.Debugf("Store restrict fields to %s", f)
@@ -192,9 +194,10 @@ func (request *StoreRequest) StoreFields(param ...interface{}) (err error) {
 			return
 		}
 	}
-	request.definition.DumpTypes(true, true)
-	adatypes.Central.Log.Debugf("Definition values %#v", request.definition.Values)
-
+	if adatypes.Central.IsDebugLevel() {
+		request.definition.DumpTypes(true, true)
+		adatypes.Central.Log.Debugf("Definition values %#v", request.definition.Values)
+	}
 	return
 }
 

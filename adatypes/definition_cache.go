@@ -127,9 +127,10 @@ func CreateDefinitionByCache(reference string) *Definition {
 	Central.Log.Debugf("ORIG %#v\n", e.fileFieldTree)
 	Central.Log.Debugf("COPY TO %#v\n", x)
 	definition.InitReferences()
-	Central.Log.Debugf("Get copied cache entry: %s", reference)
-	definition.DumpTypes(true, false, "copied cache")
-
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Get copied cache entry: %s", reference)
+		definition.DumpTypes(true, false, "copied cache")
+	}
 	return definition
 }
 
@@ -138,8 +139,10 @@ func (def *Definition) PutCache(reference string) {
 	if definitionCache == nil {
 		return
 	}
-	Central.Log.Debugf("Put cache entry: %s", reference)
-	def.DumpTypes(true, false, "put cache")
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Put cache entry: %s", reference)
+		def.DumpTypes(true, false, "put cache")
+	}
 	definitionCache[reference] = &cacheEntry{timestamp: time.Now(), fileFieldTree: def.fileFieldTree}
 	Central.Log.Debugf("Done put cache entry: %s", reference)
 }

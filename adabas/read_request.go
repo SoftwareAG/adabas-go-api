@@ -724,8 +724,10 @@ func (request *ReadRequest) adaptDescriptorMap(adabasRequest *adatypes.Request) 
 			}
 			adatypes.Central.Log.Debugf("Found search descriptor %s and got %#v", adabasRequest.Descriptors[i], t)
 			if t == nil {
-				request.definition.DumpTypes(false, false, "Global Tree")
-				request.definition.DumpTypes(false, false, "Active Tree")
+				if adatypes.Central.IsDebugLevel() {
+					request.definition.DumpTypes(false, false, "Global Tree")
+					request.definition.DumpTypes(false, false, "Active Tree")
+				}
 				return adatypes.NewGenericError(76)
 			}
 			adabasRequest.Descriptors[i] = t.ShortName()

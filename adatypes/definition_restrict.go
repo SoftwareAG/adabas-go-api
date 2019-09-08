@@ -290,9 +290,12 @@ func (def *Definition) RestrictFieldSlice(field []string) (err error) {
 }
 
 // ShouldRestrictToFieldSlice Restrict the tree to contain only the given nodes
+// the corresponding remove flag is set to all fields which are not part of the query
 func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	Central.Log.Debugf("Should restrict fields to %#v", field)
-	def.DumpTypes(true, false, "before restrict")
+	if Central.IsDebugLevel() {
+		def.DumpTypes(true, false, "before restrict")
+	}
 	def.Values = nil
 	def.activeFields = make(map[string]IAdaType)
 
@@ -301,13 +304,17 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 		err = ferr
 		return
 	}
-	def.DumpTypes(true, false, "enter restrict")
+	if Central.IsDebugLevel() {
+		def.DumpTypes(true, false, "enter restrict")
+	}
 	t := TraverserMethods{EnterFunction: removeFieldEnterTrav}
 	err = def.TraverseTypes(t, true, fieldMap)
 	if err != nil {
 		return
 	}
-	def.DumpTypes(true, false, "remove restrict restrict")
+	if Central.IsDebugLevel() {
+		def.DumpTypes(true, false, "remove restrict restrict")
+	}
 
 	if len(fieldMap.set) > 0 {
 		Central.Log.Debugf("Field map ... %v", fieldMap.set)
@@ -334,6 +341,7 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	return
 }
 
+// removeFromTree remove field from tree because of given remove flag
 func removeFromTree(value *StructureType) {
 	if !value.HasFlagSet(FlagOptionToBeRemoved) {
 		return
@@ -359,7 +367,8 @@ func removeFromTree(value *StructureType) {
 	}
 }
 
-// SetValueData interface reflection set value
+// SetValueData dependent to the struct interface field the corresponding
+// reflection value will be set
 func SetValueData(s reflect.Value, v IAdaValue) error {
 	Central.Log.Debugf("%s = %s", v.Type().Name(), s.Type().Name())
 	switch s.Interface().(type) {
