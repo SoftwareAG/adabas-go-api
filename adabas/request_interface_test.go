@@ -37,6 +37,20 @@ func TestStoreRequestInterfaceInstance(t *testing.T) {
 	ada, _ := NewAdabas(adabasModDBID)
 	defer ada.Close()
 	repository := NewMapRepository(ada, 4)
+
+	_, err := repository.SearchMap(ada, "EmployeesSalary")
+	if err != nil {
+		maps, merr := LoadJSONMap("EmployeesSalary.json")
+		if !assert.NoError(t, merr) && !assert.Len(t, maps, 1) {
+			return
+		}
+		maps[0].Repository = &repository.DatabaseURL
+		err = maps[0].Store()
+		if !assert.NoError(t, err) {
+			return
+		}
+	}
+
 	storeRequest, err := NewStoreRequest(Employees{}, ada, repository)
 	if !assert.NoError(t, err) {
 		return
