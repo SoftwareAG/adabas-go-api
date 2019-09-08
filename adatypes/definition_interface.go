@@ -24,10 +24,14 @@ import (
 	"reflect"
 )
 
+type stackData struct {
+	field string
+	val   reflect.Value
+}
+
 type valueInterface struct {
 	valStack   *Stack
 	curVal     reflect.Value
-	invalid    string
 	fieldNames map[string][]string
 }
 
@@ -38,10 +42,6 @@ func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result Travers
 		return Continue, nil
 	}
 	tp := x.(*valueInterface)
-	if tp.invalid != "" {
-		Central.Log.Debugf("Skip because no interface part %s invalid=%s", adaValue.Type().Name(), tp.invalid)
-		return Continue, nil
-	}
 	Central.Log.Debugf("Work on value %s to interface", adaValue.Type().Name())
 	v := tp.curVal
 	if v.Kind() == reflect.Slice {
@@ -114,7 +114,7 @@ func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result Travers
 		}
 		f.Set(elemSlice)
 		Central.Log.Debugf("Push slice to stack for %s", adaValue.Type().Name())
-		tp.valStack.Push(tp.curVal)
+		tp.valStack.Push(&stackData{val: tp.curVal, field: adaValue.Type().Name()})
 		tp.curVal = elemSlice
 		Central.Log.Debugf("Set %s new base PE slice value %v", adaValue.Type().Name(), tp.curVal.Type())
 		return Continue, nil
@@ -153,7 +153,8 @@ func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result Travers
 			Central.Log.Debugf("Create new instance for %s is ptr, kind = %v", adaValue.Type().Name(), f.Kind())
 		}
 		Central.Log.Debugf("Push struct to stack for %s", adaValue.Type().Name())
-		tp.valStack.Push(tp.curVal)
+		tp.valStack.Push(&stackData{val: tp.curVal, field: adaValue.Type().Name()})
+
 		tp.curVal = f.Elem()
 		Central.Log.Debugf("Set %s new base Ptr value %v", adaValue.Type().Name(), tp.curVal.Type())
 		return Continue, nil
@@ -194,9 +195,6 @@ func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result Travers
 			Central.Log.Debugf("%s=%v->%v", adaValue.Type().Name(), v, f)
 		} else {
 			Central.Log.Debugf("%s is invalid, kind = %v", adaValue.Type().Name(), f.Kind())
-			if adaValue.Type().IsStructure() {
-				tp.invalid = adaValue.Type().Name()
-			}
 		}
 	}
 
@@ -207,21 +205,19 @@ func traverseValueToInterfaceLeave(adaValue IAdaValue, x interface{}) (result Tr
 	Central.Log.Debugf("Leave value to interface: %s", adaValue.Type().Name())
 	if adaValue.Type().IsStructure() {
 		tp := x.(*valueInterface)
-		if tp.invalid != "" {
-			Central.Log.Debugf("Skip leave because no interface part %s invalid=%s", adaValue.Type().Name(), tp.invalid)
-			if adaValue.Type().Name() == tp.invalid {
-				tp.invalid = ""
-			}
-			return Continue, nil
-		}
 		Central.Log.Debugf("Current %s struct value %v", adaValue.Type().Name(), tp.curVal.Type())
 		Central.Log.Debugf("Pop from stack for %s type=%s", adaValue.Type().Name(), adaValue.Type().Type().name())
-		if adaValue.Type().Type() != FieldTypeMultiplefield {
-			v, err := tp.valStack.Pop()
+		if adaValue.Type().Type() != FieldTypeMultiplefield && tp.valStack.Size > 0 {
+			sdi, err := tp.valStack.Pop()
 			if err != nil {
 				return EndTraverser, err
 			}
-			tp.curVal = v.(reflect.Value)
+			sd := sdi.(*stackData)
+			if sd.field != adaValue.Type().Name() {
+				tp.valStack.Push(sd)
+			} else {
+				tp.curVal = sd.val
+			}
 			Central.Log.Debugf("Reset %s to struct value %v", adaValue.Type().Name(), tp.curVal.Type())
 		}
 	}

@@ -108,17 +108,32 @@ func TestStoreInterface(t *testing.T) {
 	initTestLogWithFile(t, "request_interface.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
-
-	rerr := refreshFile(adabasModDBIDs, 16)
-	if !assert.NoError(t, rerr) {
+	// if storeInterface(t) != nil {
+	// 	return
+	// }
+	if readLogicalInterface(t) != nil {
 		return
 	}
+	if readPhysicalInterface(t) != nil {
+		return
+	}
+	if readLogicalInterfaceStream(t) != nil {
+		return
+	}
+}
+
+func storeInterface(t *testing.T) error {
+	rerr := refreshFile(adabasModDBIDs, 16)
+	if !assert.NoError(t, rerr) {
+		return rerr
+	}
+	fmt.Println("Store interface")
 	ada, _ := NewAdabas(adabasModDBID)
 	defer ada.Close()
 	repository := NewMapRepository(ada, 4)
 	storeRequest, err := NewStoreRequest(Employees{}, ada, repository)
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	assert.NotNil(t, storeRequest)
 	assert.Equal(t, "Employees", storeRequest.dynamic.DataType.Name())
@@ -129,80 +144,32 @@ func TestStoreInterface(t *testing.T) {
 	employees = append(employees, &Employees{ID: "ABC", Birth: 978, Name: "XXX", FirstName: "HHHH name"})
 	err = storeRequest.StoreData(employees)
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	err = storeRequest.StoreData(&Employees{ID: "ID3", Birth: 456, Name: "Name3", FirstName: "First name3"})
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	err = storeRequest.StoreData(Employees{ID: "ID4", Birth: 789, Name: "Name4", FirstName: "First name4"})
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	fmt.Println("End transaction")
 	err = storeRequest.EndTransaction()
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
-
+	return nil
 }
 
-func TestStorePeriodInterface(t *testing.T) {
-	initTestLogWithFile(t, "request_interface.log")
+func readLogicalInterface(t *testing.T) error {
+	fmt.Println("Read logical interface")
 
-	adatypes.Central.Log.Infof("TEST: %s", t.Name())
-
-	rerr := refreshFile(adabasModDBIDs, 16)
-	if !assert.NoError(t, rerr) {
-		return
-	}
-	ada, _ := NewAdabas(adabasModDBID)
-	defer ada.Close()
-	repository := NewMapRepository(ada, 4)
-	storeRequest, err := NewStoreRequest(EmployeesSalary{}, ada, repository)
-	if !assert.NoError(t, err) {
-		return
-	}
-	assert.NotNil(t, storeRequest)
-	assert.Equal(t, "EmployeesSalary", storeRequest.dynamic.DataType.Name())
-
-	employees := make([]*EmployeesSalary, 0)
-	income := make([]*Income, 0)
-	income = append(income, &Income{Currency: "EUR", Salary: 40000, Bonus: []uint64{123, 123}})
-	income = append(income, &Income{Currency: "EUR", Salary: 60000, Bonus: []uint64{1000, 1500}})
-	employees = append(employees, &EmployeesSalary{ID: "pId123", Birth: 123344,
-		FullName: &FullName{LastName: "Overmeyer", FirstName: "Ottofried"}, Department: "FBI",
-		Income: income, Language: []string{"ENG", "FRA"}})
-	income = make([]*Income, 0)
-	income = append(income, &Income{Currency: "LIR", Salary: 400000, Bonus: []uint64{40000, 5000}})
-	income = append(income, &Income{Currency: "PFD", Salary: 6000000, Bonus: []uint64{100000, 10000000}})
-	employees = append(employees, &EmployeesSalary{ID: "pId007", Birth: 5555555,
-		FullName: &FullName{LastName: "Bond", FirstName: "James"}, Department: "MI5",
-		Income: income, Language: []string{"ENG", "FRA", "GER", "MAN"}})
-	err = storeRequest.StoreData(employees)
-	if !assert.NoError(t, err) {
-		return
-	}
-	fmt.Println("End transaction")
-	err = storeRequest.EndTransaction()
-	if !assert.NoError(t, err) {
-		return
-	}
-
-}
-
-func TestReadLogicalInterface(t *testing.T) {
-	err := initLogWithFile("request_interface.log")
-	if err != nil {
-		return
-	}
-
-	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(23)
 	mapRepository := NewMapRepository(adabas, 4)
 	request, err := NewReadRequest(Employees{}, adabas, mapRepository)
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	defer request.Close()
 	// err = request.QueryFields("*")
@@ -214,7 +181,7 @@ func TestReadLogicalInterface(t *testing.T) {
 	result, err := request.ReadLogicalWith("ID=['ID':'ID9']")
 	fmt.Println("Read done ...")
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	assert.Nil(t, result.Values)
 	assert.NotNil(t, result.Data)
@@ -224,7 +191,9 @@ func TestReadLogicalInterface(t *testing.T) {
 		assert.Len(t, result.Data, 4)
 		e := result.Data[0].(*Employees)
 		assert.Equal(t, "ID", strings.Trim(e.ID, " "))
-		assert.Equal(t, "Name", strings.Trim(e.Name, " "))
+		if !assert.Equal(t, "Name", strings.Trim(e.Name, " ")) {
+			return fmt.Errorf("Name mismatch")
+		}
 		e = result.Data[1].(*Employees)
 		assert.Equal(t, "ID2", strings.Trim(e.ID, " "))
 		assert.Equal(t, "Name2", strings.Trim(e.Name, " "))
@@ -236,31 +205,28 @@ func TestReadLogicalInterface(t *testing.T) {
 		assert.Equal(t, int64(789), e.Birth)
 		assert.Equal(t, "Name4", strings.Trim(e.Name, " "))
 	}
+	return nil
 }
 
-func TestReadPhysicalInterface(t *testing.T) {
-	err := initLogWithFile("request_interface.log")
-	if err != nil {
-		return
-	}
+func readPhysicalInterface(t *testing.T) error {
+	fmt.Println("Read physical interface")
 
-	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(23)
 	mapRepository := NewMapRepository(adabas, 4)
 	request, err := NewReadRequest(Employees{}, adabas, mapRepository)
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	defer request.Close()
 	err = request.QueryFields("*")
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 
 	result, err := request.ReadPhysicalSequence()
 	fmt.Println("Read done ...")
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	assert.Nil(t, result.Values)
 	assert.NotNil(t, result.Data)
@@ -294,6 +260,7 @@ func TestReadPhysicalInterface(t *testing.T) {
 			assert.Equal(t, 0, nrNotFound)
 		}
 	}
+	return nil
 }
 
 func receiveInterface(data interface{}, x interface{}) error {
@@ -308,48 +275,98 @@ func receiveInterface(data interface{}, x interface{}) error {
 	return nil
 }
 
-func TestReadLogicalInterfaceStream(t *testing.T) {
-	err := initLogWithFile("request_interface.log")
-	if err != nil {
-		return
-	}
+func readLogicalInterfaceStream(t *testing.T) error {
+	fmt.Println("Read logical interface stream")
 
-	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	adabas, _ := NewAdabas(23)
 	mapRepository := NewMapRepository(adabas, 4)
 	request, err := NewReadRequest(Employees{}, adabas, mapRepository)
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	defer request.Close()
 	err = request.QueryFields("*")
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 
 	i := 0
 	result, err := request.ReadLogicalWithInterface("ID=['ID':'ID9']", receiveInterface, &i)
 	fmt.Println("Read done ...")
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	assert.Equal(t, 4, i)
 	assert.Nil(t, result.Values)
 	assert.Nil(t, result.Data)
+	return nil
 }
 
-func TestReadLogicalPeriodInterface(t *testing.T) {
-	err := initLogWithFile("request_interface.log")
-	if err != nil {
-		return
-	}
+func TestStorePeriodInterface(t *testing.T) {
+	initTestLogWithFile(t, "request_interface.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	if storePeriodInterface(t) != nil {
+		return
+	}
+	if readLogicalPeriodInterface(t) != nil {
+		return
+	}
+	if readLogicalPeriodInterfaceByEmployeesSalary(t) != nil {
+		return
+	}
+}
+
+func storePeriodInterface(t *testing.T) error {
+	fmt.Println("Store interface with period group")
+
+	rerr := refreshFile(adabasModDBIDs, 16)
+	if !assert.NoError(t, rerr) {
+		return rerr
+	}
+	ada, _ := NewAdabas(adabasModDBID)
+	defer ada.Close()
+	repository := NewMapRepository(ada, 4)
+	storeRequest, err := NewStoreRequest(EmployeesSalary{}, ada, repository)
+	if !assert.NoError(t, err) {
+		return err
+	}
+	assert.NotNil(t, storeRequest)
+	assert.Equal(t, "EmployeesSalary", storeRequest.dynamic.DataType.Name())
+
+	employees := make([]*EmployeesSalary, 0)
+	income := make([]*Income, 0)
+	income = append(income, &Income{Currency: "EUR", Salary: 40000, Bonus: []uint64{123, 123}})
+	income = append(income, &Income{Currency: "EUR", Salary: 60000, Bonus: []uint64{1000, 1500}})
+	employees = append(employees, &EmployeesSalary{ID: "pId123", Birth: 123344,
+		FullName: &FullName{LastName: "Overmeyer", FirstName: "Ottofried"}, Department: "FBI",
+		Income: income, Language: []string{"ENG", "FRA"}})
+	income = make([]*Income, 0)
+	income = append(income, &Income{Currency: "LIR", Salary: 400000, Bonus: []uint64{40000, 5000}})
+	income = append(income, &Income{Currency: "PFD", Salary: 6000000, Bonus: []uint64{100000, 10000000}})
+	employees = append(employees, &EmployeesSalary{ID: "pId007", Birth: 5555555,
+		FullName: &FullName{LastName: "Bond", FirstName: "James"}, Department: "MI5",
+		Income: income, Language: []string{"ENG", "FRA", "GER", "MAN"}})
+	err = storeRequest.StoreData(employees)
+	if !assert.NoError(t, err) {
+		return err
+	}
+	fmt.Println("End transaction")
+	err = storeRequest.EndTransaction()
+	if !assert.NoError(t, err) {
+		return err
+	}
+	return nil
+}
+
+func readLogicalPeriodInterface(t *testing.T) error {
+	fmt.Println("Read interface with period group")
+
 	adabas, _ := NewAdabas(23)
 	mapRepository := NewMapRepository(adabas, 4)
 	request, err := NewReadRequest(EmployeesSalary{}, adabas, mapRepository)
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	defer request.Close()
 	// err = request.QueryFields("*")
@@ -361,22 +378,22 @@ func TestReadLogicalPeriodInterface(t *testing.T) {
 	result, err := request.ReadLogicalWith("Id=['pId':'pId9']")
 	fmt.Println("Read done ...")
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	assert.Nil(t, result.Values)
 	assert.NotNil(t, result.Data)
 	if !assert.NotNil(t, result) {
-		return
+		return fmt.Errorf("Error got")
 	}
 	result.DumpValues()
 	result.DumpData()
 	if !assert.Len(t, result.Data, 2) {
-		return
+		return fmt.Errorf("Error got")
 	}
 	e := result.Data[0].(*EmployeesSalary)
 	assert.Equal(t, "pId007", strings.Trim(e.ID, " "))
 	if !assert.NotNil(t, e.FullName) {
-		return
+		return fmt.Errorf("Error got")
 	}
 	assert.Equal(t, "Bond", strings.Trim(e.FullName.LastName, " "))
 	e = result.Data[1].(*EmployeesSalary)
@@ -395,26 +412,24 @@ func TestReadLogicalPeriodInterface(t *testing.T) {
 
 		assert.Equal(t, "EUR", e.Income[0].Currency)
 	}
-
+	return nil
 }
 
-func TestRequestLogicalByEmployeesSalary(t *testing.T) {
-	initTestLogWithFile(t, "request_interface.log")
-
-	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+func readLogicalPeriodInterfaceByEmployeesSalary(t *testing.T) error {
+	fmt.Println("Read interface with period group with EmployeesSalary")
 
 	adabas, _ := NewAdabas(23)
 	request, err := NewReadRequest("EmployeesSalary", adabas,
 		NewMapRepository(adabas, 4))
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	defer request.Close()
 	_, openErr := request.Open()
 	if assert.NoError(t, openErr) {
 		err = request.QueryFields("Id, FullName, FirstName, LastName, MiddleName, Birth, Telephone, AreaCode, Phone,Department, Income, Currency, Salary, Bonus,Language")
 		if err != nil {
-			return
+			return err
 		}
 		result, err := request.ReadLogicalWith("Id=['pId':'pId9']")
 		assert.NoError(t, err)
@@ -422,4 +437,5 @@ func TestRequestLogicalByEmployeesSalary(t *testing.T) {
 			result.DumpValues()
 		}
 	}
+	return nil
 }
