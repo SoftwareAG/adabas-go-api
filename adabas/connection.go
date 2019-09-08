@@ -283,16 +283,33 @@ func (connection *Connection) EndTransaction() error {
 	return nil
 }
 
-// Release any database resources, like command id caches assigned to a user
+// Release any database hold record resources, like command id caches assigned to a user
 func (connection *Connection) Release() error {
 	if connection.adabasToData != nil {
-		err := connection.adabasToData.Release()
+		err := connection.adabasToData.ReleaseHold(connection.fnr)
 		if err != nil {
 			return err
 		}
 	}
 	if connection.adabasToMap != nil {
-		err := connection.adabasToMap.Release()
+		err := connection.adabasToMap.ReleaseHold(connection.adabasMap.Data.Fnr)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// ReleaseCID any database command id resources, like command id caches assigned to a user
+func (connection *Connection) ReleaseCID() error {
+	if connection.adabasToData != nil {
+		err := connection.adabasToData.ReleaseCmdId()
+		if err != nil {
+			return err
+		}
+	}
+	if connection.adabasToMap != nil {
+		err := connection.adabasToMap.ReleaseCmdId()
 		if err != nil {
 			return err
 		}

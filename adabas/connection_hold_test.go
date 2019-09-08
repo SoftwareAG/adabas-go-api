@@ -16,7 +16,7 @@ func TestHoldResponse(t *testing.T) {
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	wait := make(chan bool)
 	end := make(chan bool)
-	go parallelAccessHoldResponse(t, wait, end)
+	go parallelAccessHoldResponse(t, wait, end, false)
 
 	connection, err := NewConnection("ada;target=24")
 	if !assert.NoError(t, err) {
@@ -63,7 +63,7 @@ func TestHoldRead(t *testing.T) {
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	wait := make(chan bool)
 	end := make(chan bool)
-	go parallelAccessHoldResponse(t, wait, end)
+	go parallelAccessHoldResponse(t, wait, end, true)
 
 	connection, err := NewConnection("ada;target=24")
 	if !assert.NoError(t, err) {
@@ -97,7 +97,7 @@ func TestHoldRead(t *testing.T) {
 	<-end
 }
 
-func parallelAccessHoldResponse(t *testing.T, wait chan bool, end chan bool) {
+func parallelAccessHoldResponse(t *testing.T, wait chan bool, end chan bool, useTimeout bool) {
 	fmt.Println("Start hold access ....")
 	connection, err := NewConnection("ada;target=24")
 	if !assert.NoError(t, err) {
@@ -124,6 +124,12 @@ func parallelAccessHoldResponse(t *testing.T, wait chan bool, end chan bool) {
 	}
 	fmt.Println("In hold ISN 1 ....")
 	wait <- true
+	if useTimeout {
+		fmt.Println("Sleep 10 seconds ....")
+		time.Sleep(10 * time.Second)
+		connection.Release()
+		fmt.Println("Release ....")
+	}
 	<-end
 
 	fmt.Println("End parallel access.")

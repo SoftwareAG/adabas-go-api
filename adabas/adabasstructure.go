@@ -112,10 +112,11 @@ const (
 	u2
 	u3
 	rc
+	ri
 )
 
 var commandCodes = []string{"  ", "OP", "CL", "BT", "ET", "LF", "L1", "L2", "L3", "L4", "L5", "L6", "L9",
-	"N1", "N2", "A1", "S1", "S2", "S3", "E1", "U1", "U2", "U3", "RC"}
+	"N1", "N2", "A1", "S1", "S2", "S3", "E1", "U1", "U2", "U3", "RC", "RI"}
 
 func (cc commandCode) code() [2]byte {
 	var code [2]byte

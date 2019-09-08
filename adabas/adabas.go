@@ -231,10 +231,20 @@ func (adabas *Adabas) Close() {
 	adabas.ID.changeOpenState(adabas.URL.String(), false)
 }
 
-// Release Any resource in the database of the session are released
-func (adabas *Adabas) Release() (err error) {
+// ReleaseCmdId Release any command id resource in the database of the session are released
+func (adabas *Adabas) ReleaseCmdId() (err error) {
 	adabas.AdabasBuffers = nil
 	adabas.Acbx.Acbxcmd = rc.code()
+	adabas.Acbx.resetCop()
+	err = adabas.CallAdabas()
+	return
+}
+
+// ReleaseHold Any hold record resource in the database of the session are released
+func (adabas *Adabas) ReleaseHold(fileNr Fnr) (err error) {
+	adabas.AdabasBuffers = nil
+	adabas.Acbx.Acbxcmd = ri.code()
+	adabas.Acbx.Acbxfnr = fileNr
 	adabas.Acbx.resetCop()
 	err = adabas.CallAdabas()
 	return
