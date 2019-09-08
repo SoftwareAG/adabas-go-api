@@ -108,9 +108,9 @@ func TestStoreInterface(t *testing.T) {
 	initTestLogWithFile(t, "request_interface.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
-	// if storeInterface(t) != nil {
-	// 	return
-	// }
+	if storeInterface(t) != nil {
+		return
+	}
 	if readLogicalInterface(t) != nil {
 		return
 	}
