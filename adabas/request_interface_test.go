@@ -29,6 +29,14 @@ type EmployeesSalary struct {
 	Language   []string
 }
 
+type EmployeesKey struct {
+	ID         string `adabas:"Id:key"`
+	FullName   *FullName
+	Birth      string
+	Department string
+	Language   []string
+}
+
 func TestStoreRequestInterfaceInstance(t *testing.T) {
 	initTestLogWithFile(t, "request_interface.log")
 
@@ -41,6 +49,19 @@ func TestStoreRequestInterfaceInstance(t *testing.T) {
 	_, err := repository.SearchMap(ada, "EmployeesSalary")
 	if err != nil {
 		maps, merr := LoadJSONMap("EmployeesSalary.json")
+		if !assert.NoError(t, merr) && !assert.Len(t, maps, 1) {
+			return
+		}
+		maps[0].Repository = &repository.DatabaseURL
+		err = maps[0].Store()
+		if !assert.NoError(t, err) {
+			return
+		}
+	}
+
+	_, err = repository.SearchMap(ada, "EmployeesKey")
+	if err != nil {
+		maps, merr := LoadJSONMap("EmployeesKey.json")
 		if !assert.NoError(t, merr) && !assert.Len(t, maps, 1) {
 			return
 		}
@@ -151,6 +172,38 @@ func storeInterface(t *testing.T) error {
 		return err
 	}
 	err = storeRequest.StoreData(Employees{ID: "ID4", Birth: 789, Name: "Name4", FirstName: "First name4"})
+	if !assert.NoError(t, err) {
+		return err
+	}
+	fmt.Println("End transaction")
+	err = storeRequest.EndTransaction()
+	if !assert.NoError(t, err) {
+		return err
+	}
+	return nil
+}
+
+func updateKeyInterface(t *testing.T) error {
+	rerr := refreshFile(adabasModDBIDs, 16)
+	if !assert.NoError(t, rerr) {
+		return rerr
+	}
+	fmt.Println("Update interface records")
+	ada, _ := NewAdabas(adabasModDBID)
+	defer ada.Close()
+	repository := NewMapRepository(ada, 4)
+	storeRequest, err := NewStoreRequest(EmployeesKey{}, ada, repository)
+	if !assert.NoError(t, err) {
+		return err
+	}
+	assert.NotNil(t, storeRequest)
+	assert.Equal(t, "EmployeesKey", storeRequest.dynamic.DataType.Name())
+
+	employees := make([]*EmployeesKey, 0)
+	employees = append(employees, &EmployeesKey{ID: "ID", FullName: &FullName{LastName: "NewName", FirstName: "First name"}})
+	employees = append(employees, &EmployeesKey{ID: "ID2", FullName: &FullName{LastName: "NewName2", FirstName: "First name2"}})
+	employees = append(employees, &EmployeesKey{ID: "ID4", FullName: &FullName{LastName: "ZZZZZZZ", FirstName: "UUUUUU name"}})
+	err = storeRequest.UpdateData(employees)
 	if !assert.NoError(t, err) {
 		return err
 	}
@@ -438,4 +491,65 @@ func readLogicalPeriodInterfaceByEmployeesSalary(t *testing.T) error {
 		}
 	}
 	return nil
+}
+
+func verifyUpdateLogicalInterface(t *testing.T) error {
+	fmt.Println("Verify update with logical interface")
+
+	adabas, _ := NewAdabas(23)
+	mapRepository := NewMapRepository(adabas, 4)
+	request, err := NewReadRequest(EmployeesKey{}, adabas, mapRepository)
+	if !assert.NoError(t, err) {
+		return err
+	}
+	defer request.Close()
+	// err = request.QueryFields("*")
+	// if !assert.NoError(t, err) {
+	// 	return
+	// }
+	assert.Equal(t, "EmployeesKey", request.dynamic.DataType.Name())
+
+	result, err := request.ReadLogicalWith("ID=['ID':'ID9']")
+	fmt.Println("Read done ...")
+	if !assert.NoError(t, err) {
+		return err
+	}
+	assert.Nil(t, result.Values)
+	assert.NotNil(t, result.Data)
+	if assert.NotNil(t, result) {
+		result.DumpValues()
+		result.DumpData()
+		assert.Len(t, result.Data, 4)
+		e := result.Data[0].(*EmployeesKey)
+		assert.Equal(t, "ID", strings.Trim(e.ID, " "))
+		if !assert.Equal(t, "Name", strings.Trim(e.FullName.LastName, " ")) {
+			return fmt.Errorf("Name mismatch")
+		}
+		e = result.Data[1].(*EmployeesKey)
+		assert.Equal(t, "ID2", strings.Trim(e.ID, " "))
+		assert.Equal(t, "Name2", strings.Trim(e.FullName.LastName, " "))
+		e = result.Data[2].(*EmployeesKey)
+		assert.Equal(t, "ID3", strings.Trim(e.ID, " "))
+		assert.Equal(t, "Name3", strings.Trim(e.FullName.LastName, " "))
+		e = result.Data[3].(*EmployeesKey)
+		assert.Equal(t, "ID4", strings.Trim(e.ID, " "))
+		assert.Equal(t, int64(789), e.Birth)
+		assert.Equal(t, "Name4", strings.Trim(e.FullName.LastName, " "))
+	}
+	return nil
+}
+
+func TestStoreKeyInterface(t *testing.T) {
+	initTestLogWithFile(t, "request_interface.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	if storeInterface(t) != nil {
+		return
+	}
+	if updateKeyInterface(t) != nil {
+		return
+	}
+	if verifyUpdateLogicalInterface(t) != nil {
+		return
+	}
 }

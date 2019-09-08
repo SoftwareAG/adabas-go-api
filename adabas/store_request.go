@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
@@ -332,6 +333,46 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 			return adatypes.NewGenericError(53, err.Error())
 		}
 	} else {
+		t := record.Type()
+		var st reflect.Type
+		var sn string
+		for i := 0; i < t.NumField(); i++ {
+			tag := t.Field(i).Tag.Get("adabas")
+			if tag != "" {
+				s := strings.Split(tag, ":")
+				if len(s) > 1 && strings.ToLower(s[1]) == "key" {
+					st = t.Field(i).Type
+					if s[0] != "" {
+						sn = s[0]
+					} else {
+						sn = t.Field(i).Name
+					}
+					break
+				}
+			}
+		}
+		if st != nil {
+			iRequest, iErr := NewReadRequest(request)
+			if iErr != nil {
+				return iErr
+			}
+			iRequest.QueryFields("")
+			if adaValue, ok := storeRecord.searchValue(sn); ok {
+				result, rErr := iRequest.ReadLogicalWith(sn + "=" + adaValue.String())
+				if rErr != nil {
+					return rErr
+				}
+				if len(result.Values) != 1 {
+					return adatypes.NewGenericError(98, sn)
+				}
+				storeRecord.Isn = result.Values[0].Isn
+			} else {
+				return adatypes.NewGenericError(96, sn)
+			}
+		}
+		if storeRecord.Isn == 0 {
+			return adatypes.NewGenericError(97)
+		}
 		err := request.Update(storeRecord)
 		if err != nil {
 			return adatypes.NewGenericError(53, err.Error())
