@@ -22,7 +22,21 @@ func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string)
 		Central.Log.Debugf("fieldName=%s/%s -> tag=%s", adabasFieldName, fieldName, tag)
 		if tag != "" {
 			s := strings.Split(tag, ":")
-			adabasFieldName = s[0]
+			if s[0] != "" {
+				adabasFieldName = s[0]
+			}
+
+			if len(s) > 1 {
+				switch s[1] {
+				case "key":
+					//fmt.Println(fieldName, adabasFieldName)
+					f["#key"] = []string{adabasFieldName}
+				case "isn":
+					f["#isn"] = []string{adabasFieldName}
+				default:
+					Central.Log.Debugf("Unknown control tag %s", s[1])
+				}
+			}
 		}
 		subFields := make([]string, len(fields))
 		copy(subFields, fields)

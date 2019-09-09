@@ -37,6 +37,12 @@ type EmployeesKey struct {
 	Language   []string
 }
 
+type EmployeesIndex struct {
+	Index    uint64 `adabas:":isn"`
+	ID       string `adabas:"Id:key"`
+	LastName string
+}
+
 func TestStoreRequestInterfaceInstance(t *testing.T) {
 	initTestLogWithFile(t, "request_interface.log")
 
@@ -154,6 +160,9 @@ func TestStoreInterface(t *testing.T) {
 	if readLogicalInterfaceStream(t) != nil {
 		return
 	}
+	if readLogicalIndexInterface(t) != nil {
+		return
+	}
 }
 
 func storeInterface(t *testing.T) error {
@@ -264,8 +273,51 @@ func readLogicalInterface(t *testing.T) error {
 		assert.Equal(t, "Name3", strings.Trim(e.Name, " "))
 		e = result.Data[3].(*Employees)
 		assert.Equal(t, "ID4", strings.Trim(e.ID, " "))
-		assert.Equal(t, int64(789), e.Birth)
+		assert.Equal(t, int64(711714), e.Birth)
 		assert.Equal(t, "Name4", strings.Trim(e.Name, " "))
+	}
+	return nil
+}
+
+func readLogicalIndexInterface(t *testing.T) error {
+	fmt.Println("Read logical index to interface")
+
+	adabas, _ := NewAdabas(23)
+	mapRepository := NewMapRepository(adabas, 4)
+	request, err := NewReadRequest(EmployeesIndex{}, adabas, mapRepository)
+	if !assert.NoError(t, err) {
+		return err
+	}
+	defer request.Close()
+	// err = request.QueryFields("*")
+	// if !assert.NoError(t, err) {
+	// 	return
+	// }
+	assert.Equal(t, "EmployeesIndex", request.dynamic.DataType.Name())
+
+	result, err := request.ReadLogicalWith("Id=['ID':'ID9']")
+	fmt.Println("Read done ...")
+	if !assert.NoError(t, err) {
+		return err
+	}
+	assert.Nil(t, result.Values)
+	assert.NotNil(t, result.Data)
+	if assert.NotNil(t, result) {
+		result.DumpValues()
+		result.DumpData()
+		assert.Len(t, result.Data, 4)
+		e := result.Data[0].(*EmployeesIndex)
+		assert.True(t, e.Index > 0)
+		assert.Equal(t, "ID", strings.Trim(e.ID, " "))
+		assert.Equal(t, "Name", strings.Trim(e.LastName, " "))
+		e = result.Data[1].(*EmployeesIndex)
+		assert.Equal(t, "ID2", strings.Trim(e.ID, " "))
+		e = result.Data[2].(*EmployeesIndex)
+		assert.Equal(t, "ID3", strings.Trim(e.ID, " "))
+		e = result.Data[3].(*EmployeesIndex)
+		assert.Equal(t, "ID4", strings.Trim(e.ID, " "))
+		assert.Equal(t, uint64(0), e.Index)
+		assert.Equal(t, "Name4", strings.Trim(e.LastName, " "))
 	}
 	return nil
 }
@@ -304,7 +356,7 @@ func readPhysicalInterface(t *testing.T) error {
 				switch {
 				case strings.HasPrefix(e.ID, "ID "):
 					assert.Equal(t, "ID", strings.Trim(e.ID, " "))
-					assert.Equal(t, int64(123), e.Birth)
+					assert.Equal(t, int64(711999), e.Birth)
 					assert.Equal(t, "Name", strings.Trim(e.Name, " "))
 					nrNotFound--
 				case strings.HasPrefix(e.ID, "ID2 "):

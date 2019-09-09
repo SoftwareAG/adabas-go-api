@@ -316,26 +316,68 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 	}
 	adatypes.Central.Log.Debugf("Slice index: %v", record)
 	for an, fn := range request.dynamic.FieldNames {
-		v, ok := searchDynamicValue(record, fn)
-		if ok { //&& v.IsValid() {
-			adatypes.Central.Log.Debugf("Set dynamic value %v = %v", an, v.Interface())
-			err := storeRecord.SetValue(an, v.Interface())
-			if err != nil {
-				return adatypes.NewGenericError(52, err.Error())
+		if !strings.HasPrefix(an, "#") {
+			v, ok := searchDynamicValue(record, fn)
+			if ok { //&& v.IsValid() {
+				adatypes.Central.Log.Debugf("Set dynamic value %v = %v", an, v.Interface())
+				err := storeRecord.SetValue(an, v.Interface())
+				if err != nil {
+					return adatypes.NewGenericError(52, err.Error())
+				}
+				adatypes.Central.Log.Debugf("Set value %s: %s = %v", an, fn, v)
 			}
-			adatypes.Central.Log.Debugf("Set value %s: %s = %v", an, fn, v)
 		}
 	}
 	adatypes.Central.Log.Debugf("store/update=%v record ADA: %s", store, storeRecord.String())
+	if k, ok := request.dynamic.FieldNames["#isn"]; ok {
+		adatypes.Central.Log.Debugf("ISNfield: %v", k)
+		keyField := record.FieldByName(k[0])
+		storeRecord.Isn = adatypes.Isn(keyField.Uint())
+	}
 	if store {
 		err := request.Store(storeRecord)
 		if err != nil {
 			return adatypes.NewGenericError(53, err.Error())
 		}
 	} else {
+		if storeRecord.Isn == 0 {
+			err := request.evaluateKeyIsn(record, storeRecord)
+			if err != nil {
+				return err
+			}
+		}
+
+		if storeRecord.Isn == 0 {
+			return adatypes.NewGenericError(97)
+		}
+		err := request.Update(storeRecord)
+		if err != nil {
+			return adatypes.NewGenericError(53, err.Error())
+		}
+
+	}
+	return nil
+}
+
+func (request *StoreRequest) evaluateKeyIsn(record reflect.Value, storeRecord *Record) error {
+	var sn string
+	var keyValue string
+	if k, ok := request.dynamic.FieldNames["#key"]; ok {
+		adatypes.Central.Log.Debugf("Keyfield: %v", k)
+		kf := request.dynamic.FieldNames[k[0]]
+		keyField := record.FieldByName(kf[0])
+		fmt.Println("Check keyfield", k, keyField.IsValid(), record.String())
+		if keyField.IsValid() {
+			fmt.Println("Keyfields:", k, keyField, keyField.String())
+			for k, v := range request.dynamic.FieldNames {
+				fmt.Println(k, "=", v)
+			}
+			sn = kf[0]
+			keyValue = keyField.String()
+		}
+	} else {
 		t := record.Type()
 		var st reflect.Type
-		var sn string
 		for i := 0; i < t.NumField(); i++ {
 			tag := t.Field(i).Tag.Get("adabas")
 			if tag != "" {
@@ -354,41 +396,35 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 		if st == nil {
 			return adatypes.NewGenericError(97)
 		}
-		iRequest, iErr := NewReadRequest(request)
-		if iErr != nil {
-			return iErr
-		}
-		iErr = iRequest.QueryFields("")
-		if iErr != nil {
-			fmt.Println("Query temporary read", iErr)
-			return iErr
-		}
+	}
+	iRequest, iErr := NewReadRequest(request)
+	if iErr != nil {
+		return iErr
+	}
+	iErr = iRequest.QueryFields("")
+	if iErr != nil {
+		fmt.Println("Query temporary read", iErr)
+		return iErr
+	}
+	if keyValue == "" {
 		adatypes.Central.Log.Debugf("Query temporary read ok")
 		if adaValue, ok := storeRecord.searchValue(sn); ok {
 			adatypes.Central.Log.Debugf("Search key %s='%s'\n", sn, adaValue.String())
-			resultRead, rErr := iRequest.ReadLogicalWith(sn + "=" + adaValue.String())
-			if rErr != nil {
-				fmt.Println("Error evaluating ISN", rErr)
-				return rErr
-			}
-			if len(resultRead.Values) != 1 {
-				return adatypes.NewGenericError(98, sn)
-			}
-			storeRecord.Isn = resultRead.Values[0].Isn
-			adatypes.Central.Log.Debugf("Update ISN", storeRecord.Isn)
+			keyValue = adaValue.String()
 		} else {
 			return adatypes.NewGenericError(96, sn)
 		}
-
-		if storeRecord.Isn == 0 {
-			return adatypes.NewGenericError(97)
-		}
-		err := request.Update(storeRecord)
-		if err != nil {
-			return adatypes.NewGenericError(53, err.Error())
-		}
-
 	}
+	resultRead, rErr := iRequest.ReadLogicalWith(sn + "=" + keyValue)
+	if rErr != nil {
+		fmt.Println("Error evaluating ISN", rErr)
+		return rErr
+	}
+	if len(resultRead.Values) != 1 {
+		return adatypes.NewGenericError(98, sn)
+	}
+	storeRecord.Isn = resultRead.Values[0].Isn
+	adatypes.Central.Log.Debugf("Update ISN", storeRecord.Isn)
 	return nil
 }
 

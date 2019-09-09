@@ -154,12 +154,14 @@ func ReflectStore(entries interface{}, connection *Connection, mapName string) e
 			ti := reflect.TypeOf(entries).Elem()
 			adatypes.Central.Log.Debugf("Index: %v %v %v", index, ti, ri)
 			for an, fn := range fieldNames {
-				v := record.FieldByName(fn)
-				err = storeRecord.SetValue(an, v.Interface())
-				if err != nil {
-					return adatypes.NewGenericError(52, err.Error())
+				if !strings.HasPrefix(an, "#") {
+					v := record.FieldByName(fn)
+					err = storeRecord.SetValue(an, v.Interface())
+					if err != nil {
+						return adatypes.NewGenericError(52, err.Error())
+					}
+					adatypes.Central.Log.Debugf("%s: %s = %v", an, fn, "=", v)
 				}
-				adatypes.Central.Log.Debugf("%s: %s = %v", an, fn, "=", v)
 			}
 			adatypes.Central.Log.Debugf("Reflect store record: %s", storeRecord.String())
 			err = storeRequest.Store(storeRecord)
