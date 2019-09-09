@@ -368,8 +368,10 @@ func (value *StructureValue) evaluateOccurrence(helper *BufferHelper) (occNumber
 
 // Parse the buffer containing no PE and MU fields
 func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
-	Central.Log.Debugf("Parse Buffer structure without MUPE name=%s offset=%d remaining=%d length=%d value length=%d type=%d", value.Type().Name(),
-		helper.offset, helper.Remaining(), len(helper.buffer), len(value.Elements), value.Type().Type())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Parse Buffer structure without MUPE name=%s offset=%d remaining=%d length=%d value length=%d type=%d", value.Type().Name(),
+			helper.offset, helper.Remaining(), len(helper.buffer), len(value.Elements), value.Type().Type())
+	}
 	var occNumber int
 	if option.SecondCall /*&& value.Type().Type() == FieldTypePeriodGroup */ {
 		occNumber = value.NrElements()
@@ -380,7 +382,7 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 			return
 		}
 	}
-	// TODO Remove because it it only a limit
+	// TODO Remove because it it only a limit and assert statement
 	if occNumber > 4000 && !strings.HasPrefix(value.Type().Name(), "fdt") {
 		panic(fmt.Sprintf("Occurence for %s exceed to %d", value.Type().Name(), occNumber))
 	}
@@ -432,12 +434,13 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 		return
 	}
 	Central.Log.Debugf("Start going through elements=%d", value.NrElements())
+	// Go through all occurrences and check remaining buffer size
 	index := 0
 	for index < occNumber && helper.Remaining() > 0 {
-		Central.Log.Debugf("------------------ Parse index of structure index=%d name=%s", index, value.Type().Name())
-		Central.Log.Debugf("index=%d remaining Buffer structure remaining=%d pos=%d",
-			index, helper.Remaining(), helper.offset)
-		//peIndex := value.PeriodIndex() + 1 + uint32(index)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("index=%d remaining Buffer structure remaining=%d pos=%d",
+				index, helper.Remaining(), helper.offset)
+		}
 		values, pErr := parseBufferTypes(helper, option, value, uint32(index))
 		if pErr != nil {
 			res = EndTraverser
@@ -454,10 +457,15 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 			value.Elements[index].Values = values
 		}
 		index++
-		Central.Log.Debugf("------------------ Ending Parse index of structure index=%d len elements=%d", index, len(value.Elements))
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("------------------ Ending Parse index of structure index=%d len elements=%d",
+				index, len(value.Elements))
+		}
 	}
-	Central.Log.Debugf("Sructure parse ready for %s index=%d occ=%d value length=%d pos=%d",
-		value.Type().Name(), index, occNumber, len(value.Elements), helper.offset)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Sructure parse ready for %s index=%d occ=%d value length=%d pos=%d",
+			value.Type().Name(), index, occNumber, len(value.Elements), helper.offset)
+	}
 	return
 }
 
@@ -479,7 +487,7 @@ func (value *StructureValue) shiftEmptyMfBuffer(helper *BufferHelper) (err error
 	return
 }
 
-// Search for structures by name
+// Search for structure field entries by name
 func (value *StructureValue) search(fieldName string) IAdaValue {
 	Central.Log.Debugf("Search field %s elements=%d", fieldName, len(value.Elements))
 	for _, val := range value.Elements {
@@ -562,11 +570,16 @@ func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (
 
 // Get get the value of an named tree node with an specific index
 func (value *StructureValue) Get(fieldName string, index int) IAdaValue {
-	Central.Log.Debugf("Get field %s index %d -> %d", fieldName, index, len(value.Elements))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Get field %s index %d -> %d", fieldName, index, len(value.Elements))
+	}
 	if len(value.Elements) < index {
 		return nil
 	}
 	v := value.Elements[index-1]
+	if vr, ok := v.valueMap[fieldName]; ok {
+		return vr
+	}
 	for _, vr := range v.Values {
 		if vr.Type().Name() == fieldName {
 			return vr

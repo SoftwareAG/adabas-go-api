@@ -407,15 +407,16 @@ func adaptRedefintionFields(redType *adatypes.RedefinitionType, fields []*MapFie
 	}
 }
 
-// adaptFieldType base class starting the traverser through the fields to adapt field types
+// adaptFieldType base class starting the traverser through the fields to adapt field types.
+// The long name is adapted to the field entries in the overall file definition
 func (adabasMap *Map) adaptFieldType(definition *adatypes.Definition) (err error) {
 	if definition == nil {
 		return adatypes.NewGenericError(19)
 	}
 	if adatypes.Central.IsDebugLevel() {
 		definition.DumpTypes(true, false, "before adapt field types")
+		adatypes.Central.Log.Debugf("Adapt map long names to type definition %#v", adabasMap.String())
 	}
-	adatypes.Central.Log.Debugf("Adapt map long names to type definition %#v", adabasMap.String())
 	tm := adatypes.NewTraverserMethods(traverseAdaptType)
 	err = definition.TraverseTypes(tm, true, adabasMap)
 	if err != nil {
@@ -424,6 +425,7 @@ func (adabasMap *Map) adaptFieldType(definition *adatypes.Definition) (err error
 	if adatypes.Central.IsDebugLevel() {
 		definition.DumpTypes(true, false, "before restrict slice")
 	}
+	// Restrict fields to the fields included in the map
 	err = definition.RestrictFieldSlice(adabasMap.FieldNames())
 	if adatypes.Central.IsDebugLevel() {
 		definition.DumpTypes(true, false, "after restrict slice")

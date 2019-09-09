@@ -123,8 +123,10 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 
 func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
 	fieldMap := x.(*fieldMap)
-	Central.Log.Debugf("Check remove field on type %s with parent %s(parent remove=%v)", adaType.Name(), parentType.Name(),
-		parentType.HasFlagSet(FlagOptionToBeRemoved))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Check remove field on type %s with parent %s(parent remove=%v)", adaType.Name(), parentType.Name(),
+			parentType.HasFlagSet(FlagOptionToBeRemoved))
+	}
 	// Check if field is in request
 	fq, ok := fieldMap.set[adaType.Name()]
 	if ok {
@@ -139,21 +141,23 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 			redType := adaType.(*RedefinitionType)
 			adaType.RemoveFlag(FlagOptionToBeRemoved)
 			for _, s := range redType.SubTypes {
-				Central.Log.Debugf("Sub redefintion %s", s.Name())
 				delete(fieldMap.set, s.Name())
 			}
 			fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, redType)
 		}
 	case adaType.IsStructure():
 		if adaType.Type() == FieldTypeMultiplefield && !ok && fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved) {
-			Central.Log.Debugf("Skip removing MU field %s", adaType.Name())
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Skip removing MU field %s", adaType.Name())
+			}
 			return nil
 		}
-		Central.Log.Debugf("Remove structure %s ok=%v", adaType.Name(), ok)
 		removeStructure(adaType, fieldMap, fq, ok, parentType.Name() != "" && fieldMap.lastStructure.Name() == parentType.Name())
 	default:
-		Central.Log.Debugf("Field %s in map=%v Level=%d < %d", adaType.Name(), ok, fieldMap.lastStructure.Level(),
-			adaType.Level())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Field %s in map=%v Level=%d < %d", adaType.Name(), ok, fieldMap.lastStructure.Level(),
+				adaType.Level())
+		}
 		fieldMap.evaluateTopLevelStructure(adaType.Level())
 
 		// Skip MU field type if parent is not available
@@ -168,10 +172,14 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 		if fieldMap.lastStructure.Name() == "" {
 			remove = true
 		}
-		Central.Log.Debugf("Parent node %s has %v", fieldMap.lastStructure.Name(), remove)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Parent node %s has %v", fieldMap.lastStructure.Name(), remove)
+		}
 		if !ok && remove {
-			Central.Log.Debugf("Skip copy to active field, because field %s is not part of map map=%v remove=%v",
-				adaType.Name(), ok, remove)
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Skip copy to active field, because field %s is not part of map map=%v remove=%v",
+					adaType.Name(), ok, remove)
+			}
 			var p IAdaType
 			p = fieldMap.lastStructure
 			for {
@@ -184,8 +192,10 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 				p.(*StructureType).addPart()
 			}
 		} else {
-			Central.Log.Debugf("Current parent %d %s -> %d %s map=%v remove=%v", fieldMap.lastStructure.Level(), fieldMap.lastStructure.Name(),
-				adaType.Level(), adaType.Name(), ok, remove)
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Current parent %d %s -> %d %s map=%v remove=%v", fieldMap.lastStructure.Level(), fieldMap.lastStructure.Name(),
+					adaType.Level(), adaType.Name(), ok, remove)
+			}
 			// Dependent on type create copy of field
 			switch adaType.Type() {
 			case FieldTypeSuperDesc:
@@ -212,12 +222,13 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 				newType.peRange = fieldMap.lastStructure.peRange
 				newType.muRange = fieldMap.lastStructure.muRange
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
-				Central.Log.Debugf("Add type to %s value=%p count=%d", fieldMap.lastStructure.Name(), fieldMap.lastStructure, fieldMap.lastStructure.NrFields())
-				Central.Log.Debugf("Add type entry in structure %s", newType.Name())
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("Add type to %s value=%p count=%d", fieldMap.lastStructure.Name(), fieldMap.lastStructure, fieldMap.lastStructure.NrFields())
+					Central.Log.Debugf("Add type entry in structure %s", newType.Name())
+				}
 				newType.RemoveFlag(FlagOptionToBeRemoved)
 				if fieldMap.lastStructure.HasFlagSet(FlagOptionPart) {
 					newType.AddFlag(FlagOptionPart)
-					Central.Log.Debugf("Set %s part flag %v", newType.Name(), newType.HasFlagSet(FlagOptionPart))
 				}
 			}
 		}

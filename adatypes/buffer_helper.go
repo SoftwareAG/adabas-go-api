@@ -57,7 +57,6 @@ func (helper *BufferHelper) position(pos uint32) (newPos int, err error) {
 	if helper.max >= int(pos) {
 		helper.offset = uint32(pos)
 	} else {
-		Central.Log.Infof("Position error", helper.offset, helper.max)
 		err = NewGenericError(38, pos)
 		return
 	}
@@ -99,7 +98,6 @@ func (helper *BufferHelper) ReceiveString(length uint32) (res string, err error)
 // ReceiveBytes receive bytes length
 func (helper *BufferHelper) ReceiveBytes(length uint32) (res []byte, err error) {
 	if (helper.offset + length) <= uint32(len(helper.buffer)) {
-		Central.Log.Debugf("Length=%d on offset %d", length, helper.offset)
 		res = make([]byte, length)
 		copy(res, helper.buffer[helper.offset:helper.offset+length])
 		helper.offset += length
@@ -110,10 +108,8 @@ func (helper *BufferHelper) ReceiveBytes(length uint32) (res []byte, err error) 
 }
 
 func (helper *BufferHelper) putBytes(data []byte) (err error) {
-	Central.Log.Debugf("Put bytes of len %d offset=%d len=%d", len(data), helper.offset, len(helper.buffer))
 	helper.buffer = append(helper.buffer, data...)
 	helper.offset = uint32(len(helper.buffer))
-	Central.Log.Debugf("After put bytes of len %d offset=%d len=%d", len(data), helper.offset, len(helper.buffer))
 	return
 }
 
@@ -179,7 +175,6 @@ func (helper *BufferHelper) ReceiveUInt8() (res uint8, err error) {
 func (helper *BufferHelper) PutUInt8(data uint8) (err error) {
 	tmp := make([]byte, 0)
 	tmp = append(tmp, data)
-	Central.Log.Debugf("Temporary len %d offset=%d len=%d", len(tmp), helper.offset, len(helper.buffer))
 	helper.putBytes(tmp)
 	return
 }
@@ -223,7 +218,6 @@ func (helper *BufferHelper) PutInt16(data int16) (err error) {
 	} else {
 		tmp[0], tmp[1] = uint8(data>>8), uint8(data&0xff)
 	}
-	Central.Log.Debugf("Put int 16 from %d to %#v", data, tmp)
 	helper.putBytes(tmp)
 	return
 }

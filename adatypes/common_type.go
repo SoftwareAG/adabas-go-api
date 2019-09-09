@@ -258,22 +258,18 @@ func (commonType *CommonType) SetParent(parentType IAdaType) {
 	if parentType != nil {
 		Central.Log.Debugf("%s parent is set to %s", commonType.name, parentType.Name())
 		if parentType.HasFlagSet(FlagOptionPE) {
-			Central.Log.Debugf("Inherit PE flag from parent %s to %s %p->%p", parentType.Name(), commonType.Name(), commonType, parentType)
 			commonType.AddFlag(FlagOptionPE)
 		}
 		if commonType.HasFlagSet(FlagOptionMU) {
 			p := parentType
 			for p != nil {
 				if p.GetParent() != nil {
-					Central.Log.Debugf("Inherit MU flag to parent from %s to %s (%p)", commonType.Name(), p.Name(), p)
 					p.AddFlag(FlagOptionMU)
-					Central.Log.Debugf("Flag set? %v", p.HasFlagSet(FlagOptionMU))
 				}
 				p = p.GetParent()
 			}
 		}
 	} else {
-		Central.Log.Debugf("%s: Reset parent type to nil of %p", commonType.name, commonType)
 		if commonType.parentType != nil {
 			pType := commonType.parentType.(*StructureType)
 			pType.RemoveField(commonType)
@@ -404,10 +400,6 @@ func (commonType *CommonType) AddFlag(flagOption FlagOption) {
 	}
 	commonType.flags |= flagOption.Bit()
 	if flagOption == FlagOptionMU {
-		// if commonType.name == "Pictures" {
-		// 	fmt.Println("MU added to", commonType.name)
-		// 	debug.PrintStack()
-		// }
 		p := commonType.GetParent()
 		for p != nil {
 			p.AddFlag(flagOption)

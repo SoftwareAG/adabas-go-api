@@ -188,7 +188,6 @@ func (value *ubyteValue) StoreBuffer(helper *BufferHelper) error {
 
 func (value *ubyteValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 	value.value, err = helper.ReceiveUInt8()
-	Central.Log.Debugf("Buffer get ubyte offset=%d %s", helper.offset, value.Type().Name())
 	return
 }
 

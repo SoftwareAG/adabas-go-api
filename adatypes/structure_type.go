@@ -206,16 +206,20 @@ func (adaType *StructureType) NrFields() int {
 
 // Traverse Traverse through the definition tree calling a callback method for each node
 func (adaType *StructureType) Traverse(t TraverserMethods, level int, x interface{}) (err error) {
-	Central.Log.Debugf("Current structure -> %s", adaType.name)
-	Central.Log.Debugf("Nr of structure types -> %v", len(adaType.SubTypes))
+	// Go through sub types
 	for _, v := range adaType.SubTypes {
-		Central.Log.Debugf("Traverse on %s/%s", v.Name(), v.ShortName())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Traverse on %s/%s", v.Name(), v.ShortName())
+		}
+
 		err = t.EnterFunction(v, adaType, level, x)
 		if err != nil {
 			return
 		}
 		if v.IsStructure() {
-			Central.Log.Debugf("Traverse into structure %s", v.Name())
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Traverse into structure %s", v.Name())
+			}
 			err = v.(StructureTraverser).Traverse(t, level+1, x)
 			if err != nil {
 				return

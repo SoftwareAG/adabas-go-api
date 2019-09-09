@@ -85,7 +85,9 @@ func (value *uint16Value) parseBuffer(helper *BufferHelper, option *BufferOption
 			return EndTraverser, lerr
 		}
 		len--
-		Central.Log.Debugf("Buffer get variable length=%d", len)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Buffer get variable length=%d", len)
+		}
 		if len == 1 {
 			vba, verr := helper.ReceiveUInt8()
 			if verr != nil {
@@ -102,7 +104,9 @@ func (value *uint16Value) parseBuffer(helper *BufferHelper, option *BufferOption
 	} else {
 		value.value, err = helper.ReceiveUInt16()
 	}
-	Central.Log.Debugf("Buffer get uint2 offset=%d %s", helper.offset, value.Type().String())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Buffer get uint2 offset=%d %s", helper.offset, value.Type().String())
+	}
 	return
 }
 

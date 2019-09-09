@@ -100,13 +100,6 @@ func (def *Definition) ParseBuffer(helper *BufferHelper, option *BufferOption, p
 			Central.Log.Debugf("Error parsing buffer values... %v", err)
 			return
 		}
-		// for _, v := range def.Values {
-		// 	// if v.Type().IsStructure() {
-		// 	// 	_, err = parseBufferTypes(helper, option, v, 0)
-		// 	// } else {
-		// 	v.parseBuffer(helper, option)
-		// 	// }
-		// }
 	}
 
 	return
@@ -125,14 +118,18 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 		parentStructure = str.(*StructureValue)
 		parent = parentStructure.adatype.(*StructureType)
 	}
-	Central.Log.Debugf("================== Parse Buffer for IAdaTypes of %s -> value avail.=%v index=%d need second=%v",
-		parent.Name(), (parentStructure != nil), peIndex, option.NeedSecondCall)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("================== Parse Buffer for IAdaTypes of %s -> value avail.=%v index=%d need second=%v",
+			parent.Name(), (parentStructure != nil), peIndex, option.NeedSecondCall)
+	}
 
 	types := parent.SubTypes
 	var conditionMatrix []byte
 
 	// First get reference field index if index is needed for conditional parsing
-	Central.Log.Debugf("Parent refField=%d length=%d", parent.condition.refField, len(types))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Parent refField=%d length=%d", parent.condition.refField, len(types))
+	}
 	refField := func() int {
 		if parent.condition.refField != NoReferenceField {
 			return parent.condition.refField
@@ -146,17 +143,25 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 
 	// Create IAdaTypes until reference index or the end of the types
 	// if no reference index available
-	Central.Log.Debugf("Reference field index=%d length field index=%d need second=%v", refField,
-		lengthFieldIndex, option.NeedSecondCall)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Reference field index=%d length field index=%d need second=%v", refField,
+			lengthFieldIndex, option.NeedSecondCall)
+	}
 	for i := 0; i < refField+1; i++ {
-		Central.Log.Debugf("Parse type -> %s offset=%d", types[i].Name(), helper.offset)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Parse type -> %s offset=%d", types[i].Name(), helper.offset)
+		}
 		var value IAdaValue
 		if parentStructure != nil && len(parentStructure.Elements) > int(peIndex) {
 			value = parentStructure.Elements[peIndex].valueMap[types[i].Name()]
-			Central.Log.Debugf("Got out of map ->  ", value, " for index ", peIndex)
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Got out of map ->  ", value, " for index ", peIndex)
+			}
 		}
 		if value == nil {
-			Central.Log.Debugf("Value nil, not in parent structure")
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Value nil, not in parent structure")
+			}
 			value, err = types[i].Value()
 			if err != nil {
 				if Central.IsDebugLevel() {
@@ -170,15 +175,19 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 			adaValues = append(adaValues, value)
 
 		}
-		// Parse value of the type
+		// If part of multiple field or period group set index value
 		if value.Type().HasFlagSet(FlagOptionPE) {
 			value.setPeriodIndex(peIndex + 1)
 		}
 		if value.Type().HasFlagSet(FlagOptionMUGhost) {
-			Central.Log.Debugf("Set MU index to %d", (peIndex + 1))
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Set MU index to %d", (peIndex + 1))
+			}
 			value.setMultipleIndex(peIndex + 1)
 		}
-		Central.Log.Debugf("Call parse buffer of field %s", types[i].Name())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Call parse buffer of field %s", types[i].Name())
+		}
 		_, err = value.parseBuffer(helper, option)
 		if err != nil {
 			Central.Log.Debugf("Error parse buffer %v", err)
@@ -193,7 +202,9 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 		if i == lengthFieldIndex {
 			lengthFieldValue := value.(*ubyteValue)
 			endOfBuffer += uint32(lengthFieldValue.ByteValue())
-			Central.Log.Debugf("Found end of buffer at %d", endOfBuffer)
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Found end of buffer at %d", endOfBuffer)
+			}
 		}
 
 		// If reference field found, get condition matrix

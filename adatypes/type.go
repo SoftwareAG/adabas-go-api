@@ -191,13 +191,23 @@ func NewLongNameTypeWithLength(fType FieldType, name string, shortName string, l
 
 // String return the name of the field
 func (adaType *AdaType) String() string {
-	y := strings.Repeat(" ", int(adaType.level))
+	var b strings.Builder
+	b.Grow(60)
+	b.WriteString(strings.Repeat(" ", int(adaType.level)))
 	options := adaType.Option()
 	if options != "" {
 		options = "," + strings.Replace(options, " ", ",", -1)
 	}
-	return fmt.Sprintf("%s%d, %s, %d, %s %s ; %s", y, adaType.level, adaType.shortName, adaType.length,
+	fmt.Fprintf(&b, "%d, %s, %d, %s %s ; %s", adaType.level, adaType.shortName, adaType.length,
 		adaType.fieldType.FormatCharacter(), options, adaType.name)
+	return b.String()
+	// y := strings.Repeat(" ", int(adaType.level))
+	// options := adaType.Option()
+	// if options != "" {
+	// 	options = "," + strings.Replace(options, " ", ",", -1)
+	// }
+	// return fmt.Sprintf("%s%d, %s, %d, %s %s ; %s", y, adaType.level, adaType.shortName, adaType.length,
+	// 	adaType.fieldType.FormatCharacter(), options, adaType.name)
 }
 
 // Length return the length of the field
@@ -210,12 +220,9 @@ func (adaType *AdaType) SetLength(length uint32) {
 	if adaType.length == length {
 		return
 	}
-	Central.Log.Debugf("Set length for %s from %d to %d type=%s", adaType.Name(), adaType.length, length, adaType.fieldType.name())
-
-	//fmt.Printf("Set length for %s from %d to %d type=%s", adaType.Name(), adaType.length, length, adaType.fieldType.name())
 	if (adaType.fieldType != FieldTypeFloat && adaType.fieldType != FieldTypeDouble) || length > 0 {
 		if adaType.HasFlagSet(FlagOptionPE) {
-			Central.Log.Debugf("Period length change, %s/%s CANNNOT use collected FB entry!!!!", adaType.Name(), adaType.ShortName())
+			// Period length change, CANNNOT use collected FB entry!!!!
 			adaType.AddFlag(FlagOptionMU)
 		}
 		adaType.length = length
@@ -264,100 +271,82 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 	Central.Log.Debugf("Create field type of %v", adaType.fieldType)
 	switch adaType.fieldType {
 	case FieldTypeByte:
-		Central.Log.Debugf("Return byte value")
 		adaValue = newByteValue(adaType)
 		return
 	case FieldTypeByteArray:
-		Central.Log.Debugf("Return byte array value")
 		if adaType.length > 126 {
 			return nil, NewGenericError(111, adaType.length, "binary", adaType.Name())
 		}
 		adaValue = newByteArrayValue(adaType)
 		return
 	case FieldTypeLength, FieldTypeUByte, FieldTypeCharacter:
-		Central.Log.Debugf("Return unsigned byte value")
 		adaValue = newUByteValue(adaType)
 		return
 	case FieldTypeString:
-		Central.Log.Debugf("Return string value")
 		if adaType.length > 253 {
 			return nil, NewGenericError(111, adaType.length, "alpha", adaType.Name())
 		}
 		adaValue = newStringValue(adaType)
 		return
 	case FieldTypeLAString:
-		Central.Log.Debugf("Return LA string value")
 		if adaType.length > 65533 {
 			return nil, NewGenericError(111, adaType.length, "large alpha", adaType.Name())
 		}
 		adaValue = newStringValue(adaType)
 		return
 	case FieldTypeLBString:
-		Central.Log.Debugf("Return LB string value")
 		if adaType.length > 2147483543 {
 			return nil, NewGenericError(111, adaType.length, "large object alpha", adaType.Name())
 		}
 		adaValue = newStringValue(adaType)
 		return
 	case FieldTypeUnicode:
-		Central.Log.Debugf("Return unicode value")
 		if adaType.length > 253 {
 			return nil, NewGenericError(111, adaType.length, "unicode", adaType.Name())
 		}
 		adaValue = newUnicodeValue(adaType)
 		return
 	case FieldTypeLAUnicode:
-		Central.Log.Debugf("Return unicode value")
 		if adaType.length > 16381 {
 			return nil, NewGenericError(111, adaType.length, "large unicode", adaType.Name())
 		}
 		adaValue = newUnicodeValue(adaType)
 		return
 	case FieldTypeLBUnicode:
-		Central.Log.Debugf("Return unicode value")
 		if adaType.length > 16381 {
 			return nil, NewGenericError(111, adaType.length, "large object unicode", adaType.Name())
 		}
 		adaValue = newUnicodeValue(adaType)
 		return
 	case FieldTypeUInt2:
-		Central.Log.Debugf("Return UInt2 value")
 		adaValue = newUInt2Value(adaType)
 		return
 	case FieldTypeInt2:
-		Central.Log.Debugf("Return Int2 value")
 		adaValue = newInt2Value(adaType)
 		return
 	case FieldTypeUInt4:
-		Central.Log.Debugf("Return UInt4 value")
 		adaValue = newUInt4Value(adaType)
 		return
 	case FieldTypeInt4:
-		Central.Log.Debugf("Return Int4 value")
 		adaValue = newInt4Value(adaType)
 		return
 	case FieldTypeUInt8:
-		Central.Log.Debugf("Return UInt8 value")
 		adaValue = newUInt8Value(adaType)
 		return
 	case FieldTypeInt8:
-		Central.Log.Debugf("Return Int8 value")
 		adaValue = newInt8Value(adaType)
 		return
 	case FieldTypeUnpacked:
-		Central.Log.Debugf("Return Unpacked value")
 		if adaType.length > 29 {
 			return nil, NewGenericError(111, adaType.length, "unpacked", adaType.Name())
 		}
 		adaValue = newUnpackedValue(adaType)
 	case FieldTypePacked:
-		Central.Log.Debugf("Return Packed value")
 		if adaType.length > 15 {
 			return nil, NewGenericError(111, adaType.length, "packed", adaType.Name())
 		}
 		adaValue = newPackedValue(adaType)
 	case FieldTypeFloat:
-		Central.Log.Debugf("Return Float value")
 		switch adaType.length {
 		case (4):
 			adaValue = newFloatValue(adaType)
@@ -367,7 +356,6 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 			err = NewGenericError(110, adaType.length, adaType.Name())
 		}
 	case FieldTypeFiller:
-		Central.Log.Debugf("Return filler value")
 		adaValue = newFillerValue(adaType)
 	case FieldTypePhonetic:
 		adaValue = newPhoneticValue(adaType)
@@ -382,7 +370,7 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 	case FieldTypeReferential:
 		adaValue = newReferentialValue(adaType)
 	default:
-		Central.Log.Debugf("Return nil value %v %s", adaType.fieldType, adaType.String())
+		Central.Log.Debugf("Return error type value evaluation for %v %s", adaType.fieldType, adaType.String())
 		return nil, NewGenericError(102, adaType.fieldType.name(), adaType.Name())
 	}
 	return
