@@ -69,6 +69,8 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 		}
 		request.commonRequest.adabasMap = sr.commonRequest.adabasMap
 		request.commonRequest.MapName = sr.commonRequest.MapName
+		request.commonRequest.dynamic = nil
+		request.commonRequest.definition = adatypes.NewDefinitionClone(sr.commonRequest.definition)
 		return
 	case *commonRequest:
 		cr := param[0].(*commonRequest)
@@ -538,6 +540,7 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 			adabasRequest.Isn = adatypes.Isn(request.Start)
 			err = request.adabas.ReadISNOrder(request.repository.Fnr, adabasRequest, x)
 		} else {
+			adabasRequest.Isn = 0
 			if searchInfo.NeedSearch {
 				adatypes.Central.Log.Debugf("search logical with ...%#v", adabasRequest.Descriptors)
 				err = request.adabas.SearchLogicalWith(request.repository.Fnr, adabasRequest, x)

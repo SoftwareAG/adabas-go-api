@@ -128,8 +128,10 @@ func (request *commonRequest) commonOpen() (opened bool, err error) {
 			return
 		}
 	}
-	request.definition.DumpTypes(true, true, "Database open")
-	adatypes.Central.Log.Debugf("Database open complete")
+	if adatypes.Central.IsDebugLevel() {
+		request.definition.DumpTypes(true, true, "Database open")
+		adatypes.Central.Log.Debugf("Database open complete")
+	}
 	request.initialized = true
 	opened = true
 	return

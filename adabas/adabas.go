@@ -784,7 +784,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			break
 		}
 	}
-	adatypes.Central.Log.Debugf("Loop call ended")
+	adatypes.Central.Log.Debugf("Loop call ended count=%d", count)
 
 	return
 }

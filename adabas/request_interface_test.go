@@ -76,8 +76,21 @@ func TestStoreRequestInterfaceInstance(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
+	err = storeRequest.StoreFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.NotEqual(t, (*adatypes.DynamicInterface)(nil), storeRequest.commonRequest.dynamic)
 	assert.NotNil(t, storeRequest)
 	assert.Equal(t, "Employees", storeRequest.dynamic.DataType.Name())
+	readRequest, rErr := NewReadRequest(storeRequest)
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	assert.NotEqual(t, &storeRequest.commonRequest, &readRequest.commonRequest)
+	assert.Equal(t, (*adatypes.DynamicInterface)(nil), readRequest.commonRequest.dynamic)
+	assert.NotEqual(t, (*adatypes.DynamicInterface)(nil), storeRequest.commonRequest.dynamic)
+	assert.NotEqual(t, storeRequest.commonRequest.definition, readRequest.commonRequest.definition)
 }
 
 func TestStoreRequestInterfacePointer(t *testing.T) {
@@ -160,7 +173,7 @@ func storeInterface(t *testing.T) error {
 	assert.Equal(t, "Employees", storeRequest.dynamic.DataType.Name())
 
 	employees := make([]*Employees, 0)
-	employees = append(employees, &Employees{ID: "ID", Birth: 123, Name: "Name", FirstName: "First name"})
+	employees = append(employees, &Employees{ID: "ID", Birth: 711999, Name: "Name", FirstName: "First name"})
 	employees = append(employees, &Employees{ID: "ID2", Birth: 234, Name: "Name2", FirstName: "First name2"})
 	employees = append(employees, &Employees{ID: "ABC", Birth: 978, Name: "XXX", FirstName: "HHHH name"})
 	err = storeRequest.StoreData(employees)
@@ -171,7 +184,7 @@ func storeInterface(t *testing.T) error {
 	if !assert.NoError(t, err) {
 		return err
 	}
-	err = storeRequest.StoreData(Employees{ID: "ID4", Birth: 789, Name: "Name4", FirstName: "First name4"})
+	err = storeRequest.StoreData(Employees{ID: "ID4", Birth: 711714, Name: "Name4", FirstName: "First name4"})
 	if !assert.NoError(t, err) {
 		return err
 	}
@@ -198,7 +211,7 @@ func updateKeyInterface(t *testing.T) error {
 	employees := make([]*EmployeesKey, 0)
 	employees = append(employees, &EmployeesKey{ID: "ID", FullName: &FullName{LastName: "NewName", FirstName: "First name"}})
 	employees = append(employees, &EmployeesKey{ID: "ID2", FullName: &FullName{LastName: "NewName2", FirstName: "First name2"}})
-	employees = append(employees, &EmployeesKey{ID: "ID4", FullName: &FullName{LastName: "ZZZZZZZ", FirstName: "UUUUUU name"}})
+	employees = append(employees, &EmployeesKey{ID: "ID4", Birth: "2012/10/30", FullName: &FullName{LastName: "ZZZZZZZ", FirstName: "UUUUUU name"}})
 	err = storeRequest.UpdateData(employees)
 	if !assert.NoError(t, err) {
 		return err
@@ -505,7 +518,7 @@ func verifyUpdateLogicalInterface(t *testing.T) error {
 	// }
 	assert.Equal(t, "EmployeesKey", request.dynamic.DataType.Name())
 
-	result, err := request.ReadLogicalWith("ID=['ID':'ID9']")
+	result, err := request.ReadLogicalWith("Id=['ID':'ID9']")
 	fmt.Println("Read done ...")
 	if !assert.NoError(t, err) {
 		return err
@@ -518,19 +531,19 @@ func verifyUpdateLogicalInterface(t *testing.T) error {
 		assert.Len(t, result.Data, 4)
 		e := result.Data[0].(*EmployeesKey)
 		assert.Equal(t, "ID", strings.Trim(e.ID, " "))
-		if !assert.Equal(t, "Name", strings.Trim(e.FullName.LastName, " ")) {
+		if !assert.Equal(t, "NewName", strings.Trim(e.FullName.LastName, " ")) {
 			return fmt.Errorf("Name mismatch")
 		}
 		e = result.Data[1].(*EmployeesKey)
 		assert.Equal(t, "ID2", strings.Trim(e.ID, " "))
-		assert.Equal(t, "Name2", strings.Trim(e.FullName.LastName, " "))
+		assert.Equal(t, "NewName2", strings.Trim(e.FullName.LastName, " "))
 		e = result.Data[2].(*EmployeesKey)
 		assert.Equal(t, "ID3", strings.Trim(e.ID, " "))
 		assert.Equal(t, "Name3", strings.Trim(e.FullName.LastName, " "))
 		e = result.Data[3].(*EmployeesKey)
 		assert.Equal(t, "ID4", strings.Trim(e.ID, " "))
-		assert.Equal(t, int64(789), e.Birth)
-		assert.Equal(t, "Name4", strings.Trim(e.FullName.LastName, " "))
+		assert.Equal(t, string("2012/10/30"), e.Birth)
+		assert.Equal(t, "ZZZZZZZ", strings.Trim(e.FullName.LastName, " "))
 	}
 	return nil
 }
@@ -547,7 +560,7 @@ func TestStoreKeyInterface(t *testing.T) {
 		request, _ := NewReadRequest(adabas, 16)
 		defer request.Close()
 		request.QueryFields("")
-		result, err := request.ReadLogicalBy("AA=='ID      '")
+		result, err := request.ReadLogicalWith("AA=='ID      '")
 		fmt.Println("Dump result received ...", err)
 		if !assert.NoError(t, err) {
 			return
@@ -563,4 +576,30 @@ func TestStoreKeyInterface(t *testing.T) {
 	if verifyUpdateLogicalInterface(t) != nil {
 		return
 	}
+}
+
+func TestCheckRead(t *testing.T) {
+	initTestLogWithFile(t, "request_interface.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	adabas, _ := NewAdabas(23)
+	defer adabas.Close()
+	mapRepository := NewMapRepository(adabas, 4)
+	request, err := NewReadRequest(EmployeesKey{}, adabas, mapRepository)
+	//	request, err := NewReadRequest("EmployeesKey", adabas, mapRepository)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = request.QueryFields("")
+	if !assert.NoError(t, err) {
+		return
+	}
+	//	request.QueryFields("Id")
+	result, rErr := request.ReadLogicalWith("Id=ID")
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	fmt.Println("Length evaluating ISN", len(result.Values))
+	assert.Len(t, result.Values, 1)
+	result.DumpValues()
 }

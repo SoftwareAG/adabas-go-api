@@ -282,7 +282,7 @@ func (request *StoreRequest) EndTransaction() error {
 	return request.adabas.EndTransaction()
 }
 
-func searchValue(value reflect.Value, fn []string) (v reflect.Value, ok bool) {
+func searchDynamicValue(value reflect.Value, fn []string) (v reflect.Value, ok bool) {
 	adatypes.Central.Log.Debugf("Search dynamic interface value %v %d", fn, len(fn))
 	v = value
 	ok = false
@@ -316,7 +316,7 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 	}
 	adatypes.Central.Log.Debugf("Slice index: %v", record)
 	for an, fn := range request.dynamic.FieldNames {
-		v, ok := searchValue(record, fn)
+		v, ok := searchDynamicValue(record, fn)
 		if ok { //&& v.IsValid() {
 			adatypes.Central.Log.Debugf("Set dynamic value %v = %v", an, v.Interface())
 			err := storeRecord.SetValue(an, v.Interface())
@@ -354,25 +354,28 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 		if st == nil {
 			return adatypes.NewGenericError(97)
 		}
-		fmt.Println("Query key", sn)
 		iRequest, iErr := NewReadRequest(request)
 		if iErr != nil {
 			return iErr
 		}
-		iRequest.QueryFields("")
+		iErr = iRequest.QueryFields("")
+		if iErr != nil {
+			fmt.Println("Query temporary read", iErr)
+			return iErr
+		}
+		adatypes.Central.Log.Debugf("Query temporary read ok")
 		if adaValue, ok := storeRecord.searchValue(sn); ok {
-			fmt.Println("Search key", sn, "=", adaValue.String())
-			result, rErr := iRequest.ReadLogicalWith(sn + "=" + adaValue.String())
+			adatypes.Central.Log.Debugf("Search key %s='%s'\n", sn, adaValue.String())
+			resultRead, rErr := iRequest.ReadLogicalWith(sn + "=" + adaValue.String())
 			if rErr != nil {
 				fmt.Println("Error evaluating ISN", rErr)
 				return rErr
 			}
-			fmt.Println("Length evaluating ISN", len(result.Values))
-			if len(result.Values) != 1 {
+			if len(resultRead.Values) != 1 {
 				return adatypes.NewGenericError(98, sn)
 			}
-			storeRecord.Isn = result.Values[0].Isn
-			fmt.Println("Update ISN", storeRecord.Isn)
+			storeRecord.Isn = resultRead.Values[0].Isn
+			adatypes.Central.Log.Debugf("Update ISN", storeRecord.Isn)
 		} else {
 			return adatypes.NewGenericError(96, sn)
 		}

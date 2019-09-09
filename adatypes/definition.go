@@ -300,6 +300,15 @@ func NewDefinitionWithTypes(types []IAdaType) *Definition {
 	return def
 }
 
+// NewDefinitionClone clone new Definition instance
+func NewDefinitionClone(old *Definition) *Definition {
+	newDefinition := NewDefinition()
+	newDefinition.fileFieldTree = old.fileFieldTree
+	newDefinition.fileFields = old.fileFields
+	newDefinition.activeFieldTree = old.fileFieldTree
+	return newDefinition
+}
+
 func initFieldHash(def *Definition, types []IAdaType) {
 	for _, v := range types {
 		def.fileFields[v.Name()] = v

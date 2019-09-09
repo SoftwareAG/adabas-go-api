@@ -163,6 +163,10 @@ func (record *Record) searchValue(field string) (adatypes.IAdaValue, bool) {
 	if adaValue, ok := record.HashFields[field]; ok {
 		return adaValue, true
 	}
+	fmt.Println("Hash values", len(record.HashFields))
+	for k, v := range record.HashFields {
+		fmt.Printf("%v=%v", k, v)
+	}
 	return nil, false
 }
 
@@ -193,8 +197,8 @@ func (record *Record) SetValue(field string, value interface{}) (err error) {
 		err = adaValue.SetValue(value)
 		adatypes.Central.Log.Debugf("Set %s [%T] value err=%v", field, adaValue, err)
 	} else {
+		adatypes.Central.Log.Debugf("Field %s not found %v", field, adaValue)
 		err = adatypes.NewGenericError(28, field)
-		adatypes.Central.Log.Debugf("Field %s not found %v err=%v", field, adaValue, err)
 	}
 	return
 }
