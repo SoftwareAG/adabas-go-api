@@ -61,6 +61,15 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 		return nil, errors.New("Not enough parameters for NewReadRequest")
 	}
 	switch param[0].(type) {
+	case *StoreRequest:
+		sr := param[0].(*StoreRequest)
+		request, err = createNewReadRequestCommon(&sr.commonRequest)
+		if err != nil {
+			return nil, err
+		}
+		request.commonRequest.adabasMap = sr.commonRequest.adabasMap
+		request.commonRequest.MapName = sr.commonRequest.MapName
+		return
 	case *commonRequest:
 		cr := param[0].(*commonRequest)
 		return createNewReadRequestCommon(cr)
@@ -110,7 +119,7 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 			adatypes.Central.Log.Debugf("Create dynamic %v", request.dynamic)
 			return
 		}
-		adatypes.Central.Log.Debugf("Unknown: %v", reflect.TypeOf(param[0]).Kind())
+		adatypes.Central.Log.Debugf("Unknown: %v %T", reflect.TypeOf(param[0]).Kind(), param[0])
 	}
 	return nil, adatypes.NewGenericError(73)
 }

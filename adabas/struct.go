@@ -22,6 +22,7 @@ package adabas
 import (
 	"bytes"
 	"reflect"
+	"strings"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
@@ -133,7 +134,8 @@ func ReflectStore(entries interface{}, connection *Connection, mapName string) e
 			tag := ri.Field(fi).Tag.Get("adabas")
 			adatypes.Central.Log.Debugf("X: %s", tag)
 			if tag != "" {
-				adabasFieldName = tag
+				s := strings.Split(tag, ":")
+				adabasFieldName = s[0]
 			}
 			fieldNames[adabasFieldName] = fieldName
 			buffer.WriteString(ri.Field(fi).Name)
@@ -159,7 +161,7 @@ func ReflectStore(entries interface{}, connection *Connection, mapName string) e
 				}
 				adatypes.Central.Log.Debugf("%s: %s = %v", an, fn, "=", v)
 			}
-			adatypes.Central.Log.Debugf("RECORD ADA: %s", storeRecord.String())
+			adatypes.Central.Log.Debugf("Reflect store record: %s", storeRecord.String())
 			err = storeRequest.Store(storeRecord)
 			if err != nil {
 				return adatypes.NewGenericError(53, err.Error())

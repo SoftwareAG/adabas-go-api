@@ -338,7 +338,7 @@ func main() {
 			panic("could not write memory profile: " + err.Error())
 		}
 		defer f.Close()
-		fmt.Println("Start testsuite test")
+		fmt.Println("Wrote memory profiler data")
 	}
 
 }

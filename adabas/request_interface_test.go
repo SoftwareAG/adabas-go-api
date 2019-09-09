@@ -184,10 +184,6 @@ func storeInterface(t *testing.T) error {
 }
 
 func updateKeyInterface(t *testing.T) error {
-	rerr := refreshFile(adabasModDBIDs, 16)
-	if !assert.NoError(t, rerr) {
-		return rerr
-	}
 	fmt.Println("Update interface records")
 	ada, _ := NewAdabas(adabasModDBID)
 	defer ada.Close()
@@ -546,6 +542,21 @@ func TestStoreKeyInterface(t *testing.T) {
 	if storeInterface(t) != nil {
 		return
 	}
+	{
+		adabas, _ := NewAdabas(adabasModDBID)
+		request, _ := NewReadRequest(adabas, 16)
+		defer request.Close()
+		request.QueryFields("")
+		result, err := request.ReadLogicalBy("AA=='ID      '")
+		fmt.Println("Dump result received ...", err)
+		if !assert.NoError(t, err) {
+			return
+		}
+		if result != nil {
+			result.DumpValues()
+		}
+	}
+
 	if updateKeyInterface(t) != nil {
 		return
 	}

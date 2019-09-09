@@ -207,7 +207,9 @@ func parseDate(v interface{}) (int64, error) {
 
 	var re = regexp.MustCompile(`(?m)(\d+)/(\d\d?)/(\d\d?)`)
 	match := re.FindAllStringSubmatch(v.(string), -1)
-	//fmt.Println(match)
+	if len(match) == 0 || len(match[0]) < 4 {
+		return 0, nil
+	}
 	m, merr := strconv.Atoi(match[0][2])
 	if merr != nil {
 		return 0, merr

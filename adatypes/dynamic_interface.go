@@ -3,6 +3,7 @@ package adatypes
 import (
 	"bytes"
 	"reflect"
+	"strings"
 )
 
 // DynamicInterface dynamic interface
@@ -20,7 +21,8 @@ func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string)
 		tag := ct.Tag.Get("adabas")
 		Central.Log.Debugf("fieldName=%s/%s -> tag=%s", adabasFieldName, fieldName, tag)
 		if tag != "" {
-			adabasFieldName = tag
+			s := strings.Split(tag, ":")
+			adabasFieldName = s[0]
 		}
 		subFields := make([]string, len(fields))
 		copy(subFields, fields)
