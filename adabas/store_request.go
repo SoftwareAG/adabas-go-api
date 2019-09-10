@@ -195,6 +195,15 @@ func (request *StoreRequest) StoreFields(param ...interface{}) (err error) {
 			return
 		}
 	}
+	if request.dynamic != nil {
+		// If interface used, check after restriction if the corresponding fields are part of the
+		// query. Remove field names which are not part.
+		for k := range request.dynamic.FieldNames {
+			if request.definition.Search(k) == nil {
+				delete(request.dynamic.FieldNames, k)
+			}
+		}
+	}
 	if adatypes.Central.IsDebugLevel() {
 		request.definition.DumpTypes(true, true)
 		adatypes.Central.Log.Debugf("Definition values %#v", request.definition.Values)
@@ -314,7 +323,13 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 	if serr != nil {
 		return serr
 	}
+	if adatypes.Central.IsDebugLevel() {
+		for k, v := range request.dynamic.FieldNames {
+			adatypes.Central.Log.Debugf("FN: %s=%v\n", k, v)
+		}
+	}
 	adatypes.Central.Log.Debugf("Slice index: %v", record)
+	request.definition.DumpTypes(true, true, "Active store entries")
 	for an, fn := range request.dynamic.FieldNames {
 		if !strings.HasPrefix(an, "#") {
 			v, ok := searchDynamicValue(record, fn)

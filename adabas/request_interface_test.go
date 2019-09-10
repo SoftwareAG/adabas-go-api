@@ -730,6 +730,7 @@ func TestConnectionStoreUsingInterface(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
+	request.definition.DumpTypes(false, true, "Active")
 	e := Employees{ID: "CONTEST", Name: "ConnectionTest"}
 	err = request.StoreData(e)
 	if !assert.NoError(t, err) {
