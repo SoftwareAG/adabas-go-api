@@ -283,6 +283,14 @@ func parseReadToInterface(adabasRequest *adatypes.Request, x interface{}) (err e
 	newInstance := reflect.New(ti)
 	adatypes.Central.Log.Debugf("Kind: %v Elem: %v", reflect.TypeOf(newInstance).Kind(), newInstance.Elem())
 	adabasRequest.Definition.AdaptInterfaceFields(newInstance, adabasRequest.DataType.FieldNames)
+	adabasRequest.DataType.ExamineIsnField(newInstance, adabasRequest.Isn)
+	// if f, ok := adabasRequest.DataType.FieldNames["#isn"]; ok {
+	// 	isnField := newInstance.Elem().FieldByName(f[0])
+	// 	if !isnField.IsValid() || isnField.Kind() != reflect.Uint64 {
+	// 		return adatypes.NewGenericError(113)
+	// 	}
+	// 	isnField.SetUint(uint64(adabasRequest.Isn))
+	// }
 	adatypes.Central.Log.Debugf("Parse read to interface %v <%s> -> %d\n", newInstance, newInstance.String(), len(result.Data))
 	result.Data = append(result.Data, newInstance.Interface())
 	adatypes.Central.Log.Debugf("After read to interface %v\n", len(result.Data))

@@ -316,8 +316,45 @@ func readLogicalIndexInterface(t *testing.T) error {
 		assert.Equal(t, "ID3", strings.Trim(e.ID, " "))
 		e = result.Data[3].(*EmployeesIndex)
 		assert.Equal(t, "ID4", strings.Trim(e.ID, " "))
-		assert.Equal(t, uint64(0), e.Index)
+		assert.NotEqual(t, uint64(0), e.Index)
 		assert.Equal(t, "Name4", strings.Trim(e.LastName, " "))
+	}
+
+	storeRequest, err := NewStoreRequest(EmployeesIndex{}, adabas, mapRepository)
+	if !assert.NoError(t, err) {
+		return err
+	}
+	defer storeRequest.Close()
+	e := result.Data[0].(*EmployeesIndex)
+	fmt.Printf("Update record on ISN=%d with Id= %s and last name=%s\n",
+		e.Index, e.ID, e.LastName)
+	adatypes.Central.Log.Debugf("TEST: Update record on ISN=%d with Id= %s and last name=%s\n",
+		e.Index, e.ID, e.LastName)
+	e.LastName = "updateindexname"
+	err = storeRequest.UpdateData(e)
+	if assert.NoError(t, err) {
+		adatypes.Central.Log.Debugf("TEST: Update done on ISN=%d\n",
+			e.Index)
+		err = storeRequest.EndTransaction()
+		assert.NoError(t, err)
+	}
+	request, err = NewReadRequest(Employees{}, adabas, mapRepository)
+	if !assert.NoError(t, err) {
+		return err
+	}
+	defer request.Close()
+	result, err = request.ReadLogicalWith("ID='ID'")
+	fmt.Println("Read done ...")
+	if !assert.NoError(t, err) {
+		return err
+	}
+	assert.Nil(t, result.Values)
+	assert.NotNil(t, result.Data)
+	if assert.NotNil(t, result) {
+		e := result.Data[0].(*Employees)
+		assert.Equal(t, "ID", strings.Trim(e.ID, " "))
+		assert.Equal(t, "updateindexname", strings.Trim(e.Name, " "))
+		assert.Equal(t, "First name", strings.Trim(e.FirstName, " "))
 	}
 	return nil
 }

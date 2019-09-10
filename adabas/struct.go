@@ -137,6 +137,7 @@ func ReflectStore(entries interface{}, connection *Connection, mapName string) e
 				s := strings.Split(tag, ":")
 				adabasFieldName = s[0]
 			}
+			adatypes.Central.Log.Debugf("Hash field %s=%s", adabasFieldName, fieldName)
 			fieldNames[adabasFieldName] = fieldName
 			buffer.WriteString(ri.Field(fi).Name)
 		}

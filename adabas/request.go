@@ -116,7 +116,7 @@ func (request *commonRequest) commonOpen() (opened bool, err error) {
 			err = adatypes.NewGenericError(26)
 			return
 		}
-		err = request.adabasMap.adaptFieldType(request.definition)
+		err = request.adabasMap.adaptFieldType(request.definition, request.dynamic)
 		if err != nil {
 			adatypes.Central.Log.Debugf("Adapt fields error request definition %v", err)
 			return

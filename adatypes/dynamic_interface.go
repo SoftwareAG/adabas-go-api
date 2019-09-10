@@ -33,6 +33,8 @@ func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string)
 					f["#key"] = []string{adabasFieldName}
 				case "isn":
 					f["#isn"] = []string{adabasFieldName}
+					// No sub value and not relevant Adabas field, skip rest
+					continue
 				default:
 					Central.Log.Debugf("Unknown control tag %s", s[1])
 				}
@@ -78,4 +80,34 @@ func (dynamic *DynamicInterface) CreateQueryFields() string {
 	Central.Log.Debugf("Create query fields: %s", buffer.String())
 
 	return buffer.String()
+}
+
+// ExamineIsnField set the interface Isn-tagged field with value for ISN
+func (dynamic *DynamicInterface) ExamineIsnField(value reflect.Value, isn Isn) error {
+	v := value
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if f, ok := dynamic.FieldNames["#isn"]; ok {
+		isnField := v.FieldByName(f[0])
+		if !isnField.IsValid() || isnField.Kind() != reflect.Uint64 {
+			return NewGenericError(113)
+		}
+		isnField.SetUint(uint64(isn))
+	}
+	return nil
+}
+
+// ExtractIsnField extract out of interface Isn-tagged field with value for ISN
+func (dynamic *DynamicInterface) ExtractIsnField(value reflect.Value) (Isn, error) {
+	v := value
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if k, ok := dynamic.FieldNames["#isn"]; ok {
+		Central.Log.Debugf("ISNfield: %v", k)
+		keyField := v.FieldByName(k[0])
+		return Isn(keyField.Uint()), nil
+	}
+	return 0, NewGenericError(0)
 }

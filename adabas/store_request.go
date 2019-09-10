@@ -329,11 +329,12 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 		}
 	}
 	adatypes.Central.Log.Debugf("store/update=%v record ADA: %s", store, storeRecord.String())
-	if k, ok := request.dynamic.FieldNames["#isn"]; ok {
-		adatypes.Central.Log.Debugf("ISNfield: %v", k)
-		keyField := record.FieldByName(k[0])
-		storeRecord.Isn = adatypes.Isn(keyField.Uint())
-	}
+	storeRecord.Isn, _ = request.dynamic.ExtractIsnField(record)
+	// if k, ok := request.dynamic.FieldNames["#isn"]; ok {
+	// 	adatypes.Central.Log.Debugf("ISNfield: %v", k)
+	// 	keyField := record.FieldByName(k[0])
+	// 	storeRecord.Isn = adatypes.Isn(keyField.Uint())
+	// }
 	if store {
 		err := request.Store(storeRecord)
 		if err != nil {
