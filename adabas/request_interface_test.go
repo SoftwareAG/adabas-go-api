@@ -693,6 +693,44 @@ func TestCheckRead(t *testing.T) {
 	result.DumpValues()
 }
 
+func TestConnectionStoreUsingInterface(t *testing.T) {
+	initTestLogWithFile(t, "request_interface.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	rerr := refreshFile(adabasModDBIDs, 16)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapStoreRequest(Employees{})
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err := request.StoreFields("ID,Name")
+	if !assert.NoError(t, err) {
+		return
+	}
+	e := Employees{ID: "CONTEST", Name: "ConnectionTest"}
+	err = request.StoreData(e)
+	if !assert.NoError(t, err) {
+		return
+	}
+	e = Employees{ID: "CONTEST2", Name: "SecondConnectionTest"}
+	err = request.StoreData(e)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = connection.EndTransaction()
+	assert.NoError(t, err)
+}
+
 func TestConnectionUsingInterface(t *testing.T) {
 	initTestLogWithFile(t, "request_interface.log")
 
@@ -720,7 +758,7 @@ func TestConnectionUsingInterface(t *testing.T) {
 		return
 	}
 	assert.Equal(t, 0, len(result.Values))
-	if !assert.Equal(t, 5, len(result.Data)) {
+	if !assert.Equal(t, 2, len(result.Data)) {
 		return
 	}
 	result.DumpData()

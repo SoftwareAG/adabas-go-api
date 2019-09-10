@@ -413,12 +413,24 @@ func (connection *Connection) prepareMapUsage(mapName string) (err error) {
 }
 
 // CreateMapStoreRequest create a store request using map name
-func (connection *Connection) CreateMapStoreRequest(mapName string) (request *StoreRequest, err error) {
-	err = connection.prepareMapUsage(mapName)
-	if err != nil {
-		return
+func (connection *Connection) CreateMapStoreRequest(mapReference interface{}) (request *StoreRequest, err error) {
+	t := reflect.TypeOf(mapReference)
+	switch t.Kind() {
+	case reflect.Ptr, reflect.Struct:
+		request, err = NewStoreRequest(mapReference, connection.adabasToMap, connection.repository)
+		if err != nil {
+			return
+		}
+		connection.fnr = request.adabasMap.Data.Fnr
+		connection.adabasMap = request.adabasMap
+	case reflect.String:
+		mapName := mapReference.(string)
+		err = connection.prepareMapUsage(mapName)
+		if err != nil {
+			return
+		}
+		request, err = NewAdabasMapNameStoreRequest(connection.adabasToData, connection.adabasMap)
 	}
-	request, err = NewAdabasMapNameStoreRequest(connection.adabasToData, connection.adabasMap)
 	return
 }
 
