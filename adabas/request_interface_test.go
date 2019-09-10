@@ -697,13 +697,13 @@ func TestCheckRead(t *testing.T) {
 		return
 	}
 	//	request.QueryFields("Id")
-	result, rErr := request.ReadLogicalWith("Id=ID")
+	result, rErr := request.ReadLogicalBy("Id")
 	if !assert.NoError(t, rErr) {
 		return
 	}
-	fmt.Println("Length evaluating ISN", len(result.Values))
-	assert.Len(t, result.Values, 1)
-	result.DumpValues()
+	fmt.Println("Length evaluating ISN", len(result.Values), len(result.Data))
+	assert.Len(t, result.Values, 0)
+	assert.Greater(t, len(result.Data), 0)
 }
 
 func TestConnectionStoreUsingInterface(t *testing.T) {
