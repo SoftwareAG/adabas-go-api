@@ -78,6 +78,19 @@ func TestStoreRequestInterfaceInstance(t *testing.T) {
 		}
 	}
 
+	_, err = repository.SearchMap(ada, "EmployeesIndex")
+	if err != nil {
+		maps, merr := LoadJSONMap("EmployeesIndex.json")
+		if !assert.NoError(t, merr) && !assert.Len(t, maps, 1) {
+			return
+		}
+		maps[0].Repository = &repository.DatabaseURL
+		err = maps[0].Store()
+		if !assert.NoError(t, err) {
+			return
+		}
+	}
+
 	storeRequest, err := NewStoreRequest(Employees{}, ada, repository)
 	if !assert.NoError(t, err) {
 		return

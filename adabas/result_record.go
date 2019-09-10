@@ -193,9 +193,9 @@ func (record *Record) SetValue(field string, value interface{}) (err error) {
 		err = adaValue.SetValue(value)
 		adatypes.Central.Log.Debugf("Set %s [%T] value err=%v", field, adaValue, err)
 		// TODO check if the field which is not found and stored should be checked
-		// } else {
-		// 	adatypes.Central.Log.Debugf("Field %s not found %v", field, adaValue)
-		// 	err = adatypes.NewGenericError(28, field)
+	} else {
+		adatypes.Central.Log.Debugf("Field %s not found %v", field, adaValue)
+		err = adatypes.NewGenericError(28, field)
 	}
 	return
 }
