@@ -21,6 +21,7 @@ package adabas
 
 import (
 	"bytes"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -342,14 +343,28 @@ func (connection *Connection) CreateFileReadRequest(fnr Fnr) (*ReadRequest, erro
 }
 
 // CreateMapReadRequest create a read request using a given map
-func (connection *Connection) CreateMapReadRequest(mapName string) (request *ReadRequest, err error) {
-	err = connection.prepareMapUsage(mapName)
-	if err != nil {
-		return
+func (connection *Connection) CreateMapReadRequest(mapReference interface{}) (request *ReadRequest, err error) {
+	t := reflect.TypeOf(mapReference)
+	switch t.Kind() {
+	case reflect.Ptr, reflect.Struct:
+		request, err = NewReadRequest(mapReference, connection.adabasToMap, connection.repository)
+		if err != nil {
+			return
+		}
+		connection.fnr = request.adabasMap.Data.Fnr
+		connection.adabasMap = request.adabasMap
+	case reflect.String:
+		m := mapReference.(string)
+		err = connection.prepareMapUsage(m)
+		if err != nil {
+			return
+		}
+		connection.fnr = connection.adabasMap.Data.Fnr
+		adatypes.Central.Log.Debugf("Map referenced : %#v", connection.adabasMap)
+		request, err = NewReadRequest(connection.adabasToData, connection.adabasMap)
+	default:
+		return nil, adatypes.NewGenericError(0)
 	}
-	connection.fnr = connection.adabasMap.Data.Fnr
-	adatypes.Central.Log.Debugf("Map referenced : %#v", connection.adabasMap)
-	request, err = NewReadRequest(connection.adabasToData, connection.adabasMap)
 	return
 }
 

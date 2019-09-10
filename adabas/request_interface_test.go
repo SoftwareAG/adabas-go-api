@@ -692,3 +692,36 @@ func TestCheckRead(t *testing.T) {
 	assert.Len(t, result.Values, 1)
 	result.DumpValues()
 }
+
+func TestConnectionUsingInterface(t *testing.T) {
+	initTestLogWithFile(t, "request_interface.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest(Employees{})
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err := request.QueryFields("Name")
+	if !assert.NoError(t, err) {
+		return
+	}
+	request.Limit = 0
+	var result *Response
+	result, err = request.ReadLogicalBy("Name")
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, 0, len(result.Values))
+	if !assert.Equal(t, 5, len(result.Data)) {
+		return
+	}
+	result.DumpData()
+}
