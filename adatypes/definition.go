@@ -284,7 +284,7 @@ func NewDefinition() *Definition {
 	return def
 }
 
-// NewDefinitionWithTypes create new Definition instance
+// NewDefinitionWithTypes create new Definition instance adding the given types into the tree
 func NewDefinitionWithTypes(types []IAdaType) *Definition {
 	def := NewDefinition()
 	def.activeFieldTree.SubTypes = types
@@ -300,7 +300,8 @@ func NewDefinitionWithTypes(types []IAdaType) *Definition {
 	return def
 }
 
-// NewDefinitionClone clone new Definition instance
+// NewDefinitionClone clone new Definition instance using old definition and clone the
+// active tree to the new one
 func NewDefinitionClone(old *Definition) *Definition {
 	newDefinition := NewDefinition()
 	newDefinition.fileFieldTree = old.fileFieldTree
