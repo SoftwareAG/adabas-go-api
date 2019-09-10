@@ -329,12 +329,7 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 		}
 	}
 	adatypes.Central.Log.Debugf("store/update=%v record ADA: %s", store, storeRecord.String())
-	storeRecord.Isn, _ = request.dynamic.ExtractIsnField(record)
-	// if k, ok := request.dynamic.FieldNames["#isn"]; ok {
-	// 	adatypes.Central.Log.Debugf("ISNfield: %v", k)
-	// 	keyField := record.FieldByName(k[0])
-	// 	storeRecord.Isn = adatypes.Isn(keyField.Uint())
-	// }
+	storeRecord.Isn = request.dynamic.ExtractIsnField(record)
 	if store {
 		err := request.Store(storeRecord)
 		if err != nil {
@@ -364,19 +359,22 @@ func (request *StoreRequest) evaluateKeyIsn(record reflect.Value, storeRecord *R
 	var sn string
 	var keyValue string
 	if k, ok := request.dynamic.FieldNames["#key"]; ok {
-		adatypes.Central.Log.Debugf("Keyfield: %v", k)
+		adatypes.Central.Log.Debugf("Found Keyfield in hash: %v", k)
 		kf := request.dynamic.FieldNames[k[0]]
 		keyField := record.FieldByName(kf[0])
-		fmt.Println("Check keyfield", k, keyField.IsValid(), record.String())
+		adatypes.Central.Log.Debugf("Check keyfield %v %v %s", k, keyField.IsValid(), record.String())
 		if keyField.IsValid() {
-			fmt.Println("Keyfields:", k, keyField, keyField.String())
-			for k, v := range request.dynamic.FieldNames {
-				fmt.Println(k, "=", v)
+			if adatypes.Central.IsDebugLevel() {
+				adatypes.Central.Log.Debugf("Keyfields: %v %v %s", k, keyField, keyField.String())
+				for k, v := range request.dynamic.FieldNames {
+					adatypes.Central.Log.Debugf("%s=%s", k, v)
+				}
 			}
-			sn = kf[0]
+			sn = k[0]
 			keyValue = keyField.String()
 		}
 	} else {
+		adatypes.Central.Log.Debugf("Don't found Keyfield")
 		t := record.Type()
 		var st reflect.Type
 		for i := 0; i < t.NumField(); i++ {
@@ -404,11 +402,10 @@ func (request *StoreRequest) evaluateKeyIsn(record reflect.Value, storeRecord *R
 	}
 	iErr = iRequest.QueryFields("")
 	if iErr != nil {
-		fmt.Println("Query temporary read", iErr)
 		return iErr
 	}
 	if keyValue == "" {
-		adatypes.Central.Log.Debugf("Query temporary read ok")
+		adatypes.Central.Log.Debugf("Query temporary read ok %s", sn)
 		if adaValue, ok := storeRecord.searchValue(sn); ok {
 			adatypes.Central.Log.Debugf("Search key %s='%s'\n", sn, adaValue.String())
 			keyValue = adaValue.String()
@@ -416,9 +413,9 @@ func (request *StoreRequest) evaluateKeyIsn(record reflect.Value, storeRecord *R
 			return adatypes.NewGenericError(96, sn)
 		}
 	}
+	adatypes.Central.Log.Debugf("Read logical ISN with %s=%s", sn, keyValue)
 	resultRead, rErr := iRequest.ReadLogicalWith(sn + "=" + keyValue)
 	if rErr != nil {
-		fmt.Println("Error evaluating ISN", rErr)
 		return rErr
 	}
 	if len(resultRead.Values) != 1 {

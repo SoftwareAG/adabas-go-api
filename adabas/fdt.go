@@ -165,12 +165,6 @@ func createFdtDefintion() *adatypes.Definition {
 }
 
 func traverserFieldDefinitionCreator(adaValue adatypes.IAdaValue, level int, x interface{}) bool {
-	//var number *int
-	//	if adaValue.Type().IsStructure() {
-	//		for _, value := range adaValue.(*adatypes.StructureValue).Values {
-	//			fmt.Println(value)
-	//		}
-	//	}
 	number := x.(*int)
 	(*number)++
 	return true

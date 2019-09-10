@@ -201,10 +201,7 @@ func parseSystransFileForFields(file *os.File) (maps []*Map, err error) {
 					curEntry = &entry{libName: line[36:44], ddmName: line[44 : 44+32], rootField: &field{}, stack: adatypes.NewStack(),
 						adabasMap: NewAdabasMap(line[44 : 44+32])}
 					shortNames = make(map[string]bool)
-					//					ddmEntries = append(ddmEntries, curEntry)
-					// fmt.Printf("Current entry: %#v\n", *curEntry)
 					maps = append(maps, curEntry.adabasMap)
-					// fmt.Println("Add map", curEntry.adabasMap.Name)
 				}
 			}
 			if curEntry != nil {

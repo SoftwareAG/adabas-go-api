@@ -163,10 +163,6 @@ func (record *Record) searchValue(field string) (adatypes.IAdaValue, bool) {
 	if adaValue, ok := record.HashFields[field]; ok {
 		return adaValue, true
 	}
-	// fmt.Println("Hash values", len(record.HashFields))
-	// for k, v := range record.HashFields {
-	// 	fmt.Printf("%v=%v", k, v)
-	// }
 	return nil, false
 }
 
@@ -387,7 +383,6 @@ func traverseMarshalXMLEnd2(adaValue adatypes.IAdaValue, x interface{}) (adatype
 		enc := x.(*xml.Encoder)
 		sv := adaValue.(*adatypes.StructureValue)
 		if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup && sv.NrElements() > 0 {
-			//fmt.Println("E Entry", adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex())
 			end := xml.EndElement{Name: xml.Name{Local: "Entry"}}
 			enc.EncodeToken(end)
 		}
@@ -409,11 +404,9 @@ func traverseMarshalXMLElement(adaValue adatypes.IAdaValue, nr, max int, x inter
 	enc := x.(*xml.Encoder)
 	if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup {
 		if nr > 0 {
-			//fmt.Println("E Entry", adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex(), nr, max)
 			end := xml.EndElement{Name: xml.Name{Local: "Entry"}}
 			enc.EncodeToken(end)
 		}
-		//fmt.Println("S Entry", adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex(), nr, max)
 		start := xml.StartElement{Name: xml.Name{Local: "Entry"}}
 		enc.EncodeToken(start)
 	}

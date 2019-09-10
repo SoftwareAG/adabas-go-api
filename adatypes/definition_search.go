@@ -241,7 +241,7 @@ func (def *Definition) SearchType(fieldName string) (adaType IAdaType, err error
 	// err = nil
 	// if search.adaType == nil {
 	// 	Central.Log.Debugf("AdaType not found ", fieldName)
-	Central.Log.Debugf("AdaType not found in file fields")
+	Central.Log.Debugf("AdaType %s not found in file fields", fieldName)
 	for k, v := range def.fileFields {
 		Central.Log.Debugf("%s:%s->%s", k, v.ShortName(), v.Name())
 	}

@@ -99,7 +99,7 @@ func (dynamic *DynamicInterface) ExamineIsnField(value reflect.Value, isn Isn) e
 }
 
 // ExtractIsnField extract out of interface Isn-tagged field with value for ISN
-func (dynamic *DynamicInterface) ExtractIsnField(value reflect.Value) (Isn, error) {
+func (dynamic *DynamicInterface) ExtractIsnField(value reflect.Value) Isn {
 	v := value
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
@@ -107,7 +107,7 @@ func (dynamic *DynamicInterface) ExtractIsnField(value reflect.Value) (Isn, erro
 	if k, ok := dynamic.FieldNames["#isn"]; ok {
 		Central.Log.Debugf("ISNfield: %v", k)
 		keyField := v.FieldByName(k[0])
-		return Isn(keyField.Uint()), nil
+		return Isn(keyField.Uint())
 	}
-	return 0, NewGenericError(0)
+	return 0
 }

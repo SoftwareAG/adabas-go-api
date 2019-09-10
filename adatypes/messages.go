@@ -22,6 +22,7 @@ package adatypes
 import (
 	"fmt"
 	"regexp"
+	"runtime/debug"
 	"sync"
 	"time"
 )
@@ -68,7 +69,10 @@ func NewGenericError(code errorCode, args ...interface{}) *Error {
 		re := regexp.MustCompile(c)
 		msg = re.ReplaceAllString(msg, m)
 	}
-	Central.Log.Debugf("Generic error message created:[%s] %s", msgCode, msg)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Generic error message created:[%s] %s", msgCode, msg)
+		Central.Log.Debugf("Stack trace:\n%s", string(debug.Stack()))
+	}
 	return &Error{When: time.Now(), Code: msgCode, Message: msg}
 }
 

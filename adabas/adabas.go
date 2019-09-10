@@ -134,49 +134,6 @@ func NewAdabas(p ...interface{}) (ada *Adabas, err error) {
 
 }
 
-// // NewAdabasWithID create a new Adabas struct instance using string parameter
-// func NewAdabasWithID(target string, ID *ID) (*Adabas, error) {
-// 	if ID == nil {
-// 		return nil, adatypes.NewGenericError(60)
-// 	}
-// 	adatypes.Central.Log.Debugf("Use new Adabas with Adabas ID: %s", ID.String())
-// 	// fmt.Println("Create URL", target)
-// 	URL, err := NewURL(target)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	if (URL.Dbid < 1) || (URL.Dbid > MaxDatabasesID) {
-// 		err = adatypes.NewGenericError(67, URL.Dbid, 1, MaxDatabasesID)
-// 		return nil, err
-// 	}
-
-// 	acbx := newAcbx(URL.Dbid)
-// 	return &Adabas{
-// 		ID:           ID,
-// 		status:       ID.status(URL.String()),
-// 		URL:          URL,
-// 		Acbx:         acbx,
-// 		transactions: &transactions{},
-// 	}, nil
-// }
-
-// // NewAdabasWithURL create a new Adabas struct instance
-// func NewAdabasWithURL(URL *URL, ID *ID) (*Adabas, error) {
-// 	adatypes.Central.Log.Debugf("Use new Adabas instance with Adabas ID: %s", ID.String())
-// 	if (URL.Dbid < 1) || (URL.Dbid > MaxDatabasesID) {
-// 		err := adatypes.NewGenericError(67, URL.Dbid, 1, MaxDatabasesID)
-// 		return nil, err
-// 	}
-// 	acbx := newAcbx(URL.Dbid)
-// 	return &Adabas{
-// 		URL:          URL,
-// 		ID:           ID,
-// 		status:       ID.status(URL.String()),
-// 		Acbx:         acbx,
-// 		transactions: &transactions{},
-// 	}, nil
-// }
-
 // Open opens a session to the database
 func (adabas *Adabas) Open() (err error) {
 	url := adabas.URL.String()
