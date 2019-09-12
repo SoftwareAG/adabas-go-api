@@ -297,7 +297,7 @@ func (connection *Connection) Release() error {
 			return err
 		}
 	}
-	if connection.adabasToMap != nil {
+	if connection.adabasToMap != nil && connection.adabasMap != nil {
 		err := connection.adabasToMap.ReleaseHold(connection.adabasMap.Data.Fnr)
 		if err != nil {
 			return err
