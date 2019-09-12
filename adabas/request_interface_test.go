@@ -43,6 +43,12 @@ type EmployeesIndex struct {
 	LastName string
 }
 
+type EmployeeMap struct {
+	ID         string `adabas:"Id:key"`
+	Name       *FullName
+	Department []byte
+}
+
 func TestStoreRequestInterfaceInstance(t *testing.T) {
 	initTestLogWithFile(t, "request_interface.log")
 
@@ -908,4 +914,41 @@ func TestConnectionUsingPointerInterface(t *testing.T) {
 		return
 	}
 	result.DumpData()
+}
+
+func TestEmployeesMap(t *testing.T) {
+	initTestLogWithFile(t, "request_interface.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest((*EmployeeMap)(nil))
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err := request.QueryFields("Department")
+	if !assert.NoError(t, err) {
+		return
+	}
+	request.Limit = 0
+	var result *Response
+	result, err = request.ReadLogicalBy("Id")
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, 0, len(result.Values))
+	if !assert.Equal(t, 1107, len(result.Data)) {
+		return
+	}
+	//result.DumpData()
+	m := result.Data[0].(*EmployeeMap)
+	fmt.Println("Department:", m.Department, string(m.Department))
+	assert.Equal(t, "COMP25", string(m.Department))
+
 }

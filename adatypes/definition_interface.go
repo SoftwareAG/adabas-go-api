@@ -103,23 +103,26 @@ func evaluatePeriodGroup(adaValue IAdaValue, v reflect.Value, tp *valueInterface
 func evaluateField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (result TraverseResult, err error) {
 	f := evaluateReflectValue(v, adaValue, tp)
 	Central.Log.Debugf("No MU or PE, check kind=%v of %s", f.Kind(), adaValue.Type().Name())
-	if f.CanInterface() {
-		switch f.Interface().(type) {
-		case []byte:
-			nv := reflect.ValueOf(adaValue.Bytes())
-			f.Set(nv)
-			return Continue, nil
-		default:
-			Central.Log.Debugf("Unknown interface type %T", f.Interface())
-		}
-	}
 	switch f.Kind() {
 	case reflect.Slice:
+		if !f.IsNil() && f.CanInterface() {
+			switch f.Interface().(type) {
+			case []byte:
+				nv := reflect.ValueOf(adaValue.Bytes())
+				f.Set(nv)
+				return Continue, nil
+			default:
+				Central.Log.Debugf("Unknown interface type %T", f.Interface())
+			}
+		}
 		Central.Log.Debugf("Found slice on %s %d,%d", adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex())
 		st := f.Type().Elem()
 		switch st.Kind() {
 		case reflect.Int8:
 			Central.Log.Debugf("Go for byte array")
+		case reflect.Uint8:
+			nv := reflect.ValueOf(adaValue.Bytes())
+			f.Set(nv)
 		default:
 			Central.Log.Debugf("Unknown sub type %s", st.Kind())
 		}
