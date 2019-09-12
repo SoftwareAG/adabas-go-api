@@ -506,6 +506,9 @@ func TestStorePeriodInterface(t *testing.T) {
 	if readLogicalPeriodInterface(t) != nil {
 		return
 	}
+	if readLogicalPeriodGlobalInterface(t) != nil {
+		return
+	}
 	if readLogicalPeriodInterfaceByEmployeesSalary(t) != nil {
 		return
 	}
@@ -562,7 +565,70 @@ func readLogicalPeriodInterface(t *testing.T) error {
 	}
 	defer connection.Close()
 
-	request, rerr := connection.CreateMapReadRequest((*Employees)(nil))
+	request, rerr := connection.CreateMapReadRequest((*EmployeesSalary)(nil))
+	if !assert.NoError(t, rerr) {
+		return cerr
+	}
+	// err = request.QueryFields("*")
+	// if !assert.NoError(t, err) {
+	// 	return
+	// }
+	assert.Equal(t, "EmployeesSalary", request.dynamic.DataType.Name())
+
+	result, err := request.ReadLogicalWith("Id=['pId':'pId9']")
+	fmt.Println("Read done ...")
+	if !assert.NoError(t, err) {
+		return err
+	}
+	assert.Nil(t, result.Values)
+	assert.NotNil(t, result.Data)
+	if !assert.NotNil(t, result) {
+		return fmt.Errorf("Error got")
+	}
+	result.DumpValues()
+	result.DumpData()
+	if !assert.Len(t, result.Data, 2) {
+		return fmt.Errorf("Error got")
+	}
+	e := result.Data[0].(*EmployeesSalary)
+	assert.Equal(t, "pId007", strings.Trim(e.ID, " "))
+	if !assert.NotNil(t, e.FullName) {
+		return fmt.Errorf("Error got")
+	}
+	assert.Equal(t, "Bond", strings.Trim(e.FullName.LastName, " "))
+	e = result.Data[1].(*EmployeesSalary)
+	assert.Equal(t, "pId123", strings.Trim(e.ID, " "))
+	assert.Equal(t, "Overmeyer", strings.Trim(e.FullName.LastName, " "))
+	assert.Equal(t, uint64(123344), e.Birth)
+	assert.Equal(t, "FBI   ", e.Department)
+	if assert.Len(t, e.Language, 2) {
+		assert.Equal(t, "ENG", e.Language[0])
+	}
+	if assert.Len(t, e.Income, 2) {
+		assert.Equal(t, uint64(40000), e.Income[0].Salary)
+		if assert.Len(t, e.Income[0].Bonus, 2) {
+			assert.Equal(t, uint64(123), e.Income[0].Bonus[0])
+		}
+
+		assert.Equal(t, "EUR", e.Income[0].Currency)
+	}
+	return nil
+}
+
+func readLogicalPeriodGlobalInterface(t *testing.T) error {
+	fmt.Println("Read interface with period group")
+
+	adabas, _ := NewAdabas(adabasModDBID)
+	AddGlobalMapRepositoryReference(adabasModDBIDs + ",4")
+	defer DelGlobalMapRepository(adabas, 250)
+
+	connection, cerr := NewConnection("acj;map")
+	if !assert.NoError(t, cerr) {
+		return cerr
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest((*EmployeesSalary)(nil))
 	if !assert.NoError(t, rerr) {
 		return cerr
 	}

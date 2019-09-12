@@ -168,6 +168,9 @@ func createNewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Rep
 // createNewMapReadRequest create a new Request instance
 func createNewMapReadRequest(mapName string, adabas *Adabas) (request *ReadRequest, err error) {
 	var adabasMap *Map
+	if adabas == nil {
+		return nil, adatypes.NewGenericError(0)
+	}
 	adabasMap, _, err = SearchMapRepository(adabas, mapName)
 	if err != nil {
 		return

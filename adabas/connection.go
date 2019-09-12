@@ -126,6 +126,11 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 		adatypes.Central.Log.Debugf("Created adabas reference")
 		repository = NewMapRepository(adabasToMap.URL, Fnr(fnr))
 		adatypes.Central.Log.Debugf("Created repository")
+	} else {
+		if adabasToData == nil {
+			adabasToData, _ = NewAdabas(1, adabasID)
+		}
+		adabasToMap = adabasToData
 	}
 
 	connection = &Connection{adabasToData: adabasToData, ID: adabasID,
