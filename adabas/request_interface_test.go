@@ -173,6 +173,9 @@ func TestStoreInterface(t *testing.T) {
 	if readLogicalInterfaceStream(t) != nil {
 		return
 	}
+	if readPhysicalInterfaceStream(t) != nil {
+		return
+	}
 	if readLogicalIndexInterface(t) != nil {
 		return
 	}
@@ -466,6 +469,33 @@ func readLogicalInterfaceStream(t *testing.T) error {
 	return nil
 }
 
+func readPhysicalInterfaceStream(t *testing.T) error {
+	fmt.Println("Read physical interface stream")
+
+	adabas, _ := NewAdabas(23)
+	mapRepository := NewMapRepository(adabas, 4)
+	request, err := NewReadRequest(Employees{}, adabas, mapRepository)
+	if !assert.NoError(t, err) {
+		return err
+	}
+	defer request.Close()
+	err = request.QueryFields("*")
+	if !assert.NoError(t, err) {
+		return err
+	}
+
+	i := 0
+	result, err := request.ReadPhysicalInterface(receiveInterface, &i)
+	fmt.Println("Read done ...")
+	if !assert.NoError(t, err) {
+		return err
+	}
+	assert.True(t, i > 0)
+	assert.Nil(t, result.Values)
+	assert.Nil(t, result.Data)
+	return nil
+}
+
 func TestStorePeriodInterface(t *testing.T) {
 	initTestLogWithFile(t, "request_interface.log")
 
@@ -526,13 +556,16 @@ func storePeriodInterface(t *testing.T) error {
 func readLogicalPeriodInterface(t *testing.T) error {
 	fmt.Println("Read interface with period group")
 
-	adabas, _ := NewAdabas(23)
-	mapRepository := NewMapRepository(adabas, 4)
-	request, err := NewReadRequest(EmployeesSalary{}, adabas, mapRepository)
-	if !assert.NoError(t, err) {
-		return err
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return cerr
 	}
-	defer request.Close()
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest((*Employees)(nil))
+	if !assert.NoError(t, rerr) {
+		return cerr
+	}
 	// err = request.QueryFields("*")
 	// if !assert.NoError(t, err) {
 	// 	return
@@ -757,6 +790,39 @@ func TestConnectionUsingInterface(t *testing.T) {
 	defer connection.Close()
 
 	request, rerr := connection.CreateMapReadRequest(Employees{})
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err := request.QueryFields("Name")
+	if !assert.NoError(t, err) {
+		return
+	}
+	request.Limit = 0
+	var result *Response
+	result, err = request.ReadLogicalBy("Name")
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, 0, len(result.Values))
+	if !assert.Equal(t, 2, len(result.Data)) {
+		return
+	}
+	result.DumpData()
+}
+
+func TestConnectionUsingPointerInterface(t *testing.T) {
+	initTestLogWithFile(t, "request_interface.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest((*Employees)(nil))
 	if !assert.NoError(t, rerr) {
 		fmt.Println("Error create request", rerr)
 		return

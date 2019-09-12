@@ -99,9 +99,14 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 		rep := param[2].(*Repository)
 		return createNewMapReadRequestRepo(mapName, ada, rep)
 	default:
-		if reflect.TypeOf(param[0]).Kind() == reflect.Struct {
-			adatypes.Central.Log.Debugf("It's a struct %s", reflect.TypeOf(param[0]).Name())
-			mapName := reflect.TypeOf(param[0]).Name()
+		ti := reflect.TypeOf(param[0])
+		if ti.Kind() == reflect.Ptr {
+			adatypes.Central.Log.Debugf("It's a pointer %s", ti.Name())
+			ti = ti.Elem()
+		}
+		if ti.Kind() == reflect.Struct {
+			adatypes.Central.Log.Debugf("It's a struct %s", ti.Name())
+			mapName := ti.Name()
 			if len(param) < 2 {
 				return nil, errors.New("Not enough parameters for NewReadRequest")
 			}
@@ -318,6 +323,18 @@ func (request *ReadRequest) ReadPhysicalSequenceStream(streamFunction StreamFunc
 	}
 	result = s.result
 	return result, nil
+}
+
+// ReadPhysicalInterface read records with a physical order given and calls interface function
+func (request *ReadRequest) ReadPhysicalInterface(interfaceFunction InterfaceFunction,
+	x interface{}) (result *Response, err error) {
+	s := &stream{interfaceFunction: interfaceFunction, result: &Response{Definition: request.definition}, x: x}
+	err = request.ReadPhysicalSequenceWithParser(streamRecord, s)
+	if err != nil {
+		return nil, err
+	}
+	result = s.result
+	return
 }
 
 // ReadPhysicalSequenceWithParser read records in physical order

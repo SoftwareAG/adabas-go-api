@@ -347,7 +347,11 @@ func (connection *Connection) CreateMapReadRequest(mapReference interface{}) (re
 	t := reflect.TypeOf(mapReference)
 	switch t.Kind() {
 	case reflect.Ptr, reflect.Struct:
-		request, err = NewReadRequest(mapReference, connection.adabasToMap, connection.repository)
+		if connection.repository == nil {
+			request, err = NewReadRequest(mapReference, connection.adabasToMap)
+		} else {
+			request, err = NewReadRequest(mapReference, connection.adabasToMap, connection.repository)
+		}
 		if err != nil {
 			return
 		}
