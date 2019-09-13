@@ -246,12 +246,12 @@ func (adabas *Adabas) callRemoteAdabas() (err error) {
 
 // sendTCP Send the TCP/IP request to remote Adabas database
 func (adabas *Adabas) sendTCP() (err error) {
-	var tcpConn *adatcp
+	var tcpConn *AdaTCP
 	// Check if connection is already available
 	if adabas.transactions.connection == nil {
 		adatypes.Central.Log.Debugf("Establish new context for %p", adabas)
 
-		tcpConn, err = connect(adabas.URL, Endian(), adabas.ID.AdaID.User,
+		tcpConn, err = NewAdaTCP(adabas.URL, Endian(), adabas.ID.AdaID.User,
 			adabas.ID.AdaID.Node, adabas.ID.AdaID.Pid, adabas.ID.AdaID.Timestamp)
 		if err != nil {
 			adabas.Acbx.Acbxrsp = AdaSysCe
@@ -262,7 +262,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 		adabas.transactions.connection = tcpConn
 	} else {
 		adatypes.Central.Log.Debugf("Use context for %p %p ", adabas, adabas.transactions.connection)
-		tcpConn = adabas.transactions.connection.(*adatcp)
+		tcpConn = adabas.transactions.connection.(*AdaTCP)
 	}
 	var buffer bytes.Buffer
 	err = adabas.WriteBuffer(&buffer, Endian(), false)

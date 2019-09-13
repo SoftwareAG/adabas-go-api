@@ -21,6 +21,7 @@ package adabas
 
 import (
 	"encoding/json"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -117,4 +118,21 @@ func (URL *URL) UnmarshalJSON(data []byte) error {
 	}
 	adatypes.Central.Log.Debugf("Got " + v)
 	return URL.examineURL(v)
+}
+
+func (URL *URL) searchCertificate() []string {
+	var pair []string
+	cert := os.Getenv("ADABAS_CLIENT_CERT")
+	if cert == "" {
+		return nil
+	}
+	adatypes.Central.Log.Debugf("Add certificate file %s", cert)
+	pair = append(pair, cert)
+	key := os.Getenv("ADABAS_CLIENT_KEY")
+	if key == "" {
+		return nil
+	}
+	adatypes.Central.Log.Debugf("Add key file %s", key)
+	pair = append(pair, key)
+	return pair
 }

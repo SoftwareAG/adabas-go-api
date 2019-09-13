@@ -26,7 +26,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"os"
 	"unsafe"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -107,8 +106,8 @@ type adatcpDisconnectPayload struct {
 	Dummy uint64
 }
 
-// adatcp TCP connection handle (for internal use only)
-type adatcp struct {
+// AdaTCP TCP connection handle (for internal use only)
+type AdaTCP struct {
 	connection          net.Conn
 	url                 string
 	order               binary.ByteOrder
@@ -183,12 +182,12 @@ func Endian() binary.ByteOrder {
 	return binary.LittleEndian
 }
 
-// Connect connect to remote TCP/IP Adabas nucleus
-func connect(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
-	pid uint32, timestamp uint64) (connection *adatcp, err error) {
+// NewAdaTCP create new ADATCP connection to remote TCP/IP Adabas nucleus
+func NewAdaTCP(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
+	pid uint32, timestamp uint64) (connection *AdaTCP, err error) {
 	url := fmt.Sprintf("%s:%d", URL.Host, URL.Port)
 
-	connection = &adatcp{url: url, order: order}
+	connection = &AdaTCP{url: url, order: order}
 	adatypes.Central.Log.Debugf("Open TCP connection to %s", connection.url)
 	addr, _ := net.ResolveTCPAddr("tcp", connection.url)
 	switch URL.Driver {
@@ -205,7 +204,7 @@ func connect(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 	case "adatcps":
 		//		config := tls.Config{Certificates: []tls.Certificate{cert}, InsecureSkipVerify: true}
 		config := tls.Config{InsecureSkipVerify: true}
-		if pair := searchCertificate(URL); pair != nil {
+		if pair := URL.searchCertificate(); pair != nil {
 			adatypes.Central.Log.Debugf("Load key pair")
 			cert, cerr := tls.LoadX509KeyPair(pair[0], pair[1])
 			if cerr != nil {
@@ -318,25 +317,8 @@ func connect(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 	return
 }
 
-func searchCertificate(URL *URL) []string {
-	var pair []string
-	cert := os.Getenv("ADABAS_CLIENT_CERT")
-	if cert == "" {
-		return nil
-	}
-	adatypes.Central.Log.Debugf("Add certificate file %s", cert)
-	pair = append(pair, cert)
-	key := os.Getenv("ADABAS_CLIENT_KEY")
-	if key == "" {
-		return nil
-	}
-	adatypes.Central.Log.Debugf("Add key file %s", key)
-	pair = append(pair, key)
-	return pair
-}
-
 // Disconnect disconnect remote TCP/IP Adabas nucleus
-func (connection *adatcp) Disconnect() (err error) {
+func (connection *AdaTCP) Disconnect() (err error) {
 	adatypes.Central.Log.Debugf("Disconnect connection to %s", connection.url)
 	var buffer bytes.Buffer
 	header := NewAdatcpHeader(DisconnectRequest)
@@ -383,7 +365,7 @@ func (connection *adatcp) Disconnect() (err error) {
 }
 
 // SendData send data to remote TCP/IP Adabas nucleus
-func (connection *adatcp) SendData(buffer bytes.Buffer, nrAbdBuffers uint32) (err error) {
+func (connection *AdaTCP) SendData(buffer bytes.Buffer, nrAbdBuffers uint32) (err error) {
 	header := NewAdatcpHeader(DataRequest)
 	dataHeader := newAdatcpDataHeader(adabasRequest)
 	dataHeader.NumberOfBuffers = nrAbdBuffers
@@ -423,7 +405,7 @@ func generateError(errorCode uint32) error {
 }
 
 // ReceiveData receive data from remote TCP/IP Adabas nucleus
-func (connection *adatcp) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32, err error) {
+func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32, err error) {
 	adatypes.Central.Log.Debugf("Receive data .... size=%d", buffer.Len())
 
 	header := NewAdatcpHeader(DataReply)
