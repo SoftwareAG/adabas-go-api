@@ -38,6 +38,7 @@ ADATCPHOST   ?= tcphost:60177
 ADAMFDBID    ?= 54712
 TESTOUTPUT   ?= $(CURDIR)/test
 ENABLE_DEBUG ?= 0
+DOCKER_GO     = 1.12
 
 # Executables
 EXECS         = $(BIN)/tools/employee_client $(BIN)/tools/testsuite $(BIN)/tools/simple_read $(BIN)/tools/query \
@@ -45,3 +46,9 @@ EXECS         = $(BIN)/tools/employee_client $(BIN)/tools/testsuite $(BIN)/tools
 LIBS          = 
 
 include $(CURDIR)/make/common.mk
+
+docker: docker/Dockerfile .FORCE
+	cd docker; echo "Create docker image $(DOCKER_GO)"; docker build -t adago:$(DOCKER_GO) .; \
+       docker run -v `pwd`/..:/data adago:$(DOCKER_GO) make
+
+.FORCE:
