@@ -93,7 +93,11 @@ func (dynamic *DynamicInterface) ExamineIsnField(value reflect.Value, isn Isn) e
 		if !isnField.IsValid() || isnField.Kind() != reflect.Uint64 {
 			return NewGenericError(113)
 		}
+		Central.Log.Debugf("Found isn %d",isn)
 		isnField.SetUint(uint64(isn))
+	} else {
+		Central.Log.Debugf("No ISN field found")
+
 	}
 	return nil
 }
