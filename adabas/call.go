@@ -247,71 +247,85 @@ func (adabas *Adabas) CallAdabas() (err error) {
 	if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
 		return adatypes.NewGenericError(2, string(adabas.Acbx.Acbxcmd[:]))
 	}
-	if adabas.IsRemote() {
-		err = adabas.callRemoteAdabas()
-		if err != nil {
-			return
-		}
-		adatypes.LogMultiLineString(adabas.Acbx.String())
-		if adabas.Acbx.Acbxrsp != 0 {
-			if adabas.Acbx.Acbxrsp == 60 {
-				adatypes.Central.Log.Debugf("%s", adabas.Acbx.String())
-				for index := range adabas.AdabasBuffers {
-					adatypes.Central.Log.Debugf("%s", adabas.AdabasBuffers[index].String())
+	adatypes.Central.Log.Debugf("Input Adabas response = %d", adabas.Acbx.Acbxrsp)
+	recordBufferResize := uint8(5)
+	for {
+		if adabas.IsRemote() {
+			err = adabas.callRemoteAdabas()
+			if err != nil {
+				return
+			}
+			adatypes.LogMultiLineString(adabas.Acbx.String())
+			if adabas.Acbx.Acbxrsp != 0 {
+				if adabas.Acbx.Acbxrsp == 60 {
+					adatypes.Central.Log.Debugf("%s", adabas.Acbx.String())
+					for index := range adabas.AdabasBuffers {
+						adatypes.Central.Log.Debugf("%s", adabas.AdabasBuffers[index].String())
+					}
 				}
 			}
-		}
-	} else {
-		adatypes.Central.Log.Debugf("Call Adabas using native link: %v", adatypes.Central.IsDebugLevel())
-		pabdArray := C.create_abd(C.int(len(adabas.AdabasBuffers)))
-		for index := range adabas.AdabasBuffers {
-			adabas.AdabasBuffers[index].abd.Abdrecv = adabas.AdabasBuffers[index].abd.Abdsize
-			adabas.AdabasBuffers[index].createCAbd(pabdArray, index)
-		}
-		x := &C.CREDENTIAL{}
-		/* For OP calls, initialize the security layer setting the password. The corresponding
-		 * Security buffer (Z-Buffer) are generated inside the Adabas client layer.
-		 * Under the hood the Z-Buffer will generate one time passwords send with the next call
-		 * after OP. */
-		if adabas.ID.pwd != "" && adabas.Acbx.Acbxcmd == op.code() {
-			adatypes.Central.Log.Debugf("Set user %s password credentials", adabas.ID.user)
-			cUser := C.CString(adabas.ID.user)
-			cPassword := C.CString(adabas.ID.pwd)
-			x.user = cUser
-			x.pwd = cPassword
-			// C.lnk_set_uid_pw(C.uint(adabas.Acbx.Acbxdbid), cUser, cPassword)
-			// C.free(unsafe.Pointer(cUser))
-			// C.free(unsafe.Pointer(cPassword))
-		}
-		ret := int(C.go_eadabasx((*C.ADAID_T)(unsafe.Pointer(adabas.ID.AdaID)),
-			(*C.ACBX)(unsafe.Pointer(adabas.Acbx)), C.int(len(adabas.AdabasBuffers)), pabdArray, x))
-		if adatypes.Central.IsDebugLevel() {
-			adatypes.Central.Log.Debugf("Send calling CC %c%c adabasp=%p URL=%s Adabas ID=%v",
-				adabas.Acbx.Acbxcmd[0], adabas.Acbx.Acbxcmd[1],
-				adabas, adabas.URL.String(), adabas.ID.String())
-			adatypes.Central.Log.Debugf("Local Adabas call returns: %d", ret)
-			adatypes.LogMultiLineString(adabas.Acbx.String())
-		}
-
-		// Free the corresponding C based memory
-		if adabas.ID.pwd != "" && adabas.Acbx.Acbxcmd == op.code() {
-			C.free(unsafe.Pointer(x.user))
-			C.free(unsafe.Pointer(x.pwd))
-		}
-		for index := range adabas.AdabasBuffers {
-			//	adatypes.Central.Log.Debugf(index, ".ABD out : ", adabas.AdabasBuffers[index].abd.Abdsize)
-			adabas.AdabasBuffers[index].putCAbd(pabdArray, index)
+		} else {
+			adatypes.Central.Log.Debugf("Call Adabas using native link: %v", adatypes.Central.IsDebugLevel())
+			pabdArray := C.create_abd(C.int(len(adabas.AdabasBuffers)))
+			for index := range adabas.AdabasBuffers {
+				adabas.AdabasBuffers[index].abd.Abdrecv = adabas.AdabasBuffers[index].abd.Abdsize
+				adabas.AdabasBuffers[index].createCAbd(pabdArray, index)
+			}
+			x := &C.CREDENTIAL{}
+			/* For OP calls, initialize the security layer setting the password. The corresponding
+			 * Security buffer (Z-Buffer) are generated inside the Adabas client layer.
+			 * Under the hood the Z-Buffer will generate one time passwords send with the next call
+			 * after OP. */
+			if adabas.ID.pwd != "" && adabas.Acbx.Acbxcmd == op.code() {
+				adatypes.Central.Log.Debugf("Set user %s password credentials", adabas.ID.user)
+				cUser := C.CString(adabas.ID.user)
+				cPassword := C.CString(adabas.ID.pwd)
+				x.user = cUser
+				x.pwd = cPassword
+				// C.lnk_set_uid_pw(C.uint(adabas.Acbx.Acbxdbid), cUser, cPassword)
+				// C.free(unsafe.Pointer(cUser))
+				// C.free(unsafe.Pointer(cPassword))
+			}
+			ret := int(C.go_eadabasx((*C.ADAID_T)(unsafe.Pointer(adabas.ID.AdaID)),
+				(*C.ACBX)(unsafe.Pointer(adabas.Acbx)), C.int(len(adabas.AdabasBuffers)), pabdArray, x))
 			if adatypes.Central.IsDebugLevel() {
-				adatypes.LogMultiLineString(adabas.AdabasBuffers[index].String())
+				adatypes.Central.Log.Debugf("Send calling CC %c%c adabasp=%p URL=%s Adabas ID=%v",
+					adabas.Acbx.Acbxcmd[0], adabas.Acbx.Acbxcmd[1],
+					adabas, adabas.URL.String(), adabas.ID.String())
+				adatypes.Central.Log.Debugf("Local Adabas call returns: %d", ret)
+				adatypes.LogMultiLineString(adabas.Acbx.String())
+			}
+
+			// Free the corresponding C based memory
+			if adabas.ID.pwd != "" && adabas.Acbx.Acbxcmd == op.code() {
+				C.free(unsafe.Pointer(x.user))
+				C.free(unsafe.Pointer(x.pwd))
+			}
+			for index := range adabas.AdabasBuffers {
+				//	adatypes.Central.Log.Debugf(index, ".ABD out : ", adabas.AdabasBuffers[index].abd.Abdsize)
+				adabas.AdabasBuffers[index].putCAbd(pabdArray, index)
+				if adatypes.Central.IsDebugLevel() {
+					adatypes.LogMultiLineString(adabas.AdabasBuffers[index].String())
+				}
+			}
+			adatypes.Central.Log.Debugf("Destroy temporary ABD")
+			C.destroy_abd(pabdArray, C.int(len(adabas.AdabasBuffers)))
+		}
+		if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
+			adatypes.Central.Log.Debugf("Invalid Adabas command received: %s", string(adabas.Acbx.Acbxcmd[:]))
+			return adatypes.NewGenericError(3, string(adabas.Acbx.Acbxcmd[:]))
+		}
+		if adabas.Acbx.Acbxrsp != AdaRbts || recordBufferResize == 0 {
+			break
+		}
+		recordBufferResize--
+		for index := range adabas.AdabasBuffers {
+			if adabas.AdabasBuffers[index].abd.Abdid == AbdAQRb {
+				adabas.AdabasBuffers[index].extend(1024)
 			}
 		}
-		adatypes.Central.Log.Debugf("Destroy temporary ABD")
-		C.destroy_abd(pabdArray, C.int(len(adabas.AdabasBuffers)))
 	}
-	if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
-		adatypes.Central.Log.Debugf("Invalid Adabas command received: %s", string(adabas.Acbx.Acbxcmd[:]))
-		return adatypes.NewGenericError(3, string(adabas.Acbx.Acbxcmd[:]))
-	}
+
 	if adabas.Acbx.Acbxrsp > AdaEOF {
 		return NewError(adabas)
 	}

@@ -118,6 +118,14 @@ func (adabasBuffer *Buffer) grow(newSize int) {
 	adabasBuffer.abd.Abdsize = uint64(len(adabasBuffer.buffer))
 }
 
+// If needed, grow the buffer size to new size given
+func (adabasBuffer *Buffer) extend(addSize uint64) {
+	newBuffer := make([]byte, adabasBuffer.abd.Abdsize+addSize)
+	copy(newBuffer, adabasBuffer.buffer)
+	adabasBuffer.buffer = newBuffer
+	adabasBuffer.abd.Abdsize = adabasBuffer.abd.Abdsize + addSize
+}
+
 // WriteString write string intp buffer
 func (adabasBuffer *Buffer) WriteString(content string) {
 	adatypes.Central.Log.Debugf("Write string in adabas buffer")
