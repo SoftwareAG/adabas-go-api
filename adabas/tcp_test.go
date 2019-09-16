@@ -21,8 +21,11 @@
 package adabas
 
 import (
+	"encoding/binary"
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTcpHTON(t *testing.T) {
@@ -30,4 +33,33 @@ func TestTcpHTON(t *testing.T) {
 	fmt.Println("X: ", x)
 	y := adatcpTCPClientHTON8(x)
 	fmt.Println("Y: ", y)
+}
+
+func TestNoConnect(t *testing.T) {
+	var user [8]byte
+	var node [8]byte
+	// No URL returns nil connection instance
+	connection := NewAdaTCP(nil, binary.LittleEndian, user, node, 0, 0)
+	assert.Nil(t, connection)
+	copy(user[:], []byte("User_001"))
+	copy(node[:], []byte("Node_001"))
+
+	// No Connect() called and a error is returned if Disconnect() is called
+	url, _ := NewURL("1(adatcp://localhost:12345)")
+	connection = NewAdaTCP(url, binary.LittleEndian, user, node, 0, 0)
+	err := connection.Disconnect()
+	assert.Error(t, err)
+}
+
+func TestFailConnect(t *testing.T) {
+	var user [8]byte
+	var node [8]byte
+
+	// No Connect() called and a error is returned if Disconnect() is called
+	url, _ := NewURL("1(adatcp://xx:12345)")
+	connection := NewAdaTCP(url, binary.LittleEndian, user, node, 0, 0)
+	err := connection.Connect()
+	assert.Error(t, err)
+	err = connection.Disconnect()
+	assert.Error(t, err)
 }

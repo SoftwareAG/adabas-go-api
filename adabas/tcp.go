@@ -194,6 +194,9 @@ func Endian() binary.ByteOrder {
 // NewAdaTCP create new ADATCP connection to remote TCP/IP Adabas nucleus
 func NewAdaTCP(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 	pid uint32, timestamp uint64) *AdaTCP {
+	if URL == nil {
+		return nil
+	}
 	pair := URL.searchCertificate()
 	t := &AdaTCP{URL: URL, order: order, pair: pair,
 		id: adaTCPID{pid: pid, timestamp: timestamp}}
@@ -207,6 +210,7 @@ func (connection *AdaTCP) Connect() (err error) {
 	url := fmt.Sprintf("%s:%d", connection.URL.Host, connection.URL.Port)
 	adatypes.Central.Log.Debugf("Open TCP connection to %s", url)
 	addr, _ := net.ResolveTCPAddr("tcp", url)
+
 	switch connection.URL.Driver {
 	case "adatcp":
 		tcpConn, tcpErr := net.DialTCP("tcp", nil, addr)
@@ -219,46 +223,14 @@ func (connection *AdaTCP) Connect() (err error) {
 		connection.connection = tcpConn
 		tcpConn.SetNoDelay(true)
 	case "adatcps":
-		//		config := tls.Config{Certificates: []tls.Certificate{cert}, InsecureSkipVerify: true}
-		config := tls.Config{InsecureSkipVerify: true}
-		if len(connection.pair) == 2 {
-			adatypes.Central.Log.Debugf("Load key pair")
-			cert, cerr := tls.LoadX509KeyPair(connection.pair[0], connection.pair[1])
-			if cerr != nil {
-				adatypes.Central.Log.Debugf("server: loadkeys: %s", cerr)
-				return cerr
-			}
-			config.Certificates = []tls.Certificate{cert}
-			config.InsecureSkipVerify = false
-		} else {
-			adatypes.Central.Log.Debugf("No key pair defined")
-		}
-		tcpConn, tcpErr := tls.Dial("tcp", url, &config)
-		err = tcpErr
+		err = connection.createSSLConnection(url)
 		if err != nil {
-			adatypes.Central.Log.Debugf("Connect error : %v", err)
+			adatypes.Central.Log.Debugf("Write TCP header in buffer error %s", err)
 			return
 		}
-		if adatypes.Central.IsDebugLevel() {
-			adatypes.Central.Log.Debugf("client: connected to: %v", tcpConn.RemoteAddr())
-			state := tcpConn.ConnectionState()
-			for _, v := range state.PeerCertificates {
-				adatypes.Central.Log.Debugf("Client: Server public key is:")
-				adatypes.Central.Log.Debugf("Remote Certificate Issuer: %v", v.Issuer.String())
-				//			x, _ := x509.MarshalPKIXPublicKey(v.PublicKey)
-				//			adatypes.Central.Log.Debugf("%s %v -> %v", v.Issuer.CommonName, x, pkerr)
-			}
-			adatypes.Central.Log.Debugf("client: handshake: %v", state.HandshakeComplete)
-			adatypes.Central.Log.Debugf("client: mutual: %v", state.NegotiatedProtocolIsMutual)
-
-			adatypes.Central.Log.Debugf("Connect dial passed ...")
-
-		}
-		connection.connection = tcpConn
 	default:
 		return adatypes.NewGenericError(131)
 	}
-	var buffer bytes.Buffer
 	header := NewAdatcpHeader(ConnectRequest)
 	payload := AdaTCPConnectPayload{Charset: adatcpASCII8, Floatingpoint: adatcpFloatIEEE}
 	copy(payload.Userid[:], connection.id.user[:])
@@ -267,9 +239,12 @@ func (connection *AdaTCP) Connect() (err error) {
 	payload.TimeStamp = connection.id.timestamp
 
 	header.Length = uint32(AdaTCPHeaderLength + unsafe.Sizeof(payload))
+	var buffer bytes.Buffer
 	err = binary.Write(&buffer, binary.BigEndian, header)
 	if err != nil {
 		adatypes.Central.Log.Debugf("Write TCP header in buffer error %s", err)
+		connection.connection.Close()
+		connection.connection = nil
 		return
 	}
 	if bigEndian() {
@@ -285,6 +260,8 @@ func (connection *AdaTCP) Connect() (err error) {
 	err = binary.Write(&buffer, binary.BigEndian, payload)
 	if err != nil {
 		adatypes.Central.Log.Debugf("Write TCP connect payload in buffer error %s", err)
+		connection.connection.Close()
+		connection.connection = nil
 		return
 	}
 	adatypes.Central.Log.Debugf("Buffer size after payload=%d", buffer.Len())
@@ -296,6 +273,8 @@ func (connection *AdaTCP) Connect() (err error) {
 	_, err = connection.connection.Write(send)
 	if err != nil {
 		adatypes.Central.Log.Debugf("Error writing data %s", err)
+		connection.connection.Close()
+		connection.connection = nil
 		return
 	}
 	rcvBuffer := make([]byte, buffer.Len())
@@ -303,6 +282,8 @@ func (connection *AdaTCP) Connect() (err error) {
 	//	_, err = connection.connection.Read(rcvBuffer)
 	if err != nil {
 		adatypes.Central.Log.Debugf("Error reading data %v", err)
+		connection.connection.Close()
+		connection.connection = nil
 		return
 	}
 
@@ -314,12 +295,16 @@ func (connection *AdaTCP) Connect() (err error) {
 	err = binary.Read(buf, binary.BigEndian, &header)
 	if err != nil {
 		adatypes.Central.Log.Debugf("Error parsing header %v", err)
+		connection.connection.Close()
+		connection.connection = nil
 		return
 	}
 
 	err = binary.Read(buf, binary.BigEndian, &payload)
 	if err != nil {
 		adatypes.Central.Log.Debugf("Error parsing payload %v", err)
+		connection.connection.Close()
+		connection.connection = nil
 		return
 	}
 
@@ -334,8 +319,53 @@ func (connection *AdaTCP) Connect() (err error) {
 	return
 }
 
+// createSSLConnection create SSL TCP connection
+func (connection *AdaTCP) createSSLConnection(url string) (err error) {
+	//		config := tls.Config{Certificates: []tls.Certificate{cert}, InsecureSkipVerify: true}
+	config := tls.Config{InsecureSkipVerify: true}
+	if len(connection.pair) == 2 {
+		adatypes.Central.Log.Debugf("Load key pair")
+		cert, cerr := tls.LoadX509KeyPair(connection.pair[0], connection.pair[1])
+		if cerr != nil {
+			adatypes.Central.Log.Debugf("server: loadkeys: %s", cerr)
+			return cerr
+		}
+		config.Certificates = []tls.Certificate{cert}
+		config.InsecureSkipVerify = false
+	} else {
+		adatypes.Central.Log.Debugf("No key pair defined")
+	}
+	tcpConn, tcpErr := tls.Dial("tcp", url, &config)
+	err = tcpErr
+	if err != nil {
+		adatypes.Central.Log.Debugf("Connect error : %v", err)
+		return
+	}
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("client: connected to: %v", tcpConn.RemoteAddr())
+		state := tcpConn.ConnectionState()
+		for _, v := range state.PeerCertificates {
+			adatypes.Central.Log.Debugf("Client: Server public key is:")
+			adatypes.Central.Log.Debugf("Remote Certificate Issuer: %v", v.Issuer.String())
+			//			x, _ := x509.MarshalPKIXPublicKey(v.PublicKey)
+			//			adatypes.Central.Log.Debugf("%s %v -> %v", v.Issuer.CommonName, x, pkerr)
+		}
+		adatypes.Central.Log.Debugf("client: handshake: %v", state.HandshakeComplete)
+		adatypes.Central.Log.Debugf("client: mutual: %v", state.NegotiatedProtocolIsMutual)
+
+		adatypes.Central.Log.Debugf("Connect dial passed ...")
+
+	}
+	connection.connection = tcpConn
+	return
+}
+
 // Disconnect disconnect remote TCP/IP Adabas nucleus
 func (connection *AdaTCP) Disconnect() (err error) {
+	if connection.connection == nil {
+		return adatypes.NewGenericError(114)
+	}
+
 	adatypes.Central.Log.Debugf("Disconnect connection to %s", connection.URL.String())
 	var buffer bytes.Buffer
 	header := NewAdatcpHeader(DisconnectRequest)
@@ -377,6 +407,7 @@ func (connection *AdaTCP) Disconnect() (err error) {
 	}
 
 	err = connection.connection.Close()
+	connection.connection = nil
 
 	return
 }
