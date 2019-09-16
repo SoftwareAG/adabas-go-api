@@ -106,9 +106,18 @@ type adatcpDisconnectPayload struct {
 	Dummy uint64
 }
 
+type adaTCPID struct {
+	user      [8]byte
+	node      [8]byte
+	pid       uint32
+	timestamp uint64
+}
+
 // AdaTCP TCP connection handle (for internal use only)
 type AdaTCP struct {
 	connection          net.Conn
+	URL                 *URL
+	driver              string
 	url                 string
 	order               binary.ByteOrder
 	adauuid             adaUUID
@@ -118,6 +127,8 @@ type AdaTCP struct {
 	databaseVersion     [16]byte
 	databaseName        [16]byte
 	databaseID          uint32
+	pair                []string
+	id                  adaTCPID
 }
 
 const adatcpDataHeaderEyecatcher = "DATA"
@@ -184,13 +195,17 @@ func Endian() binary.ByteOrder {
 
 // NewAdaTCP create new ADATCP connection to remote TCP/IP Adabas nucleus
 func NewAdaTCP(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
-	pid uint32, timestamp uint64) (connection *AdaTCP, err error) {
-	url := fmt.Sprintf("%s:%d", URL.Host, URL.Port)
+	pid uint32, timestamp uint64) (connection *AdaTCP) {
+	pair := URL.searchCertificate()
+	return &AdaTCP{URL: URL, order: order, pair: pair,
+		id: adaTCPID{user: user, node: node, pid: pid, timestamp: timestamp}}
+}
 
-	connection = &AdaTCP{url: url, order: order}
+// Connect establish connection to ADATCP server
+func (connection *AdaTCP) Connect() (err error) {
 	adatypes.Central.Log.Debugf("Open TCP connection to %s", connection.url)
 	addr, _ := net.ResolveTCPAddr("tcp", connection.url)
-	switch URL.Driver {
+	switch connection.driver {
 	case "adatcp":
 		tcpConn, tcpErr := net.DialTCP("tcp", nil, addr)
 		err = tcpErr
@@ -204,18 +219,19 @@ func NewAdaTCP(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 	case "adatcps":
 		//		config := tls.Config{Certificates: []tls.Certificate{cert}, InsecureSkipVerify: true}
 		config := tls.Config{InsecureSkipVerify: true}
-		if pair := URL.searchCertificate(); pair != nil {
+		if len(connection.pair) == 2 {
 			adatypes.Central.Log.Debugf("Load key pair")
-			cert, cerr := tls.LoadX509KeyPair(pair[0], pair[1])
+			cert, cerr := tls.LoadX509KeyPair(connection.pair[0], connection.pair[1])
 			if cerr != nil {
 				adatypes.Central.Log.Debugf("server: loadkeys: %s", cerr)
-				return nil, cerr
+				return cerr
 			}
 			config.Certificates = []tls.Certificate{cert}
 			config.InsecureSkipVerify = false
 		} else {
 			adatypes.Central.Log.Debugf("No key pair defined")
 		}
+		url := fmt.Sprintf("%s:%d", connection.URL.Host, connection.URL.Port)
 		tcpConn, tcpErr := tls.Dial("tcp", url, &config)
 		err = tcpErr
 		if err != nil {
@@ -239,15 +255,15 @@ func NewAdaTCP(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 		}
 		connection.connection = tcpConn
 	default:
-		return nil, adatypes.NewGenericError(131)
+		return adatypes.NewGenericError(131)
 	}
 	var buffer bytes.Buffer
 	header := NewAdatcpHeader(ConnectRequest)
 	payload := AdaTCPConnectPayload{Charset: adatcpASCII8, Floatingpoint: adatcpFloatIEEE}
-	copy(payload.Userid[:], user[:])
-	copy(payload.Nodeid[:], node[:])
-	payload.ProcessID = pid
-	payload.TimeStamp = timestamp
+	copy(payload.Userid[:], connection.id.user[:])
+	copy(payload.Nodeid[:], connection.id.node[:])
+	payload.ProcessID = connection.id.pid
+	payload.TimeStamp = connection.id.timestamp
 
 	header.Length = uint32(AdaTCPHeaderLength + unsafe.Sizeof(payload))
 	err = binary.Write(&buffer, binary.BigEndian, header)

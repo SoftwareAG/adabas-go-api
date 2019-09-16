@@ -251,8 +251,9 @@ func (adabas *Adabas) sendTCP() (err error) {
 	if adabas.transactions.connection == nil {
 		adatypes.Central.Log.Debugf("Establish new context for %p", adabas)
 
-		tcpConn, err = NewAdaTCP(adabas.URL, Endian(), adabas.ID.AdaID.User,
+		tcpConn = NewAdaTCP(adabas.URL, Endian(), adabas.ID.AdaID.User,
 			adabas.ID.AdaID.Node, adabas.ID.AdaID.Pid, adabas.ID.AdaID.Timestamp)
+		err = tcpConn.Connect()
 		if err != nil {
 			adabas.Acbx.Acbxrsp = AdaSysCe
 			adatypes.Central.Log.Debugf("Establish TCP context error %v", err)
