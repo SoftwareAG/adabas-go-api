@@ -117,8 +117,6 @@ type adaTCPID struct {
 type AdaTCP struct {
 	connection          net.Conn
 	URL                 *URL
-	driver              string
-	url                 string
 	order               binary.ByteOrder
 	adauuid             adaUUID
 	serverEndianness    byte
@@ -195,17 +193,21 @@ func Endian() binary.ByteOrder {
 
 // NewAdaTCP create new ADATCP connection to remote TCP/IP Adabas nucleus
 func NewAdaTCP(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
-	pid uint32, timestamp uint64) (connection *AdaTCP) {
+	pid uint32, timestamp uint64) *AdaTCP {
 	pair := URL.searchCertificate()
-	return &AdaTCP{URL: URL, order: order, pair: pair,
-		id: adaTCPID{user: user, node: node, pid: pid, timestamp: timestamp}}
+	t := &AdaTCP{URL: URL, order: order, pair: pair,
+		id: adaTCPID{pid: pid, timestamp: timestamp}}
+	copy(t.id.user[:], user[:])
+	copy(t.id.node[:], node[:])
+	return t
 }
 
 // Connect establish connection to ADATCP server
 func (connection *AdaTCP) Connect() (err error) {
-	adatypes.Central.Log.Debugf("Open TCP connection to %s", connection.url)
-	addr, _ := net.ResolveTCPAddr("tcp", connection.url)
-	switch connection.driver {
+	url := fmt.Sprintf("%s:%d", connection.URL.Host, connection.URL.Port)
+	adatypes.Central.Log.Debugf("Open TCP connection to %s", url)
+	addr, _ := net.ResolveTCPAddr("tcp", url)
+	switch connection.URL.Driver {
 	case "adatcp":
 		tcpConn, tcpErr := net.DialTCP("tcp", nil, addr)
 		err = tcpErr
@@ -231,7 +233,6 @@ func (connection *AdaTCP) Connect() (err error) {
 		} else {
 			adatypes.Central.Log.Debugf("No key pair defined")
 		}
-		url := fmt.Sprintf("%s:%d", connection.URL.Host, connection.URL.Port)
 		tcpConn, tcpErr := tls.Dial("tcp", url, &config)
 		err = tcpErr
 		if err != nil {
@@ -335,7 +336,7 @@ func (connection *AdaTCP) Connect() (err error) {
 
 // Disconnect disconnect remote TCP/IP Adabas nucleus
 func (connection *AdaTCP) Disconnect() (err error) {
-	adatypes.Central.Log.Debugf("Disconnect connection to %s", connection.url)
+	adatypes.Central.Log.Debugf("Disconnect connection to %s", connection.URL.String())
 	var buffer bytes.Buffer
 	header := NewAdatcpHeader(DisconnectRequest)
 	header.Identification = connection.adauuid
