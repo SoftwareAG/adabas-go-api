@@ -301,12 +301,19 @@ func (adaid *ID) status(url string) *Status {
 // }
 
 func (adaid *ID) platform(url string) *adatypes.Platform {
-	return adaid.status(url).platform
+	s := adaid.status(url)
+	if s == nil {
+		return nil
+	}
+	return s.platform
 }
 
 func (adaid *ID) changeOpenState(url string, open bool) {
 	adatypes.Central.Log.Debugf("Register open=%v to url=%s", open, url)
 	s := adaid.status(url)
+	if s == nil {
+		return
+	}
 	s.open = open
 	if !open {
 		s.openTransactions = 0
@@ -314,21 +321,35 @@ func (adaid *ID) changeOpenState(url string, open bool) {
 }
 
 func (adaid *ID) isOpen(url string) bool {
-	open := adaid.status(url).open
+	s := adaid.status(url)
+	if s == nil {
+		return false
+	}
+	open := s.open
 	adatypes.Central.Log.Debugf("Register open=%v to url=%s", open, url)
 	return open
 }
 
 func (adaid *ID) transactions(url string) uint32 {
-	return adaid.status(url).openTransactions
+	s := adaid.status(url)
+	if s == nil {
+		return 0
+	}
+	return s.openTransactions
 }
 
 func (adaid *ID) incTransactions(url string) {
 	s := adaid.status(url)
+	if s == nil {
+		return
+	}
 	s.openTransactions++
 }
 
 func (adaid *ID) clearTransactions(url string) {
 	s := adaid.status(url)
+	if s == nil {
+		return
+	}
 	s.openTransactions = 0
 }

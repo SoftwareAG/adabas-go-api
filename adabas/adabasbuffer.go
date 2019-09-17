@@ -155,7 +155,7 @@ func (adabasBuffer *Buffer) WriteBinary(content []byte) {
 	adabasBuffer.abd.Abdsend = uint64(adabasBuffer.offset)
 }
 
-// Allocate allocate buffer of specified size
+// Allocate allocate buffer of specified size, data in buffer a cleared
 func (adabasBuffer *Buffer) Allocate(size uint32) {
 	if adabasBuffer.buffer == nil || size != uint32(len(adabasBuffer.buffer)) {
 		adabasBuffer.buffer = make([]byte, size)
@@ -184,6 +184,16 @@ func (adabasBuffer *Buffer) position(pos int) int {
 // Received Number of received bytes
 func (adabasBuffer *Buffer) Received() uint64 {
 	return adabasBuffer.abd.Abdrecv
+}
+
+// Size Buffer size
+func (adabasBuffer *Buffer) Size() uint64 {
+	return adabasBuffer.abd.Abdsize
+}
+
+// ID returns ABD type id
+func (adabasBuffer *Buffer) ID() rune {
+	return rune(adabasBuffer.abd.Abdid)
 }
 
 // Clear buffer emptied

@@ -857,6 +857,7 @@ var statisMessages = []struct {
 	{"ADG0000111", "en", "Invalid length of {0} for fields of type {1} with name {2}"},
 	{"ADG0000112", "en", "Integer representation of value {0} is not possible because of fractional value {1}"},
 	{"ADG0000113", "en", "ISN field in interface is no valid 64-bit unsigned integer "},
+	{"ADG0000114", "en", "ADATCP connection not initialized before"},
 	{"ADG0000120", "en", "Although reference value given, condition matrix missing"},
 	{"ADG0000121", "en", "Period group index missing"},
 	{"ADG0000122", "en", "Element index entry not available"},
