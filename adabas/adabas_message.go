@@ -51,12 +51,10 @@ func (adabas *Adabas) getAdabasMessage() []string {
 
 // Error error message with code and time
 type Error struct {
-	When        time.Time
-	Code        string
-	Message     string
-	Response    uint16
-	SubResponse uint16
-	Addition2   [4]byte
+	When    time.Time
+	Acbx    Acbx
+	Code    string
+	Message string
 }
 
 // NewError Create new Adabas errror
@@ -73,7 +71,22 @@ func NewError(adbas *Adabas) *Error {
 	msg = fmt.Sprintf("%s (rsp=%d,subrsp=%d,dbid=%s,file=%d)", msg, adbas.Acbx.Acbxrsp,
 		adbas.Acbx.Acbxerrc, adbas.URL.String(), adbas.Acbx.Acbxfnr)
 	adatypes.Central.Log.Debugf("Adabas error message created:[%s] %s", msgCode, msg)
-	return &Error{When: time.Now(), Code: msgCode, Message: msg, Response: adbas.Acbx.Acbxrsp, SubResponse: adbas.Acbx.Acbxerrc, Addition2: adbas.Acbx.Acbxadd2}
+	return &Error{When: time.Now(), Code: msgCode, Message: msg, Acbx: *adbas.Acbx}
+}
+
+// Response return the response code of adabas call
+func (e Error) Response() uint16 {
+	return e.Acbx.Acbxrsp
+}
+
+// SubResponse return the sub response code of adabas call
+func (e Error) SubResponse() uint16 {
+	return e.Acbx.Acbxerrc
+}
+
+// Addition2 return the additon 2 sub field of adabas call
+func (e Error) Addition2() [4]byte {
+	return e.Acbx.Acbxadd2
 }
 
 // Error error main interface function, providing message error code and message
