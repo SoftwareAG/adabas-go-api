@@ -282,9 +282,6 @@ func (adabas *Adabas) CallAdabas() (err error) {
 				cPassword := C.CString(adabas.ID.pwd)
 				x.user = cUser
 				x.pwd = cPassword
-				// C.lnk_set_uid_pw(C.uint(adabas.Acbx.Acbxdbid), cUser, cPassword)
-				// C.free(unsafe.Pointer(cUser))
-				// C.free(unsafe.Pointer(cPassword))
 			}
 			ret := int(C.go_eadabasx((*C.ADAID_T)(unsafe.Pointer(adabas.ID.AdaID)),
 				(*C.ACBX)(unsafe.Pointer(adabas.Acbx)), C.int(len(adabas.AdabasBuffers)), pabdArray, x))

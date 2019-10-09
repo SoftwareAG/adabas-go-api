@@ -22,7 +22,6 @@ package adabas
 import (
 	"bytes"
 	"fmt"
-	"strings"
 	"unsafe"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -83,62 +82,6 @@ type Acbx struct {
 	Acbxrsv4     [16]byte /* +B0  Reserved - must be 0x00     */
 }
 
-// Adabas command code definitions, list of valid Adabas calls
-
-type commandCode uint
-
-const (
-	empty commandCode = iota
-	op
-	cl
-	bt
-	et
-	lf
-	l1
-	l2
-	l3
-	l4
-	l5
-	l6
-	l9
-	n1
-	n2
-	a1
-	s1
-	s2
-	s3
-	e1
-	u1
-	u2
-	u3
-	rc
-	ri
-)
-
-var commandCodes = []string{"  ", "OP", "CL", "BT", "ET", "LF", "L1", "L2", "L3", "L4", "L5", "L6", "L9",
-	"N1", "N2", "A1", "S1", "S2", "S3", "E1", "U1", "U2", "U3", "RC", "RI"}
-
-func (cc commandCode) code() [2]byte {
-	var code [2]byte
-	codeConst := []byte(commandCodes[cc])
-	copy(code[:], codeConst[0:2])
-	return code
-}
-
-func (cc commandCode) command() string {
-	return commandCodes[cc]
-}
-
-func validAcbxCommand(cmd [2]byte) bool {
-	checkCmd := strings.ToUpper(string(cmd[:]))
-	for _, validCmd := range commandCodes {
-		if validCmd == checkCmd {
-			return true
-		}
-	}
-	return false
-}
-
 func newAcbx(dbid Dbid) *Acbx {
 	var cb Acbx
 	cb = Acbx{
@@ -181,28 +124,6 @@ func (acbx *Acbx) resetAcbx() {
 		acbx.Acbxadd1[i] = ' '
 	}
 	resetArray(acbx.Acbxadd2[:])
-	/*    memcpy(((PACBX)pACBX)->acbxcmd, "  "  , sizeof(((PACBX)pACBX)->acbxcmd));
-	      memcpy(((PACBX)pACBX)->acbxcid, "    ", sizeof(((PACBX)pACBX)->acbxcid));
-	      ((PACBX)pACBX)->acbxcop1   = ' ';
-	      ((PACBX)pACBX)->acbxcop2   = ' ';
-	      ((PACBX)pACBX)->acbxcop3   = ' ';
-	      ((PACBX)pACBX)->acbxcop4   = ' ';
-	      ((PACBX)pACBX)->acbxcop5   = ' ';
-	      ((PACBX)pACBX)->acbxcop6   = ' ';
-	      ((PACBX)pACBX)->acbxcop7   = ' ';
-	      ((PACBX)pACBX)->acbxcop8   = ' ';
-	      memcpy(((PACBX)pACBX)->acbxadd1, "        ", sizeof(((PACBX)pACBX)->acbxadd1));
-	      memcpy(((PACBX)pACBX)->acbxadd2, "    "    , sizeof(((PACBX)pACBX)->acbxadd2));
-	      memcpy(((PACBX)pACBX)->acbxadd3, "        ", sizeof(((PACBX)pACBX)->acbxadd3));
-	      memcpy(((PACBX)pACBX)->acbxadd4, "        ", sizeof(((PACBX)pACBX)->acbxadd4));
-	      memcpy(((PACBX)pACBX)->acbxadd6, "        ", sizeof(((PACBX)pACBX)->acbxadd6));
-	      memcpy(((PACBX)pACBX)->acbxerrb, "  "      , sizeof(((PACBX)pACBX)->acbxerrb));
-	      ((PACBX)pACBX)->acbxerrd   = ' ';
-	      ((PACBX)pACBX)->acbxerre   = ' ';
-	      ((PACBX)pACBX)->acbxerrf   = 0;
-	      memcpy(((PACBX)pACBX)->acbxsubt, "    "    , sizeof(((PACBX)pACBX)->acbxsubt));
-	      memset(((PACBX)pACBX)->acbxuser, ' ', sizeof(((PACBX)pACBX)->acbxuser));
-	*/
 }
 
 func (acbx *Acbx) String() string {
@@ -295,10 +216,6 @@ func (adaid *ID) status(url string) *Status {
 	adaid.connectionMap[url] = s
 	return s
 }
-
-// func (adaid *ID) changePlatform(url string, platform *adatypes.Platform) {
-// 	adaid.status(url).platform = platform
-// }
 
 func (adaid *ID) platform(url string) *adatypes.Platform {
 	s := adaid.status(url)

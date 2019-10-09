@@ -42,19 +42,6 @@ const MaxDatabasesID = 65536
 const adaEmptOpt = ' '
 const adaFdtXOpt = 'X'
 
-const (
-	// AdaNormal Adabas success response code
-	AdaNormal = 0
-	// AdaEOF Adabas End of File reached (End of data received)
-	AdaEOF = 3
-	// AdaRbts Adabas record buffer too short
-	AdaRbts = 53
-	// AdaAnact Adabas offline
-	AdaAnact = 148
-	// AdaSysCe Adabas remote connection problem
-	AdaSysCe = 149
-)
-
 type adabasOption uint32
 
 // Transaction flags to synchronize and manage different requests
