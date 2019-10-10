@@ -450,18 +450,21 @@ func (connection *Connection) CreateDeleteRequest(fnr Fnr) (*DeleteRequest, erro
 
 // CreateMapDeleteRequest create a read request using a given map
 func (connection *Connection) CreateMapDeleteRequest(mapName string) (request *DeleteRequest, err error) {
-	if connection.repository == nil {
-		err = adatypes.NewGenericError(9)
+	err = connection.prepareMapUsage(mapName)
+	if err != nil {
 		return
 	}
-	connection.repository.SearchMapInRepository(connection.adabasToMap, mapName)
+	// if connection.repository == nil {
+	// 	err = adatypes.NewGenericError(9)
+	// 	return
+	// }
+	// connection.repository.SearchMapInRepository(connection.adabasToMap, mapName)
 	if connection.adabasMap == nil {
 		err = adatypes.NewGenericError(8, mapName)
 		return
 	}
 	connection.adabasToData, err = NewAdabas(connection.adabasMap.URL(), connection.ID)
 	if err != nil {
-		//err = adatypes.NewGenericError(10)
 		return
 	}
 	connection.fnr = connection.adabasMap.Data.Fnr

@@ -28,6 +28,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var lastIsn adatypes.Isn
+
 func BenchmarkConnection_cached(b *testing.B) {
 	err := initLogWithFile("connection_map.log")
 	if err != nil {
@@ -480,6 +482,8 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 	}
 	err = store.EndTransaction()
 	assert.NoError(t, err)
+
+	connection.Close()
 }
 
 func ExampleConnection_readWithMap() {
@@ -727,6 +731,7 @@ func addVehiclesRecord(t *testing.T, storeRequest *StoreRequest, val string) err
 	if !assert.NoError(t, err) {
 		return err
 	}
+	lastIsn = storeRecord.Isn
 
 	return nil
 }
@@ -814,6 +819,24 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	adatypes.Central.Log.Infof("Check stored data")
 	checkStoreByFile(t, adabasModDBIDs, 16, multipleTransactionRefName)
 	checkStoreByFile(t, adabasModDBIDs, 19, multipleTransactionRefName2)
+
+	connection.Close()
+
+	AddGlobalMapRepositoryReference(adabasModDBIDs + ",250")
+	a, _ := NewAdabas(1)
+	defer DelGlobalMapRepository(a, 250)
+
+	connection, err = NewConnection("acj;map")
+	if !assert.NoError(t, err) {
+		return
+	}
+	deleteRequest, derr := connection.CreateMapDeleteRequest(vehicleMapName)
+	if !assert.NoError(t, derr) {
+		return
+	}
+
+	err = deleteRequest.Delete(adatypes.Isn(lastIsn))
+	assert.NoError(t, derr)
 
 }
 
