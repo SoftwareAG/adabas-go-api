@@ -98,9 +98,18 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 					adabasMap: adabasMap, repository: dataRepository}}
 			} else {
 				rep := param[2].(*Repository)
-				adabasMap, err := rep.SearchMap(ada, mapName)
-				if err != nil {
-					return nil, err
+				var adabasMap *Map
+				var err error
+				if rep == nil {
+					adabasMap, _, err = SearchMapRepository(ada, mapName)
+					if err != nil {
+						return nil, err
+					}
+				} else {
+					adabasMap, err = rep.SearchMap(ada, mapName)
+					if err != nil {
+						return nil, err
+					}
 				}
 				dataRepository := &Repository{DatabaseURL: *adabasMap.Data}
 				request = &StoreRequest{commonRequest: commonRequest{MapName: mapName,
