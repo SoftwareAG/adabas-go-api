@@ -115,3 +115,17 @@ func (dynamic *DynamicInterface) ExtractIsnField(value reflect.Value) Isn {
 	}
 	return 0
 }
+
+// PutIsnField put ISN field back into structure
+func (dynamic *DynamicInterface) PutIsnField(value reflect.Value, isn Isn) {
+	v := value
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if k, ok := dynamic.FieldNames["#isn"]; ok {
+		Central.Log.Debugf("Set ISN field: %s", k)
+		for _, kisn := range k {
+			v.FieldByName(kisn).SetUint(uint64(isn))
+		}
+	}
+}

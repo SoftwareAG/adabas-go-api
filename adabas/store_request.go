@@ -354,11 +354,13 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 	}
 	adatypes.Central.Log.Debugf("store/update=%v record ADA: %s", store, storeRecord.String())
 	storeRecord.Isn = request.dynamic.ExtractIsnField(record)
+	adatypes.Central.Log.Debugf("store/update to ISN=%d", storeRecord.Isn)
 	if store {
 		err := request.Store(storeRecord)
 		if err != nil {
 			return adatypes.NewGenericError(53, err.Error())
 		}
+		request.dynamic.PutIsnField(record, storeRecord.Isn)
 	} else {
 		if storeRecord.Isn == 0 {
 			err := request.evaluateKeyIsn(record, storeRecord)

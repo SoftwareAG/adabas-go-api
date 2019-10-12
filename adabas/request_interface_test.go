@@ -952,3 +952,27 @@ func TestEmployeesMap(t *testing.T) {
 	assert.Equal(t, "COMP25", string(m.Department))
 
 }
+
+func TestStoreInterfaceIndex(t *testing.T) {
+	initTestLogWithFile(t, "request_interface.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	storeRequest, err := connection.CreateMapStoreRequest(EmployeesIndex{})
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer storeRequest.Close()
+	e := &EmployeesIndex{Index: 0, ID: "XXXIndex", LastName: "AKKKKMK"}
+	err = storeRequest.StoreData(e)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.True(t, 0 < e.Index, "Got no ISN back")
+	fmt.Println("Got ISN=", e.Index)
+}
