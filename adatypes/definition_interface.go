@@ -79,7 +79,11 @@ func evaluatePeriodGroup(adaValue IAdaValue, v reflect.Value, tp *valueInterface
 	stt := st.Type.Elem()
 	Central.Log.Debugf("Use type %s %s %v kind=%v", stt.Name(), stt.String(), stt, stt.Kind())
 	sv := adaValue.(*StructureValue)
-	elemSlice := reflect.MakeSlice(reflect.SliceOf(stt), sv.NrElements(), 10)
+	cap := 10
+	if sv.NrElements() > cap {
+		cap = sv.NrElements()
+	}
+	elemSlice := reflect.MakeSlice(reflect.SliceOf(stt), sv.NrElements(), cap)
 	if stt.Kind() == reflect.Ptr {
 		stt = stt.Elem()
 	}
