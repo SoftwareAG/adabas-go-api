@@ -89,7 +89,7 @@ func (value *StructureValue) initMultipleSubValues(index uint32, peIndex uint32,
 				return
 			}
 			stv.setPeriodIndex(peIndex)
-			stv.setMultipleIndex(muIndex)
+				stv.setMultipleIndex(muIndex)
 			Central.Log.Debugf("Add to %s[%d,%d] element %s[%d,%d] --> index=%d", value.Type().Name(), value.PeriodIndex(),
 				value.MultipleIndex(), stv.Type().Name(),
 				stv.PeriodIndex(), stv.MultipleIndex(), peIndex)
@@ -780,6 +780,9 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Search for %s", s)
 	}
+	if value.Type().Type()==FieldTypeMultiplefield {
+		subValue.setPeriodIndex(value.PeriodIndex())
+	}
 	var v IAdaValue
 	if v, ok = element.valueMap[s]; ok {
 		if Central.IsDebugLevel() {
@@ -789,12 +792,17 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 	} else {
 		if value.Elements == nil {
 			Central.Log.Debugf("Create new list for %s and append", value.Type().Name())
+			if value.Type().Type()==FieldTypeMultiplefield {
+				subValue.setMultipleIndex(1)				
+			}
 			var values []IAdaValue
 			values = append(values, subValue)
-
 			element.Values = values
 		} else {
 			Central.Log.Debugf("Append list to %s", value.Type().Name())
+			if value.Type().Type()==FieldTypeMultiplefield {
+				subValue.setMultipleIndex(uint32(len(element.Values)+1)				)
+			}
 			element.Values = append(element.Values, subValue)
 		}
 		Central.Log.Debugf("Add sub value new %s[%d:%d] %T",
