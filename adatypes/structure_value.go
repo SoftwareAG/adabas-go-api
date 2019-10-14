@@ -89,7 +89,7 @@ func (value *StructureValue) initMultipleSubValues(index uint32, peIndex uint32,
 				return
 			}
 			stv.setPeriodIndex(peIndex)
-				stv.setMultipleIndex(muIndex)
+			stv.setMultipleIndex(muIndex)
 			Central.Log.Debugf("Add to %s[%d,%d] element %s[%d,%d] --> index=%d", value.Type().Name(), value.PeriodIndex(),
 				value.MultipleIndex(), stv.Type().Name(),
 				stv.PeriodIndex(), stv.MultipleIndex(), peIndex)
@@ -760,13 +760,15 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 	subValue.SetParent(value)
 	var element *structureElement
 	var ok bool
+	lenElements := 0 
 	if value.Elements == nil {
 		Central.Log.Debugf("Elements empty")
 	} else {
 		Central.Log.Debugf("Elements in list %d", len(value.Elements))
+		lenElements = len(value.Elements)
 	}
 	curIndex := index
-	Central.Log.Debugf("Current add value index = %d", curIndex)
+	Central.Log.Debugf("Current add value index = %d lenElements=%d", curIndex,lenElements)
 	if element, ok = value.elementMap[curIndex]; !ok {
 		element = newStructureElement()
 		value.Elements = append(value.Elements, element)
@@ -780,7 +782,7 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Search for %s", s)
 	}
-	if value.Type().Type()==FieldTypeMultiplefield {
+	if value.Type().Type() == FieldTypeMultiplefield {
 		subValue.setPeriodIndex(value.PeriodIndex())
 	}
 	var v IAdaValue
@@ -792,16 +794,17 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 	} else {
 		if value.Elements == nil {
 			Central.Log.Debugf("Create new list for %s and append", value.Type().Name())
-			if value.Type().Type()==FieldTypeMultiplefield {
-				subValue.setMultipleIndex(1)				
+			if value.Type().Type() == FieldTypeMultiplefield {
+				subValue.setMultipleIndex(1)
 			}
 			var values []IAdaValue
 			values = append(values, subValue)
 			element.Values = values
 		} else {
-			Central.Log.Debugf("Append list to %s", value.Type().Name())
-			if value.Type().Type()==FieldTypeMultiplefield {
-				subValue.setMultipleIndex(uint32(len(element.Values)+1)				)
+			Central.Log.Debugf("Append list to %s len=%d", value.Type().Name(),len(element.Values))
+			if value.Type().Type() == FieldTypeMultiplefield {
+				subValue.setMultipleIndex(uint32(lenElements+1))
+				// subValue.setMultipleIndex(uint32(len(element.Values) + 1))
 			}
 			element.Values = append(element.Values, subValue)
 		}

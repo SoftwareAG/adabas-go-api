@@ -554,15 +554,16 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 		st := sv.Type().(*StructureType)
 		//sv.Type().
 		//	sv.Elements = append(sv.Elements, subValue)
-		if len(sv.Elements) == 0 {
-			e := &structureElement{}
-			sv.Elements = append(sv.Elements, e)
-		}
-		if len(sv.Elements[0].Values) >= int(index[0]) {
-			Central.Log.Debugf("Adapt %#v", st.SubTypes)
-			subValue := sv.Elements[0].Values[int(index[0]-1)]
-			err = subValue.SetValue(x)
-		} else {
+		// if len(sv.Elements) == 0 {
+		// 	e := &structureElement{}
+		// 	Central.Log.Debugf("Add empty element to %s",sv.Type().Name())
+		// 	sv.Elements = append(sv.Elements, e)
+		// }
+		// if len(sv.Elements[0].Values) >= int(index[0]) {
+		// 	Central.Log.Debugf("Adapt %#v", st.SubTypes)
+		// 	subValue := sv.Elements[0].Values[int(index[0]-1)]
+		// 	err = subValue.SetValue(x)
+		// } else {
 			subValue, serr := st.SubTypes[0].Value()
 			if serr != nil {
 				return serr
@@ -574,7 +575,7 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 			err = sv.addValue(subValue, index[0])
 			// subValue.setMultipleIndex(index[0])
 			// sv.Elements[0].Values = append(sv.Elements[0].Values, subValue)
-		}
+		// }
 		Central.Log.Debugf("Add Multiple field, elements=%d", len(sv.Elements))
 	default:
 		err = val.SetValue(x)

@@ -168,12 +168,12 @@ func (record *Record) searchValue(field string) (adatypes.IAdaValue, bool) {
 
 // SetValue set the value for a specific field
 func (record *Record) SetValue(field string, value interface{}) (err error) {
-	adatypes.Central.Log.Debugf("Set value %s",field)
+	adatypes.Central.Log.Debugf("Set value %s", field)
 	if strings.ContainsRune(field, '[') {
 		i := strings.IndexRune(field, '[')
 		c := strings.IndexRune(field[i:], ',')
 		e := strings.IndexRune(field, ']')
-		if c >0 {
+		if c > 0 {
 			eField := field[:i]
 			index1, xerr := strconv.Atoi(field[i+1 : i+c])
 			if xerr != nil {
@@ -183,9 +183,9 @@ func (record *Record) SetValue(field string, value interface{}) (err error) {
 			if xerr != nil {
 				return xerr
 			}
-			return record.SetValueWithIndex(eField, []uint32{uint32(index1),uint32(index2)}, value)
+			return record.SetValueWithIndex(eField, []uint32{uint32(index1), uint32(index2)}, value)
 		}
-		
+
 		index, xerr := strconv.Atoi(field[i+1 : e])
 		if xerr != nil {
 			return xerr

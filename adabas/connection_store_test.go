@@ -17,45 +17,55 @@
 *
  */
 
- package adabas
+package adabas
 
- import (
-	"testing"
+import (
 	"github.com/stretchr/testify/assert"
+	"testing"
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
- func TestConnectionStorePEMU(t *testing.T) {
+func TestConnectionStorePEMU(t *testing.T) {
 	initTestLogWithFile(t, "connection_store.log")
 
-	connection, err := NewConnection("acj;target="+ adabasModDBIDs)
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
 	}
 	defer connection.Close()
 
-storeRequest,serr:=	connection.CreateStoreRequest(16)
-if !assert.NoError(t, serr) {
-	return
-}
-err = storeRequest.StoreFields("*")
-if !assert.NoError(t, err) {
-	return
-}
-record,rerr:=storeRequest.CreateRecord()
-if !assert.NoError(t, rerr) {
-	return
-}
-err=record.SetValue("AA","PEMU")
-assert.NoError(t, err)
-err=record.SetValue("AE","XNAME")
-assert.NoError(t, err)
-err=record.SetValue("AS[1]",123)
-assert.NoError(t, err)
-err=record.SetValue("AR[1]","223")
-assert.NoError(t, err)
-err=record.SetValue("AT[1,1]",323)
-assert.NoError(t, err)
-err=record.SetValue("AT[1][2]",456)
-assert.NoError(t, err)
-record.DumpValues()
+	storeRequest, serr := connection.CreateStoreRequest(16)
+	if !assert.NoError(t, serr) {
+		return
+	}
+	err = storeRequest.StoreFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	record, rerr := storeRequest.CreateRecord()
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	err = record.SetValue("AA", "PEMU")
+	assert.NoError(t, err)
+	err = record.SetValue("AE", "XNAME")
+	assert.NoError(t, err)
+	err = record.SetValue("AS[1]", 123)
+	assert.NoError(t, err)
+	err = record.SetValue("AR[1]", "223")
+	assert.NoError(t, err)
+	err = record.SetValue("AT[1,1]", 323)
+	assert.NoError(t, err)
+	err = record.SetValue("AT[1][2]", 456)
+	assert.NoError(t, err)
+	adatypes.Central.Log.Debugf("Set AZ[1]")
+	err = record.SetValue("AZ[1]", "123")
+	assert.NoError(t, err)
+	adatypes.Central.Log.Debugf("Set AZ[2]")
+	err = record.SetValue("AZ[2]", "999")
+	assert.NoError(t, err)
+	adatypes.Central.Log.Debugf("AZ set")
+	record.DumpValues()
+	err = storeRequest.Store(record)
+	assert.NoError(t, err)
 }

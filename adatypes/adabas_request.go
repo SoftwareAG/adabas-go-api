@@ -166,7 +166,7 @@ func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResu
 
 // Traverse callback function to create format buffer and record buffer length
 func formatBufferTraverserLeave(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
-	Central.Log.Debugf("Leave structure %s %v", adaValue.Type().Name(),adaValue.Type().Type().Name())
+	Central.Log.Debugf("Leave structure %s %v", adaValue.Type().Name(), adaValue.Type().Type())
 	if adaValue.Type().IsStructure() {
 		// Reset if period group starts
 		if adaValue.Type().Level() == 1 && adaValue.Type().Type() == FieldTypePeriodGroup {
