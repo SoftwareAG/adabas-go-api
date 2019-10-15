@@ -792,9 +792,12 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 				v.Type().Name(), v.PeriodIndex(), v.MultipleIndex(), v)
 		}
 	} else {
+		// Check elements list already available
 		if value.Elements == nil {
 			Central.Log.Debugf("Create new list for %s and append", value.Type().Name())
-			if value.Type().Type() == FieldTypeMultiplefield {
+
+			// If MU field and index not already initialized, define index
+			if value.Type().Type() == FieldTypeMultiplefield && subValue.MultipleIndex() == 0 {
 				subValue.setMultipleIndex(1)
 			}
 			var values []IAdaValue
@@ -802,7 +805,9 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 			element.Values = values
 		} else {
 			Central.Log.Debugf("Append list to %s len=%d", value.Type().Name(), len(element.Values))
-			if value.Type().Type() == FieldTypeMultiplefield {
+
+			// If MU field and index not already initialized, define index
+			if value.Type().Type() == FieldTypeMultiplefield && subValue.MultipleIndex() == 0 {
 				subValue.setMultipleIndex(uint32(lenElements + 1))
 				// subValue.setMultipleIndex(uint32(len(element.Values) + 1))
 			}
