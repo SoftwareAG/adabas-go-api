@@ -564,17 +564,17 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 		// 	subValue := sv.Elements[0].Values[int(index[0]-1)]
 		// 	err = subValue.SetValue(x)
 		// } else {
-			subValue, serr := st.SubTypes[0].Value()
-			if serr != nil {
-				return serr
-			}
-			err = subValue.SetValue(x)
-			if err != nil {
-				return err
-			}
-			err = sv.addValue(subValue, index[0])
-			// subValue.setMultipleIndex(index[0])
-			// sv.Elements[0].Values = append(sv.Elements[0].Values, subValue)
+		subValue, serr := st.SubTypes[0].Value()
+		if serr != nil {
+			return serr
+		}
+		err = subValue.SetValue(x)
+		if err != nil {
+			return err
+		}
+		err = sv.addValue(subValue, index[0])
+		// subValue.setMultipleIndex(index[0])
+		// sv.Elements[0].Values = append(sv.Elements[0].Values, subValue)
 		// }
 		Central.Log.Debugf("Add Multiple field, elements=%d", len(sv.Elements))
 	default:

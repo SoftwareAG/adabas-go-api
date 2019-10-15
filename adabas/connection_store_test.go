@@ -20,9 +20,9 @@
 package adabas
 
 import (
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
 	"testing"
-	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
 func TestConnectionStorePEMU(t *testing.T) {

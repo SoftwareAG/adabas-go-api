@@ -760,7 +760,7 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 	subValue.SetParent(value)
 	var element *structureElement
 	var ok bool
-	lenElements := 0 
+	lenElements := 0
 	if value.Elements == nil {
 		Central.Log.Debugf("Elements empty")
 	} else {
@@ -768,7 +768,7 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 		lenElements = len(value.Elements)
 	}
 	curIndex := index
-	Central.Log.Debugf("Current add value index = %d lenElements=%d", curIndex,lenElements)
+	Central.Log.Debugf("Current add value index = %d lenElements=%d", curIndex, lenElements)
 	if element, ok = value.elementMap[curIndex]; !ok {
 		element = newStructureElement()
 		value.Elements = append(value.Elements, element)
@@ -801,9 +801,9 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 			values = append(values, subValue)
 			element.Values = values
 		} else {
-			Central.Log.Debugf("Append list to %s len=%d", value.Type().Name(),len(element.Values))
+			Central.Log.Debugf("Append list to %s len=%d", value.Type().Name(), len(element.Values))
 			if value.Type().Type() == FieldTypeMultiplefield {
-				subValue.setMultipleIndex(uint32(lenElements+1))
+				subValue.setMultipleIndex(uint32(lenElements + 1))
 				// subValue.setMultipleIndex(uint32(len(element.Values) + 1))
 			}
 			element.Values = append(element.Values, subValue)
