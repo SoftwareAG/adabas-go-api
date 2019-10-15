@@ -698,7 +698,7 @@ func addEmployeeRecord(t *testing.T, storeRequest *StoreRequest, val string) err
 		return err
 	}
 	// storeRecord16.DumpValues()
-	fmt.Println("Stored Employees request")
+	// fmt.Println("Stored Employees request")
 	adatypes.Central.Log.Debugf("Vehicles store started")
 	err = storeRequest.Store(storeRecord16)
 	if !assert.NoError(t, err) {
@@ -726,7 +726,7 @@ func addVehiclesRecord(t *testing.T, storeRequest *StoreRequest, val string) err
 		return err
 	}
 	// storeRecord.DumpValues()
-	fmt.Println("Store Vehicle request")
+	//fmt.Println("Store Vehicle request")
 	err = storeRequest.Store(storeRecord)
 	if !assert.NoError(t, err) {
 		return err
