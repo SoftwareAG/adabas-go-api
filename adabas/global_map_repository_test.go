@@ -114,6 +114,8 @@ func TestGlobalMapConnectionDirect(t *testing.T) {
 func TestThreadMapCache(t *testing.T) {
 	initTestLogWithFile(t, "global_map_repositories.log")
 
+	DumpGlobalMapRepositories()
+
 	StartAsynchronousMapCache(10)
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	ada, _ := NewAdabas(23)
