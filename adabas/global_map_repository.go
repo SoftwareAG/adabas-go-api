@@ -161,7 +161,7 @@ func DumpGlobalMapRepositories() {
 		}
 
 	}
-	fmt.Println("Dump global registered map repositories done")
+	fmt.Printf("Number of entries in cache=%d\n", len(mapHash))
 }
 
 // AllGlobalMaps search in map repository all maps

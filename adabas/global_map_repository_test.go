@@ -115,6 +115,7 @@ func TestThreadMapCache(t *testing.T) {
 	initTestLogWithFile(t, "global_map_repositories.log")
 
 	DumpGlobalMapRepositories()
+	CleanGlobalMapRepository()
 
 	StartAsynchronousMapCache(10)
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
