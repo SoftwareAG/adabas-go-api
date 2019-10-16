@@ -736,8 +736,8 @@ func addVehiclesRecord(t *testing.T, storeRequest *StoreRequest, val string) err
 	return nil
 }
 
-const multipleTransactionRefName = "M16555"
-const multipleTransactionRefName2 = "M19555"
+const multipleMapRefName = "M16555"
+const multipleMapRefName2 = "M19555"
 
 func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	if testing.Short() {
@@ -784,7 +784,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	if !assert.NoError(t, recErr) {
 		return
 	}
-	err = addEmployeeRecord(t, storeRequest16, multipleTransactionRefName+"_0")
+	err = addEmployeeRecord(t, storeRequest16, multipleMapRefName+"_0")
 	if err != nil {
 		return
 	}
@@ -796,19 +796,19 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	if !assert.NoError(t, recErr) {
 		return
 	}
-	err = addVehiclesRecord(t, storeRequest19, multipleTransactionRefName2+"_0")
+	err = addVehiclesRecord(t, storeRequest19, multipleMapRefName2+"_0")
 	if !assert.NoError(t, err) {
 		return
 	}
 	for i := 1; i < 10; i++ {
 		x := strconv.Itoa(i)
-		err = addEmployeeRecord(t, storeRequest16, multipleTransactionRefName+"_"+x)
+		err = addEmployeeRecord(t, storeRequest16, multipleMapRefName+"_"+x)
 		if !assert.NoError(t, err) {
 			return
 		}
 
 	}
-	err = addVehiclesRecord(t, storeRequest19, multipleTransactionRefName2+"_1")
+	err = addVehiclesRecord(t, storeRequest19, multipleMapRefName2+"_1")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -817,8 +817,8 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	fmt.Println("Check stored data")
 
 	adatypes.Central.Log.Infof("Check stored data")
-	checkStoreByFile(t, adabasModDBIDs, 16, multipleTransactionRefName)
-	checkStoreByFile(t, adabasModDBIDs, 19, multipleTransactionRefName2)
+	checkStoreByFile(t, adabasModDBIDs, 16, multipleMapRefName)
+	checkStoreByFile(t, adabasModDBIDs, 19, multipleMapRefName2)
 
 	connection.Close()
 

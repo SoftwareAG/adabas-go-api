@@ -31,6 +31,9 @@ import (
 
 var vehicleMapName = mapVehicles + "Go"
 
+const multipleTransactionRefName = "T16555"
+const multipleTransactionRefName2 = "T19555"
+
 func prepareStoreAndHold(t *testing.T, c chan bool) {
 	adatypes.Central.Log.Infof("Create connection...")
 	connection, err := NewConnection("acj;map;config=[" + adabasModDBIDs + ",250]")

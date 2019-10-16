@@ -167,7 +167,7 @@ func callAdabas(c caller) {
 
 		}
 		if output {
-			fmt.Printf("Result of query search=%s descriptor=%s and fields=%s", c.search, c.name, c.fields)
+			fmt.Printf("Result of query search=%s descriptor=%s and fields=%s\n", c.search, c.name, c.fields)
 			result.DumpValues()
 		}
 		if close {
