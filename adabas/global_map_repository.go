@@ -123,8 +123,21 @@ func DelGlobalMapRepository(i interface{}, fnr Fnr) {
 	if repositories != nil {
 		reference := fmt.Sprintf("%s/%03d", url.String(), fnr)
 		adatypes.Central.Log.Debugf("Remove global repository: %s", reference)
+		r := repositories[reference]
 		delete(repositories, reference)
+		for k, v := range mapHash {
+			if v == r {
+				delete(mapHash, k)
+			}
+		}
+
 	}
+}
+
+// CleanGlobalMapRepository remove all global defined repositories
+func CleanGlobalMapRepository() {
+	mapHash = make(map[string]*Repository)
+	repositories = nil
 }
 
 // DumpGlobalMapRepositories dump global map repositories
