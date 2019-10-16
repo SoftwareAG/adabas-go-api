@@ -259,7 +259,7 @@ func BenchmarkConnection_noreconnectremote(b *testing.B) {
 }
 
 func checkVehicleMap(mapName string, jsonImport string) error {
-	databaseURL := &DatabaseURL{URL: *NewURLWithDbid(adabasStatDBID), Fnr: 4}
+	databaseURL := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 250}
 	mr := NewMapRepositoryWithURL(*databaseURL)
 	a, _ := NewAdabas(adabasStatDBID)
 	defer a.Close()
@@ -295,7 +295,7 @@ func TestConnectionWithMultipleMap(t *testing.T) {
 		return
 	}
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
-	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",250|24,4]")
 	if !assert.NoError(t, cerr) {
 		return
 	}
@@ -353,7 +353,7 @@ func TestConnectionMapPointingToRemote(t *testing.T) {
 	}
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
-	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4];auth=NONE,user=TCMapPoin,id=4,host=REMOTE")
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",250];auth=NONE,user=TCMapPoin,id=4,host=REMOTE")
 	if !assert.NoError(t, cerr) {
 		return
 	}

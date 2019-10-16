@@ -76,7 +76,7 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 	var mapName string
 	var adabasMap *Map
 
-	var repositoryParameter []string
+	var repositoryParameter [][]string
 	var repository *Repository
 	adatypes.Central.Log.Debugf("New connection to %s", connectionString)
 	for _, p := range parts {
@@ -97,8 +97,15 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 				mapName = maps[1]
 			}
 		case strings.HasPrefix(p, "config="):
-			re := regexp.MustCompile(`config=\[([^,]*),([[:digit:]]*)\]`)
-			repositoryParameter = re.FindStringSubmatch(p)
+			e := strings.Index(p, "]")
+			a := strings.Index(p, "[") + 1
+			config := p[a:e]
+			re := regexp.MustCompile(`(?m)([^,]*),([[:digit:]]*)\|?`)
+			rr := re.FindAllStringSubmatch(config, 10)
+			for _, r1 := range rr {
+				var r = []string{r1[1], r1[2]}
+				repositoryParameter = append(repositoryParameter, r)
+			}
 		case strings.HasPrefix(p, "auth="):
 			x := strings.Index(p, ",")
 			if x != -1 {
@@ -113,19 +120,21 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 		}
 	}
 
-	if len(repositoryParameter) > 2 {
-		adatypes.Central.Log.Debugf("Add repository search of dbid=%s fnr=%s\n", repositoryParameter[1], repositoryParameter[2])
-		fnr, serr := strconv.Atoi(repositoryParameter[2])
-		if serr != nil {
-			return nil, serr
+	if len(repositoryParameter) > 0 {
+		for _, r := range repositoryParameter {
+			adatypes.Central.Log.Debugf("Add repository search of dbid=%s fnr=%s\n", r[0], r[1])
+			fnr, serr := strconv.Atoi(r[1])
+			if serr != nil {
+				return nil, serr
+			}
+			adabasToMap, err = NewAdabas(r[0], adabasID)
+			if err != nil {
+				return nil, err
+			}
+			adatypes.Central.Log.Debugf("Created adabas reference")
+			repository = NewMapRepository(adabasToMap.URL, Fnr(fnr))
+			adatypes.Central.Log.Debugf("Created repository")
 		}
-		adabasToMap, err = NewAdabas(repositoryParameter[1], adabasID)
-		if err != nil {
-			return nil, err
-		}
-		adatypes.Central.Log.Debugf("Created adabas reference")
-		repository = NewMapRepository(adabasToMap.URL, Fnr(fnr))
-		adatypes.Central.Log.Debugf("Created repository")
 	} else {
 		if adabasToData == nil {
 			adabasToData, _ = NewAdabas(1, adabasID)
