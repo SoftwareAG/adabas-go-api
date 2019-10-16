@@ -121,10 +121,11 @@ func TestThreadMapCache(t *testing.T) {
 	ada, _ := NewAdabas(23)
 	defer ada.Close()
 	m, _, err := SearchMapRepository(ada, "VEHICLESGo")
+	assert.Nil(t, m)
 	if !assert.Error(t, err) {
+		fmt.Println("Map got:", m)
 		return
 	}
-	assert.Nil(t, m)
 	fmt.Println("Search failed: ", err)
 	AddGlobalMapRepository(ada.URL, 250)
 	defer DelGlobalMapRepository(ada, 250)
