@@ -719,7 +719,7 @@ func TestTwoFields(t *testing.T) {
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	assert.Equal(t, "EMPLABC", buffer.String())
-	assert.False(t, searchInfo.NeedSearch)
+	assert.True(t, searchInfo.NeedSearch)
 }
 
 func TestMainframeEqual(t *testing.T) {
@@ -792,15 +792,15 @@ var searchTest = []struct {
 	needSearch   bool
 }{
 	{opensystem, "SA='1'", "SA,1,A,EQ.", "1", true},
-	{opensystem, "SD='1' AND SD='2'", "SD,1,A,EQ,D,SD,1,A,EQ.", "12", false},
-	{mainframe, "SD='1' AND SD='2'", "SD,1,A,S,SD,1,A,D,SD,1,A,S,SD,1,A.", "1122", false},
-	{opensystem, "SD='1' OR SD='2'", "SD,1,A,EQ,O,SD,1,A,EQ.", "12", false},
-	{mainframe, "SD='1' OR SD='2'", "SD,1,A,S,SD,1,A,O,SD,1,A,S,SD,1,A.", "1122", false},
+	{opensystem, "SD='1' AND SD='2'", "SD,1,A,EQ,D,SD,1,A,EQ.", "12", true},
+	{mainframe, "SD='1' AND SD='2'", "SD,1,A,S,SD,1,A,D,SD,1,A,S,SD,1,A.", "1122", true},
+	{opensystem, "SD='1' OR SD='2'", "SD,1,A,EQ,O,SD,1,A,EQ.", "12", true},
+	{mainframe, "SD='1' OR SD='2'", "SD,1,A,S,SD,1,A,O,SD,1,A,S,SD,1,A.", "1122", true},
 	{opensystem, "SD<='SMITH'", "SD,5,A,LE.", "SMITH", false},
 	{opensystem, "SA='ABC'", "SA,3,A,EQ.", "ABC", true},
 	{mainframe, "SA='ABC'", "SA,3,A,S,SA,3,A.", "ABCABC", true},
-	{opensystem, "S1=EMPL OR S1=ABC", "S1,4,A,EQ,O,S1,3,A,EQ.", "EMPLABC", false},
-	{mainframe, "S1=EMPL OR S1=ABC", "S1,4,A,S,S1,4,A,O,S1,3,A,S,S1,3,A.", "EMPLEMPLABCABC", false},
+	{opensystem, "S1=EMPL OR S1=ABC", "S1,4,A,EQ,O,S1,3,A,EQ.", "EMPLABC", true},
+	{mainframe, "S1=EMPL OR S1=ABC", "S1,4,A,S,S1,4,A,O,S1,3,A,S,S1,3,A.", "EMPLEMPLABCABC", true},
 	{opensystem, "SD=['A':'B']", "SD,1,A,GE,S,SD,1,A,LE.", "AB", false},
 	{mainframe, "SD=['A':'B']", "SD,1,A,S,SD,1,A.", "AB", true},
 	{opensystem, "SD=('A':'B']", "SD,1,A,GT,S,SD,1,A,LE.", "AB", false},
@@ -921,6 +921,6 @@ func TestSearchEqual(t *testing.T) {
 	descriptors := tree.OrderBy()
 	assert.Equal(t, 1, len(descriptors))
 	assert.Equal(t, "AA", descriptors[0])
-	assert.False(t, searchInfo.NeedSearch)
+	assert.True(t, searchInfo.NeedSearch)
 
 }

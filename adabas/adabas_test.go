@@ -558,33 +558,9 @@ func TestAdabasFdtNewEmployeeRemote(t *testing.T) {
 	url := "201(tcpip://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
 	ID := NewAdabasID()
-	adabas, uerr := NewAdabas(url, ID)
-	if !assert.NoError(t, uerr) {
-		return
-	}
-	defer adabas.Close()
-
-	adabas.ID.SetUser("newempl")
-
-	fmt.Println("Open database")
-	err := adabas.Open()
+	_, err := NewAdabas(url, ID)
 	assert.Error(t, err)
-	assert.Equal(t, "ADG0000068: Entire Network client not supported, use port 0 and Entire Network native access", err.Error())
-	// if assert.NoError(t, err) {
-	// 	if adabas.Acbx.Acbxrsp != 0 {
-	// 		t.Fatal(adabas.getAdabasMessage(), adabas.Acbx.Acbxrsp)
-	// 	}
-	// 	assert.Equal(t, uint16(0), ret)
-
-	// 	fmt.Println("Read file definition")
-	// 	definition, err := adabas.ReadFileDefinition(9)
-	// 	if adabas.Acbx.Acbxrsp != 0 {
-	// 		t.Fatal(adabas.getAdabasMessage(), adabas.Acbx.Acbxrsp)
-	// 	}
-
-	// 	assert.NoError(t, err)
-	// 	fmt.Println(definition)
-	// }
+	assert.Equal(t, "ADG0000115: Entire Network target drivers cannot be connect directly, configure Adabas client.", err.Error())
 
 	fmt.Println("test done")
 }
@@ -601,15 +577,9 @@ func TestAdabasUnknownDriver(t *testing.T) {
 	url := "201(abc://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
 	ID := NewAdabasID()
-	adabas, uerr := NewAdabas(url, ID)
-	if !assert.NoError(t, uerr) {
-		return
-	}
-	defer adabas.Close()
-
-	err := adabas.Open()
+	_, err := NewAdabas(url, ID)
 	assert.Error(t, err)
-	assert.Equal(t, "ADG0000001: Unknown network driver 'abc' given", err.Error())
+	assert.Equal(t, "ADG0000099: Given driver 'abc' is not supported", err.Error())
 }
 
 func simpleDefinition() *adatypes.Definition {

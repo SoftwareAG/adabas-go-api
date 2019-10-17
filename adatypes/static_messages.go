@@ -843,7 +843,7 @@ var statisMessages = []struct {
 	{"ADG0000096", "en", "Cannot evaluate key value for the given key {0}"},
 	{"ADG0000097", "en", "No key interface field defined"},
 	{"ADG0000098", "en", "No unique key found for given key index {0}"},
-	{"ADG0000099", "en", "Given driver {0} is not supported"},
+	{"ADG0000099", "en", "Given driver '{0}' is not supported"},
 	{"ADG0000100", "en", "Value interface does not support type {0} for field {1}/{2}"},
 	{"ADG0000101", "en", "Cannot convert negative value to unsigned of type {0}"},
 	{"ADG0000102", "en", "Error creating type value for: {0} [{1}]"},

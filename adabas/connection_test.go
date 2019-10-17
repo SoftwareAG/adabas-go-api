@@ -475,15 +475,9 @@ func TestConnectionRemote(t *testing.T) {
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := "201(tcpip://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
-	connection, cerr := NewConnection("acj;target=" + url + ")")
-	if !assert.NoError(t, cerr) {
-		return
-	}
-	defer connection.Close()
-	fmt.Println(connection)
-	openErr := connection.Open()
-	assert.Error(t, openErr)
-	assert.Equal(t, "ADG0000068: Entire Network client not supported, use port 0 and Entire Network native access", openErr.Error())
+	_, cerr := NewConnection("acj;target=" + url + ")")
+	assert.Error(t, cerr)
+	assert.Equal(t, "ADG0000115: Entire Network target drivers cannot be connect directly, configure Adabas client.", cerr.Error())
 
 }
 

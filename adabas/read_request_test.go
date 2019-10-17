@@ -154,17 +154,9 @@ func TestRequestRemoteLogicalByAll(t *testing.T) {
 	url := "201(tcpip://" + entireNetworkLocation() + ")"
 	fmt.Println("Connect to ", url)
 	ID := NewAdabasID()
-	adabas, aerr := NewAdabas(url, ID)
-	if !assert.NoError(t, aerr) {
-		return
-	}
-	request, _ := NewReadRequest(adabas, 11)
-	defer request.Close()
-	request.Limit = 2
-	_, err := request.ReadLogicalBy("AA")
-	fmt.Println("Dump result received ...")
-	assert.Error(t, err)
-	assert.Equal(t, "ADG0000068: Entire Network client not supported, use port 0 and Entire Network native access", err.Error())
+	_, aerr := NewAdabas(url, ID)
+	assert.Error(t, aerr)
+	assert.Equal(t, "ADG0000115: Entire Network target drivers cannot be connect directly, configure Adabas client.", aerr.Error())
 }
 
 func ExampleReadRequest_ReadLogicalBy() {
