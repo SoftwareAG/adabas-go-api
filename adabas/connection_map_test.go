@@ -20,6 +20,7 @@ package adabas
 
 import (
 	"fmt"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -1710,4 +1711,34 @@ func ExampleConnection_mapReadDisjunctSearch() {
 	// Record Isn: 0787
 	//   personnel-data = [ 1 ]
 	//    personnel-id = > 20000400 <
+}
+
+func TestConnectionAndSearchMap(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if assert.NoError(t, err) {
+		fmt.Println("Limit query data:")
+		request.QueryFields("FULL-NAME")
+		request.Limit = 0
+		fmt.Println("Read logigcal data:")
+		result, err := request.ReadLogicalWith("NAME>'ADAM' AND NAME<'AECKERLE'")
+		assert.NoError(t, err)
+		validateResult(t, "osandsearch", result)
+	}
+
 }

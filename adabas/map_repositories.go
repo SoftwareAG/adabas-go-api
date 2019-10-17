@@ -321,9 +321,11 @@ func parseMaps(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	// Create hashs
 	adabasMap.createFieldMap()
 
+	adatypes.Central.Log.Debugf("Add map name %s", adabasMap.Name)
 	repository.CachedMaps[adabasMap.Name] = adabasMap
 	repository.Lock()
 	defer repository.Unlock()
+
 	repository.mapNames[adabasMap.Name] = &mapNameFlags{isn: adabasRequest.Isn, found: true}
 	return
 }

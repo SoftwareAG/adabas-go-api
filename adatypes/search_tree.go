@@ -497,14 +497,14 @@ func (searchInfo *SearchInfo) extractBinding(parentNode ISearchNode, bind string
 	if len(binds) > 1 {
 		Central.Log.Debugf("Found AND binds: %d", len(binds))
 		node = &SearchNode{logic: AND, platform: parentNode.Platform()}
-		//searchInfo.NeedSearch = true
+		searchInfo.NeedSearch = true
 	} else {
 		Central.Log.Debugf("Check or bindings")
 		binds = regexp.MustCompile(" OR | or ").Split(bind, -1)
 		if len(binds) > 1 {
 			Central.Log.Debugf("Found OR binds: %d", len(binds))
 			node = &SearchNode{logic: OR, platform: parentNode.Platform()}
-			//searchInfo.NeedSearch = true
+			searchInfo.NeedSearch = true
 		}
 	}
 	if node != nil {

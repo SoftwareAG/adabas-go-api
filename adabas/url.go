@@ -91,18 +91,20 @@ func (URL *URL) examineURL(url string) error {
 		return err
 	}
 	URL.Dbid = Dbid(dbid)
-	URL.Driver = strings.ToLower(match[2])
-	switch URL.Driver {
-	case "adatcp":
-	case "tcpip":
-		err = adatypes.NewGenericError(115)
-		return err
-	default:
-		err = adatypes.NewGenericError(99, URL.Driver)
-		return err
-	}
-	URL.Host = match[3]
 	URL.Port = uint32(port)
+	if URL.Port > 0 {
+		URL.Driver = strings.ToLower(match[2])
+		switch URL.Driver {
+		case "adatcp":
+		case "tcpip":
+			err = adatypes.NewGenericError(115)
+			return err
+		default:
+			err = adatypes.NewGenericError(99, URL.Driver)
+			return err
+		}
+		URL.Host = match[3]
+	}
 	return nil
 }
 
