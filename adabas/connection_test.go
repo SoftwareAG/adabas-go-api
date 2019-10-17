@@ -1606,7 +1606,7 @@ func validateResult(t *testing.T, search string, result *Response) error {
 	if !assert.NotNil(t, result) {
 		return fmt.Errorf("Result empty")
 	}
-	fmt.Printf("Validate result %+v %d\n", result, len(result.Values))
+	fmt.Printf("Validate result %d values\n", len(result.Values))
 	if !assert.True(t, len(result.Values) > 0) {
 		return fmt.Errorf("Result zero")
 	}
@@ -1616,7 +1616,7 @@ func validateResult(t *testing.T, search string, result *Response) error {
 	}
 	var re = regexp.MustCompile(`(?m)[,]?"ISN[^,]*[},]`)
 	resultJSON = re.ReplaceAll(resultJSON, []byte(""))
-	fmt.Println(string(resultJSON))
+	// fmt.Println(string(resultJSON))
 	rw := os.Getenv("REFERENCES")
 	doWrite := os.Getenv("REFERENCE_WRITE")
 	destinationFile := rw + string(os.PathSeparator) + search + ".json"
@@ -1629,8 +1629,8 @@ func validateResult(t *testing.T, search string, result *Response) error {
 		if !assert.NoError(t, err) {
 			return err
 		}
-		fmt.Println("Reference check inactive")
-		assert.Equal(t, referenceJSON, resultJSON)
+		fmt.Println("Compare reference with result")
+		assert.Equal(t, referenceJSON, resultJSON, "Reference not equal result")
 	} else {
 		fmt.Println("Write reference check to", destinationFile)
 		os.Remove(destinationFile)
