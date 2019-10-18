@@ -726,8 +726,6 @@ func addVehiclesRecord(t *testing.T, storeRequest *StoreRequest, val string) err
 	if !assert.NoError(t, err) {
 		return err
 	}
-	// storeRecord.DumpValues()
-	//fmt.Println("Store Vehicle request")
 	err = storeRequest.Store(storeRecord)
 	if !assert.NoError(t, err) {
 		return err
