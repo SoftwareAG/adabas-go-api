@@ -934,12 +934,9 @@ func TestSearchTreeError(t *testing.T) {
 	Central.Log.Infof("TEST: %s", t.Name())
 	searchInfo := NewSearchInfo(opensystem, "y")
 	searchInfo.Definition = tDefinition()
-	tree, serr := searchInfo.GenerateTree()
-	if !assert.NoError(t, serr) {
+	_, serr := searchInfo.GenerateTree()
+	if !assert.Error(t, serr) {
 		return
 	}
-	Central.Log.Debugf("Search Tree: %s", tree.String())
-
-	assert.Equal(t, "AA,8,B,EQ,D,AA,8,B,EQ,D,AA,8,B,GT.", tree.SearchBuffer())
 
 }
