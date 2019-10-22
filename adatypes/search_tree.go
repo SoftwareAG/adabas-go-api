@@ -634,6 +634,7 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode,
 		if len(field) > (len(search) - len(value)) {
 			Central.Log.Debugf("FL %d sl=%d vl=%d", len(field),
 				len(search), len(value))
+			err = fmt.Errorf("Search string error")
 			return
 		}
 		comparer := search[len(field) : len(search)-len(value)]

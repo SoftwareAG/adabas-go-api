@@ -595,7 +595,7 @@ func TestSearchComplex(t *testing.T) {
 	if !assert.NoError(t, serr) {
 		return
 	}
-	Central.Log.Debugf("Search Tree:", tree.String())
+	Central.Log.Debugf("Search Tree: %s", tree.String())
 
 	assert.Equal(t, "AA,8,B,GT,S,AA,8,B,LE,D,AD,5,A,EQ.", tree.SearchBuffer())
 	var buffer bytes.Buffer
@@ -902,7 +902,7 @@ func TestSearchEqual(t *testing.T) {
 	if !assert.NoError(t, serr) {
 		return
 	}
-	Central.Log.Debugf("Search Tree:", tree.String())
+	Central.Log.Debugf("Search Tree: %s", tree.String())
 
 	assert.Equal(t, "AA,8,B,EQ,D,AA,8,B,EQ,D,AA,8,B,GT.", tree.SearchBuffer())
 	var buffer bytes.Buffer
@@ -922,5 +922,24 @@ func TestSearchEqual(t *testing.T) {
 	assert.Equal(t, 1, len(descriptors))
 	assert.Equal(t, "AA", descriptors[0])
 	assert.True(t, searchInfo.NeedSearch)
+
+}
+
+func TestSearchTreeError(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	Central.Log.Infof("TEST: %s", t.Name())
+	searchInfo := NewSearchInfo(opensystem, "y")
+	searchInfo.Definition = tDefinition()
+	tree, serr := searchInfo.GenerateTree()
+	if !assert.NoError(t, serr) {
+		return
+	}
+	Central.Log.Debugf("Search Tree: %s", tree.String())
+
+	assert.Equal(t, "AA,8,B,EQ,D,AA,8,B,EQ,D,AA,8,B,GT.", tree.SearchBuffer())
 
 }
