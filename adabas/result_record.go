@@ -70,7 +70,7 @@ func NewRecord(definition *adatypes.Definition) (*Record, error) {
 	definition.Values = nil
 	record.HashFields = make(map[string]adatypes.IAdaValue)
 	t := adatypes.TraverserValuesMethods{EnterFunction: traverseHashValues}
-	record.traverse(t, record)
+	record.Traverse(t, record)
 	return record, nil
 }
 
@@ -97,7 +97,7 @@ func (record *Record) createRecordBuffer(helper *adatypes.BufferHelper) (err err
 	adatypes.Central.Log.Debugf("Create record buffer")
 	t := adatypes.TraverserValuesMethods{EnterFunction: createStoreRecordBuffer}
 	stRecTraverser := &storeRecordTraverserStructure{record: record, helper: helper}
-	_, err = record.traverse(t, stRecTraverser)
+	_, err = record.Traverse(t, stRecTraverser)
 	adatypes.Central.Log.Debugf("Create record buffer done len=%d", len(helper.Buffer()))
 	return
 }
@@ -106,14 +106,15 @@ func (record *Record) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString(fmt.Sprintf("ISN=%d quantity=%d\n", record.Isn, record.Quantity))
 	t := adatypes.TraverserValuesMethods{EnterFunction: recordValuesTraverser}
-	record.traverse(t, &buffer)
+	record.Traverse(t, &buffer)
 	// for _, v := range record.Value {
 	// 	buffer.WriteString(fmt.Sprintf("value=%#v\n", v))
 	// }
 	return buffer.String()
 }
 
-func (record *Record) traverse(t adatypes.TraverserValuesMethods, x interface{}) (ret adatypes.TraverseResult, err error) {
+// Traverse step/traverse through all record entries and call methods
+func (record *Record) Traverse(t adatypes.TraverserValuesMethods, x interface{}) (ret adatypes.TraverseResult, err error) {
 	if record == nil {
 		return adatypes.EndTraverser, adatypes.NewGenericError(33)
 	}
@@ -155,7 +156,7 @@ func (record *Record) DumpValues() {
 	var buffer bytes.Buffer
 	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump,
 		EnterFunction: traverseDumpRecord}
-	record.traverse(t, &buffer)
+	record.Traverse(t, &buffer)
 	fmt.Printf("%s", buffer.String())
 }
 
@@ -334,7 +335,7 @@ func (record *Record) Scan(dest ...interface{}) (err error) {
 	// Traverse to current entries
 	tm := adatypes.TraverserValuesMethods{EnterFunction: scanFieldsTraverser}
 	sf := &scanFields{fields: record.fields, parameter: dest}
-	_, err = record.traverse(tm, sf)
+	_, err = record.Traverse(tm, sf)
 	if err != nil {
 		return err
 	}
@@ -446,7 +447,7 @@ func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	}
 	e.EncodeToken(rec)
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalXML2, LeaveFunction: traverseMarshalXMLEnd2, ElementFunction: traverseMarshalXMLElement}
-	record.traverse(tm, e)
+	record.Traverse(tm, e)
 	e.EncodeToken(rec.End())
 	adatypes.Central.Log.Debugf("Marshal XML record finished")
 
@@ -472,7 +473,7 @@ func (record *Record) MarshalJSON() ([]byte, error) {
 	}
 
 	// Traverse record generating JSON
-	_, err := record.traverse(tm, req)
+	_, err := record.Traverse(tm, req)
 	if err != nil {
 		return nil, err
 	}

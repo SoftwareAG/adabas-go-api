@@ -154,7 +154,7 @@ func (Response *Response) TraverseValues(t adatypes.TraverserValuesMethods, x in
 				return
 			}
 		}
-		ret, err = record.traverse(t, x)
+		ret, err = record.Traverse(t, x)
 		if err != nil {
 			return
 		}
@@ -208,7 +208,7 @@ func (Response *Response) MarshalXML(e *xml.Encoder, start xml.StartElement) err
 			}
 			e.EncodeToken(rec)
 			// e.EncodeToken(xml.Attr{Name: xml.Name{Local: "ISN"}, Value: strconv.Itoa(int(record.Isn))})
-			record.traverse(tm, e)
+			record.Traverse(tm, e)
 			e.EncodeToken(rec.End())
 		}
 	}
@@ -378,7 +378,7 @@ func (Response *Response) MarshalJSON() ([]byte, error) {
 		if record.Quantity > 0 {
 			dataMap["Quantity"] = record.Quantity
 		}
-		_, err := record.traverse(tm, req)
+		_, err := record.Traverse(tm, req)
 		if err != nil {
 			adatypes.Central.Log.Debugf("Error creating JSON: %v", err)
 			return nil, err

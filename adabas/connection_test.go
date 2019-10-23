@@ -907,7 +907,7 @@ func TestConnectionReadMap(t *testing.T) {
 			"AZ": &testedValue{shortName: "AZ", longName: "LANG", length: 3, index: 29},
 			"S3": &testedValue{shortName: "S3", longName: "CURRENCY-SALARY", length: 0, index: 33},
 		}
-		record.traverse(tm, tvc)
+		record.Traverse(tm, tvc)
 		// result.DumpValues()
 	}
 
