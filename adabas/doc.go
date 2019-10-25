@@ -38,7 +38,8 @@
 //
 // A remote database reference: "24(adatcp://host:123)"
 //
-// To use local IPC related Adabas access, please compile Adabas GO API with ADALNK library references.
+// To use local IPC or Entire Net-Work client related Adabas access, please compile Adabas GO API with
+// ADALNK library references.
 // See documentation here: https://github.com/SoftwareAG/adabas-go-api
 //
 // Example
@@ -89,4 +90,28 @@
 //   	return nil
 //   }
 //   result, err := request.ReadLogicalWithStream("AE='SMITH'", dumpStream, &i)
+//
+// Struct usage
+//
+// Example for a structure:
+//   type FullName struct {
+//      FirstName string
+//      LastName  string
+//   }
+//   type EmployeeMap struct {
+//      ID         string `adabas:"Id:key"`
+//      Name       *FullName
+//      Department []byte
+//   }
+//
+// For a Adabas Map called EmployeeMap you can use the structure to read and write
+// Adabas data into the database.
+//
+// Example to read Adabas data using the structure:
+//   request, rerr := connection.CreateMapReadRequest((*EmployeeMap)(nil))
+//   err := request.QueryFields("FullName")
+//   result, err = request.ReadLogicalBy("LastName")
+//
+// The result will be a list of records in the result variable containing
+// entries sorted by the lastname.
 package adabas
