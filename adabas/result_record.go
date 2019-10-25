@@ -31,7 +31,14 @@ import (
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
-// Record one result record of the result
+// Record one result record of the result list received by
+// record list or in the stream callback.
+//
+// To extract the values in the record you might request the
+// value using the SearchValue() methods. Alternatively you
+// might use the Traverse() callback method to call a method
+// for each Adabas field in the tree. The tree includes group
+// nodes of the Adabas record.
 type Record struct {
 	Isn        adatypes.Isn `xml:"Isn,attr"`
 	Quantity   uint64       `xml:"Quantity,attr"`
