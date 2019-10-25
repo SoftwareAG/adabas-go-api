@@ -112,6 +112,8 @@
 //   err := request.QueryFields("FullName")
 //   result, err = request.ReadLogicalBy("LastName")
 //
-// The result will be a list of records in the result variable containing
-// entries sorted by the lastname.
+// The result list of structure entries will be in the result. You can reference
+// the list using the result.Data list.
+// If using the stream callback method, then the stream will get an EmployeesMap
+// instance instead of a Record instance.
 package adabas
