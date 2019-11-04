@@ -245,7 +245,7 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 // ClearCache clear cache if time frame occur
 func (repository *Repository) ClearCache(maxTime time.Time) {
 	if repository.cacheTime.Before(maxTime) {
-		adatypes.Central.Log.Infof("Clear caching ... %v -> %v", maxTime, time.Now())
+		adatypes.Central.Log.Debugf("Clear caching ... %v -> %v", maxTime, time.Now())
 		repository.CachedMaps = make(map[string]*Map)
 	}
 }

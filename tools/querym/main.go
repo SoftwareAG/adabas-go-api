@@ -83,12 +83,6 @@ func callAdabas(c caller) {
 			}
 			connection.AddCredential(c[0], c[1])
 		}
-
-		err = connection.Open()
-		if err != nil {
-			fmt.Printf("Error opening connection to thread %d: %v\n", c.threadNr, err)
-			return
-		}
 	}
 
 	steps := c.counter / 10
