@@ -976,3 +976,68 @@ func TestStoreInterfaceIndex(t *testing.T) {
 	assert.True(t, 0 < e.Index, "Got no ISN back")
 	fmt.Println("Got ISN=", e.Index)
 }
+
+func TestDynamicInterfaceFromMap(t *testing.T) {
+	initTestLogWithFile(t, "request_interface.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	fmt.Println("Read interface with period group")
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapWithInterface("EmployeesSalary", "")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	// err = request.QueryFields("*")
+	// if !assert.NoError(t, err) {
+	// 	return
+	// }
+	if !assert.Equal(t, "EmployeesSalary", request.dynamic.DataType.Name()) {
+		return
+	}
+
+	result, err := request.ReadLogicalWith("Id=['pId':'pId9']")
+	fmt.Println("Read done ...")
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Nil(t, result.Values)
+	assert.NotNil(t, result.Data)
+	if !assert.NotNil(t, result) {
+		return
+	}
+	result.DumpValues()
+	result.DumpData()
+	if !assert.Len(t, result.Data, 2) {
+		return
+	}
+	e := result.Data[0].(*EmployeesSalary)
+	assert.Equal(t, "pId007", strings.Trim(e.ID, " "))
+	if !assert.NotNil(t, e.FullName) {
+		return
+	}
+	assert.Equal(t, "Bond", strings.Trim(e.FullName.LastName, " "))
+	e = result.Data[1].(*EmployeesSalary)
+	assert.Equal(t, "pId123", strings.Trim(e.ID, " "))
+	assert.Equal(t, "Overmeyer", strings.Trim(e.FullName.LastName, " "))
+	assert.Equal(t, uint64(123344), e.Birth)
+	assert.Equal(t, "FBI   ", e.Department)
+	if assert.Len(t, e.Language, 2) {
+		assert.Equal(t, "ENG", e.Language[0])
+	}
+	if assert.Len(t, e.Income, 2) {
+		assert.Equal(t, uint64(40000), e.Income[0].Salary)
+		if assert.Len(t, e.Income[0].Bonus, 2) {
+			assert.Equal(t, uint64(123), e.Income[0].Bonus[0])
+		}
+
+		assert.Equal(t, "EUR", e.Income[0].Currency)
+	}
+
+}

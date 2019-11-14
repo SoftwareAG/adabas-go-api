@@ -391,6 +391,20 @@ func (connection *Connection) CreateStoreRequest(fnr Fnr) (*StoreRequest, error)
 	return NewStoreRequestAdabas(connection.adabasToData, fnr), nil
 }
 
+// CreateMapWithInterface create map request using dynamic interface
+func (connection *Connection) CreateMapWithInterface(mapName string, fieldList string) (request *ReadRequest, err error) {
+	err = connection.prepareMapUsage(mapName)
+	if err != nil {
+		return
+	}
+	i, err := connection.adabasMap.createInterface(fieldList)
+	if err != nil {
+		return
+	}
+
+	return connection.CreateMapReadRequest(i)
+}
+
 func (connection *Connection) prepareMapUsage(mapName string) (err error) {
 	return connection.searchRepository(connection.ID, connection.repository, mapName)
 	// if err == nil {
