@@ -972,8 +972,15 @@ type createTypeInterface struct {
 func traverseCreateTypeInterface(adaType adatypes.IAdaType, parentType adatypes.IAdaType, level int, x interface{}) error {
 	cti := x.(*createTypeInterface)
 	fmt.Println("Add field", adaType.Name(), "of", cti.fieldHash)
-	cti.fields = append(cti.fields, reflect.StructField{Name: adaType.Name(),
-		Type: reflect.TypeOf(float64(0))})
+	switch adaType.Type() {
+	case adatypes.FieldTypeString:
+		cti.fields = append(cti.fields, reflect.StructField{Name: adaType.Name(),
+			Type: reflect.TypeOf(string(""))})
+	case adatypes.FieldTypeGroup, adatypes.FieldTypePeriodGroup, adatypes.FieldTypeStructure:
+	default:
+		fmt.Println("Field Type", adaType.Name(), adaType.Type())
+		panic("Field type missing" + adaType.Type().FormatCharacter())
+	}
 	return nil
 }
 
@@ -987,45 +994,12 @@ func (request *ReadRequest) createInterface(fieldList string) (i interface{}, er
 		return
 	}
 
-	// i := reflect.New(reflect.TypeOf(reflect.Struct))
-	// fmt.Printf("Type %T %v\n", i, i.IsValid())
-	// x := []byte("{Name:\"Mike test\"}")
-	// var y interface{}
-	// json.Unmarshal(x, y)
 	var structType reflect.Type
-	fields := make([]reflect.StructField, 0)
-	// for k, v := range vals {
-	// 	t := reflect.TypeOf(v)
-	// 	sf := reflect.StructField{
-	// 		Name: fmt.Sprintf("F%d", (k + 1)),
-	// 		Type: t,
-	// 	}
-	// 	sfs = append(sfs, sf)
-	// }
-	type s struct {
-		xxx string
-		y   int8
-	}
-	x := s{xxx: "123"}
-	tx := reflect.TypeOf(x)
-	fmt.Printf("XT: %T %T -> %s\n", tx, tx.Kind(), tx.Name())
-	for x := 0; x < tx.NumField(); x++ {
-		fmt.Println(x, "->", tx.Field(x))
-	}
 	tm := adatypes.NewTraverserMethods(traverseCreateTypeInterface)
-	cti := createTypeInterface{}
+	cti := createTypeInterface{fields: make([]reflect.StructField, 0)}
 	request.definition.TraverseTypes(tm, true, &cti)
-	fl := strings.Split(fieldList, ",")
-	for _, f := range fl {
-		fmt.Println("Add field", f, "of", fieldList)
-		fields = append(fields, reflect.StructField{Name: f,
-			Type: reflect.TypeOf(float64(0)),
-			Tag:  `json:"height"`,
-		})
-	}
-	structType = reflect.StructOf(fields)
+	structType = reflect.StructOf(cti.fields)
 	fmt.Println("StructType:", structType.Name())
-	so := reflect.New(structType)
 
 	sf := reflect.StructField{Name: request.adabasMap.Name, Type: structType, Anonymous: true}
 	t := sf.Type
@@ -1033,10 +1007,7 @@ func (request *ReadRequest) createInterface(fieldList string) (i interface{}, er
 	for x := 0; x < t.NumField(); x++ {
 		fmt.Println(x, "->", t.Field(x))
 	}
-
+	so := reflect.New(t)
 	fmt.Printf("SF: %T -> %s\n", sf, sf.Name)
-	t2 := reflect.StructOf([]reflect.StructField{sf})
-	fmt.Printf("T2: %T -> '%s' %v\n", t2, t2.Name(), reflect.TypeOf(t2))
-	t2.Field(0) // StructField{Name: "Billy", Type: t, Anonymous: true}
 	return so.Interface(), nil
 }
