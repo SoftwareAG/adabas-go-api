@@ -990,7 +990,7 @@ func TestDynamicInterfaceFromMap(t *testing.T) {
 	}
 	defer connection.Close()
 
-	request, rerr := connection.CreateMapWithInterface("EmployeesSalary", "")
+	request, rerr := connection.CreateMapWithInterface("EmployeesSalary", "FirstName,LastName")
 	if !assert.NoError(t, rerr) {
 		return
 	}

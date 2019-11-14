@@ -21,6 +21,7 @@ package adabas
 
 import (
 	"bytes"
+	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -357,14 +358,14 @@ func (connection *Connection) CreateFileReadRequest(fnr Fnr) (*ReadRequest, erro
 }
 
 // CreateMapReadRequest create a read request using a given map
-func (connection *Connection) CreateMapReadRequest(mapReference interface{}) (request *ReadRequest, err error) {
-	t := reflect.TypeOf(mapReference)
+func (connection *Connection) CreateMapReadRequest(param ...interface{}) (request *ReadRequest, err error) {
+	t := reflect.TypeOf(param[0])
 	switch t.Kind() {
 	case reflect.Ptr, reflect.Struct:
 		if connection.repository == nil {
-			request, err = NewReadRequest(mapReference, connection.adabasToMap)
+			request, err = NewReadRequest(param[0], connection.adabasToMap)
 		} else {
-			request, err = NewReadRequest(mapReference, connection.adabasToMap, connection.repository)
+			request, err = NewReadRequest(param[0], connection.adabasToMap, connection.repository)
 		}
 		if err != nil {
 			return
@@ -372,7 +373,7 @@ func (connection *Connection) CreateMapReadRequest(mapReference interface{}) (re
 		connection.fnr = request.adabasMap.Data.Fnr
 		connection.adabasMap = request.adabasMap
 	case reflect.String:
-		m := mapReference.(string)
+		m := param[0].(string)
 		err = connection.prepareMapUsage(m)
 		if err != nil {
 			return
@@ -380,6 +381,14 @@ func (connection *Connection) CreateMapReadRequest(mapReference interface{}) (re
 		connection.fnr = connection.adabasMap.Data.Fnr
 		adatypes.Central.Log.Debugf("Map referenced : %#v", connection.adabasMap)
 		request, err = NewReadRequest(connection.adabasToData, connection.adabasMap)
+		if len(param) > 1 {
+			l := param[1].(string)
+			i, ierr := request.createInterface(l)
+			if ierr != nil {
+				return nil, ierr
+			}
+			fmt.Println("Got interface", i)
+		}
 	default:
 		return nil, adatypes.NewGenericError(0)
 	}
@@ -397,12 +406,14 @@ func (connection *Connection) CreateMapWithInterface(mapName string, fieldList s
 	if err != nil {
 		return
 	}
-	i, err := connection.adabasMap.createInterface(fieldList)
-	if err != nil {
-		return
-	}
+	adatypes.Central.Log.Debugf("Create interface: %#v", connection.adabasMap)
+	// i, err := connection.adabasMap.createInterface(fieldList)
+	// if err != nil {
+	// 	return
+	// }
+	// adatypes.Central.Log.Debugf("Create interface-based map request")
 
-	return connection.CreateMapReadRequest(i)
+	return connection.CreateMapReadRequest(mapName, fieldList)
 }
 
 func (connection *Connection) prepareMapUsage(mapName string) (err error) {

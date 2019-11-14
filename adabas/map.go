@@ -22,7 +22,6 @@ package adabas
 import (
 	"bytes"
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -460,10 +459,4 @@ func (adabasMap *Map) Store() error {
 	}
 	repository := NewMapRepository(adabas.URL, adabasMap.Repository.Fnr)
 	return repository.writeAdabasMapsWithAdabas(adabas, adabasMap)
-}
-
-func (adabasMap *Map) createInterface(fieldList string) (interface{}, error) {
-	i := reflect.New(reflect.TypeOf(reflect.Struct))
-	fmt.Printf("Type %T %#v", i, i)
-	return i, nil
 }
