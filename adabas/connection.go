@@ -21,7 +21,6 @@ package adabas
 
 import (
 	"bytes"
-	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -383,11 +382,10 @@ func (connection *Connection) CreateMapReadRequest(param ...interface{}) (reques
 		request, err = NewReadRequest(connection.adabasToData, connection.adabasMap)
 		if len(param) > 1 {
 			l := param[1].(string)
-			i, ierr := request.createInterface(l)
+			ierr := request.createInterface(l)
 			if ierr != nil {
 				return nil, ierr
 			}
-			fmt.Println("Got interface", i)
 		}
 	default:
 		return nil, adatypes.NewGenericError(0)

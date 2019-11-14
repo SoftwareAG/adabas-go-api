@@ -984,7 +984,7 @@ func traverseCreateTypeInterface(adaType adatypes.IAdaType, parentType adatypes.
 	return nil
 }
 
-func (request *ReadRequest) createInterface(fieldList string) (i interface{}, err error) {
+func (request *ReadRequest) createInterface(fieldList string) ( err error) {
 	err = request.loadDefinition()
 	if err != nil {
 		return
@@ -1001,13 +1001,17 @@ func (request *ReadRequest) createInterface(fieldList string) (i interface{}, er
 	structType = reflect.StructOf(cti.fields)
 	fmt.Println("StructType:", structType.Name())
 
-	sf := reflect.StructField{Name: request.adabasMap.Name, Type: structType, Anonymous: true}
-	t := sf.Type
-	fmt.Printf("T: %T -> %s\n", t, t.Name())
-	for x := 0; x < t.NumField(); x++ {
-		fmt.Println(x, "->", t.Field(x))
-	}
-	so := reflect.New(t)
-	fmt.Printf("SF: %T -> %s\n", sf, sf.Name)
-	return so.Interface(), nil
+	// sf := reflect.StructField{Name: request.adabasMap.Name, Type: structType, Anonymous: true}
+	
+	// t:=reflect.TypeOf(sf)
+	// fmt.Printf("T: %T -> %s <- %s\n", t, t.Name(),sf.Name)
+	// for x := 0; x < t.NumField(); x++ {
+	// 	fmt.Println(x, "->", t.Field(x))
+	// }
+	//so := reflect.New(t)
+	// fmt.Printf("SF: %T -> %s\n", sf, sf.Name)
+	dynamic := &adatypes.DynamicInterface{DataType: structType, FieldNames: make(map[string][]string)}
+	fmt.Printf("DI %s\n", dynamic)
+	request.dynamic = dynamic
+	return  nil
 }

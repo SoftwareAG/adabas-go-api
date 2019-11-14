@@ -990,7 +990,7 @@ func TestDynamicInterfaceFromMap(t *testing.T) {
 	}
 	defer connection.Close()
 
-	request, rerr := connection.CreateMapWithInterface("EmployeesSalary", "FirstName,LastName")
+	request, rerr := connection.CreateMapWithInterface("EmployeesSalary", "Id,FirstName,LastName")
 	if !assert.NoError(t, rerr) {
 		return
 	}
@@ -998,9 +998,7 @@ func TestDynamicInterfaceFromMap(t *testing.T) {
 	// if !assert.NoError(t, err) {
 	// 	return
 	// }
-	if !assert.Equal(t, "EmployeesSalary", request.dynamic.DataType.Name()) {
-		return
-	}
+	assert.Equal(t, "EmployeesSalary", request.dynamic.DataType.Name())
 
 	result, err := request.ReadLogicalWith("Id=['pId':'pId9']")
 	fmt.Println("Read done ...")
