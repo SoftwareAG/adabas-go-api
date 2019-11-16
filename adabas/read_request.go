@@ -434,8 +434,15 @@ func streamRecord(adabasRequest *adatypes.Request, x interface{}) (err error) {
 		// }
 		newInstance := reflect.New(adabasRequest.DataType.DataType)
 		adatypes.Central.Log.Debugf("Kind: %v Elem: %v", reflect.TypeOf(newInstance).Kind(), newInstance.Elem())
-		adabasRequest.Definition.AdaptInterfaceFields(newInstance, adabasRequest.DataType.FieldNames)
-		adatypes.Central.Log.Debugf("Parse read to interface %v <%s>\n", newInstance, newInstance.String())
+		err = adabasRequest.Definition.AdaptInterfaceFields(newInstance, adabasRequest.DataType.FieldNames)
+		if err != nil {
+			return err
+		}
+		err = adabasRequest.DataType.ExamineIsnField(newInstance, adabasRequest.Isn)
+		if err != nil {
+			return err
+		}
+		adatypes.Central.Log.Debugf("Parse read calling interface function %v <%s>\n", newInstance, newInstance.String())
 		err = stream.interfaceFunction(newInstance.Interface(), stream.x)
 	case stream.streamFunction != nil:
 		isn := adabasRequest.Isn
