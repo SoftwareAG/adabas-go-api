@@ -293,8 +293,14 @@ func parseReadToInterface(adabasRequest *adatypes.Request, x interface{}) (err e
 	}
 	newInstance := reflect.New(ti)
 	adatypes.Central.Log.Debugf("Kind: %v Elem: %v", reflect.TypeOf(newInstance).Kind(), newInstance.Elem())
-	adabasRequest.Definition.AdaptInterfaceFields(newInstance, adabasRequest.DataType.FieldNames)
-	adabasRequest.DataType.ExamineIsnField(newInstance, adabasRequest.Isn)
+	err = adabasRequest.Definition.AdaptInterfaceFields(newInstance, adabasRequest.DataType.FieldNames)
+	if err != nil {
+		return err
+	}
+	err = adabasRequest.DataType.ExamineIsnField(newInstance, adabasRequest.Isn)
+	if err != nil {
+		return err
+	}
 	// if f, ok := adabasRequest.DataType.FieldNames["#isn"]; ok {
 	// 	isnField := newInstance.Elem().FieldByName(f[0])
 	// 	if !isnField.IsValid() || isnField.Kind() != reflect.Uint64 {
@@ -965,21 +971,42 @@ func (request *ReadRequest) Scan(dest ...interface{}) error {
 }
 
 type createTypeInterface struct {
-	fields    []reflect.StructField
-	fieldHash map[string]bool
+	fields     []reflect.StructField
+	fieldHash  map[string]bool
+	fieldNames map[string][]string
 }
 
 func traverseCreateTypeInterface(adaType adatypes.IAdaType, parentType adatypes.IAdaType, level int, x interface{}) error {
 	cti := x.(*createTypeInterface)
-	fmt.Println("Add field", adaType.Name(), "of", cti.fieldHash)
+	name := strings.ReplaceAll(adaType.Name(), "-", "")
+	adatypes.Central.Log.Debugf("Add field %s/%s of %v", adaType.Name(), name, cti.fieldHash[name])
+	cti.fieldNames[name] = []string{adaType.Name()}
 	switch adaType.Type() {
 	case adatypes.FieldTypeString:
-		cti.fields = append(cti.fields, reflect.StructField{Name: adaType.Name(),
+		cti.fields = append(cti.fields, reflect.StructField{Name: name,
 			Type: reflect.TypeOf(string(""))})
+	case adatypes.FieldTypePacked, adatypes.FieldTypeUnpacked:
+		cti.fields = append(cti.fields, reflect.StructField{Name: name,
+			Type: reflect.TypeOf(int64(0))})
+	case adatypes.FieldTypeByte, adatypes.FieldTypeInt2, adatypes.FieldTypeInt4:
+		cti.fields = append(cti.fields, reflect.StructField{Name: name,
+			Type: reflect.TypeOf(int32(0))})
+	case adatypes.FieldTypeInt8:
+		cti.fields = append(cti.fields, reflect.StructField{Name: name,
+			Type: reflect.TypeOf(int64(0))})
+	case adatypes.FieldTypeUByte, adatypes.FieldTypeUInt2, adatypes.FieldTypeUInt4:
+		cti.fields = append(cti.fields, reflect.StructField{Name: name,
+			Type: reflect.TypeOf(uint32(0))})
+	case adatypes.FieldTypeUInt8:
+		cti.fields = append(cti.fields, reflect.StructField{Name: name,
+			Type: reflect.TypeOf(uint64(0))})
+	case adatypes.FieldTypeMultiplefield:
 	case adatypes.FieldTypeGroup, adatypes.FieldTypePeriodGroup, adatypes.FieldTypeStructure:
+	case adatypes.FieldTypeSuperDesc, adatypes.FieldTypeHyperDesc, adatypes.FieldTypeCollation:
+	case adatypes.FieldTypePhonetic, adatypes.FieldTypeReferential:
 	default:
-		fmt.Println("Field Type", adaType.Name(), adaType.Type())
-		panic("Field type missing" + adaType.Type().FormatCharacter())
+		fmt.Println("Field Type", name, adaType.Type())
+		panic("Field type missing " + adaType.Type().FormatCharacter())
 	}
 	return nil
 }
@@ -996,10 +1023,14 @@ func (request *ReadRequest) createInterface(fieldList string) (err error) {
 
 	var structType reflect.Type
 	tm := adatypes.NewTraverserMethods(traverseCreateTypeInterface)
-	cti := createTypeInterface{fields: make([]reflect.StructField, 0)}
+	cti := createTypeInterface{fields: make([]reflect.StructField, 0), fieldNames: make(map[string][]string)}
+	isnField := reflect.StructField{Name: "ISN",
+		Type: reflect.TypeOf(uint64(0))}
+	cti.fields = append(cti.fields, isnField)
 	request.definition.TraverseTypes(tm, true, &cti)
 	structType = reflect.StructOf(cti.fields)
-	dynamic := &adatypes.DynamicInterface{DataType: structType, FieldNames: make(map[string][]string)}
+	dynamic := &adatypes.DynamicInterface{DataType: structType, FieldNames: cti.fieldNames}
+	dynamic.FieldNames["#isn"] = []string{"ISN"}
 	request.dynamic = dynamic
 	return nil
 }

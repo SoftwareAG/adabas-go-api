@@ -44,6 +44,10 @@ func evaluateMultipleField(adaValue IAdaValue, v reflect.Value, tp *valueInterfa
 	if !ok {
 		return Continue, nil
 	}
+
+	if st.Type.Kind() != reflect.Slice {
+		return Continue, nil
+	}
 	stt := st.Type.Elem()
 	Central.Log.Debugf("Use type %s %s %v kind=%v", stt.Name(), stt.String(), stt, stt.Kind())
 	sv := adaValue.(*StructureValue)

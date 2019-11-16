@@ -84,6 +84,7 @@ func (dynamic *DynamicInterface) CreateQueryFields() string {
 
 // ExamineIsnField set the interface Isn-tagged field with value for ISN
 func (dynamic *DynamicInterface) ExamineIsnField(value reflect.Value, isn Isn) error {
+	Central.Log.Debugf("Examine ISN field: %d", isn)
 	v := value
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()

@@ -1032,3 +1032,67 @@ func TestDynamicInterfaceFromMap(t *testing.T) {
 		}
 	}
 }
+
+func TestAllFieldsDynamicInterfaceFromMap(t *testing.T) {
+	initTestLogWithFile(t, "request_interface.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	fmt.Println("Read interface with period group")
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapWithInterface("EmployeesInterface", "*")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	// err = request.QueryFields("*")
+	// if !assert.NoError(t, err) {
+	// 	return
+	// }
+	//assert.Equal(t, "EmployeesSalary", request.dynamic.DataType.Name())
+
+	result, err := request.ReadLogicalWith("ID=50004000")
+	fmt.Println("Read done ...")
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Nil(t, result.Values)
+	assert.NotNil(t, result.Data)
+	if !assert.NotNil(t, result) {
+		return
+	}
+	result.DumpValues()
+	result.DumpData()
+	if !assert.Len(t, result.Data, 1) {
+		return
+	}
+
+	fmt.Println("Test dump reflection")
+	for _, x := range result.Data {
+		ri := reflect.TypeOf(x)
+		vx := reflect.ValueOf(x)
+		if ri.Kind() == reflect.Ptr {
+			ri = ri.Elem()
+			vx = vx.Elem()
+		}
+		for i := 0; i < ri.NumField(); i++ {
+			f := ri.Field(i)
+			v := vx.Field(i)
+			switch v.Kind() {
+			case reflect.String:
+				fmt.Printf("Field %d %v = %v\n", i, f.Name, v.String())
+			case reflect.Uint32, reflect.Uint64:
+				fmt.Printf("Field %d %v = %d\n", i, f.Name, v.Uint())
+			case reflect.Int32, reflect.Int64:
+				fmt.Printf("Field %d %v = %d\n", i, f.Name, v.Int())
+			default:
+				fmt.Printf("Field %d %v = %v %v\n", i, f.Name, v.String(), v.Kind())
+			}
+		}
+	}
+}

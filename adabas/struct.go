@@ -132,7 +132,7 @@ func ReflectStore(entries interface{}, connection *Connection, mapName string) e
 			fieldName := ri.Field(fi).Name
 			adabasFieldName := fieldName
 			tag := ri.Field(fi).Tag.Get("adabas")
-			adatypes.Central.Log.Debugf("X: %s", tag)
+			adatypes.Central.Log.Debugf("Adabas tag: %s", tag)
 			if tag != "" {
 				s := strings.Split(tag, ":")
 				adabasFieldName = s[0]
