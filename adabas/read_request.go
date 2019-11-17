@@ -989,7 +989,7 @@ func traverseCreateTypeInterface(adaType adatypes.IAdaType, parentType adatypes.
 	adatypes.Central.Log.Debugf("Add field %s/%s of %v", adaType.Name(), name, cti.fieldHash[name])
 	cti.fieldNames[name] = []string{adaType.Name()}
 	switch adaType.Type() {
-	case adatypes.FieldTypeString:
+	case adatypes.FieldTypeString, adatypes.FieldTypeUnicode:
 		cti.fields = append(cti.fields, reflect.StructField{Name: name,
 			Type: reflect.TypeOf(string(""))})
 	case adatypes.FieldTypePacked, adatypes.FieldTypeUnpacked:
