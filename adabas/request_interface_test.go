@@ -1033,8 +1033,29 @@ func TestDynamicInterfaceFromMap(t *testing.T) {
 	}
 }
 
+func loadEmployeesInterface(t *testing.T) {
+	ada, _ := NewAdabas(adabasModDBID)
+	defer ada.Close()
+	repository := NewMapRepository(ada, 4)
+
+	_, err := repository.SearchMap(ada, "EmployeesInterface")
+	if err != nil {
+		maps, merr := LoadJSONMap("EmployeesInterface.json")
+		if !assert.NoError(t, merr) && !assert.Len(t, maps, 1) {
+			return
+		}
+		maps[0].Repository = &repository.DatabaseURL
+		err = maps[0].Store()
+		if !assert.NoError(t, err) {
+			return
+		}
+	}
+
+}
+
 func TestAllFieldsDynamicInterfaceFromMap(t *testing.T) {
 	initTestLogWithFile(t, "request_interface.log")
+	loadEmployeesInterface(t)
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
@@ -1086,6 +1107,7 @@ func testReceivedRecord(d interface{}, x interface{}) error {
 
 func TestAllFieldsDynamicInterfaceFromMapStream(t *testing.T) {
 	initTestLogWithFile(t, "request_interface.log")
+	loadEmployeesInterface(t)
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
