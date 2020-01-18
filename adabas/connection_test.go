@@ -1487,7 +1487,7 @@ func TestConnectionRead9FieldDocument(t *testing.T) {
 	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
-	url := "24(adatcp://localhost:61024)" // adabasStatDBIDs
+	url := adabasStatDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
 	if !assert.NoError(t, cerr) {
@@ -2141,7 +2141,7 @@ func TestConnectionFile9Isn242(t *testing.T) {
 	if !assert.NoError(t, rErr) {
 		return
 	}
-	err = readRequest.QueryFields("*")
+	err = readRequest.QueryFields("A0,B0,DA,EA,F0,I0,L0,N0")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -2169,7 +2169,7 @@ func TestConnectionFile9Isn297(t *testing.T) {
 	if !assert.NoError(t, rErr) {
 		return
 	}
-	err = readRequest.QueryFields("*")
+	err = readRequest.QueryFields("A0,B0,DA,EA,F0,I0,L0,N0")
 	if !assert.NoError(t, err) {
 		return
 	}
