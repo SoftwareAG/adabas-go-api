@@ -20,6 +20,7 @@
 package adabas
 
 import (
+	"crypto/md5"
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
@@ -459,8 +460,83 @@ func TestConnectionPeriodAndMultipleField(t *testing.T) {
 	qErr := readRequest.QueryFields("AA,AQ,AZ")
 	assert.NoError(t, qErr)
 	fmt.Println("Result data:")
-	_, rErr = readRequest.ReadISN(499)
+	result, readErr := readRequest.ReadISN(499)
+	if !assert.NoError(t, readErr) {
+		return
+	}
+	if !assert.Equal(t, int32(1), result.Values[0].ValueQuantity("AA")) {
+		return
+	}
+	if !assert.Equal(t, int32(2), result.Values[0].ValueQuantity("AQ")) {
+		return
+	}
+	if !assert.Equal(t, int32(1), result.Values[0].ValueQuantity("AS[1]")) {
+		return
+	}
+	if !assert.Equal(t, int32(0), result.Values[0].ValueQuantity("AT[1]")) {
+		return
+	}
+	if !assert.Equal(t, int32(1), result.Values[0].ValueQuantity("AS[2]")) {
+		return
+	}
+	if !assert.Equal(t, int32(0), result.Values[0].ValueQuantity("AT[2]")) {
+		return
+	}
+	if !assert.Equal(t, int32(2), result.Values[0].ValueQuantity("AZ")) {
+		return
+	}
+	// result.DumpValues()
+}
+
+func TestConnectionPeriodAndMultipleQuantity(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	connection.Open()
+	readRequest, rErr := connection.CreateFileReadRequest(11)
 	if !assert.NoError(t, rErr) {
+		return
+	}
+	readRequest.Limit = 0
+
+	qErr := readRequest.QueryFields("AA,AQ,AW")
+	assert.NoError(t, qErr)
+	fmt.Println("Result data:")
+	result, readErr := readRequest.ReadISN(250)
+	if !assert.NoError(t, readErr) {
+		return
+	}
+	if !assert.Equal(t, int32(1), result.Values[0].ValueQuantity("AA")) {
+		return
+	}
+	if !assert.Equal(t, int32(3), result.Values[0].ValueQuantity("AQ")) {
+		return
+	}
+	if !assert.Equal(t, int32(1), result.Values[0].ValueQuantity("AS[1]")) {
+		return
+	}
+	if !assert.Equal(t, int32(2), result.Values[0].ValueQuantity("AT[1]")) {
+		return
+	}
+	if !assert.Equal(t, int32(1), result.Values[0].ValueQuantity("AS[2]")) {
+		return
+	}
+	if !assert.Equal(t, int32(2), result.Values[0].ValueQuantity("AT[2]")) {
+		return
+	}
+	if !assert.Equal(t, int32(1), result.Values[0].ValueQuantity("AT[3]")) {
+		return
+	}
+	if !assert.Equal(t, int32(2), result.Values[0].ValueQuantity("AW")) {
 		return
 	}
 	// result.DumpValues()
@@ -1361,14 +1437,14 @@ func TestConnectionReadAllFields9(t *testing.T) {
 	}
 }
 
-func TestConnectionReadAllPEFields9(t *testing.T) {
+func TestConnectionRead9FieldPicture(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
 	initTestLogWithFile(t, "connection.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
-	url := adabasModDBIDs
+	url := adabasStatDBIDs
 	fmt.Println("Connect to ", url)
 	connection, cerr := NewConnection("acj;target=" + url)
 	if !assert.NoError(t, cerr) {
@@ -1382,19 +1458,89 @@ func TestConnectionReadAllPEFields9(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	request.QueryFields("DA,I0,JA")
+	request.QueryFields("RA")
 	request.Limit = 0
 	var result *Response
-	result, err = request.ReadLogicalWith("AA=40003001")
+	result, err = request.ReadLogicalWith("AA=11300323")
 	if !assert.NoError(t, err) {
 		return
 	}
-	if assert.NotNil(t, result) {
-		err = result.DumpValues()
-		assert.NoError(t, err)
+	if !assert.NotNil(t, result) {
+		return
 	}
-	v, _ := result.Values[0].SearchValue("JA")
-	assert.Equal(t, "MGMT01", v.String())
+	assert.NoError(t, err)
+	if !assert.Equal(t, int32(1), result.Values[0].ValueQuantity("RA")) {
+		return
+	}
+	v, _ := result.Values[0].SearchValue("RA")
+	raw := v.Bytes()
+	assert.Equal(t, 183049, len(raw))
+	md5sum := fmt.Sprintf("%X", md5.Sum(raw))
+	assert.Equal(t, "8B124C139790221469EF6308D6554660", md5sum)
+
+}
+
+func TestConnectionRead9FieldDocument(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	url := "24(adatcp://localhost:61024)" // adabasStatDBIDs
+	fmt.Println("Connect to ", url)
+	connection, cerr := NewConnection("acj;target=" + url)
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	openErr := connection.Open()
+	assert.NoError(t, openErr)
+	request, err := connection.CreateFileReadRequest(9)
+	if !assert.NoError(t, err) {
+		return
+	}
+	request.QueryFields("SC")
+	request.Limit = 0
+	request.Multifetch = 1
+	request.RecordBufferShift = 10000000
+	var result *Response
+	adatypes.Central.Log.Infof("TEST: Start Read call")
+	result, err = request.ReadLogicalWith("AA=11300323")
+	adatypes.Central.Log.Infof("TEST: Read call done")
+	if !assert.NoError(t, err) {
+		return
+	}
+	if !assert.NotNil(t, result) {
+		return
+	}
+	assert.NoError(t, err)
+	if !assert.Equal(t, int32(1), result.Values[0].ValueQuantity("SC")) {
+		return
+	}
+	if !assert.Equal(t, int32(3), result.Values[0].ValueQuantity("SC[1]")) {
+		return
+	}
+	checkChecksum(t, result.Values[0], "SC[1,1]", "7B64C5D56AED33B749B0653DADC02F2D", 26477)
+	checkChecksum(t, result.Values[0], "SC[1,2]", "532A1D58A92EE7E206A250B6DD5FC08B", 87529)
+	checkChecksum(t, result.Values[0], "SC[1,3]", "297E8428DCA7CF22062D93CDA0CC359A", 23118)
+}
+
+func checkChecksum(t *testing.T, record *Record, field, expectMd5 string, expectLen int) {
+	v, verr := record.SearchValue(field)
+	if !assert.NoError(t, verr) {
+		return
+	}
+	if !assert.NotNil(t, v) {
+		return
+	}
+
+	raw := v.Bytes()
+	assert.Equal(t, expectLen, len(raw))
+	md5sum := fmt.Sprintf("%X", md5.Sum(raw))
+	assert.Equal(t, expectMd5, md5sum)
+	return
 }
 
 func TestConnectionReadOnlyPEFields9(t *testing.T) {

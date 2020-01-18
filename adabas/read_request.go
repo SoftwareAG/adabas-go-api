@@ -243,6 +243,7 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, e
 	}
 	adabasRequest.Definition = request.definition
 	adabasRequest.RecordBufferShift = request.RecordBufferShift
+	adatypes.Central.Log.Debugf("Record shift set to: %d", adabasRequest.RecordBufferShift)
 	adabasRequest.HoldRecords = request.HoldRecords
 	adabasRequest.Multifetch = request.Multifetch
 	if request.Limit != 0 && request.Limit < uint64(request.Multifetch) {

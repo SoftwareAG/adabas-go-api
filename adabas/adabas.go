@@ -380,7 +380,7 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.Request) {
 		multifetch*(adabasRequest.RecordBufferLength+adabasRequest.RecordBufferShift))
 	adabas.AdabasBuffers[1].abd.Abdsend = 0
 	adabas.AdabasBuffers[1].abd.Abdrecv = adabas.AdabasBuffers[0].abd.Abdsize
-	adatypes.Central.Log.Debugf("ABD init R send %d\n", adabas.AdabasBuffers[1].abd.Abdsend)
+	adatypes.Central.Log.Debugf("ABD init R send %d buffer length %d\n", adabas.AdabasBuffers[1].abd.Abdsend, adabas.AdabasBuffers[1].abd.Abdsize)
 
 	// Define search and value buffer to search
 	if adabasRequest.SearchTree != nil {
@@ -754,19 +754,21 @@ func (adabas *Adabas) SecondCall(adabasRequest *adatypes.Request, x interface{})
 		abd := adabas.AdabasBuffers
 		tmpAdabasRequest.Isn = adabasRequest.Isn
 		tmpAdabasRequest.Definition = adabasRequest.Definition
+		tmpAdabasRequest.RecordBufferShift = adabasRequest.RecordBufferShift
+		tmpAdabasRequest.Multifetch = 1
 		tmpAdabasRequest.Option.SecondCall = true
-		adatypes.Central.Log.Debugf("Call second request to ISN=%d", tmpAdabasRequest.Isn)
+		adatypes.Central.Log.Debugf("Call second request to ISN=%d only", tmpAdabasRequest.Isn)
 		err = adabas.readISN(adabas.Acbx.Acbxfnr, tmpAdabasRequest, x)
 		if err != nil {
 			return
 		}
-		adatypes.Central.Log.Debugf("Parse buffer of temporary request")
+		adatypes.Central.Log.Debugf("Read ISN done, parse buffer of second call")
 		_, err = tmpAdabasRequest.Definition.ParseBuffer(tmpAdabasRequest.RecordBuffer, tmpAdabasRequest.Option, "")
 		if err != nil {
-			adatypes.Central.Log.Debugf("Parse buffer of temporary request ended with error: ", err)
+			adatypes.Central.Log.Debugf("Parse buffer of second call  with error: ", err)
 			return
 		}
-		adatypes.Central.Log.Debugf("Parse buffer of temporary request ended, reset to old adabas request")
+		adatypes.Central.Log.Debugf("Parse buffer of second callt ended, reset to old adabas request")
 		*adabas.Acbx = acbx
 		adabas.AdabasBuffers = abd
 		adatypes.Central.Log.Debugf("Second call done")

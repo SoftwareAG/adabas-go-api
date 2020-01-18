@@ -309,7 +309,7 @@ func (value *StructureValue) parsePeriodMultiple(helper *BufferHelper, option *B
 			if err != nil {
 				return
 			}
-			Central.Log.Debugf("New Value %s -> %s", v.Type().Name(), v.String())
+			Central.Log.Debugf("Parsed Value %s -> len=%s type=%T", v.Type().Name(), len(v.Bytes()), v)
 		}
 	}
 	Central.Log.Debugf("End parsing MU in PE")

@@ -200,7 +200,22 @@ func (value *stringValue) StoreBuffer(helper *BufferHelper) error {
 func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 
 	if option.SecondCall {
+		if value.Type().HasFlagSet(FlagOptionMUGhost) && value.Type().HasFlagSet(FlagOptionPE) {
+			Central.Log.Debugf("MU flag evaluate length at offset %d", helper.Offset())
+			value.lobSize, err = helper.ReceiveUInt32()
+			if err != nil {
+				return EndTraverser, err
+			}
+			value.lobSize -= 4
+			Central.Log.Debugf("Byte to query: %d", value.lobSize)
+			value.value, err = helper.ReceiveBytes(value.lobSize)
+			if err != nil {
+				return EndTraverser, err
+			}
+			return Continue, nil
+		}
 		if value.lobSize < PartialLobSize {
+			Central.Log.Debugf("value lob size %d lower then partial lob size %d", value.lobSize, PartialLobSize)
 			return Continue, nil
 		}
 		Central.Log.Debugf("Old size of lob data %d of %d offset=%d/%X", len(value.value), value.lobSize, helper.offset, helper.offset)

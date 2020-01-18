@@ -231,6 +231,26 @@ func (record *Record) SetValueWithIndex(name string, index []uint32, x interface
 	return record.definition.SetValueWithIndex(name, index, x)
 }
 
+func extractIndex(name string) []uint32 {
+	var index []uint32
+	var re = regexp.MustCompile(`(?m)(\w+(\[(\d+),?(\d+)?\])?)`)
+	for _, s := range re.FindAllStringSubmatch(name, -1) {
+		v, err := strconv.Atoi(s[3])
+		if err != nil {
+			return index
+		}
+		index = append(index, uint32(v))
+		if s[4] != "" {
+			v, err = strconv.Atoi(s[4])
+			if err != nil {
+				return index
+			}
+			index = append(index, uint32(v))
+		}
+	}
+	return index
+}
+
 // SearchValue search value in the tree
 func (record *Record) SearchValue(parameter ...interface{}) (adatypes.IAdaValue, error) {
 	name := parameter[0].(string)
@@ -239,21 +259,7 @@ func (record *Record) SearchValue(parameter ...interface{}) (adatypes.IAdaValue,
 		index = parameter[1].([]uint32)
 	} else {
 		if strings.ContainsRune(name, '[') {
-			var re = regexp.MustCompile(`(?m)(\w+(\[(\d+),?(\d+)?\])?)`)
-			for _, s := range re.FindAllStringSubmatch(name, -1) {
-				v, err := strconv.Atoi(s[3])
-				if err != nil {
-					return nil, err
-				}
-				index = append(index, uint32(v))
-				if s[4] != "" {
-					v, err = strconv.Atoi(s[4])
-					if err != nil {
-						return nil, err
-					}
-					index = append(index, uint32(v))
-				}
-			}
+			index = extractIndex(name)
 			name = name[:strings.IndexRune(name, '[')]
 		} else {
 			index = []uint32{0, 0}
@@ -291,35 +297,49 @@ func (record *Record) ValueQuantity(param ...interface{}) int32 {
 	if len(param) == 0 {
 		return -1
 	}
+
+	var index []uint32
 	fieldName := param[0].(string)
+	adatypes.Central.Log.Debugf("Field name: %s", fieldName)
+
+	if strings.ContainsRune(fieldName, '[') {
+		index = extractIndex(fieldName)
+		fieldName = fieldName[:strings.IndexRune(fieldName, '[')]
+	} else {
+		for i := 1; i < len(param); i++ {
+			switch w := param[i].(type) {
+			case uint32:
+				index = append(index, w)
+			case int:
+				index = append(index, uint32(w))
+			default:
+			}
+		}
+	}
+	adatypes.Central.Log.Debugf("Index from parser %#v", index)
 	if v, ok := record.HashFields[fieldName]; ok {
 		if v.Type().HasFlagSet(adatypes.FlagOptionPE) {
-			adatypes.Central.Log.Debugf("%s PE", v.Type().Name())
-			if len(param) == 1 {
+			adatypes.Central.Log.Debugf("Quantity of %s PE", v.Type().Name())
+			if len(index) < 1 {
 				p := PeriodGroup(v)
 				pv := p.(*adatypes.StructureValue)
 				return int32(pv.NrElements())
 			}
-			var index []uint32
-			for i := 1; i < len(param); i++ {
-				switch w := param[i].(type) {
-				case uint32:
-					index = append(index, w)
-				case int:
-					index = append(index, uint32(w))
-				default:
-				}
-			}
 			var err error
+			adatypes.Central.Log.Debugf("Search index of PE %s", v.Type().Name())
 			v, err = record.SearchValueIndex(fieldName, index)
 			if err != nil {
 				adatypes.Central.Log.Debugf("Error %s/%v: %v", fieldName, index, err)
 				return -1
 			}
-
+			switch mv := v.(type) {
+			case *adatypes.StructureValue:
+				return int32(mv.NrElements())
+			default:
+			}
 		}
 		if v.Type().Type() == adatypes.FieldTypeMultiplefield {
-			adatypes.Central.Log.Debugf("%s MU", v.Type().Name())
+			adatypes.Central.Log.Debugf("Quantity of %s MU elements", v.Type().Name())
 			mv := v.(*adatypes.StructureValue)
 			return int32(mv.NrElements())
 		}
