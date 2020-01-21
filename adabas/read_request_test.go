@@ -762,3 +762,68 @@ func ExampleReadRequest_readGroup() {
 	//    AY[01] = > 19990831 <
 
 }
+
+func ExampleReadRequest_readAllFields() {
+	err := initLogWithFile("request.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	adabas, _ := NewAdabas(adabasStatDBID)
+	request, _ := NewReadRequest(adabas, 11)
+	defer request.Close()
+	request.Limit = 1
+	request.QueryFields("*")
+	var result *Response
+	result, err = request.ReadPhysicalSequence()
+	fmt.Println("Dump result received ...")
+	if result != nil {
+		result.DumpValues()
+	}
+
+	// Output:
+	// Dump result received ...
+	// Dump all result values
+	// Record Isn: 0001
+	//   AA = > 50005800 <
+	//   AB = [ 1 ]
+	//    AC = > SIMONE               <
+	//    AE = > ADAM                 <
+	//    AD = >                      <
+	//   AF = > M <
+	//   AG = > F <
+	//   AH = > 712981 <
+	//   A1 = [ 1 ]
+	//    AI = [ 1 ]
+	//     AI[01] = > 26 AVENUE RHIN ET DA <
+	//    AJ = > JOIGNY               <
+	//    AK = > 89300      <
+	//    AL = > F   <
+	//   A2 = [ 1 ]
+	//    AN = > 1033   <
+	//    AM = > 44864858        <
+	//   AO = > VENT59 <
+	//   AP = > CHEF DE SERVICE           <
+	//   AQ = [ 1 ]
+	//    AR[01] = > EUR <
+	//    AS[01] = > 963 <
+	//    AT[01] = [ 1 ]
+	//     AT[01,01] = > 138 <
+	//   A3 = [ 1 ]
+	//    AU = > 19 <
+	//    AV = > 5 <
+	//   AW = [ 1 ]
+	//    AX[01] = > 19990801 <
+	//    AY[01] = > 19990831 <
+	//   AZ = [ 2 ]
+	//    AZ[01] = > FRE <
+	//    AZ[02] = > ENG <
+
+	//   PH = >  <
+	//   H1 = > 1905 <
+	//   S1 = > VENT <
+	//   S2 = > VENT59ADAM                 <
+	//   S3 = >  <
+
+}
