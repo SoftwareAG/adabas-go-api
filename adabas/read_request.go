@@ -872,7 +872,7 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	// Could not recreate field content of a request!!!
 	if request.fields == nil {
 		adatypes.Central.Log.Debugf("Create field content")
-		if fieldq == "*" && fieldq != "" {
+		if fieldq != "*" && fieldq != "" {
 			f := make(map[string]int)
 			ev := &evaluateFieldMap{queryFields: make(map[string]*queryField), fields: f}
 			for i, s := range strings.Split(fieldq, ",") {
