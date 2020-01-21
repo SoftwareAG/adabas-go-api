@@ -160,6 +160,10 @@ import "C"
 
 var idCounter uint32
 
+func init() {
+	adatypes.Central.Log.Debugf("Adabas GO API version %s", adatypes.Version)
+}
+
 // NewAdabasID create a new Adabas ID instance
 func NewAdabasID() *ID {
 	AdaID := AID{level: 3, size: adabasIDSize}

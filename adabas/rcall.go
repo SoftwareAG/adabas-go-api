@@ -29,6 +29,10 @@ import (
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
+func init() {
+	adatypes.Central.Log.Debugf("Adabas GO API version %s", adatypes.Version)
+}
+
 // NewAdabasID create a new Adabas ID instance
 func NewAdabasID() *ID {
 	adaid := AID{level: 3, Pid: uint32(os.Getpid()), size: adabasIDSize}

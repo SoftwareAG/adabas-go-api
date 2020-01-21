@@ -23,6 +23,9 @@ import (
 	"encoding/binary"
 )
 
+// Version version of current build
+var Version = "v1.3.9"
+
 // FieldType indicate a field type of the field
 type FieldType uint
 
