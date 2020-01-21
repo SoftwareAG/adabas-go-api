@@ -249,6 +249,19 @@ func (def *Definition) ShouldRestrictToFields(fields string) (err error) {
 	return def.ShouldRestrictToFieldSlice(field)
 }
 
+// RemoveSpecialDescriptors Remove special descriptors from query
+func (def *Definition) RemoveSpecialDescriptors() (err error) {
+	newTypes := make([]IAdaType, 0)
+	for _, s := range def.activeFieldTree.SubTypes {
+		//fmt.Println(s.Name(), s.IsSpecialDescriptor())
+		if !s.IsSpecialDescriptor() {
+			newTypes = append(newTypes, s)
+		}
+	}
+	def.activeFieldTree.SubTypes = newTypes
+	return nil
+}
+
 func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 	// BUG(tkn) Check if fields are valid!!!!
 	fieldMap := &fieldMap{definition: def}

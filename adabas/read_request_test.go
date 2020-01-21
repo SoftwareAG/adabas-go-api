@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -819,11 +819,5 @@ func ExampleReadRequest_readAllFields() {
 	//   AZ = [ 2 ]
 	//    AZ[01] = > FRE <
 	//    AZ[02] = > ENG <
-
-	//   PH = >  <
-	//   H1 = > 1905 <
-	//   S1 = > VENT <
-	//   S2 = > VENT59ADAM                 <
-	//   S3 = >  <
 
 }

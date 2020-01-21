@@ -857,18 +857,22 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 		adatypes.Central.Log.Debugf("Query fields definition error: %v", err)
 		return
 	}
-	if !(request.adabasMap != nil && fieldq == "*") {
-		err = request.definition.ShouldRestrictToFields(fieldq)
-		if err != nil {
-			adatypes.Central.Log.Debugf("Query fields restrict error: %v", err)
-			return err
+	if fieldq == "*" {
+		request.definition.RemoveSpecialDescriptors()
+	} else {
+		if !(request.adabasMap != nil && fieldq == "*") {
+			err = request.definition.ShouldRestrictToFields(fieldq)
+			if err != nil {
+				adatypes.Central.Log.Debugf("Query fields restrict error: %v", err)
+				return err
+			}
 		}
 	}
 
 	// Could not recreate field content of a request!!!
 	if request.fields == nil {
 		adatypes.Central.Log.Debugf("Create field content")
-		if fieldq != "*" && fieldq != "" {
+		if fieldq == "*" && fieldq != "" {
 			f := make(map[string]int)
 			ev := &evaluateFieldMap{queryFields: make(map[string]*queryField), fields: f}
 			for i, s := range strings.Split(fieldq, ",") {
@@ -884,7 +888,7 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 		}
 	}
 
-	adatypes.Central.Log.Debugf("Query fields ready %v", err)
+	adatypes.Central.Log.Debugf("Query fields ready %v", request.fields)
 	return
 }
 
