@@ -1527,6 +1527,53 @@ func TestConnectionRead9FieldDocument(t *testing.T) {
 	checkChecksum(t, result.Values[0], "SC[1,3]", "297E8428DCA7CF22062D93CDA0CC359A", 23118)
 }
 
+func TestConnectionRead9FieldDocumentRemote(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	url := adabasTCPLocation()
+	fmt.Println("Connect to ", url)
+	connection, cerr := NewConnection("acj;target=177(adatcp://" + url + ")")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	openErr := connection.Open()
+	assert.NoError(t, openErr)
+	request, err := connection.CreateFileReadRequest(9)
+	if !assert.NoError(t, err) {
+		return
+	}
+	request.QueryFields("SC")
+	request.Limit = 0
+	request.Multifetch = 1
+	request.RecordBufferShift = 10000000
+	var result *Response
+	adatypes.Central.Log.Infof("TEST: Start Read call")
+	result, err = request.ReadLogicalWith("AA=11300323")
+	adatypes.Central.Log.Infof("TEST: Read call done")
+	if !assert.NoError(t, err) {
+		return
+	}
+	if !assert.NotNil(t, result) {
+		return
+	}
+	assert.NoError(t, err)
+	if !assert.Equal(t, int32(1), result.Values[0].ValueQuantity("SC")) {
+		return
+	}
+	if !assert.Equal(t, int32(3), result.Values[0].ValueQuantity("SC[1]")) {
+		return
+	}
+	checkChecksum(t, result.Values[0], "SC[1,1]", "7B64C5D56AED33B749B0653DADC02F2D", 26477)
+	checkChecksum(t, result.Values[0], "SC[1,2]", "532A1D58A92EE7E206A250B6DD5FC08B", 87529)
+	checkChecksum(t, result.Values[0], "SC[1,3]", "297E8428DCA7CF22062D93CDA0CC359A", 23118)
+}
+
 func TestConnectionRead9FieldDocumentTo(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
