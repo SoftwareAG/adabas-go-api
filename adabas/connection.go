@@ -25,6 +25,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
@@ -37,6 +38,12 @@ type Connection struct {
 	adabasToMap  *Adabas
 	fnr          Fnr
 	repository   *Repository
+}
+
+var once sync.Once
+
+var onceBody = func() {
+	adatypes.Central.Log.Infof("Adabas GO API version %s", adatypes.Version)
 }
 
 // NewConnection create new Adabas connection instance
@@ -67,6 +74,7 @@ func NewConnection(connectionString string) (*Connection, error) {
 //   - Map usage
 //     acj;map;config=[<dbid>,<file>]
 func NewConnectionID(connectionString string, adabasID *ID) (connection *Connection, err error) {
+	once.Do(onceBody)
 	parts := strings.Split(connectionString, ";")
 	if parts[0] != "acj" && parts[0] != "ada" {
 		return nil, adatypes.NewGenericError(51)
