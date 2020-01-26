@@ -398,6 +398,19 @@ func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 				start.Attr = attrs
 				enc.EncodeToken(start)
 			}
+		case adatypes.FieldTypeGroup:
+			grName := "Group"
+			if adaValue.Type().Name() != adaValue.Type().ShortName() {
+				grName = adaValue.Type().Name()
+				start := xml.StartElement{Name: xml.Name{Local: grName}}
+				enc.EncodeToken(start)
+			} else {
+				start := xml.StartElement{Name: xml.Name{Local: grName}}
+				attrs := make([]xml.Attr, 0)
+				attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})
+				start.Attr = attrs
+				enc.EncodeToken(start)
+			}
 		default:
 			start := xml.StartElement{Name: xml.Name{Local: adaValue.Type().Name()}}
 			enc.EncodeToken(start)
@@ -435,6 +448,10 @@ func traverseMarshalXMLEnd2(adaValue adatypes.IAdaValue, x interface{}) (adatype
 		}
 		if adaValue.Type().Type() == adatypes.FieldTypeMultiplefield {
 			end := xml.EndElement{Name: xml.Name{Local: "Multiple"}}
+			enc.EncodeToken(end)
+		}
+		if adaValue.Type().Type() == adatypes.FieldTypeGroup {
+			end := xml.EndElement{Name: xml.Name{Local: "Group"}}
 			enc.EncodeToken(end)
 		}
 		end := xml.EndElement{Name: xml.Name{Local: adaValue.Type().Name()}}

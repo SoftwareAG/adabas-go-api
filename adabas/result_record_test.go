@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -238,6 +238,13 @@ func TestRecordGroupValues(t *testing.T) {
 			assert.True(t, ok)
 		}
 	}
-	result.definition.DumpTypes(false, true)
-	result.DumpValues()
+	//result.definition.DumpTypes(false, true)
+	//result.DumpValues()
+	x, err := xml.Marshal(result)
+	assert.NoError(t, err)
+	assert.Equal(t, `<Record><UI>ANCXXX</UI><Group sn="G2"><U2>0</U2><Group sn="G3"><U3>0</U3><I3>0</I3></Group><I2>1231</I2></Group><Period sn="P2"><Entry><UP>100</UP><IP>1023</IP></Entry></Period><BI>1</BI></Record>`, string(x))
+	j, err := json.Marshal(result)
+	assert.NoError(t, err)
+	assert.Equal(t, `{"BI":1,"G2":{"G3":{"I3":0,"U3":0},"I2":1231,"U2":0},"P2":[{"IP":1023,"UP":100}],"UI":"ANCXXX"}`, string(j))
+
 }
