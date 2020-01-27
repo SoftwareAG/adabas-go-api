@@ -23,7 +23,7 @@ import (
 )
 
 func ExampleReadRequest_ReadLogicalWithCursoring() {
-	err := initLogWithFile("connection_map.log")
+	err := initLogWithFile("connection_cursoring.log")
 	if err != nil {
 		fmt.Println("Error initializing log", err)
 		return
@@ -116,7 +116,7 @@ func ExampleReadRequest_ReadLogicalWithCursoring() {
 }
 
 func ExampleReadRequest_readLogicalWithCursoringLimit() {
-	ferr := initLogWithFile("connection_map.log")
+	ferr := initLogWithFile("connection_cursoring.log")
 	if ferr != nil {
 		fmt.Println("Error initializing log", ferr)
 		return

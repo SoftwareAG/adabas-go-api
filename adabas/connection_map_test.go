@@ -37,6 +37,7 @@ func BenchmarkConnection_cached(b *testing.B) {
 		fmt.Println(err)
 		return
 	}
+	adatypes.Central.Log.Infof("TEST: BenchmarkConnection_cached")
 
 	adatypes.InitDefinitionCache()
 	defer adatypes.FinitDefinitionCache()
@@ -85,6 +86,7 @@ func BenchmarkConnection_noreconnect(b *testing.B) {
 		fmt.Println(err)
 		return
 	}
+	adatypes.Central.Log.Infof("TEST: BenchmarkConnection_noreconnect")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if !assert.NoError(b, cerr) {
@@ -190,6 +192,7 @@ func TestConnectionMap(t *testing.T) {
 		fmt.Println(err)
 		return
 	}
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	connection, cerr := NewConnection("acj;map=EMPLOYEES-NAT-DDM;config=[" + adabasStatDBIDs + ",4];auth=NONE,user=XMAP")
 	if !assert.NoError(t, cerr) {
@@ -226,6 +229,7 @@ func BenchmarkConnection_noreconnectremote(b *testing.B) {
 		fmt.Println(err)
 		return
 	}
+	adatypes.Central.Log.Infof("TEST: BenchmarkConnection_noreconnectremote")
 
 	connection, cerr := NewConnection("acj;map;config=[177(adatcp://" + adabasTCPLocation() + "),4]")
 	if !assert.NoError(b, cerr) {
@@ -445,7 +449,7 @@ func TestConnectionCopyMapTransaction(t *testing.T) {
 			return
 		}
 	}
-
+	defer ada.Close()
 	DumpGlobalMapRepositories()
 	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
 	if !assert.NoError(t, cerr) {
@@ -552,7 +556,7 @@ func ExampleConnection_readWithMapFormatted() {
 		return
 	}
 
-	adatypes.Central.Log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+	adatypes.Central.Log.Infof("TEST: ExampleConnection_readWithMapFormatted")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -613,6 +617,7 @@ func ExampleConnection_readFileDefinitionMapGroup() {
 		return
 	}
 
+	adatypes.Central.Log.Infof("TEST: ExampleConnection_readFileDefinitionMapGroup")
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
 		return
@@ -664,6 +669,7 @@ func BenchmarkConnection_simple(b *testing.B) {
 		fmt.Println(err)
 		return
 	}
+	adatypes.Central.Log.Infof("TEST: BenchmarkConnection_simple")
 
 	for i := 0; i < 100; i++ {
 		// fmt.Print(".")
@@ -855,6 +861,7 @@ func ExampleConnection_mapStore() {
 		fmt.Println(err)
 		return
 	}
+	adatypes.Central.Log.Infof("TEST: ExampleConnection_mapStore")
 
 	if cErr := clearFile(16); cErr != nil {
 		return
@@ -1028,7 +1035,7 @@ func ExampleConnection_readShortMap() {
 		return
 	}
 
-	adatypes.Central.Log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+	adatypes.Central.Log.Infof("TEST: func ExampleConnection_readShortMap()")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -1191,7 +1198,7 @@ func ExampleConnection_readLongMapRange() {
 		return
 	}
 
-	adatypes.Central.Log.Infof("TEST: ExampleAdabas_readFileDefinitionMap")
+	adatypes.Central.Log.Infof("TEST: ExampleConnection_readLongMapRange")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -1519,6 +1526,7 @@ func ExampleConnection_mapReadUnicode() {
 		fmt.Println(err)
 		return
 	}
+	adatypes.Central.Log.Infof("TEST: ExampleConnection_mapReadUnicode")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -1574,6 +1582,7 @@ func ExampleConnection_mapReadUnicodeNew() {
 		fmt.Println(err)
 		return
 	}
+	adatypes.Central.Log.Infof("TEST: ExampleConnection_mapReadUnicodeNew")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
@@ -1681,6 +1690,7 @@ func ExampleConnection_mapReadDisjunctSearch() {
 		fmt.Println(err)
 		return
 	}
+	adatypes.Central.Log.Infof("TEST: ExampleConnection_mapReadDisjunctSearch")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
 	if cerr != nil {
