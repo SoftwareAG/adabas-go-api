@@ -2024,7 +2024,11 @@ func ExampleConnection_store() {
 		return
 	}
 
-	// Output: Read file 16 ...
+	// Output: Clear file  16
+	// Success clearing file  16
+	// Clear file  19
+	// Success clearing file  19
+	// Read file 16 ...
 	// Dump all result values
 	// Record Isn: 0001
 	//   AA = > 16555_0  <
