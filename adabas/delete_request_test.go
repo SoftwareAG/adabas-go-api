@@ -230,7 +230,7 @@ func clearFile(file Fnr) error {
 	if err != nil {
 		return err
 	}
-
+	connection.Close()
 	fmt.Println("Success clearing file ", file)
 	return nil
 }

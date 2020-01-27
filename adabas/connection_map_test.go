@@ -754,6 +754,12 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	if !assert.NoError(t, cErr) {
 		return
 	}
+	nr, cerr := checkStoreByFile(t, adabasModDBIDs, 16, multipleMapRefName)
+	assert.NoError(t, cerr)
+	assert.Equal(t, 0, nr)
+	nr, cerr = checkStoreByFile(t, adabasModDBIDs, 19, multipleMapRefName2)
+	assert.NoError(t, cerr)
+	assert.Equal(t, 0, nr)
 
 	adatypes.Central.Log.Infof("Prepare create test map")
 	dataRepository := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 16}
@@ -816,8 +822,12 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	fmt.Println("Check stored data")
 
 	adatypes.Central.Log.Infof("Check stored data")
-	checkStoreByFile(t, adabasModDBIDs, 16, multipleMapRefName)
-	checkStoreByFile(t, adabasModDBIDs, 19, multipleMapRefName2)
+	nr, cerr = checkStoreByFile(t, adabasModDBIDs, 16, multipleMapRefName)
+	assert.NoError(t, cerr)
+	assert.Equal(t, 10, nr)
+	nr, cerr = checkStoreByFile(t, adabasModDBIDs, 19, multipleMapRefName2)
+	assert.NoError(t, cerr)
+	assert.Equal(t, 2, nr)
 
 	connection.Close()
 
@@ -836,7 +846,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 
 	err = deleteRequest.Delete(adatypes.Isn(lastIsn))
 	assert.NoError(t, derr)
-
+	connection.Close()
 }
 
 func ExampleConnection_mapStore() {

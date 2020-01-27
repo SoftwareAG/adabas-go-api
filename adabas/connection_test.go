@@ -1814,15 +1814,15 @@ func ExampleConnection_endTransaction() {
 
 }
 
-func checkStoreByFile(t *testing.T, target string, file Fnr, search string) error {
+func checkStoreByFile(t *testing.T, target string, file Fnr, search string) (int, error) {
 	connection, err := NewConnection("acj;target=" + target)
 	if !assert.NoError(t, err) {
-		return err
+		return 0, err
 	}
 	defer connection.Close()
 	readRequest, rrerr := connection.CreateFileReadRequest(file)
 	if !assert.NoError(t, rrerr) {
-		return rrerr
+		return 0, rrerr
 	}
 	fields := "AA,AB"
 	searchField := "AA"
@@ -1837,13 +1837,17 @@ func checkStoreByFile(t *testing.T, target string, file Fnr, search string) erro
 	}
 	err = readRequest.QueryFields(fields)
 	if !assert.NoError(t, err) {
-		return err
+		return 0, err
 	}
 	result, rerr := readRequest.ReadLogicalWith(searchField + "=[" + search + "_:" + search + "_Z]")
 	if !assert.NoError(t, rerr) {
-		return rerr
+		return 0, rerr
 	}
-	return validateResult(t, search, result)
+	numberRecords := len(result.Values)
+	if numberRecords == 0 {
+		return 0, nil
+	}
+	return numberRecords, validateResult(t, search, result)
 }
 
 func validateResult(t *testing.T, search string, result *Response) error {
