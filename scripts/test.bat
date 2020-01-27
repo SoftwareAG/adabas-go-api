@@ -17,6 +17,11 @@ if not exist %LOGPATH% mkdir %LOGPATH%
 
 
 mkdir test
+rem Generate test executables
+go test -c -timeout 200s -count 1 -tags adalnk -v  ./adatypes
+go test -c -timeout 200s -count 1 -tags adalnk -v  ./adabas
+
+rem start tests
 go test -timeout 200s -count 1 -tags adalnk -v  ./... >test.output
 rem github.com/SoftwareAG/adabas-go-api/adabas github.com/SoftwareAG/adabas-go-api/adatypes
 
