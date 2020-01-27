@@ -65,7 +65,7 @@ func TestConnectionStorePEMU(t *testing.T) {
 	err = record.SetValue("AZ[2]", "999")
 	assert.NoError(t, err)
 	adatypes.Central.Log.Debugf("AZ set")
-	record.DumpValues()
+	//record.DumpValues()
 	err = storeRequest.Store(record)
 	assert.NoError(t, err)
 }

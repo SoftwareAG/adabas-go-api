@@ -1355,7 +1355,7 @@ func TestConnection_readAllMap(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	result.DumpValues()
+	//result.DumpValues()
 	if assert.Equal(t, 1, len(result.Values)) {
 		v, verr := result.Values[0].SearchValue("last_update_--TIMX-")
 		if !assert.NoError(t, verr) {
@@ -1397,7 +1397,7 @@ func TestConnection_readReference(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	result.DumpValues()
+	// result.DumpValues()
 	if assert.Equal(t, 1, len(result.Values)) {
 		v, verr := result.Values[0].SearchValue("Filename")
 		if !assert.NoError(t, verr) {
@@ -1415,7 +1415,7 @@ func TestConnection_readReference(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	result.DumpValues()
+	// result.DumpValues()
 	if assert.Equal(t, 1, len(result.Values)) {
 		v, verr := result.Values[0].SearchValue("Filename")
 		if !assert.NoError(t, verr) {
@@ -1462,7 +1462,7 @@ func TestConnection_readReferenceList(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	result.DumpValues()
+	// result.DumpValues()
 	if assert.Equal(t, 3, len(result.Values)) {
 		v, verr := result.Values[0].SearchValue("Filename")
 		if !assert.NoError(t, verr) {
@@ -1641,7 +1641,7 @@ func TestConnection_readGroup(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	result.DumpValues()
+	// result.DumpValues()
 	v, verr := result.Values[0].SearchValue("CITY")
 	if !assert.NoError(t, verr) {
 		return

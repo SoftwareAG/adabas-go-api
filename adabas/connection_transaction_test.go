@@ -147,11 +147,10 @@ func TestConnectionTransaction(t *testing.T) {
 	}
 	//request.SetHoldRecords(adatypes.HoldWait)
 	request.QueryFields("AA")
-	result, rrerr := request.ReadPhysicalSequence()
+	_, rrerr := request.ReadPhysicalSequence()
 	if !assert.NoError(t, rrerr) {
 		return
 	}
-	result.DumpValues()
 	x = <-c
 
 	fmt.Println("Check stored data", x)
