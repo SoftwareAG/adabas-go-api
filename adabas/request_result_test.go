@@ -287,7 +287,6 @@ func TestRequestResultWithMU(t *testing.T) {
 
 	j, err := json.Marshal(record)
 	assert.NoError(t, err)
-	fmt.Println("JSON:", string(j))
 	assert.Equal(t, "{\"AA\":0,\"B1\":0,\"GR\":{\"PA\":0},\"I2\":0,\"I8\":0,\"MU\":[],\"U4\":0,\"U8\":0,\"UB\":0}", string(j))
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
@@ -335,7 +334,6 @@ func TestRequestResultWithMUWithContent(t *testing.T) {
 	// record.DumpValues()
 	j, err := json.Marshal(record)
 	assert.NoError(t, err)
-	fmt.Println("JSON:", string(j))
 	assert.Equal(t, "{\"AA\":2,\"B1\":3,\"GR\":{\"PA\":1},\"I2\":0,\"I8\":0,\"MU\":[\"AAX001\",\"AAX002\",\"AAX003\",\"AAX004\",\"AAX005\"],\"U4\":0,\"U8\":0,\"UB\":0}", string(j))
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
@@ -359,7 +357,6 @@ func TestRequestResultWithPEMUWithoutContent(t *testing.T) {
 	// record.DumpValues()
 	j, err := json.Marshal(record)
 	assert.NoError(t, err)
-	fmt.Println("JSON:", string(j))
 	assert.Equal(t, "{\"AA\":0,\"I8\":0,\"P2\":[],\"PE\":[],\"U8\":0}", string(j))
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
@@ -417,11 +414,10 @@ func TestRequestResultWithPEMUWithContent(t *testing.T) {
 	// record.DumpValues()
 	j, err := json.Marshal(record)
 	assert.NoError(t, err)
-	fmt.Println("JSON:", string(j))
 	assert.Equal(t, "{\"AA\":2,\"I8\":1,\"P2\":[],\"PE\":[{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[100,122],\"PP\":1},{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[],\"PP\":2},{\"G8\":0,\"GR\":{\"PA\":0,\"PG\":0},\"MU\":[],\"PP\":3}],\"U8\":3}", string(j))
 	x, err := xml.Marshal(record)
 	assert.NoError(t, err)
-	assert.Equal(t, "<Record><AA>2</AA><Period sn=\"PE\"><Entry><PP>1</PP><Multiple sn=\"MU\"><MU>100</MU><MU>122</MU></Multiple><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8></Entry><Entry><PP>2</PP><Multiple sn=\"MU\"></Multiple><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8></Entry><Entry><PP>3</PP><Multiple sn=\"MU\"></Multiple><GR><PA>0</PA><PG>0</PG></GR><G8>0</G8></Entry></Period><U8>3</U8><Period sn=\"P2\"></Period><I8>1</I8></Record>", string(x))
+	assert.Equal(t, "<Record><AA>2</AA><Period sn=\"PE\"><Entry><PP>1</PP><Multiple sn=\"MU\"><MU>100</MU><MU>122</MU></Multiple><Group sn=\"GR\"><PA>0</PA><PG>0</PG></Group><G8>0</G8></Entry><Entry><PP>2</PP><Multiple sn=\"MU\"></Multiple><Group sn=\"GR\"><PA>0</PA><PG>0</PG></Group><G8>0</G8></Entry><Entry><PP>3</PP><Multiple sn=\"MU\"></Multiple><Group sn=\"GR\"><PA>0</PA><PG>0</PG></Group><G8>0</G8></Entry></Period><U8>3</U8><Period sn=\"P2\"></Period><I8>1</I8></Record>", string(x))
 }
 
 func ExampleRecord_dumpZeroValues() {
