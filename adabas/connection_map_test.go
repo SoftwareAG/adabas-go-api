@@ -850,6 +850,7 @@ func ExampleConnection_mapStore() {
 		return
 	}
 	if cErr := clearFile(19); cErr != nil {
+		fmt.Println("Error clearing 19", cErr)
 		return
 	}
 
@@ -950,7 +951,11 @@ func ExampleConnection_mapStore() {
 		return
 	}
 
-	// Output: Read file ...EMPLDDM-GOLOAD-STORE
+	// Output: Clear file  16
+	// Success clearing file  16
+	// Clear file  19
+	// Success clearing file  19
+	// Read file ...EMPLDDM-GOLOAD-STORE
 	// Dump all result values
 	// Record Isn: 0001
 	//   PERSONNEL-ID = > 26555_0  <
