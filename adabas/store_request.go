@@ -382,7 +382,7 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 		}
 		err := request.Update(storeRecord)
 		if err != nil {
-			return adatypes.NewGenericError(53, err.Error())
+			return adatypes.NewGenericError(133, err.Error())
 		}
 
 	}

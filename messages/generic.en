@@ -126,4 +126,5 @@ ADG0000129=Invalid range used: {0}
 ADG0000130=End of cursor
 ADG0000131=Driver not supported
 ADG0000132=Incorrect repository reference, use comma separated definition like <dbid>,<fnr>
+ADG0000133=Update record error: {0}
 ADG0000150=Cannot scan value for type {0}

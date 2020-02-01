@@ -243,7 +243,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 		err = tcpConn.Connect()
 		if err != nil {
 			adabas.Acbx.Acbxrsp = AdaSysCe
-			adatypes.Central.Log.Debugf("Establish TCP context error %v", err)
+			adatypes.Central.Log.Infof("Establish TCP context error %v", err)
 			err = NewError(adabas)
 			return
 		}
@@ -255,12 +255,13 @@ func (adabas *Adabas) sendTCP() (err error) {
 	var buffer bytes.Buffer
 	err = adabas.WriteBuffer(&buffer, Endian(), false)
 	if err != nil {
+		adatypes.Central.Log.Infof("Buffer transmit preparation error ", err)
 		return
 	}
 	adatypes.Central.Log.Debugf("Send buffer of length=%d lenBuffer=%d", buffer.Len(), len(adabas.AdabasBuffers))
 	err = tcpConn.SendData(buffer, uint32(len(adabas.AdabasBuffers)))
 	if err != nil {
-		adatypes.Central.Log.Debugf("Transmit Adabas call error ", err)
+		adatypes.Central.Log.Infof("Transmit Adabas call error ", err)
 		tcpConn.Disconnect()
 		adabas.transactions.connection = nil
 		return
@@ -269,12 +270,12 @@ func (adabas *Adabas) sendTCP() (err error) {
 	var nrAbdBuffers uint32
 	nrAbdBuffers, err = tcpConn.ReceiveData(&buffer)
 	if err != nil {
-		adatypes.Central.Log.Debugf("Transmit Adabas call error ", err)
+		adatypes.Central.Log.Infof("Receive Adabas call error ", err)
 		return
 	}
 	err = adabas.ReadBuffer(&buffer, Endian(), nrAbdBuffers, false)
 	if err != nil {
-		adatypes.Central.Log.Debugf("Read buffer error, destroy context ... %v", err)
+		adatypes.Central.Log.Infof("Read buffer error, destroy context ... %v", err)
 		tcpConn.Disconnect()
 		return
 	}
@@ -823,7 +824,7 @@ func (adabas *Adabas) Store(fileNr Fnr, adabasRequest *adatypes.Request) (err er
 	adatypes.Central.Log.Debugf("Call store, pending transactions=%d adabas=%p",
 		adabas.ID.transactions(adabas.URL.String()), adabas)
 	if adabasRequest.Isn != 0 {
-		adatypes.Central.Log.Debugf("Store data ... %s", n2.command())
+		adatypes.Central.Log.Debugf("Store specific ISN ... %s", n2.command())
 		adabas.Acbx.Acbxcmd = n2.code()
 		adabas.Acbx.Acbxisn = adabasRequest.Isn
 	} else {
