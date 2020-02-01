@@ -336,25 +336,33 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 		for k, v := range request.dynamic.FieldNames {
 			adatypes.Central.Log.Debugf("FN: %s=%v\n", k, v)
 		}
+		adatypes.Central.Log.Debugf("Slice index: %v", record)
+		request.definition.DumpTypes(true, true, "Active store entries")
 	}
-	adatypes.Central.Log.Debugf("Slice index: %v", record)
-	request.definition.DumpTypes(true, true, "Active store entries")
 	for an, fn := range request.dynamic.FieldNames {
 		if !strings.HasPrefix(an, "#") {
 			v, ok := searchDynamicValue(record, fn)
 			if ok { //&& v.IsValid() {
-				adatypes.Central.Log.Debugf("Set dynamic value %v = %v", an, v.Interface())
+				if adatypes.Central.IsDebugLevel() {
+					adatypes.Central.Log.Debugf("Set dynamic value %v = %v", an, v.Interface())
+				}
 				err := storeRecord.SetValue(an, v.Interface())
 				if err != nil {
 					return adatypes.NewGenericError(52, err.Error())
 				}
-				adatypes.Central.Log.Debugf("Set value %s: %s = %v", an, fn, v)
+				if adatypes.Central.IsDebugLevel() {
+					adatypes.Central.Log.Debugf("Set value %s: %s = %v", an, fn, v)
+				}
 			}
 		}
 	}
-	adatypes.Central.Log.Debugf("store/update=%v record ADA: %s", store, storeRecord.String())
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("store/update=%v record ADA: %s", store, storeRecord.String())
+	}
 	storeRecord.Isn = request.dynamic.ExtractIsnField(record)
-	adatypes.Central.Log.Debugf("store/update to ISN=%d", storeRecord.Isn)
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("store/update to ISN=%d", storeRecord.Isn)
+	}
 	if store {
 		err := request.Store(storeRecord)
 		if err != nil {
