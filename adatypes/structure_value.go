@@ -761,22 +761,27 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 	var element *structureElement
 	var ok bool
 	lenElements := 0
-	if value.Elements == nil {
-		Central.Log.Debugf("Elements empty")
-	} else {
-		Central.Log.Debugf("Elements in list %d", len(value.Elements))
+	if value.Elements != nil {
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Elements in list %d", len(value.Elements))
+		}
 		lenElements = len(value.Elements)
 	}
 	curIndex := index
-	Central.Log.Debugf("Current add value index = %d lenElements=%d", curIndex, lenElements)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Current add value index = %d lenElements=%d", curIndex, lenElements)
+	}
 	if element, ok = value.elementMap[curIndex]; !ok {
 		element = newStructureElement()
 		value.Elements = append(value.Elements, element)
-		// fmt.Println(value.Type().Name(), " add index ", curIndex)
 		value.elementMap[curIndex] = element
-		Central.Log.Debugf("Create new Elements on index %d", curIndex)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Create new Elements on index %d", curIndex)
+		}
 	} else {
-		Central.Log.Debugf("Elements already part of map %d", curIndex)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Elements already part of map %d", curIndex)
+		}
 	}
 	s := fmt.Sprintf("%s-%d-%d", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
 	if Central.IsDebugLevel() {
@@ -804,7 +809,9 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 			values = append(values, subValue)
 			element.Values = values
 		} else {
-			Central.Log.Debugf("Append list to %s len=%d", value.Type().Name(), len(element.Values))
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Append list to %s len=%d", value.Type().Name(), len(element.Values))
+			}
 
 			// If MU field and index not already initialized, define index
 			if value.Type().Type() == FieldTypeMultiplefield && subValue.MultipleIndex() == 0 {
@@ -813,18 +820,10 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 			}
 			element.Values = append(element.Values, subValue)
 		}
-		Central.Log.Debugf("Add sub value new %s[%d:%d] %T",
-			subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex(), subValue)
-		// if value.Type().Type() == FieldTypePeriodGroup {
-		// 	Central.Log.Debugf("%s: Set given Period index %d", value.Type().Name(), (curIndex + 1))
-		// 	//subValue.setPeriodIndex(curIndex + 1)
-		// } else {
-		// 	Central.Log.Debugf("%s: Set upper Period index %d", value.Type().Name(), value.PeriodIndex())
-		// 	//subValue.setPeriodIndex(value.PeriodIndex())
-		// }
-		// if value.Type().Type() == FieldTypeMultiplefield {
-		// 	subValue.setMultipleIndex(curIndex + 1)
-		// }
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Add sub value new %s[%d:%d] %T previous %s",
+				subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex(), subValue, s)
+		}
 		element.valueMap[fmt.Sprintf("%s-%d-%d", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())] = subValue
 	}
 	if Central.IsDebugLevel() {

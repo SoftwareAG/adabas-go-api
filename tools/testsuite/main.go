@@ -284,6 +284,7 @@ func main() {
 		}
 		defer pprof.StopCPUProfile()
 	}
+	defer writeMemProfile(*memprofile)
 
 	names := strings.Split(name, ",")
 
@@ -297,8 +298,12 @@ func main() {
 
 	}
 	wg.Wait()
-	if *memprofile != "" {
-		f, err := os.Create(*memprofile)
+
+}
+
+func writeMemProfile(file string) {
+	if file != "" {
+		f, err := os.Create(file)
 		if err != nil {
 			panic("could not create memory profile: " + err.Error())
 		}
@@ -307,7 +312,7 @@ func main() {
 			panic("could not write memory profile: " + err.Error())
 		}
 		defer f.Close()
-		fmt.Println("Start testsuite test")
+		fmt.Println("Memory profile written")
 	}
 
 }
