@@ -29,6 +29,9 @@ import (
 // PartialLobSize partial lob read size of first read
 const PartialLobSize = 4096
 
+// PartialStoreLobSizeChunks chunk size storing lobs
+const PartialStoreLobSizeChunks = 4096 * 10
+
 // stringValue string structure
 type stringValue struct {
 	adaValue
@@ -135,6 +138,25 @@ func (value *stringValue) SetValue(v interface{}) error {
 func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
 	len := uint32(0)
 	Central.Log.Debugf("Generate FormatBuffer %s of length=%d and storeCall=%v", value.adatype.Type().name(), value.adatype.Length(), option.StoreCall)
+	// if option.StoreCall && value.adatype.Length() > PartialStoreLobSizeChunks {
+	// 	option.NeedSecondCall = StoreSecond
+	// 	if buffer.Len() > 0 {
+	// 		buffer.WriteString(",")
+	// 	}
+	// 	if option.SecondCall > 0 {
+	// 		start := uint32(option.SecondCall)*PartialStoreLobSizeChunks + 1
+	// 		end := start + PartialStoreLobSizeChunks
+	// 		len = PartialStoreLobSizeChunks
+	// 		if end > value.Type().Length() {
+	// 			end = value.Type().Length()
+	// 			len = end - start
+	// 		}
+	// 		buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), start, end))
+	// 	} else {
+	// 		buffer.WriteString(fmt.Sprintf("%s(0,%d)", value.Type().ShortName(), PartialStoreLobSizeChunks))
+	// 		len = 4 + PartialStoreLobSizeChunks
+	// 	}
+	// } else {
 	if value.adatype.Type() == FieldTypeLBString && value.adatype.Length() == 0 && !option.StoreCall {
 		if buffer.Len() > 0 {
 			buffer.WriteString(",")
@@ -163,6 +185,7 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			}
 		}
 	}
+	//}
 	return len
 }
 
