@@ -66,7 +66,7 @@ const (
 
 // IAdaCallInterface caller interface
 type IAdaCallInterface interface {
-	SecondCall(adabasRequest *Request, x interface{}) (err error)
+	SendSecondCall(adabasRequest *Request, x interface{}) (err error)
 	CallAdabas() (err error)
 }
 
@@ -152,7 +152,7 @@ func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResu
 		adabasRequest.RecordBufferLength += len
 		adabasRequest.PeriodLength += len
 	}
-	if adabasRequest.Option.SecondCall &&
+	if adabasRequest.Option.SecondCall > 0 &&
 		adaValue.Type().Type() == FieldTypeMultiplefield && adaValue.Type().HasFlagSet(FlagOptionPE) {
 		return SkipTree, nil
 	}
@@ -292,12 +292,12 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 }
 
 // CreateAdabasRequest creates format buffer out of defined metadata tree
-func (def *Definition) CreateAdabasRequest(store bool, secondCall bool, mainframe bool) (adabasRequest *Request, err error) {
+func (def *Definition) CreateAdabasRequest(store bool, secondCall uint8, mainframe bool) (adabasRequest *Request, err error) {
 	adabasRequest = &Request{FormatBuffer: bytes.Buffer{}, Option: NewBufferOption3(store, secondCall, mainframe),
 		Multifetch: DefaultMultifetchLimit}
 
 	Central.Log.Debugf("Create format buffer. Init Buffer: %s second=%v", adabasRequest.FormatBuffer.String(), secondCall)
-	if store || secondCall {
+	if store || secondCall > 0 {
 		t := TraverserValuesMethods{EnterFunction: formatBufferTraverserEnter, LeaveFunction: formatBufferTraverserLeave}
 		_, err = def.TraverseValues(t, adabasRequest)
 		if err != nil {
@@ -363,7 +363,7 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 			if err != nil {
 				return
 			}
-			err = adabasRequest.Caller.SecondCall(adabasRequest, x)
+			err = adabasRequest.Caller.SendSecondCall(adabasRequest, x)
 			if err != nil {
 				return
 			}

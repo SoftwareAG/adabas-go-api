@@ -327,7 +327,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 		helper := adatypes.NewHelper(adabas.AdabasBuffers[1].buffer, int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())
 		fdtDefinition := createFdtDefintion()
 		fdtDefinition.Values = nil
-		_, err = fdtDefinition.ParseBuffer(helper, adatypes.NewBufferOption(false, false), "")
+		_, err = fdtDefinition.ParseBuffer(helper, adatypes.NewBufferOption(false, 0), "")
 		if err != nil {
 			adatypes.Central.Log.Debugf("ERROR parse FDT: %v", err)
 			return
@@ -674,7 +674,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 	}
 	var responseCode uint32
 	for responseCode == 0 {
-		if !adabasRequest.Option.SecondCall {
+		if !(adabasRequest.Option.SecondCall > 0) {
 			err = adabasRequest.Definition.CreateValues(false)
 			if err != nil {
 				return
@@ -741,12 +741,12 @@ func (adabas *Adabas) resetSendSize() {
 	}
 }
 
-// SecondCall do second call reading lob data or multiple fields of the period group
-func (adabas *Adabas) SecondCall(adabasRequest *adatypes.Request, x interface{}) (err error) {
+// SendSecondCall do second call reading lob data or multiple fields of the period group
+func (adabas *Adabas) SendSecondCall(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	adatypes.Central.Log.Debugf("Check second call .... values avail.=%v", (adabasRequest.Definition.Values == nil))
-	if adabasRequest.Option.NeedSecondCall {
+	if adabasRequest.Option.NeedSecondCall != adatypes.NoneSecond {
 		adatypes.Central.Log.Debugf("Need second call %v", adabasRequest.Option.NeedSecondCall)
-		tmpAdabasRequest, err2 := adabasRequest.Definition.CreateAdabasRequest(false, true, adabas.status.platform.IsMainframe())
+		tmpAdabasRequest, err2 := adabasRequest.Definition.CreateAdabasRequest(false, 1, adabas.status.platform.IsMainframe())
 		if err2 != nil {
 			err = err2
 			return
@@ -757,7 +757,7 @@ func (adabas *Adabas) SecondCall(adabasRequest *adatypes.Request, x interface{})
 		tmpAdabasRequest.Definition = adabasRequest.Definition
 		tmpAdabasRequest.RecordBufferShift = adabasRequest.RecordBufferShift
 		tmpAdabasRequest.Multifetch = 1
-		tmpAdabasRequest.Option.SecondCall = true
+		tmpAdabasRequest.Option.SecondCall = 1
 		adatypes.Central.Log.Debugf("Call second request to ISN=%d only", tmpAdabasRequest.Isn)
 		err = adabas.readISN(adabas.Acbx.Acbxfnr, tmpAdabasRequest, x)
 		if err != nil {
@@ -774,7 +774,7 @@ func (adabas *Adabas) SecondCall(adabasRequest *adatypes.Request, x interface{})
 		adabas.AdabasBuffers = abd
 		adatypes.Central.Log.Debugf("Second call done")
 
-		adabasRequest.Option.NeedSecondCall = false
+		adabasRequest.Option.NeedSecondCall = adatypes.NoneSecond
 	}
 
 	return

@@ -41,7 +41,7 @@ func TestByteArray(t *testing.T) {
 	assert.Equal(t, []byte{0x0, 0x0}, barray.value)
 	assert.Equal(t, "[0 0]", barray.String())
 	var buffer bytes.Buffer
-	len := barray.FormatBuffer(&buffer, NewBufferOption(false, false))
+	len := barray.FormatBuffer(&buffer, NewBufferOption(false, 0))
 	assert.Equal(t, uint32(2), len)
 	assert.Equal(t, "XX,2,B", buffer.String())
 

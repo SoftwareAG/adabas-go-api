@@ -55,7 +55,7 @@ func TestInt4Byte(t *testing.T) {
 	assert.Equal(t, int32(2000), int4.value)
 
 	helper := NewHelper(maxBuffer, 4, endian())
-	int4.parseBuffer(helper, NewBufferOption(false, false))
+	int4.parseBuffer(helper, NewBufferOption(false, 0))
 	assert.Equal(t, int32(math.MaxInt32), int4.value)
 	assert.Equal(t, maxBuffer, int4.Bytes())
 
@@ -155,7 +155,7 @@ func TestUInt4Byte(t *testing.T) {
 	assert.Equal(t, uint32(2000), int4.value)
 
 	helper := NewHelper(maxBuffer, 4, binary.LittleEndian)
-	int4.parseBuffer(helper, NewBufferOption(false, false))
+	int4.parseBuffer(helper, NewBufferOption(false, 0))
 	assert.Equal(t, uint32(4294967295), int4.value)
 	assert.Equal(t, maxBuffer, int4.Bytes())
 

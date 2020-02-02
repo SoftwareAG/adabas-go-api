@@ -140,7 +140,7 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			buffer.WriteString(",")
 		}
 		// If LOB field is read, use part
-		if option.SecondCall {
+		if option.SecondCall > 0 {
 			if value.lobSize > PartialLobSize {
 				buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), PartialLobSize+1, value.lobSize-PartialLobSize))
 				len = value.lobSize - PartialLobSize
@@ -199,7 +199,7 @@ func (value *stringValue) StoreBuffer(helper *BufferHelper) error {
 
 func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 
-	if option.SecondCall {
+	if option.SecondCall > 0 {
 		if value.Type().HasFlagSet(FlagOptionMUGhost) && value.Type().HasFlagSet(FlagOptionPE) {
 			Central.Log.Debugf("MU flag evaluate length at offset %d", helper.Offset())
 			value.lobSize, err = helper.ReceiveUInt32()
@@ -300,7 +300,10 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 			}
 		case value.lobSize > PartialLobSize:
 			Central.Log.Debugf("Due to lobSize is bigger then partial size, need second call (lob) for %s", value.Type().Name())
-			option.NeedSecondCall = true
+
+			if option.NeedSecondCall = ReadSecond; option.StoreCall {
+				option.NeedSecondCall = StoreSecond
+			}
 		default:
 		}
 		if Central.IsDebugLevel() {

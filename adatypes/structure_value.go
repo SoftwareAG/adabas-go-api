@@ -116,8 +116,8 @@ func (value *StructureValue) PeriodIndex() uint32 {
 type evaluateFieldNameStructure struct {
 	names      []string
 	namesMap   map[string]bool
-	second     bool
-	needSecond bool
+	second     uint8
+	needSecond SecondCall
 }
 
 func evaluateFieldNames(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
@@ -125,9 +125,9 @@ func evaluateFieldNames(adaValue IAdaValue, x interface{}) (TraverseResult, erro
 	Central.Log.Debugf("Evaluate field %s", adaValue.Type().Name())
 	if adaValue.Type().IsStructure() {
 		if adaValue.Type().Type() == FieldTypeMultiplefield {
-			if !efns.second && adaValue.Type().HasFlagSet(FlagOptionPE) {
+			if efns.second == 0 && adaValue.Type().HasFlagSet(FlagOptionPE) {
 				Central.Log.Debugf("Skip PE/multiple field %s in first call", adaValue.Type().Name())
-				efns.needSecond = true
+				efns.needSecond = ReadSecond
 				return SkipTree, nil
 			} else if _, ok := efns.namesMap[adaValue.Type().Name()]; !ok {
 				Central.Log.Debugf("Add multiple field %s", adaValue.Type().Name())
@@ -174,7 +174,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 	Central.Log.Debugf("%s/%s parse buffer for MU in PE/first call", value.Type().Name(), value.Type().ShortName())
 	var occNumber int
 	// In the second call the occurrence is available
-	if option.SecondCall && value.Type().Type() == FieldTypePeriodGroup {
+	if option.SecondCall > 0 && value.Type().Type() == FieldTypePeriodGroup {
 		occNumber = value.NrElements()
 		Central.Log.Debugf("Second call use available occurrence %d Type %s", occNumber, value.Type().Type().name())
 	} else {
@@ -207,7 +207,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 			Central.Log.Debugf("Work on %d/%d", peIndex, lastNumber)
 			value.initMultipleSubValues(i, peIndex, muIndex, true)
 		}
-		if option.SecondCall &&
+		if option.SecondCall > 0 &&
 			(value.Type().HasFlagSet(FlagOptionPE) && value.Type().Type() == FieldTypeMultiplefield) {
 			return value.parsePeriodMultiple(helper, option)
 		}
@@ -235,7 +235,7 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 	efns := &evaluateFieldNameStructure{namesMap: make(map[string]bool), second: option.SecondCall}
 	res, err = value.Traverse(tm, efns)
 	Central.Log.Debugf("Got %d names got need second=%v was need second=%v", len(efns.names), efns.needSecond, option.NeedSecondCall)
-	if !option.NeedSecondCall {
+	if option.NeedSecondCall == NoneSecond {
 		option.NeedSecondCall = efns.needSecond
 	}
 	for _, n := range efns.names {
@@ -253,7 +253,9 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 				st := v.Type().(*StructureType)
 				if st.Type() == FieldTypeMultiplefield && st.HasFlagSet(FlagOptionPE) {
 					Central.Log.Debugf("Skip %s PE=%d", st.Name(), v.PeriodIndex())
-					option.NeedSecondCall = true
+					if option.NeedSecondCall = ReadSecond; option.StoreCall {
+						option.NeedSecondCall = StoreSecond
+					}
 				} else {
 					nrMu, nrMerr := helper.ReceiveUInt32()
 					if nrMerr != nil {
@@ -278,7 +280,9 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 						muStructure.addValue(sv, muIndex)
 						Central.Log.Debugf("MU index %d,%d -> %d", sv.PeriodIndex(), sv.MultipleIndex(), i)
 						Central.Log.Debugf("Due to Period and MU field, need second call call (PE/MU) for %s", value.Type().Name())
-						option.NeedSecondCall = true
+						if option.NeedSecondCall = ReadSecond; option.StoreCall {
+							option.NeedSecondCall = StoreSecond
+						}
 					}
 				}
 			} else {
@@ -319,7 +323,7 @@ func (value *StructureValue) parsePeriodMultiple(helper *BufferHelper, option *B
 
 // Parse the structure
 func (value *StructureValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
-	if option.SecondCall {
+	if option.SecondCall > 0 {
 		if !(value.Type().HasFlagSet(FlagOptionPE) && value.Type().Type() == FieldTypeMultiplefield) {
 			Central.Log.Debugf("Skip parsing structure value %s offset=%X", value.Type().Name(), helper.offset)
 			return
@@ -373,7 +377,7 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 			helper.offset, helper.Remaining(), len(helper.buffer), len(value.Elements), value.Type().Type())
 	}
 	var occNumber int
-	if option.SecondCall /*&& value.Type().Type() == FieldTypePeriodGroup */ {
+	if option.SecondCall > 0 /*&& value.Type().Type() == FieldTypePeriodGroup */ {
 		occNumber = value.NrElements()
 		Central.Log.Debugf("Second call use available occurrence %d", occNumber)
 	} else {
@@ -681,7 +685,7 @@ func (value *StructureValue) SetValue(v interface{}) error {
 func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
 	Central.Log.Debugf("Write FormatBuffer for structure of %s store=%v", value.Type().Name(), option.StoreCall)
 	structureType := value.Type().(*StructureType)
-	if option.SecondCall {
+	if option.SecondCall > 0 {
 		if structureType.Type() == FieldTypeMultiplefield && structureType.HasFlagSet(FlagOptionPE) {
 			Central.Log.Debugf("Generate FB for second call [%d,%d]", value.peIndex, value.muIndex)
 			if buffer.Len() > 0 {

@@ -68,7 +68,7 @@ func (value *superDescValue) SetValue(v interface{}) error {
 }
 
 func (value *superDescValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
-	if option.SecondCall {
+	if option.SecondCall > 0 {
 		return 0
 	}
 	if value.adatype.IsOption(FieldOptionPE) {
@@ -101,7 +101,7 @@ func (value *superDescValue) StoreBuffer(helper *BufferHelper) error {
 }
 
 func (value *superDescValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
-	if option.SecondCall {
+	if option.SecondCall > 0 {
 		return
 	}
 	if value.adatype.IsOption(FieldOptionPE) {

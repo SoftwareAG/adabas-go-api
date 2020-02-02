@@ -18,7 +18,7 @@ func (caller *testCaller) CallAdabas() (err error) {
 	return nil
 }
 
-func (caller *testCaller) SecondCall(adabasRequest *Request, x interface{}) (err error) {
+func (caller *testCaller) SendSecondCall(adabasRequest *Request, x interface{}) (err error) {
 	caller.secondCount++
 	return
 }
@@ -69,7 +69,7 @@ func TestAdabasRequestParser_withPeriod(t *testing.T) {
 		return
 	}
 	testDefinition.CreateValues(false)
-	adabasRequest, aerr := testDefinition.CreateAdabasRequest(false, false, false)
+	adabasRequest, aerr := testDefinition.CreateAdabasRequest(false, 0, false)
 	if !assert.NoError(t, aerr) || !assert.NotNil(t, adabasRequest) {
 		return
 	}
@@ -119,7 +119,7 @@ func TestAdabasRequestParser_osEmptyPeriod(t *testing.T) {
 		return
 	}
 	testDefinition.CreateValues(false)
-	adabasRequest, aerr := testDefinition.CreateAdabasRequest(false, false, false)
+	adabasRequest, aerr := testDefinition.CreateAdabasRequest(false, 0, false)
 	if !assert.NoError(t, aerr) || !assert.NotNil(t, adabasRequest) {
 		return
 	}
@@ -167,7 +167,7 @@ func TestAdabasRequestParser_mfEmptyPeriod(t *testing.T) {
 		return
 	}
 	testDefinition.CreateValues(false)
-	adabasRequest, aerr := testDefinition.CreateAdabasRequest(false, false, true)
+	adabasRequest, aerr := testDefinition.CreateAdabasRequest(false, 0, true)
 	if !assert.NoError(t, aerr) || !assert.NotNil(t, adabasRequest) {
 		return
 	}

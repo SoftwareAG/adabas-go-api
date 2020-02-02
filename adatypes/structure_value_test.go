@@ -183,12 +183,12 @@ func TestStructureValuePeriodMU(t *testing.T) {
 	helper := NewHelper(b, 100, endian())
 
 	option := &BufferOption{}
-	assert.False(t, option.NeedSecondCall)
+	assert.Equal(t, NoneSecond, option.NeedSecondCall)
 	var buffer bytes.Buffer
 	vsl.FormatBuffer(&buffer, option)
 	assert.Equal(t, "PEC,4,B", buffer.String())
 	_, err = vsl.parseBuffer(helper, option)
-	assert.True(t, option.NeedSecondCall)
+	assert.Equal(t, ReadSecond, option.NeedSecondCall)
 	assert.NoError(t, err)
 	assert.Equal(t, "", vsl.String())
 	vpm := vsl.search("PM")
@@ -203,7 +203,7 @@ func TestStructureValuePeriodMU(t *testing.T) {
 	assert.Error(t, errui64)
 
 	buffer.Reset()
-	option.SecondCall = true
+	option.SecondCall = 1
 	vsl.FormatBuffer(&buffer, option)
 	assert.Equal(t, "", buffer.String())
 

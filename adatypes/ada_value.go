@@ -32,28 +32,40 @@ import (
 
 const defaultMultipleSize = 2048
 
+// SecondCall second call enum
+type SecondCall uint8
+
+const (
+	// NoneSecond No second call
+	NoneSecond SecondCall = iota
+	// ReadSecond Read call for second
+	ReadSecond
+	// StoreSecond Write call for second
+	StoreSecond
+)
+
 // BufferOption option for buffer parsing
 type BufferOption struct {
 	MultifetchCall bool
 	StoreCall      bool
-	SecondCall     bool
-	NeedSecondCall bool
+	NeedSecondCall SecondCall
 	ExchangeRecord bool
 	PartialLobSize bool
 	Ascending      bool
 	Mainframe      bool
+	SecondCall     uint8
 	multipleSize   uint32
 }
 
 // NewBufferOption create option to parse the buffer
-func NewBufferOption(store bool, secondCall bool) *BufferOption {
+func NewBufferOption(store bool, secondCall uint8) *BufferOption {
 	return NewBufferOption3(store, secondCall, false)
 }
 
 // NewBufferOption3 create option to parse the buffer
-func NewBufferOption3(store bool, secondCall bool, mainframe bool) *BufferOption {
+func NewBufferOption3(store bool, secondCall uint8, mainframe bool) *BufferOption {
 	return &BufferOption{MultifetchCall: false, StoreCall: store,
-		ExchangeRecord: false, SecondCall: secondCall, NeedSecondCall: false,
+		ExchangeRecord: false, SecondCall: secondCall, NeedSecondCall: NoneSecond,
 		multipleSize: defaultMultipleSize, Ascending: true, Mainframe: mainframe}
 }
 
@@ -110,7 +122,7 @@ func endian() binary.ByteOrder {
 
 // common format buffer generation
 func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
-	if option.SecondCall {
+	if option.SecondCall > 0 {
 		Central.Log.Debugf("Work on %s -> second=%v\n", adavalue.Type().Name(), adavalue.Type().HasFlagSet(FlagOptionSecondCall))
 		if adavalue.Type().HasFlagSet(FlagOptionSecondCall) {
 			if buffer.Len() > 0 {

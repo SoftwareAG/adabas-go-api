@@ -70,7 +70,7 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 		parameter.option.SecondCall, parameter.option.NeedSecondCall, adaValue.Type().HasFlagSet(FlagOptionPE))
 	// On second call, to collect MU fields in an PE group, skip all other parser tasks
 	if !(adaValue.Type().HasFlagSet(FlagOptionPE) && adaValue.Type().Type() == FieldTypeMultiplefield) {
-		if parameter.option.SecondCall && !adaValue.Type().HasFlagSet(FlagOptionMUGhost) && adaValue.Type().Type() != FieldTypeLBString {
+		if parameter.option.SecondCall > 0 && !adaValue.Type().HasFlagSet(FlagOptionMUGhost) && adaValue.Type().Type() != FieldTypeLBString {
 			Central.Log.Debugf("Second call skip parsing %s", adaValue.Type().Name())
 			return Continue, nil
 		}

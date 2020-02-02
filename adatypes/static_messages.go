@@ -873,5 +873,6 @@ var statisMessages = []struct {
 	{"ADG0000130", "en", "End of cursor"},
 	{"ADG0000131", "en", "Driver not supported"},
 	{"ADG0000132", "en", "Incorrect repository reference, use comma separated definition like <dbid>,<fnr>"},
+	{"ADG0000133", "en", "Update record error: {0}"},
 	{"ADG0000150", "en", "Cannot scan value for type {0}"},
 }

@@ -117,7 +117,7 @@ func (value *unicodeValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOpti
 	Central.Log.Debugf("Generate FormatBuffer %s of length=%d and storeCall=%v", value.adatype.Type().name(), value.adatype.Length(), option.StoreCall)
 	if value.adatype.Type() == FieldTypeLBUnicode && value.adatype.Length() == 0 && !option.StoreCall {
 		// If LOB field is read, use part
-		if option.SecondCall {
+		if option.SecondCall > 0 {
 			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), PartialLobSize+1, value.lobSize))
 			len = value.lobSize // - PartialLobSize
 		} else {
@@ -166,7 +166,7 @@ func (value *unicodeValue) StoreBuffer(helper *BufferHelper) error {
 
 func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 
-	if option.SecondCall {
+	if option.SecondCall > 0 {
 		Central.Log.Debugf("Old size of lob data %d of %d", len(value.value), value.lobSize)
 		if value.Type().Type() == FieldTypeLBUnicode && uint32(len(value.value)) < value.lobSize {
 			data, rErr := helper.ReceiveBytes(value.lobSize - uint32(len(value.value)))
@@ -226,7 +226,9 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 			value.value = value.value[:value.lobSize]
 		case value.lobSize > PartialLobSize:
 			Central.Log.Debugf("Due to lobSize is bigger then partial size, need secand call (lob) for %s", value.Type().Name())
-			option.NeedSecondCall = true
+			if option.NeedSecondCall = ReadSecond; option.StoreCall {
+				option.NeedSecondCall = StoreSecond
+			}
 		default:
 		}
 		if Central.IsDebugLevel() {
