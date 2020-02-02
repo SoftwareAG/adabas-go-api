@@ -941,3 +941,75 @@ func TestDefinition_restrict(t *testing.T) {
 	}
 	assert.Equal(t, "P1C,4,B,GC1-N,1,A,GS1-N,1,A.", req.FormatBuffer.String())
 }
+
+func TestDefinitionStoreBigLob(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	groupLayout := []IAdaType{
+		NewType(FieldTypeCharacter, "CH"),
+		NewType(FieldTypeLBString, "LB"),
+		NewType(FieldTypeString, "ST"),
+	}
+	for _, l := range groupLayout {
+		l.SetLevel(2)
+	}
+	groupLayout[1].SetLength(0)
+	groupLayout[2].SetLength(0)
+	layout := []IAdaType{
+		NewType(FieldTypeUInt4, "U4"),
+		NewStructureList(FieldTypeGroup, "G1", OccNone, groupLayout),
+		NewType(FieldTypeUByte, "UB"),
+	}
+	layout[0].AddOption(FieldOptionUQ)
+	for _, l := range layout {
+		l.SetLevel(1)
+	}
+
+	testDefinition := NewDefinitionWithTypes(layout)
+	assert.Nil(t, testDefinition.Values)
+	testDefinition.CreateValues(false)
+	assert.NotNil(t, testDefinition.Values)
+	testDefinition.DumpTypes(false, false)
+	testDefinition.DumpValues(false)
+	Central.Log.Debugf("Test: no second call, read")
+	req, rerr := testDefinition.CreateAdabasRequest(false, 0, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	assert.Equal(t, "U4,4,B,CH,1,A,LBL,4,LB(1,4096),ST,0,A,UB,1,B.", req.FormatBuffer.String())
+	s := testDefinition.Search("LB").(*stringValue)
+	s.lobSize = 1000000
+
+	// groupLayout[1].AddFlag(FlagOptionPart)
+	// groupLayout[1].AddFlag(FlagOptionSecondCall)
+	// layout[1].AddFlag(FlagOptionPart)
+	// layout[1].AddFlag(FlagOptionSecondCall)
+	Central.Log.Debugf("Test: second call, read")
+	req, rerr = testDefinition.CreateAdabasRequest(false, 1, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	assert.Equal(t, "LB(4097,995904).", req.FormatBuffer.String())
+	groupLayout[1].SetLength(1000000)
+	Central.Log.Debugf("Test: no second call, store")
+	req, rerr = testDefinition.CreateAdabasRequest(true, 0, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	assert.Equal(t, "U4,4,B,CH,1,A,LB,1000000,A,ST,0,A,UB,1,B.", req.FormatBuffer.String())
+	Central.Log.Debugf("Test: second call, store")
+	req, rerr = testDefinition.CreateAdabasRequest(true, 1, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	assert.Equal(t, ".", req.FormatBuffer.String())
+
+}

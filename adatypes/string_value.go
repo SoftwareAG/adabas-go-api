@@ -151,7 +151,7 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 		}
 	} else {
 		len = value.commonFormatBuffer(buffer, option)
-		Central.Log.Debugf("Common format buffer length -> %d", len)
+		Central.Log.Debugf("Common format buffer length for %s -> %d", value.Type().ShortName(), len)
 		if len == 0 {
 			switch value.adatype.Type() {
 			case FieldTypeLAString:
