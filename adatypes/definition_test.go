@@ -447,7 +447,7 @@ func TestDefinitionQueryMultipleField(t *testing.T) {
 	testDefinition.DumpValues(false)
 	Central.Log.Debugf(" ------------------------ before create adabas request 0 0")
 
-	request, err = testDefinition.CreateAdabasRequest(false, 0, false)
+	request, err = testDefinition.CreateAdabasRequest(false, 1, false)
 	assert.Nil(t, err)
 	Central.Log.Debugf(" ------------------------ after create adabas request 0 1")
 
@@ -713,7 +713,7 @@ func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
 	Central.Log.Debugf(" ------------------------ before create adabas request 0 0")
 
 	// Generate format buffer for second read call with missing PE/MU field data
-	request, err = testDefinition.CreateAdabasRequest(false, 0, false)
+	request, err = testDefinition.CreateAdabasRequest(false, 1, false)
 	assert.Nil(t, err)
 	Central.Log.Debugf(" ------------------------ after create adabas request 0 1")
 
