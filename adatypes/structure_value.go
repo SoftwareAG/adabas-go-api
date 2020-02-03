@@ -750,7 +750,7 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 }
 
 // StoreBuffer generate store buffer
-func (value *StructureValue) StoreBuffer(helper *BufferHelper) error {
+func (value *StructureValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
 	Central.Log.Debugf("Skip store structured record buffer for %s at %d", value.Type().Name(), len(helper.buffer))
 	return nil
 }

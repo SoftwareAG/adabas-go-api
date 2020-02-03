@@ -44,7 +44,7 @@ func TestReferential(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, byte(' '), sv.ByteValue())
 	assert.Equal(t, uint32(0), helper.Offset())
-	sv.StoreBuffer(helper)
+	sv.StoreBuffer(helper, nil)
 	assert.Equal(t, uint32(0), helper.Offset())
 	assert.Equal(t, "", sv.Value())
 	_, err = sv.Int32()

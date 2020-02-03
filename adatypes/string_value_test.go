@@ -204,7 +204,8 @@ func TestStringStoreBuffer(t *testing.T) {
 	assert.NotNil(t, adaValue)
 	adaValue.SetValue("äöüß")
 	helper := &BufferHelper{}
-	err = adaValue.StoreBuffer(helper)
+	option := &BufferOption{}
+	err = adaValue.StoreBuffer(helper, option)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -212,7 +213,7 @@ func TestStringStoreBuffer(t *testing.T) {
 	assert.Equal(t, v, helper.Buffer())
 	adaValue.SetValue("ABC")
 	helper = &BufferHelper{}
-	err = adaValue.StoreBuffer(helper)
+	err = adaValue.StoreBuffer(helper, option)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -231,7 +232,8 @@ func TestStringStoreBufferVariable(t *testing.T) {
 	assert.NotNil(t, adaValue)
 	adaValue.SetValue("äöüß")
 	helper := &BufferHelper{}
-	err = adaValue.StoreBuffer(helper)
+	option := &BufferOption{}
+	err = adaValue.StoreBuffer(helper, option)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -239,7 +241,7 @@ func TestStringStoreBufferVariable(t *testing.T) {
 	assert.Equal(t, v, helper.Buffer())
 	adaValue.SetValue("ABC")
 	helper = &BufferHelper{}
-	err = adaValue.StoreBuffer(helper)
+	err = adaValue.StoreBuffer(helper, option)
 	if !assert.NoError(t, err) {
 		return
 	}

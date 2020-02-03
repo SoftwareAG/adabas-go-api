@@ -90,7 +90,11 @@ func (value *byteValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption)
 	return value.commonFormatBuffer(buffer, option)
 }
 
-func (value *byteValue) StoreBuffer(helper *BufferHelper) error {
+func (value *byteValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	return helper.putByte(byte(value.value))
 }
 
@@ -182,7 +186,11 @@ func (value *ubyteValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption
 	return value.commonFormatBuffer(buffer, option)
 }
 
-func (value *ubyteValue) StoreBuffer(helper *BufferHelper) error {
+func (value *ubyteValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	return helper.putByte(value.value)
 }
 

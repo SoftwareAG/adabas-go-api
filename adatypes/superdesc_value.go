@@ -67,6 +67,7 @@ func (value *superDescValue) SetValue(v interface{}) error {
 	return nil
 }
 
+// FormatBuffer generate format buffer for super/sub descriptor
 func (value *superDescValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
 	if option.SecondCall > 0 {
 		return 0
@@ -92,7 +93,11 @@ func (value *superDescValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 	return adaType.length
 }
 
-func (value *superDescValue) StoreBuffer(helper *BufferHelper) error {
+func (value *superDescValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	if helper.search && len(value.value) > 0 {
 		return helper.putBytes(value.value)
 

@@ -113,7 +113,11 @@ func (value *doubleValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 	return value.commonFormatBuffer(buffer, option)
 }
 
-func (value *doubleValue) StoreBuffer(helper *BufferHelper) error {
+func (value *doubleValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	helper.putBytes(value.value)
 	return nil
 }

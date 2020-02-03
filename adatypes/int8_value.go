@@ -78,7 +78,11 @@ func (value *uint64Value) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 	return value.commonFormatBuffer(buffer, option)
 }
 
-func (value *uint64Value) StoreBuffer(helper *BufferHelper) error {
+func (value *uint64Value) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	return helper.PutUInt64(value.value)
 }
 
@@ -213,7 +217,11 @@ func (value *int64Value) FormatBuffer(buffer *bytes.Buffer, option *BufferOption
 	return value.commonFormatBuffer(buffer, option)
 }
 
-func (value *int64Value) StoreBuffer(helper *BufferHelper) error {
+func (value *int64Value) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	return helper.PutInt64(value.value)
 }
 

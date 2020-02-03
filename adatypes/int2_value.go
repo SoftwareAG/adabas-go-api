@@ -74,7 +74,11 @@ func (value *uint16Value) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 	return value.commonFormatBuffer(buffer, option)
 }
 
-func (value *uint16Value) StoreBuffer(helper *BufferHelper) error {
+func (value *uint16Value) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	return helper.PutUInt16(value.value)
 }
 
@@ -178,7 +182,11 @@ func (value *int16Value) FormatBuffer(buffer *bytes.Buffer, option *BufferOption
 	return value.commonFormatBuffer(buffer, option)
 }
 
-func (value *int16Value) StoreBuffer(helper *BufferHelper) error {
+func (value *int16Value) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	return helper.PutInt16(value.value)
 }
 

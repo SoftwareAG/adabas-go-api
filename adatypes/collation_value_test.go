@@ -43,7 +43,7 @@ func TestCollationValue(t *testing.T) {
 	assert.Error(t, sv.SetValue("123"))
 	assert.Equal(t, byte(' '), sv.ByteValue())
 	assert.Equal(t, uint32(0), helper.Offset())
-	sv.StoreBuffer(helper)
+	sv.StoreBuffer(helper, nil)
 	assert.Equal(t, uint32(0), helper.Offset())
 	_, err = sv.Int32()
 	assert.Error(t, err)

@@ -117,7 +117,11 @@ func (value *floatValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption
 	return value.commonFormatBuffer(buffer, option)
 }
 
-func (value *floatValue) StoreBuffer(helper *BufferHelper) error {
+func (value *floatValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	helper.putBytes(value.value)
 	return nil
 }

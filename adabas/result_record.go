@@ -100,10 +100,10 @@ func recordValuesTraverser(adaValue adatypes.IAdaValue, x interface{}) (adatypes
 	return adatypes.Continue, nil
 }
 
-func (record *Record) createRecordBuffer(helper *adatypes.BufferHelper) (err error) {
-	adatypes.Central.Log.Debugf("Create record buffer")
+func (record *Record) createRecordBuffer(helper *adatypes.BufferHelper, option *adatypes.BufferOption) (err error) {
+	adatypes.Central.Log.Debugf("Create store record buffer")
 	t := adatypes.TraverserValuesMethods{EnterFunction: createStoreRecordBuffer}
-	stRecTraverser := &storeRecordTraverserStructure{record: record, helper: helper}
+	stRecTraverser := &storeRecordTraverserStructure{record: record, helper: helper, option: option}
 	_, err = record.Traverse(t, stRecTraverser)
 	adatypes.Central.Log.Debugf("Create record buffer done len=%d", len(helper.Buffer()))
 	return

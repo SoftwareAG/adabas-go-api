@@ -114,9 +114,9 @@ func (value *stringValue) SetValue(v interface{}) error {
 	case []byte:
 		if value.Type().Length() == 0 {
 			value.value = v.([]byte)
-			Central.Log.Debugf("Set dynamic content of $p with len=$d", value, len(value.value))
+			Central.Log.Debugf("Set dynamic content with len=%d", len(value.value))
 		} else {
-			Central.Log.Debugf("Set static value=%p, at value of %d\n", value, value.Type().Length())
+			Central.Log.Debugf("Set static at value of len=%d\n", value.Type().Length())
 
 			val := v.([]byte)
 			value.value = []byte(strings.Repeat(" ", int(value.Type().Length())))
@@ -135,28 +135,35 @@ func (value *stringValue) SetValue(v interface{}) error {
 	return nil
 }
 
+// FormatBuffer generate format buffer for the string value
 func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
-	len := uint32(0)
-	Central.Log.Debugf("Generate FormatBuffer %s of length=%d and storeCall=%v", value.adatype.Type().name(), value.adatype.Length(), option.StoreCall)
-	// if option.StoreCall && value.adatype.Length() > PartialStoreLobSizeChunks {
-	// 	option.NeedSecondCall = StoreSecond
-	// 	if buffer.Len() > 0 {
-	// 		buffer.WriteString(",")
-	// 	}
-	// 	if option.SecondCall > 0 {
-	// 		start := uint32(option.SecondCall)*PartialStoreLobSizeChunks + 1
-	// 		end := start + PartialStoreLobSizeChunks
-	// 		len = PartialStoreLobSizeChunks
-	// 		if end > value.Type().Length() {
-	// 			end = value.Type().Length()
-	// 			len = end - start
-	// 		}
-	// 		buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), start, end))
-	// 	} else {
-	// 		buffer.WriteString(fmt.Sprintf("%s(0,%d)", value.Type().ShortName(), PartialStoreLobSizeChunks))
-	// 		len = 4 + PartialStoreLobSizeChunks
-	// 	}
-	// } else {
+	recLength := uint32(0)
+	Central.Log.Debugf("Generate FormatBuffer %s of length=%d/%d and storeCall=%v", value.adatype.Type().name(), value.adatype.Length(), len(value.value), option.StoreCall)
+	// If store is request and lobsize is bigger then chunk size, do partial lob store calls
+	if option.StoreCall && len(value.value) > PartialStoreLobSizeChunks {
+		if buffer.Len() > 0 {
+			buffer.WriteString(",")
+		}
+		Central.Log.Debugf("Generate FormatBuffer second call %d", option.SecondCall)
+		if option.SecondCall > 0 {
+			start := uint32(option.SecondCall)*uint32(PartialStoreLobSizeChunks) + 1
+			end := uint32(PartialStoreLobSizeChunks)
+			recLength = PartialStoreLobSizeChunks
+			if start+end > uint32(len(value.value)) {
+				end = uint32(len(value.value)) - start
+				recLength = end
+				option.NeedSecondCall = NoneSecond
+			} else {
+				option.NeedSecondCall = StoreSecond
+			}
+			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), start, end))
+		} else {
+			buffer.WriteString(fmt.Sprintf("%s(1,%d)", value.Type().ShortName(), PartialStoreLobSizeChunks))
+			recLength = 4 + PartialStoreLobSizeChunks
+			option.NeedSecondCall = StoreSecond
+		}
+		return recLength
+	}
 	if value.adatype.Type() == FieldTypeLBString && value.adatype.Length() == 0 && !option.StoreCall {
 		if buffer.Len() > 0 {
 			buffer.WriteString(",")
@@ -165,34 +172,47 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 		if option.SecondCall > 0 {
 			if value.lobSize > PartialLobSize {
 				buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), PartialLobSize+1, value.lobSize-PartialLobSize))
-				len = value.lobSize - PartialLobSize
+				recLength = value.lobSize - PartialLobSize
 			}
 		} else {
 			buffer.WriteString(fmt.Sprintf("%sL,4,%s(0,%d)", value.Type().ShortName(), value.Type().ShortName(), PartialLobSize))
-			len = 4 + PartialLobSize
+			recLength = 4 + PartialLobSize
 		}
 	} else {
-		len = value.commonFormatBuffer(buffer, option)
-		Central.Log.Debugf("Common format buffer length for %s -> %d", value.Type().ShortName(), len)
-		if len == 0 {
+		recLength = value.commonFormatBuffer(buffer, option)
+		Central.Log.Debugf("String value format buffer length for %s -> %d", value.Type().ShortName(), recLength)
+		if recLength == 0 {
 			switch value.adatype.Type() {
 			case FieldTypeLAString:
-				len = 1114
+				recLength = 1114
 			case FieldTypeLBString:
-				len = 16381
+				recLength = 16381
 			default:
-				len = 253
+				recLength = 253
 			}
 		}
 	}
-	//}
-	return len
+	return recLength
 }
 
-func (value *stringValue) StoreBuffer(helper *BufferHelper) error {
+func (value *stringValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
 	Central.Log.Debugf("Store string %s at %d len=%d", value.Type().Name(), len(helper.buffer), value.Type().Length())
-	Central.Log.Debugf("Current buffer size = %d", len(helper.buffer))
 	stringLen := len(value.value)
+	Central.Log.Debugf("Current buffer size = %d/%d offset = %d", len(helper.buffer), stringLen, helper.offset)
+	if stringLen > PartialStoreLobSizeChunks {
+		start := uint32(option.SecondCall) * PartialStoreLobSizeChunks
+		end := start + PartialStoreLobSizeChunks
+		if end > uint32(len(value.value)) {
+			end = uint32(len(value.value))
+		}
+		helper.putBytes(value.value[start:end])
+		Central.Log.Debugf("Partial buffer added to size = %d (chunk=%d) offset = %d", len(helper.buffer), PartialStoreLobSizeChunks, helper.offset)
+		return nil
+	}
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	wrBytes := []byte(value.value)
 	if stringLen == 0 {
 		stringLen = 1
