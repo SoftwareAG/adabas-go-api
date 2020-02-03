@@ -995,6 +995,7 @@ func TestDefinitionStoreBigLob(t *testing.T) {
 		fmt.Println("Create request", rerr)
 		return
 	}
+	// TODO Preparation for chunked store lobs
 	// assert.Equal(t, "LB(4097,995904).", req.FormatBuffer.String())
 	// groupLayout[1].SetLength(160000)
 	// Central.Log.Debugf("Test: no second call, store")
