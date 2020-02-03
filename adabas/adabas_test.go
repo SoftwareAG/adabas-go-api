@@ -319,7 +319,7 @@ func ExampleAdabas_readFileDefinition9() {
 	//     2, AB  ; AB
 	//       3, AC, 4, F ,DE ; AC
 	//       3, AD, 8, B ,NU,HF ; AD
-	//       3, AE, 0, A ,NU,NV,NB ; AE
+	//       3, AE, 0, A ,NU,NV,NB,LA ; AE
 	//   1, B0  ; B0
 	//     2, BA, 40, W ,NU ; BA
 	//     2, BB, 40, W ,NU ; BB
@@ -371,12 +371,12 @@ func ExampleAdabas_readFileDefinition9() {
 	//   1, PA, 3, A ,NU,DE,MU; PA
 	//     2, PA, 3, A ,NU,DE,MU ; PA
 	//   1, QA, 7, P  ; QA
-	//   1, RA, 0, A ,NU,NV,NB ; RA
+	//   1, RA, 0, A ,NU,NV,NB,LB ; RA
 	//   1, S0 ,PE ; S0
 	//     2, SA, 80, W ,NU ; SA
 	//     2, SB, 3, A ,NU ; SB
 	//     2, SC, 0, A ,NU,NV,NB,MU; SC
-	//       3, SC, 0, A ,NU,NV,NB,MU ; SC
+	//       3, SC, 0, A ,NU,NV,NB,MU,LB ; SC
 	//   1, TC, 20, U ,SY=TIME,DT=E(TIMESTAMP) ; TC
 	//   1, TU, 20, U ,MU,SY=TIME,DT=E(TIMESTAMP); TU
 	//     2, TU, 20, U ,MU,SY=TIME,DT=E(TIMESTAMP) ; TU
@@ -474,7 +474,7 @@ func ExampleAdabas_readFileDefinition9Restricted() {
 	//     2, AB  ; AB
 	//       3, AC, 4, F ,DE ; AC
 	//       3, AD, 8, B ,NU,HF ; AD
-	//       3, AE, 0, A ,NU,NV,NB ; AE
+	//       3, AE, 0, A ,NU,NV,NB,LA ; AE
 	//   1, DA, 1, A ,FI ; DA
 	//   1, L0 ,PE ; L0
 	//     2, LA, 3, A ,NU ; LA
