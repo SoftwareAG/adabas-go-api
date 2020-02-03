@@ -1019,6 +1019,6 @@ func TestDefinitionStoreBigLob(t *testing.T) {
 		fmt.Println("Create request", rerr)
 		return
 	}
-	assert.Equal(t, "LB(122881,37119).", req.FormatBuffer.String())
+	assert.Equal(t, "LB(122881,37120).", req.FormatBuffer.String())
 
 }
