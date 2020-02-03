@@ -150,7 +150,7 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			end := uint32(PartialStoreLobSizeChunks)
 			recLength = PartialStoreLobSizeChunks
 			if start+end > uint32(len(value.value)) {
-				end = uint32(len(value.value)) - start
+				end = uint32(len(value.value)) - start + 1
 				recLength = end
 				option.NeedSecondCall = NoneSecond
 			} else {
