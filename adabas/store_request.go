@@ -176,6 +176,16 @@ func (request *StoreRequest) prepareRequest() (adabasRequest *adatypes.Request, 
 	return
 }
 
+func (request *StoreRequest) prepareSecondRequest(secondCall uint8) (adabasRequest *adatypes.Request, err error) {
+	adabasRequest, err = request.definition.CreateAdabasRequest(true, secondCall, request.adabas.status.platform.IsMainframe())
+	if err != nil {
+		return
+	}
+	adatypes.Central.Log.Debugf("Second store FB: %s", adabasRequest.FormatBuffer.String())
+	adabasRequest.Definition = request.definition
+	return
+}
+
 // StoreFields create record field definition for the next store
 func (request *StoreRequest) StoreFields(param ...interface{}) (err error) {
 	if len(param) == 0 {
@@ -239,22 +249,51 @@ func (request *StoreRequest) CreateRecord() (record *Record, err error) {
 // Store store a record
 func (request *StoreRequest) Store(storeRecord *Record) error {
 	request.definition.Values = storeRecord.Value
+	adatypes.Central.Log.Debugf("Prepare store request")
 	adabasRequest, prepareErr := request.prepareRequest()
 	if prepareErr != nil {
 		return prepareErr
 	}
+	adatypes.Central.Log.Debugf("Prepared store request done need second = %v", adabasRequest.Option.NeedSecondCall)
 	//	storeRecord
 	helper := adatypes.NewDynamicHelper(Endian())
-	err := storeRecord.createRecordBuffer(helper)
+	err := storeRecord.createRecordBuffer(helper, adabasRequest.Option)
 	if err != nil {
 		return err
 	}
+	adatypes.Central.Log.Debugf("Create store request done need second = %v", adabasRequest.Option.NeedSecondCall)
 
 	adabasRequest.RecordBuffer = helper
 	err = request.adabas.Store(request.repository.Fnr, adabasRequest)
-	// Reset values after storage to reset for next store request
-	request.definition.Values = nil
+	if err != nil {
+		return err
+	}
 	storeRecord.Isn = adabasRequest.Isn
+	// Reset values after storage to reset for next store request
+	adatypes.Central.Log.Debugf("After store request done need second = %v", adabasRequest.Option.NeedSecondCall)
+	needSecondCall := adabasRequest.Option.NeedSecondCall
+	for needSecondCall != adatypes.NoneSecond {
+		adabasRequest.Option.SecondCall++
+		adabasRequest, prepareErr := request.prepareSecondRequest(adabasRequest.Option.SecondCall)
+		if prepareErr != nil {
+			return prepareErr
+		}
+		adabasRequest.Isn = storeRecord.Isn
+		adatypes.Central.Log.Debugf("Prepared update request done need second = %v", adabasRequest.Option.NeedSecondCall)
+		helper := adatypes.NewDynamicHelper(Endian())
+		err := storeRecord.createRecordBuffer(helper, adabasRequest.Option)
+		if err != nil {
+			return err
+		}
+		adabasRequest.RecordBuffer = helper
+		err = request.adabas.Update(request.repository.Fnr, adabasRequest)
+		if err != nil {
+			return err
+		}
+		needSecondCall = adabasRequest.Option.NeedSecondCall
+		adatypes.Central.Log.Debugf("After update request done need second = %v", adabasRequest.Option.NeedSecondCall)
+	}
+	request.definition.Values = nil
 	return err
 }
 
@@ -282,7 +321,7 @@ func (request *StoreRequest) Exchange(storeRecord *Record) error {
 func (request *StoreRequest) update(adabasRequest *adatypes.Request, storeRecord *Record) error {
 	//	storeRecord
 	helper := adatypes.NewDynamicHelper(Endian())
-	err := storeRecord.createRecordBuffer(helper)
+	err := storeRecord.createRecordBuffer(helper, adabasRequest.Option)
 	if err != nil {
 		return err
 	}

@@ -190,7 +190,7 @@ func TestUnicodeStoreBuffer(t *testing.T) {
 	assert.NotNil(t, adaValue)
 	adaValue.SetValue("äöüß")
 	helper := &BufferHelper{}
-	err = adaValue.StoreBuffer(helper)
+	err = adaValue.StoreBuffer(helper, nil)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -198,7 +198,7 @@ func TestUnicodeStoreBuffer(t *testing.T) {
 	assert.Equal(t, v, helper.Buffer())
 	adaValue.SetValue("ABC")
 	helper = &BufferHelper{}
-	err = adaValue.StoreBuffer(helper)
+	err = adaValue.StoreBuffer(helper, nil)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -221,7 +221,7 @@ func TestUnicodeStoreBufferVariable(t *testing.T) {
 	assert.NotNil(t, adaValue)
 	adaValue.SetValue("äöüß")
 	helper := &BufferHelper{}
-	err = adaValue.StoreBuffer(helper)
+	err = adaValue.StoreBuffer(helper, nil)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -229,7 +229,7 @@ func TestUnicodeStoreBufferVariable(t *testing.T) {
 	assert.Equal(t, v, helper.Buffer())
 	adaValue.SetValue("ABC")
 	helper = &BufferHelper{}
-	err = adaValue.StoreBuffer(helper)
+	err = adaValue.StoreBuffer(helper, nil)
 	if !assert.NoError(t, err) {
 		return
 	}

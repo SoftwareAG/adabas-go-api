@@ -78,11 +78,15 @@ func (value *RedefinitionValue) Bytes() []byte {
 }
 
 // StoreBuffer store buffer format generator
-func (value *RedefinitionValue) StoreBuffer(helper *BufferHelper) error {
+func (value *RedefinitionValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	Central.Log.Debugf("Store buffer redefinition")
 	subHelper := NewDynamicHelper(helper.order)
 	for _, s := range value.subValues {
-		err := s.StoreBuffer(subHelper)
+		err := s.StoreBuffer(subHelper, nil)
 		if err != nil {
 			Central.Log.Debugf("Error store buffer redefinition values: %s", s.Type().Name())
 			return err

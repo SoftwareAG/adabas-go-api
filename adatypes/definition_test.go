@@ -995,28 +995,28 @@ func TestDefinitionStoreBigLob(t *testing.T) {
 		fmt.Println("Create request", rerr)
 		return
 	}
-	// assert.Equal(t, "LB(4097,995904).", req.FormatBuffer.String())
-	// groupLayout[1].SetLength(160000)
-	// Central.Log.Debugf("Test: no second call, store")
-	// req, rerr = testDefinition.CreateAdabasRequest(true, 0, false)
-	// if !assert.NoError(t, rerr) {
-	// 	fmt.Println("Create request", rerr)
-	// 	return
-	// }
-	// assert.Equal(t, "U4,4,B,CH,1,A,LB(0,40960),ST,0,A,UB,1,B.", req.FormatBuffer.String())
-	// Central.Log.Debugf("Test: second call, store")
-	// req, rerr = testDefinition.CreateAdabasRequest(true, 1, false)
-	// if !assert.NoError(t, rerr) {
-	// 	fmt.Println("Create request", rerr)
-	// 	return
-	// }
-	// assert.Equal(t, "LB(40961,81921).", req.FormatBuffer.String())
-	// Central.Log.Debugf("Test: second call, store")
-	// req, rerr = testDefinition.CreateAdabasRequest(true, 3, false)
-	// if !assert.NoError(t, rerr) {
-	// 	fmt.Println("Create request", rerr)
-	// 	return
-	// }
-	// assert.Equal(t, "LB(122881,160000).", req.FormatBuffer.String())
+	assert.Equal(t, "LB(4097,995904).", req.FormatBuffer.String())
+	groupLayout[1].SetLength(160000)
+	Central.Log.Debugf("Test: no second call, store")
+	req, rerr = testDefinition.CreateAdabasRequest(true, 0, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	assert.Equal(t, "U4,4,B,CH,1,A,LB(0,40960),ST,0,A,UB,1,B.", req.FormatBuffer.String())
+	Central.Log.Debugf("Test: second call, store")
+	req, rerr = testDefinition.CreateAdabasRequest(true, 1, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	assert.Equal(t, "LB(40961,81921).", req.FormatBuffer.String())
+	Central.Log.Debugf("Test: second call, store")
+	req, rerr = testDefinition.CreateAdabasRequest(true, 3, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	assert.Equal(t, "LB(122881,160000).", req.FormatBuffer.String())
 
 }

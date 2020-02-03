@@ -129,7 +129,11 @@ func (value *byteArrayValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 	return len
 }
 
-func (value *byteArrayValue) StoreBuffer(helper *BufferHelper) error {
+func (value *byteArrayValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	if value.Type().Length() == 0 {
 		if len(value.value) > 0 {
 			Central.Log.Debugf("Add byte array ...")

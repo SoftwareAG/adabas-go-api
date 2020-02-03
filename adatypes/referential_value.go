@@ -64,7 +64,7 @@ func (value *referentialValue) FormatBuffer(buffer *bytes.Buffer, option *Buffer
 	return 0
 }
 
-func (value *referentialValue) StoreBuffer(helper *BufferHelper) error {
+func (value *referentialValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
 	return NewGenericError(37)
 }
 

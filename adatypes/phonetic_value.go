@@ -61,7 +61,7 @@ func (value *phoneticValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOpt
 	return 0
 }
 
-func (value *phoneticValue) StoreBuffer(helper *BufferHelper) error {
+func (value *phoneticValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
 	return NewGenericError(37)
 }
 

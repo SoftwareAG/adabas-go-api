@@ -63,7 +63,11 @@ func (value *collationValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 	return 0
 }
 
-func (value *collationValue) StoreBuffer(helper *BufferHelper) error {
+func (value *collationValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	return NewGenericError(37)
 }
 

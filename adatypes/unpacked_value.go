@@ -151,7 +151,11 @@ func (value *unpackedValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOpt
 	return len
 }
 
-func (value *unpackedValue) StoreBuffer(helper *BufferHelper) error {
+func (value *unpackedValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	if value.Type().Length() == 0 {
 		if len(value.value) > 0 {
 			err := helper.putByte(byte(len(value.value) + 1))

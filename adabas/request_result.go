@@ -33,6 +33,7 @@ import (
 type storeRecordTraverserStructure struct {
 	record *Record
 	helper *adatypes.BufferHelper
+	option *adatypes.BufferOption
 }
 
 func createStoreRecordBuffer(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
@@ -44,7 +45,7 @@ func createStoreRecordBuffer(adaValue adatypes.IAdaValue, x interface{}) (adatyp
 		adatypes.Central.Log.Debugf("Store record buffer for %s current helper position is %d/%x",
 			adaValue.Type().Name(), record.helper.Offset(), record.helper.Offset())
 	}
-	err := adaValue.StoreBuffer(record.helper)
+	err := adaValue.StoreBuffer(record.helper, record.option)
 	if adatypes.Central.IsDebugLevel() {
 		adatypes.LogMultiLineString(adatypes.FormatByteBuffer("DATA: ", record.helper.Buffer()))
 	}

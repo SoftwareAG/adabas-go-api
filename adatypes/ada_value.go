@@ -86,7 +86,7 @@ type IAdaValue interface {
 	Parent() IAdaValue
 	SetStringValue(string)
 	SetValue(interface{}) error
-	StoreBuffer(*BufferHelper) error
+	StoreBuffer(*BufferHelper, *BufferOption) error
 	// Int32 convert current Adabas value into integer value if possible, if not fill error
 	Int32() (int32, error)
 	UInt32() (uint32, error)
@@ -466,7 +466,7 @@ func (value *fillerValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 	return 0
 }
 
-func (value *fillerValue) StoreBuffer(helper *BufferHelper) error {
+func (value *fillerValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
 	return nil
 }
 

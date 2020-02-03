@@ -303,7 +303,11 @@ func parseDateTime(v interface{}) (res int64, err error) {
 	return
 }
 
-func (value *packedValue) StoreBuffer(helper *BufferHelper) error {
+func (value *packedValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	if value.Type().Length() == 0 {
 		vlen := len(value.value)
 		if vlen == 0 {

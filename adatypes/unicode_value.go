@@ -144,7 +144,11 @@ func (value *unicodeValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOpti
 	return len
 }
 
-func (value *unicodeValue) StoreBuffer(helper *BufferHelper) error {
+func (value *unicodeValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	// Skip normal fields in second call
+	if option != nil && option.SecondCall > 0 {
+		return nil
+	}
 	Central.Log.Debugf("Store unicode %s at %d len=%d", value.Type().Name(), len(helper.buffer), value.Type().Length())
 	if value.Type().Length() == 0 {
 		Central.Log.Debugf("Add length to buffer ...%d", len(value.value))
