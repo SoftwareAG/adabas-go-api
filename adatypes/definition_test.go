@@ -942,13 +942,7 @@ func TestDefinition_restrict(t *testing.T) {
 	assert.Equal(t, "P1C,4,B,GC1-N,1,A,GS1-N,1,A.", req.FormatBuffer.String())
 }
 
-func TestDefinitionStoreBigLob(t *testing.T) {
-	err := initLogWithFile("definition.log")
-	if !assert.NoError(t, err) {
-		return
-	}
-	Central.Log.Infof("TEST: %s", t.Name())
-
+func lobDefinition() *Definition {
 	groupLayout := []IAdaType{
 		NewType(FieldTypeCharacter, "CH"),
 		NewType(FieldTypeLBString, "LB"),
@@ -969,7 +963,18 @@ func TestDefinitionStoreBigLob(t *testing.T) {
 		l.SetLevel(1)
 	}
 
-	testDefinition := NewDefinitionWithTypes(layout)
+	return NewDefinitionWithTypes(layout)
+
+}
+
+func TestDefinitionStoreBigLob(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	testDefinition := lobDefinition()
 	assert.Nil(t, testDefinition.Values)
 	testDefinition.CreateValues(false)
 	assert.NotNil(t, testDefinition.Values)
@@ -1020,5 +1025,51 @@ func TestDefinitionStoreBigLob(t *testing.T) {
 		return
 	}
 	assert.Equal(t, "LB(122881,37120).", req.FormatBuffer.String())
+
+}
+
+func TestDefinitionLob(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	testDefinition := lobDefinition()
+	assert.Nil(t, testDefinition.Values)
+	testDefinition.CreateValues(false)
+	assert.NotNil(t, testDefinition.Values)
+	err = testDefinition.RestrictFieldSlice([]string{"LB", "U4"})
+	if !assert.NoError(t, err) {
+		fmt.Println("restrict request", err)
+		return
+	}
+	testDefinition.DumpTypes(false, false)
+	testDefinition.DumpValues(false)
+	Central.Log.Debugf("Test: no second call, read")
+	req, rerr := testDefinition.CreateAdabasRequest(false, 0, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	assert.Equal(t, "U4,4,B,LBL,4,LB(1,4096).", req.FormatBuffer.String())
+
+	err = testDefinition.RestrictFieldSlice([]string{"LB(1,100)", "U4"})
+	if !assert.NoError(t, err) {
+		fmt.Println("Restrict request with partial lob", err)
+		return
+	}
+	f := testDefinition.activeFields["LB"]
+	assert.Equal(t, "  2, LB, 0, A ,LB ; LB", f.String())
+	testDefinition.DumpTypes(false, false)
+	testDefinition.DumpValues(false)
+	Central.Log.Debugf("Test: no second call, read")
+	req, rerr = testDefinition.CreateAdabasRequest(false, 0, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	// TODO Implement range for partial lob
+	//assert.Equal(t, "U4,4,B,LBL,4,LB(1,100).", req.FormatBuffer.String())
 
 }

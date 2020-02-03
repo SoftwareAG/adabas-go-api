@@ -21,13 +21,16 @@ package adatypes
 
 import (
 	"reflect"
+	"regexp"
+	"strconv"
 	"strings"
 )
 
 type fieldQuery struct {
-	name       string
-	reference  bool
-	fieldRange []*AdaRange
+	name         string
+	reference    bool
+	fieldRange   []*AdaRange
+	partialRange *AdaRange
 }
 
 // field map containing structure and definition
@@ -271,28 +274,61 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 	if len(field) != 0 {
 		for _, f := range field {
 			fl := strings.Trim(f, " ")
+			var re = regexp.MustCompile(`(?m)(\w+)(\[(\d+),?(\d*)\](\[(\d+)\])?)?(\((\d),(\d)\))?`)
+			m := re.FindAllStringSubmatch(fl, -1)
+			fl = m[0][1]
+			s := m[0][2]
+			t := ""
+			ps := 0
+			pt := 0
 			if fl != "" && !strings.HasPrefix(fl, "#ISN") {
 				rf := false
 				if f[0] == '@' {
 					fl = f[1:]
 					rf = true
 				}
-				b := strings.Index(fl, "[")
-				var r *AdaRange
-				if b > 0 {
-					fn := fl[:b]
-					e := strings.Index(fl, "]")
-					r = NewRangeParser(fl[b+1 : e])
-					if r == nil {
-						return nil, NewGenericError(129, f)
-					}
-					Central.Log.Debugf("Add to map: %s -> %s reference=%v", fn, r.FormatBuffer(), rf)
-					fieldMap.set[fn] = &fieldQuery{name: fn, fieldRange: []*AdaRange{r}, reference: rf}
-				} else {
-					Central.Log.Debugf("Add to map: %s reference=%v", fl, rf)
-					fieldMap.set[fl] = &fieldQuery{name: fl, reference: rf}
+				Central.Log.Debugf("%s=>%s index=[%d,%d](%d,%d)", f, fl, s, t, ps, pt)
+				fq := &fieldQuery{name: fl, reference: rf}
+				if s != "" {
+					fq.fieldRange = []*AdaRange{NewRangeParser(s)}
 				}
+				if len(m) > 1 {
+					var err error
+					ps, err = strconv.Atoi(m[1][1])
+					if err != nil {
+						return nil, err
+					}
+					pt, err = strconv.Atoi(m[2][1])
+					if err != nil {
+						return nil, err
+					}
+					fq.partialRange = NewRange(ps, pt)
+				}
+				fieldMap.set[fl] = fq
 			}
+
+			// if fl != "" && !strings.HasPrefix(fl, "#ISN") {
+			// 	rf := false
+			// 	if f[0] == '@' {
+			// 		fl = f[1:]
+			// 		rf = true
+			// 	}
+			// 	b := strings.Index(fl, "[")
+			// 	var r *AdaRange
+			// 	if b > 0 {
+			// 		fn := fl[:b]
+			// 		e := strings.Index(fl, "]")
+			// 		r = NewRangeParser(fl[b+1 : e])
+			// 		if r == nil {
+			// 			return nil, NewGenericError(129, f)
+			// 		}
+			// 		Central.Log.Debugf("Add to map: %s -> %s reference=%v", fn, r.FormatBuffer(), rf)
+			// 		fieldMap.set[fn] = &fieldQuery{name: fn, fieldRange: []*AdaRange{r}, reference: rf}
+			// 	} else {
+			// 		Central.Log.Debugf("Add to map: %s reference=%v", fl, rf)
+			// 		fieldMap.set[fl] = &fieldQuery{name: fl, reference: rf}
+			// 	}
+			// }
 		}
 	}
 	fieldMap.parentStructure = NewStructure()
