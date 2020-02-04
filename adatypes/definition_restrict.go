@@ -274,7 +274,7 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 	if len(field) != 0 {
 		for _, f := range field {
 			fl := strings.Trim(f, " ")
-			var re = regexp.MustCompile(`(?m)(\w+)(\[(\d+),?(\d*)\](\[(\d+)\])?)?(\((\d),(\d)\))?`)
+			var re = regexp.MustCompile(`(?m)(.+)(\[(\d+),?(\d*)\](\[(\d+)\])?)?(\((\d),(\d)\))?`)
 			m := re.FindAllStringSubmatch(fl, -1)
 			fl = m[0][1]
 			s := m[0][2]

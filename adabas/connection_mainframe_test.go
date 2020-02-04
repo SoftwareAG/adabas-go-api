@@ -58,7 +58,9 @@ func TestConnectionMfMap(t *testing.T) {
 		request.Limit = 20
 		fmt.Println("Read logigcal data:")
 		result, err := request.ReadLogicalBy("personnnel-id")
-		assert.NoError(t, err)
+		if !assert.NoError(t, err) {
+			return
+		}
 		fmt.Println("Check size ...", len(result.Values))
 		if assert.Equal(t, 20, len(result.Values)) {
 			ae := result.Values[1].HashFields["name"]
