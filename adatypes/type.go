@@ -56,6 +56,7 @@ type IAdaType interface {
 	Length() uint32
 	SetLength(uint32)
 	SetRange(*AdaRange)
+	PartialRange() *AdaRange
 	IsStructure() bool
 	Level() uint8
 	SetLevel(uint8)

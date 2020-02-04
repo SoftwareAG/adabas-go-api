@@ -203,6 +203,7 @@ type CommonType struct {
 	endian              binary.ByteOrder
 	peRange             AdaRange
 	muRange             AdaRange
+	partialRange        *AdaRange
 	FormatTypeCharacter rune
 	FormatLength        uint32
 	SubTypes            []IAdaType
@@ -420,4 +421,9 @@ func (commonType *CommonType) AddFlag(flagOption FlagOption) {
 // RemoveFlag add the flag to the type flag set
 func (commonType *CommonType) RemoveFlag(flagOption FlagOption) {
 	commonType.flags &= ^flagOption.Bit()
+}
+
+// PartialRange partial range provided
+func (commonType *CommonType) PartialRange() *AdaRange {
+	return commonType.partialRange
 }

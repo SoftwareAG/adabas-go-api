@@ -940,6 +940,18 @@ func TestDefinition_restrict(t *testing.T) {
 		return
 	}
 	assert.Equal(t, "P1C,4,B,GC1-N,1,A,GS1-N,1,A.", req.FormatBuffer.String())
+	rerr = testDefinition.RestrictFieldSlice([]string{"GC[N]"})
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Restrict request", rerr)
+		return
+	}
+	req, rerr = testDefinition.CreateAdabasRequest(false, 0, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	assert.Equal(t, "GCN,1,A.", req.FormatBuffer.String())
+
 }
 
 func lobDefinition() *Definition {
@@ -1070,6 +1082,17 @@ func TestDefinitionLob(t *testing.T) {
 		return
 	}
 	// TODO Implement range for partial lob
-	//assert.Equal(t, "U4,4,B,LBL,4,LB(1,100).", req.FormatBuffer.String())
+	assert.Equal(t, "U4,4,B,LB(1,100).", req.FormatBuffer.String())
+	s := testDefinition.Search("LB").(*stringValue)
+	s.lobSize = 1000000
+	s.value = make([]byte, 160000)
+
+	req, rerr = testDefinition.CreateAdabasRequest(true, 0, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	// TODO Implement range for partial lob
+	assert.Equal(t, "U4,4,B,LB(1,100).", req.FormatBuffer.String())
 
 }

@@ -158,9 +158,16 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			}
 			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), start, end))
 		} else {
-			buffer.WriteString(fmt.Sprintf("%s(1,%d)", value.Type().ShortName(), PartialStoreLobSizeChunks))
-			recLength = 4 + PartialStoreLobSizeChunks
-			option.NeedSecondCall = StoreSecond
+			partialRange := value.Type().PartialRange()
+			Central.Log.Debugf("Partial Range %#v\n", partialRange)
+			if partialRange != nil {
+				buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), partialRange.from, partialRange.to))
+				recLength = uint32(partialRange.to - partialRange.from)
+			} else {
+				buffer.WriteString(fmt.Sprintf("%s(1,%d)", value.Type().ShortName(), PartialStoreLobSizeChunks))
+				recLength = 4 + PartialStoreLobSizeChunks
+				option.NeedSecondCall = StoreSecond
+			}
 		}
 		return recLength
 	}
@@ -175,8 +182,15 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 				recLength = value.lobSize - PartialLobSize
 			}
 		} else {
-			buffer.WriteString(fmt.Sprintf("%sL,4,%s(0,%d)", value.Type().ShortName(), value.Type().ShortName(), PartialLobSize))
-			recLength = 4 + PartialLobSize
+			partialRange := value.Type().PartialRange()
+			Central.Log.Debugf("Partial Range %#v\n------\n", partialRange)
+			if partialRange != nil {
+				buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), partialRange.from, partialRange.to))
+				recLength = uint32(partialRange.to - partialRange.from)
+			} else {
+				buffer.WriteString(fmt.Sprintf("%sL,4,%s(0,%d)", value.Type().ShortName(), value.Type().ShortName(), PartialLobSize))
+				recLength = 4 + PartialLobSize
+			}
 		}
 	} else {
 		recLength = value.commonFormatBuffer(buffer, option)
@@ -196,6 +210,15 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 }
 
 func (value *stringValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
+	if value.adatype.Type() == FieldTypeLBString && value.adatype.PartialRange() != nil {
+		partialRange := value.adatype.PartialRange()
+		// Write only part of partial lob, partial lob fragment need to be started from the beginning
+		err := helper.putBytes(value.value[0:partialRange.to])
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 	Central.Log.Debugf("Store string %s at %d len=%d", value.Type().Name(), len(helper.buffer), value.Type().Length())
 	stringLen := len(value.value)
 	Central.Log.Debugf("Current buffer size = %d/%d offset = %d", len(helper.buffer), stringLen, helper.offset)
@@ -278,8 +301,18 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 		}
 		if !value.Type().HasFlagSet(FlagOptionSecondCall) {
 			Central.Log.Debugf("Skip parsing %s offset=%d, no second call flag", value.Type().Name(), helper.offset)
-			return
+			return Continue, nil
 		}
+	}
+
+	if value.adatype.Type() == FieldTypeLBString && value.adatype.PartialRange() != nil {
+		partialRange := value.adatype.PartialRange()
+		// Read only the partial lob info
+		value.value, err = helper.ReceiveBytes(uint32(partialRange.to))
+		if err != nil {
+			return EndTraverser, err
+		}
+		return Continue, nil
 	}
 
 	fieldLength := value.adatype.Length()

@@ -224,6 +224,9 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 				newType.SetParent(fieldMap.lastStructure)
 				newType.peRange = fieldMap.lastStructure.peRange
 				newType.muRange = fieldMap.lastStructure.muRange
+				if fq != nil {
+					newType.partialRange = fq.partialRange
+				}
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
 				if Central.IsDebugLevel() {
 					Central.Log.Debugf("Add type to %s value=%p count=%d", fieldMap.lastStructure.Name(), fieldMap.lastStructure, fieldMap.lastStructure.NrFields())
@@ -247,7 +250,12 @@ func (def *Definition) ShouldRestrictToFields(fields string) (err error) {
 	}
 	var field []string
 	if fields != "" {
-		field = strings.Split(fields, ",")
+		var re = regexp.MustCompile(`(?P<field>[^\[\(\]\),]+(\[[\dN]+,?[\dN]*\])?(\(\d+,\d+\))?),?`)
+		mt := re.FindAllStringSubmatch(fields, -1)
+		for _, f := range mt {
+			field = append(field, f[1])
+		}
+		//field = strings.Split(fields, ",")
 	}
 	return def.ShouldRestrictToFieldSlice(field)
 }
@@ -274,11 +282,24 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 	if len(field) != 0 {
 		for _, f := range field {
 			fl := strings.Trim(f, " ")
-			var re = regexp.MustCompile(`(?m)(.+)(\[(\d+),?(\d*)\](\[(\d+)\])?)?(\((\d),(\d)\))?`)
-			m := re.FindAllStringSubmatch(fl, -1)
-			fl = m[0][1]
-			s := m[0][2]
-			t := ""
+			var re = regexp.MustCompile(`(?P<field>[^\[\(\]\)]+)(\[(?P<if>[\dN]+),?(?P<it>[\dN]*)\])?(\((?P<ps>\d+),(?P<pt>\d+)\))?`)
+			mt := re.FindStringSubmatch(fl)
+
+			// fmt.Printf("FindAllString %#v\n", mt)
+			// fmt.Printf("%q\n", re.SubexpNames())
+			// fmt.Printf("Got %s %s\n--------\n", mt[1], mt[3])
+			fl = mt[1]
+			s := mt[3]
+			// for i, match := range re.FindAllString(fl, -1) {
+			// 	fmt.Printf("Found at index %#v at %d\n", match, i)
+			// }
+			// m := re.FindAllStringSubmatch(fl, -1)
+			// fmt.Printf("%#v\n", re.FindStringSubmatch(fl))
+			// fmt.Printf("SubExpNames %#v\n", re.SubexpNames())
+			// fmt.Printf("%#v\n", m)
+			// fl = m[0][1]
+			// s := m[0][2]
+			t := mt[4]
 			ps := 0
 			pt := 0
 			if fl != "" && !strings.HasPrefix(fl, "#ISN") {
@@ -287,22 +308,31 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 					fl = f[1:]
 					rf = true
 				}
-				Central.Log.Debugf("%s=>%s index=[%d,%d](%d,%d)", f, fl, s, t, ps, pt)
+				Central.Log.Debugf("%s=>%s index=[%s,%s](%d,%d)", f, fl, s, t, ps, pt)
 				fq := &fieldQuery{name: fl, reference: rf}
 				if s != "" {
 					fq.fieldRange = []*AdaRange{NewRangeParser(s)}
 				}
-				if len(m) > 1 {
+
+				if mt[6] != "" {
 					var err error
-					ps, err = strconv.Atoi(m[1][1])
+					ps, err = strconv.Atoi(mt[6])
 					if err != nil {
 						return nil, err
 					}
-					pt, err = strconv.Atoi(m[2][1])
+					pt, err = strconv.Atoi(mt[7])
 					if err != nil {
 						return nil, err
 					}
 					fq.partialRange = NewRange(ps, pt)
+					Central.Log.Debugf("Partial %d:%d\n", fq.partialRange.from, fq.partialRange.to)
+				}
+				if Central.IsDebugLevel() {
+					r := ""
+					if len(fq.fieldRange) > 0 {
+						r = fq.fieldRange[0].FormatBuffer()
+					}
+					Central.Log.Debugf("Add to map: %s -> %s reference=%v", fq.name, r, rf)
 				}
 				fieldMap.set[fl] = fq
 			}
