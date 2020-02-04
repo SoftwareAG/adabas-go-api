@@ -320,7 +320,6 @@ func ExampleConnection_multiplefieldIndex() {
 
 }
 
-// TODO temporary disabled
 func XExampleConnectionSingleIndex() {
 	initLogWithFile("connection.log")
 
@@ -341,7 +340,7 @@ func XExampleConnectionSingleIndex() {
 		fmt.Println("Error create request", err)
 		return
 	}
-	err = request.QueryFields("PERSONNEL-ID,BONUS[02,01]")
+	err = request.QueryFields("PERSONNEL-ID,BONUS[03,01]")
 	if err != nil {
 		fmt.Println("Query fields error", err)
 		return

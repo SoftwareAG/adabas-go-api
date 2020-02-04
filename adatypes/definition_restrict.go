@@ -241,8 +241,14 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 				newType.muRange = fieldMap.lastStructure.muRange
 				if fq != nil {
 					newType.partialRange = fq.partialRange
-
-					Central.Log.Debugf("FB FQ peRange=%#v", fq.fieldRange)
+					for i, r := range fq.fieldRange {
+						if i == 0 && newType.HasFlagSet(FlagOptionPE) {
+							newType.peRange = *r
+						} else {
+							newType.muRange = *r
+						}
+						Central.Log.Debugf("FB FQ peRange=%#v", r)
+					}
 					Central.Log.Debugf("FB %s peRange=%s muRange=%s", newType.name, newType.peRange.FormatBuffer(), newType.muRange.FormatBuffer())
 				}
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
@@ -329,10 +335,10 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 				Central.Log.Debugf("%s=>%s index=[%s,%s](%d,%d)", f, fl, s, t, ps, pt)
 				fq := &fieldQuery{name: fl, reference: rf}
 				if s != "" {
-					if t != "" {
-						s = s + "-" + t
-					}
 					fq.fieldRange = []*AdaRange{NewRangeParser(s)}
+					if t != "" {
+						fq.fieldRange = append(fq.fieldRange, NewRangeParser(t))
+					}
 				}
 
 				if mt[6] != "" {
@@ -350,7 +356,10 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 				}
 				if Central.IsDebugLevel() {
 					r := ""
-					if len(fq.fieldRange) > 0 {
+					if fq.fieldRange != nil && len(fq.fieldRange) > 0 {
+						if fq.fieldRange[0] == nil {
+							panic("field Range nil")
+						}
 						r = fq.fieldRange[0].FormatBuffer()
 					}
 					Central.Log.Debugf("Add to map: %s -> %s reference=%v", fq.name, r, rf)

@@ -78,12 +78,14 @@ func NewRangeParser(r string) *AdaRange {
 			}
 			to, err = strconv.Atoi(match[2])
 			if err != nil {
+				Central.Log.Debugf("Integer error: %s -> %s", r, match[2])
 				return nil
 			}
 		}
 	}
 	if to < from {
 		if to != lastEntry {
+			Central.Log.Debugf("Last entry error: %s -> %d < %d", r, to, lastEntry)
 			return nil
 		}
 	}
