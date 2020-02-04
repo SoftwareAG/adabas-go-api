@@ -286,7 +286,12 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 							adabasRequest.RecordBufferLength += adaType.Length()
 						}
 					}
-					Central.Log.Debugf("FB generate %T %s -> %s", adaType, genType.ShortName(), genType.Type().FormatCharacter())
+					if Central.IsDebugLevel() {
+						Central.Log.Debugf("FB generate %T %s -> %s field index=%s", adaType, genType.ShortName(), genType.Type().FormatCharacter(), fieldIndex)
+						// TODO check pe range
+						ft := adaType.(*AdaType)
+						Central.Log.Debugf("FB %s peRange=%s muRange=%s", ft.name, ft.peRange.FormatBuffer(), ft.muRange.FormatBuffer())
+					}
 					buffer.WriteString(fmt.Sprintf("%s%s,%d,%s", genType.ShortName(), fieldIndex,
 						genType.Length(), genType.Type().FormatCharacter()))
 				}

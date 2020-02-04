@@ -163,6 +163,21 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 		}
 		fieldMap.evaluateTopLevelStructure(adaType.Level())
 
+		if fq != nil && len(fq.fieldRange) > 0 {
+			Central.Log.Debugf("%s -> %s", adaType.Name(), fq.fieldRange[0].FormatBuffer())
+			index := 0
+			t := adaType.(*AdaType)
+			if adaType.HasFlagSet(FlagOptionPE) {
+				t.peRange = *fq.fieldRange[index]
+				index++
+			}
+			if adaType.HasFlagSet(FlagOptionMUGhost) {
+				t.muRange = *fq.fieldRange[index]
+			}
+			Central.Log.Debugf("%s peRange=%s muRange=%s", t.name, t.peRange.FormatBuffer(), t.muRange.FormatBuffer())
+
+		}
+
 		// Skip MU field type if parent is not available
 		if parentType.Type() == FieldTypeMultiplefield && fieldMap.lastStructure.Name() != parentType.Name() {
 			Central.Log.Debugf("Skip MU field %s", adaType.Name())
@@ -226,6 +241,9 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 				newType.muRange = fieldMap.lastStructure.muRange
 				if fq != nil {
 					newType.partialRange = fq.partialRange
+
+					Central.Log.Debugf("FB FQ peRange=%#v", fq.fieldRange)
+					Central.Log.Debugf("FB %s peRange=%s muRange=%s", newType.name, newType.peRange.FormatBuffer(), newType.muRange.FormatBuffer())
 				}
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
 				if Central.IsDebugLevel() {
@@ -311,6 +329,9 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 				Central.Log.Debugf("%s=>%s index=[%s,%s](%d,%d)", f, fl, s, t, ps, pt)
 				fq := &fieldQuery{name: fl, reference: rf}
 				if s != "" {
+					if t != "" {
+						s = s + "-" + t
+					}
 					fq.fieldRange = []*AdaRange{NewRangeParser(s)}
 				}
 
