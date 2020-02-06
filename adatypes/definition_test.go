@@ -784,12 +784,19 @@ func createLayout() *Definition {
 }
 
 func createLayoutWithPEandMU() *Definition {
+	multiplePeriodLayout := []IAdaType{
+		NewTypeWithLength(FieldTypeString, "PM", 10),
+	}
+	multiplePeriodLayout[0].AddFlag(FlagOptionMUGhost)
+	multiplePeriodLayout[0].AddFlag(FlagOptionMU)
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "GM"),
 	}
+	multipleLayout[0].AddFlag(FlagOptionMUGhost)
 	groupLayout := []IAdaType{
 		NewType(FieldTypeCharacter, "GC"),
 		NewType(FieldTypeString, "GS"),
+		NewStructureList(FieldTypeMultiplefield, "PM", OccCapacity, multiplePeriodLayout),
 		NewType(FieldTypePacked, "GP"),
 	}
 	layout := []IAdaType{
@@ -1095,4 +1102,49 @@ func TestDefinitionLob(t *testing.T) {
 	// TODO Implement range for partial lob
 	assert.Equal(t, "U4,4,B,LB(1,100).", req.FormatBuffer.String())
 
+}
+
+func TestDefinitionSingleIndex(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	testDefinition := createLayoutWithPEandMU()
+	err = testDefinition.ShouldRestrictToFieldSlice([]string{"U4", "GM"})
+	assert.NoError(t, err)
+	testDefinition.DumpTypes(false, true, "GM")
+	req, rerr := testDefinition.CreateAdabasRequest(false, 0, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	// Reset tree
+	err = testDefinition.ShouldRestrictToFields("*")
+	// TODO Implement range for partial lob
+	assert.Equal(t, "U4,4,B,GMC,4,B,GM1-N,1,P.", req.FormatBuffer.String())
+	err = testDefinition.ShouldRestrictToFieldSlice([]string{"U4", "PM[1]"})
+	assert.NoError(t, err)
+	testDefinition.DumpTypes(false, true, "PM[1]")
+	req, rerr = testDefinition.CreateAdabasRequest(false, 0, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	// TODO Implement range for partial lob
+	assert.Equal(t, "U4,4,B,PG1C,4,B,PM1(1-N),10,A.", req.FormatBuffer.String())
+	err = testDefinition.ShouldRestrictToFields("*")
+	assert.NoError(t, err)
+	// TODO Implement range for partial lob
+	err = testDefinition.ShouldRestrictToFieldSlice([]string{"U4", "PM[1,2]"})
+	assert.NoError(t, err)
+	testDefinition.DumpTypes(false, true, "PM[1,2]")
+	req, rerr = testDefinition.CreateAdabasRequest(false, 0, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	// TODO Implement range for partial lob
+	assert.Equal(t, "U4,4,B,PM1(2),10,A.", req.FormatBuffer.String())
 }

@@ -171,7 +171,7 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 				t.peRange = *fq.fieldRange[index]
 				index++
 			}
-			if adaType.HasFlagSet(FlagOptionMUGhost) {
+			if len(fq.fieldRange) > index && adaType.HasFlagSet(FlagOptionMUGhost) {
 				t.muRange = *fq.fieldRange[index]
 			}
 			Central.Log.Debugf("%s peRange=%s muRange=%s", t.name, t.peRange.FormatBuffer(), t.muRange.FormatBuffer())
@@ -455,7 +455,7 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	def.activeFieldTree = fieldMap.parentStructure
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Final restricted type tree .........")
-		def.DumpTypes(true, false, "final restricted")
+		def.DumpTypes(true, false, "Not init restricted")
 		def.DumpTypes(true, true, "final restricted")
 	}
 	return
