@@ -1104,7 +1104,7 @@ func TestDefinitionLob(t *testing.T) {
 
 }
 
-func TestDefinitionSingleIndex(t *testing.T) {
+func TestDefinitionMultipleField(t *testing.T) {
 	err := initLogWithFile("definition.log")
 	if !assert.NoError(t, err) {
 		return
@@ -1126,21 +1126,42 @@ func TestDefinitionSingleIndex(t *testing.T) {
 	assert.Equal(t, "U4,4,B,GMC,4,B,GM1-N,1,P.", req.FormatBuffer.String())
 	err = testDefinition.ShouldRestrictToFieldSlice([]string{"U4", "PM[1]"})
 	assert.NoError(t, err)
-	testDefinition.DumpTypes(false, true, "PM[1]")
-	req, rerr = testDefinition.CreateAdabasRequest(false, 0, false)
+}
+
+func TestDefinitionSingleIndex(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	testDefinition := createLayoutWithPEandMU()
+	err = testDefinition.ShouldRestrictToFieldSlice([]string{"U4", "PM[1]"})
+	assert.NoError(t, err)
+	// testDefinition.DumpTypes(false, true, "PM[1]")
+	// testDefinition.DumpValues(false)
+	req, rerr := testDefinition.CreateAdabasRequest(false, 0, false)
 	if !assert.NoError(t, rerr) {
 		fmt.Println("Create request", rerr)
 		return
 	}
 	// TODO Implement range for partial lob
 	assert.Equal(t, "U4,4,B,PG1C,4,B,PM1(1-N),10,A.", req.FormatBuffer.String())
-	err = testDefinition.ShouldRestrictToFields("*")
-	assert.NoError(t, err)
-	// TODO Implement range for partial lob
+}
+
+func TestDefinitionBothIndexes(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	testDefinition := createLayoutWithPEandMU()
 	err = testDefinition.ShouldRestrictToFieldSlice([]string{"U4", "PM[1,2]"})
 	assert.NoError(t, err)
 	testDefinition.DumpTypes(false, true, "PM[1,2]")
-	req, rerr = testDefinition.CreateAdabasRequest(false, 0, false)
+	testDefinition.DumpValues(false)
+	req, rerr := testDefinition.CreateAdabasRequest(false, 0, false)
 	if !assert.NoError(t, rerr) {
 		fmt.Println("Create request", rerr)
 		return
