@@ -264,11 +264,11 @@ func (commonType *CommonType) SetParent(parentType IAdaType) {
 		if parentType.HasFlagSet(FlagOptionPE) {
 			commonType.AddFlag(FlagOptionPE)
 		}
-		if commonType.HasFlagSet(FlagOptionMU) {
+		if commonType.HasFlagSet(FlagOptionAtomicFB) {
 			p := parentType
 			for p != nil {
 				if p.GetParent() != nil {
-					p.AddFlag(FlagOptionMU)
+					p.AddFlag(FlagOptionAtomicFB)
 				}
 				p = p.GetParent()
 			}
@@ -368,8 +368,8 @@ type FlagOption uint32
 const (
 	// FlagOptionPE indicate tree is part of period group
 	FlagOptionPE FlagOption = iota
-	// FlagOptionMU indicate tree contains MU fields
-	FlagOptionMU
+	// FlagOptionAtomicFB indicate tree contains MU fields
+	FlagOptionAtomicFB
 	// FlagOptionMUGhost ghost field for MU
 	FlagOptionMUGhost
 	// FlagOptionToBeRemoved should be removed
@@ -384,6 +384,8 @@ const (
 	FlagOptionLengthNotIncluded
 	// FlagOptionPart structure is request only in parts
 	FlagOptionPart
+	// FlagOptionSingleIndex single index query
+	FlagOptionSingleIndex
 )
 
 // Bit return the Bit of the option flag
@@ -403,16 +405,20 @@ func (commonType *CommonType) AddFlag(flagOption FlagOption) {
 		return
 	}
 	commonType.flags |= flagOption.Bit()
-	if flagOption == FlagOptionMU {
+
+	if flagOption == FlagOptionAtomicFB || flagOption == FlagOptionSingleIndex {
 		p := commonType.GetParent()
 		for p != nil {
 			p.AddFlag(flagOption)
 			p = p.GetParent()
 		}
-		// Only work in period group or group
-		if commonType.level > 1 {
-			for _, s := range commonType.SubTypes {
-				s.AddFlag(flagOption)
+		if flagOption == FlagOptionAtomicFB {
+			// Only work in period group or group
+			if commonType.level > 1 {
+				for _, s := range commonType.SubTypes {
+					s.AddFlag(flagOption)
+				}
+
 			}
 		}
 	}
@@ -426,4 +432,14 @@ func (commonType *CommonType) RemoveFlag(flagOption FlagOption) {
 // PartialRange partial range provided
 func (commonType *CommonType) PartialRange() *AdaRange {
 	return commonType.partialRange
+}
+
+// PeriodicRange range of PE field provided
+func (commonType *CommonType) PeriodicRange() *AdaRange {
+	return &commonType.peRange
+}
+
+// MultipleRange range of MU field provided
+func (commonType *CommonType) MultipleRange() *AdaRange {
+	return &commonType.muRange
 }

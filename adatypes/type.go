@@ -57,6 +57,8 @@ type IAdaType interface {
 	SetLength(uint32)
 	SetRange(*AdaRange)
 	PartialRange() *AdaRange
+	PeriodicRange() *AdaRange
+	MultipleRange() *AdaRange
 	IsStructure() bool
 	Level() uint8
 	SetLevel(uint8)
@@ -175,14 +177,6 @@ func NewLongNameType(fType FieldType, name string, shortName string) *AdaType {
 // NewTypeWithLength Definen new type
 func NewTypeWithLength(fType FieldType, name string, length uint32) *AdaType {
 	return NewType(fType, name, length)
-	// return &AdaType{CommonType: CommonType{
-	// 	fieldType: fType,
-	// 	level:     1,
-	// 	name:      name,
-	// 	flags:     uint32(1 << FlagOptionToBeRemoved),
-	// 	shortName: name,
-	// 	length:    length,
-	// }}
 }
 
 // NewLongNameTypeWithLength Definen new type
@@ -209,13 +203,6 @@ func (adaType *AdaType) String() string {
 	fmt.Fprintf(&b, "%d, %s, %d, %s %s ; %s", adaType.level, adaType.shortName, adaType.length,
 		adaType.fieldType.FormatCharacter(), options, adaType.name)
 	return b.String()
-	// y := strings.Repeat(" ", int(adaType.level))
-	// options := adaType.Option()
-	// if options != "" {
-	// 	options = "," + strings.Replace(options, " ", ",", -1)
-	// }
-	// return fmt.Sprintf("%s%d, %s, %d, %s %s ; %s", y, adaType.level, adaType.shortName, adaType.length,
-	// 	adaType.fieldType.FormatCharacter(), options, adaType.name)
 }
 
 // Length return the length of the field
@@ -231,7 +218,7 @@ func (adaType *AdaType) SetLength(length uint32) {
 	if (adaType.fieldType != FieldTypeFloat && adaType.fieldType != FieldTypeDouble) || length > 0 {
 		if adaType.HasFlagSet(FlagOptionPE) {
 			// Period length change, CANNNOT use collected FB entry!!!!
-			adaType.AddFlag(FlagOptionMU)
+			adaType.AddFlag(FlagOptionAtomicFB)
 		}
 		adaType.length = length
 	} else {

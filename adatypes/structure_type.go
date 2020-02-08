@@ -127,7 +127,7 @@ func (adaType *StructureType) adaptSubFields() {
 	}
 	if adaType.Type() == FieldTypeMultiplefield {
 		Central.Log.Debugf("%s: set MU flag", adaType.Name())
-		adaType.AddFlag(FlagOptionMU)
+		adaType.AddFlag(FlagOptionAtomicFB)
 		adaType.occ = OccCapacity
 	}
 	for _, s := range adaType.SubTypes {
@@ -142,7 +142,7 @@ func (adaType *StructureType) adaptSubFields() {
 
 		if adaType.Type() == FieldTypeMultiplefield {
 			Central.Log.Debugf("%s: set MU flag", adaType.Name())
-			adaType.AddFlag(FlagOptionMU)
+			adaType.AddFlag(FlagOptionAtomicFB)
 			s.AddFlag(FlagOptionMUGhost)
 			if adaType.HasFlagSet(FlagOptionPE) {
 				s.AddFlag(FlagOptionSecondCall)
@@ -271,11 +271,6 @@ func (adaType *StructureType) addPart() {
 // RemoveField remote field of the structure type
 func (adaType *StructureType) RemoveField(fieldType *CommonType) {
 	Central.Log.Debugf("Remove field %s out of %s nrFields=%d", fieldType.Name(), adaType.Name(), adaType.NrFields())
-	// if adaType.NrFields() < 2 && adaType.GetParent() != nil {
-	// 	Central.Log.Debugf("Only one left, remove last ", fieldType.Name())
-	// 	commonType := &adaType.CommonType
-	// 	adaType.GetParent().(*StructureType).RemoveField(commonType)
-	// } else {
 	Central.Log.Debugf("Rearrange, left=%d", adaType.NrFields())
 	var newTypes []IAdaType
 	for _, t := range adaType.SubTypes {
@@ -284,7 +279,6 @@ func (adaType *StructureType) RemoveField(fieldType *CommonType) {
 		}
 	}
 	adaType.SubTypes = newTypes
-	// }
 }
 
 // SetRange set Adabas range

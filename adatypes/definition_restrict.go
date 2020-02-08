@@ -73,8 +73,12 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 				Central.Log.Debugf("-------<<<< PE/MU Range %s=[%s,%s]", adaType.Name(),
 					fq.fieldRange[0].FormatBuffer(), fq.fieldRange[1].FormatBuffer())
 			} else {
-				newStructure.muRange = *fq.fieldRange[0]
-				Central.Log.Debugf("-------<<<< MU Range %s=%s", adaType.Name(), fq.fieldRange[0].FormatBuffer())
+				newStructure.peRange = *fq.fieldRange[0]
+				Central.Log.Debugf("-------<<<< PE Range %s=%s", adaType.Name(), fq.fieldRange[0].FormatBuffer())
+				if len(fq.fieldRange) > 1 {
+					newStructure.muRange = *fq.fieldRange[1]
+					Central.Log.Debugf("-------<<<< MU Range %s=%s", adaType.Name(), fq.fieldRange[1].FormatBuffer())
+				}
 			}
 		case FieldTypePeriodGroup:
 			newStructure.peRange = *fq.fieldRange[0]
@@ -113,6 +117,9 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 		}
 	} else {
 		newStructure.RemoveFlag(FlagOptionToBeRemoved)
+	}
+	if newStructure.peRange.IsSingleIndex() || newStructure.muRange.IsSingleIndex() {
+		newStructure.AddFlag(FlagOptionSingleIndex)
 	}
 	Central.Log.Debugf("Add structure for active tree %d >%s< remove=%v parent %d >%s<", newStructure.Level(),
 		adaType.Name(), newStructure.HasFlagSet(FlagOptionToBeRemoved), fieldMap.lastStructure.Level(), fieldMap.lastStructure.Name())
@@ -170,9 +177,15 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 			if adaType.HasFlagSet(FlagOptionPE) {
 				t.peRange = *fq.fieldRange[index]
 				index++
+				if adaType.HasFlagSet(FlagOptionMUGhost) {
+					pt := parentType.(*AdaType)
+					pt.peRange = t.peRange
+				}
 			}
 			if len(fq.fieldRange) > index && adaType.HasFlagSet(FlagOptionMUGhost) {
 				t.muRange = *fq.fieldRange[index]
+				pt := parentType.(*AdaType)
+				pt.muRange = t.muRange
 			}
 			Central.Log.Debugf("%s peRange=%s muRange=%s", t.name, t.peRange.FormatBuffer(), t.muRange.FormatBuffer())
 
@@ -288,7 +301,6 @@ func (def *Definition) ShouldRestrictToFields(fields string) (err error) {
 func (def *Definition) RemoveSpecialDescriptors() (err error) {
 	newTypes := make([]IAdaType, 0)
 	for _, s := range def.activeFieldTree.SubTypes {
-		//fmt.Println(s.Name(), s.IsSpecialDescriptor())
 		if !s.IsSpecialDescriptor() {
 			newTypes = append(newTypes, s)
 		}
@@ -307,89 +319,56 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 		for _, f := range field {
 			Central.Log.Debugf("Map new Field %s", f)
 			fl := strings.Trim(f, " ")
-			var re = regexp.MustCompile(`(?P<field>[^\[\(\]\)]+)(\[(?P<if>[\dN]+),?(?P<it>[\dN]*)\])?(\((?P<ps>\d+),(?P<pt>\d+)\))?`)
-			mt := re.FindStringSubmatch(fl)
+			if fl != "" {
+				var re = regexp.MustCompile(`(?P<field>[^\[\(\]\)]+)(\[(?P<if>[\dN]+),?(?P<it>[\dN]*)\])?(\((?P<ps>\d+),(?P<pt>\d+)\))?`)
+				mt := re.FindStringSubmatch(fl)
 
-			// fmt.Printf("FindAllString %#v\n", mt)
-			// fmt.Printf("%q\n", re.SubexpNames())
-			// fmt.Printf("Got %s %s\n--------\n", mt[1], mt[3])
-			fl = mt[1]
-			s := mt[3]
-			// for i, match := range re.FindAllString(fl, -1) {
-			// 	fmt.Printf("Found at index %#v at %d\n", match, i)
-			// }
-			// m := re.FindAllStringSubmatch(fl, -1)
-			// fmt.Printf("%#v\n", re.FindStringSubmatch(fl))
-			// fmt.Printf("SubExpNames %#v\n", re.SubexpNames())
-			// fmt.Printf("%#v\n", m)
-			// fl = m[0][1]
-			// s := m[0][2]
-			t := mt[4]
-			ps := 0
-			pt := 0
-			if fl != "" && !strings.HasPrefix(fl, "#ISN") {
-				rf := false
-				if f[0] == '@' {
-					fl = f[1:]
-					rf = true
-				}
-				Central.Log.Debugf("%s=>%s index=[%s,%s](%d,%d)", f, fl, s, t, ps, pt)
-				fq := &fieldQuery{name: fl, reference: rf}
-				if s != "" {
-					fq.fieldRange = []*AdaRange{NewRangeParser(s)}
-					if t != "" {
-						fq.fieldRange = append(fq.fieldRange, NewRangeParser(t))
+				fl = mt[1]
+				s := mt[3]
+				t := mt[4]
+				ps := 0
+				pt := 0
+				if fl != "" && !strings.HasPrefix(fl, "#ISN") {
+					rf := false
+					if f[0] == '@' {
+						fl = f[1:]
+						rf = true
 					}
-				}
-
-				if mt[6] != "" {
-					var err error
-					ps, err = strconv.Atoi(mt[6])
-					if err != nil {
-						return nil, err
-					}
-					pt, err = strconv.Atoi(mt[7])
-					if err != nil {
-						return nil, err
-					}
-					fq.partialRange = NewRange(ps, pt)
-					Central.Log.Debugf("Partial %d:%d\n", fq.partialRange.from, fq.partialRange.to)
-				}
-				if Central.IsDebugLevel() {
-					r := ""
-					if fq.fieldRange != nil && len(fq.fieldRange) > 0 {
-						if fq.fieldRange[0] == nil {
-							panic("field Range nil")
+					Central.Log.Debugf("%s=>%s index=[%s,%s](%d,%d)", f, fl, s, t, ps, pt)
+					fq := &fieldQuery{name: fl, reference: rf}
+					if s != "" {
+						fq.fieldRange = []*AdaRange{NewRangeParser(s)}
+						if t != "" {
+							fq.fieldRange = append(fq.fieldRange, NewRangeParser(t))
 						}
-						r = fq.fieldRange[0].FormatBuffer()
 					}
-					Central.Log.Debugf("Add to map: %s -> %s reference=%v", fq.name, r, rf)
-				}
-				fieldMap.set[fl] = fq
-			}
 
-			// if fl != "" && !strings.HasPrefix(fl, "#ISN") {
-			// 	rf := false
-			// 	if f[0] == '@' {
-			// 		fl = f[1:]
-			// 		rf = true
-			// 	}
-			// 	b := strings.Index(fl, "[")
-			// 	var r *AdaRange
-			// 	if b > 0 {
-			// 		fn := fl[:b]
-			// 		e := strings.Index(fl, "]")
-			// 		r = NewRangeParser(fl[b+1 : e])
-			// 		if r == nil {
-			// 			return nil, NewGenericError(129, f)
-			// 		}
-			// 		Central.Log.Debugf("Add to map: %s -> %s reference=%v", fn, r.FormatBuffer(), rf)
-			// 		fieldMap.set[fn] = &fieldQuery{name: fn, fieldRange: []*AdaRange{r}, reference: rf}
-			// 	} else {
-			// 		Central.Log.Debugf("Add to map: %s reference=%v", fl, rf)
-			// 		fieldMap.set[fl] = &fieldQuery{name: fl, reference: rf}
-			// 	}
-			// }
+					if mt[6] != "" {
+						var err error
+						ps, err = strconv.Atoi(mt[6])
+						if err != nil {
+							return nil, err
+						}
+						pt, err = strconv.Atoi(mt[7])
+						if err != nil {
+							return nil, err
+						}
+						fq.partialRange = NewRange(ps, pt)
+						Central.Log.Debugf("Partial %d:%d\n", fq.partialRange.from, fq.partialRange.to)
+					}
+					if Central.IsDebugLevel() {
+						r := ""
+						if fq.fieldRange != nil && len(fq.fieldRange) > 0 {
+							if fq.fieldRange[0] == nil {
+								panic("field Range nil")
+							}
+							r = fq.fieldRange[0].FormatBuffer()
+						}
+						Central.Log.Debugf("Add to map: %s -> %s reference=%v", fq.name, r, rf)
+					}
+					fieldMap.set[fl] = fq
+				}
+			}
 		}
 	}
 	fieldMap.parentStructure = NewStructure()

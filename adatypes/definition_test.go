@@ -102,7 +102,7 @@ func TestDefinitionMultiple(t *testing.T) {
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "PM"),
 	}
-	multipleLayout[0].AddFlag(FlagOptionMU)
+	multipleLayout[0].AddFlag(FlagOptionAtomicFB)
 	groupLayout := []IAdaType{
 		NewType(FieldTypeCharacter, "P1"),
 		NewStructureList(FieldTypeMultiplefield, "PM", OccNone, multipleLayout),
@@ -788,7 +788,7 @@ func createLayoutWithPEandMU() *Definition {
 		NewTypeWithLength(FieldTypeString, "PM", 10),
 	}
 	multiplePeriodLayout[0].AddFlag(FlagOptionMUGhost)
-	multiplePeriodLayout[0].AddFlag(FlagOptionMU)
+	multiplePeriodLayout[0].AddFlag(FlagOptionAtomicFB)
 	multipleLayout := []IAdaType{
 		NewType(FieldTypePacked, "GM"),
 	}
@@ -1138,7 +1138,7 @@ func TestDefinitionSingleIndex(t *testing.T) {
 	testDefinition := createLayoutWithPEandMU()
 	err = testDefinition.ShouldRestrictToFieldSlice([]string{"U4", "PM[1]"})
 	assert.NoError(t, err)
-	// testDefinition.DumpTypes(false, true, "PM[1]")
+	testDefinition.DumpTypes(false, true, "PM[1]")
 	// testDefinition.DumpValues(false)
 	req, rerr := testDefinition.CreateAdabasRequest(false, 0, false)
 	if !assert.NoError(t, rerr) {
@@ -1146,7 +1146,7 @@ func TestDefinitionSingleIndex(t *testing.T) {
 		return
 	}
 	// TODO Implement range for partial lob
-	assert.Equal(t, "U4,4,B,PG1C,4,B,PM1(1-N),10,A.", req.FormatBuffer.String())
+	assert.Equal(t, "U4,4,B,PM1C,4,B,PM1(1-N),10,A.", req.FormatBuffer.String())
 }
 
 func TestDefinitionBothIndexes(t *testing.T) {

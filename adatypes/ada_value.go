@@ -168,7 +168,7 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 	Central.Log.Debugf("Common FormatBuffer for %s", adavalue.Type().Name())
 	Central.Log.Debugf("PE flag set=%v Type is MU %v[%v] MU ghost=%v[%v]", adavalue.adatype.HasFlagSet(FlagOptionPE),
 		(adavalue.adatype.Type() == FieldTypeMultiplefield), adavalue.adatype.Type(),
-		adavalue.adatype.HasFlagSet(FlagOptionMUGhost), adavalue.adatype.HasFlagSet(FlagOptionMU))
+		adavalue.adatype.HasFlagSet(FlagOptionMUGhost), adavalue.adatype.HasFlagSet(FlagOptionAtomicFB))
 	// Skip PE fields with MU fields
 	if adavalue.adatype.HasFlagSet(FlagOptionPE) && adavalue.Type().HasFlagSet(FlagOptionMUGhost) {
 		Central.Log.Debugf("Skip ... because PE and MU ghost")
@@ -180,7 +180,7 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 		return adavalue.Type().Length()
 	}
 	if adavalue.adatype.HasFlagSet(FlagOptionPE) {
-		if !adavalue.Type().HasFlagSet(FlagOptionMU) && !adavalue.Type().HasFlagSet(FlagOptionPart) {
+		if !adavalue.Type().HasFlagSet(FlagOptionAtomicFB) && !adavalue.Type().HasFlagSet(FlagOptionPart) {
 			Central.Log.Debugf("Skip ... because PE and not MU")
 			return 0
 		}
@@ -196,7 +196,7 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 		buffer.WriteString("1-N")
 		both = true
 	}
-	Central.Log.Debugf("%s has flag MU %v MU ghost %v period %v", adavalue.Type().Name(), adavalue.Type().HasFlagSet(FlagOptionMU),
+	Central.Log.Debugf("%s has flag MU %v MU ghost %v period %v", adavalue.Type().Name(), adavalue.Type().HasFlagSet(FlagOptionAtomicFB),
 		adavalue.Type().HasFlagSet(FlagOptionMUGhost), adavalue.Type().HasFlagSet(FlagOptionPE))
 	if adavalue.adatype.Type() == FieldTypeMultiplefield {
 		if both {

@@ -330,8 +330,8 @@ func (value *StructureValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 		}
 	}
 	Central.Log.Debugf("Parse structure buffer %s/%s secondCall=%v offset=%d/%X pe=%v mu=%v", value.Type().Name(), value.Type().ShortName(),
-		option.SecondCall, helper.offset, helper.offset, value.adatype.HasFlagSet(FlagOptionPE), value.adatype.HasFlagSet(FlagOptionMU))
-	if value.adatype.HasFlagSet(FlagOptionPE) && value.adatype.HasFlagSet(FlagOptionMU) {
+		option.SecondCall, helper.offset, helper.offset, value.adatype.HasFlagSet(FlagOptionPE), value.adatype.HasFlagSet(FlagOptionAtomicFB))
+	if value.adatype.HasFlagSet(FlagOptionPE) && value.adatype.HasFlagSet(FlagOptionAtomicFB) {
 		return value.parseBufferWithMUPE(helper, option)
 	}
 	return value.parseBufferWithoutMUPE(helper, option)
@@ -681,33 +681,42 @@ func (value *StructureValue) SetValue(v interface{}) error {
 	return nil
 }
 
+func (value *StructureValue) formatBufferSecondCall(buffer *bytes.Buffer, option *BufferOption) uint32 {
+	structureType := value.Type().(*StructureType)
+	if structureType.Type() == FieldTypeMultiplefield && structureType.HasFlagSet(FlagOptionPE) {
+		Central.Log.Debugf("Generate FB for second call [%d,%d]", value.peIndex, value.muIndex)
+		if buffer.Len() > 0 {
+			buffer.WriteString(",")
+		}
+
+		x := value.peIndex
+		r := structureType.muRange.FormatBuffer()
+		buffer.WriteString(fmt.Sprintf("%s%dC,4,B,%s%d(%s),%d",
+			value.Type().ShortName(), x, value.Type().ShortName(), x, r, structureType.SubTypes[0].Length()))
+
+		Central.Log.Debugf("FB of second call %s", buffer.String())
+		return 4 + structureType.SubTypes[0].Length()
+	}
+	Central.Log.Debugf("Skip because second call")
+	return 0
+
+}
+
 // FormatBuffer provide the format buffer of this structure
 func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
 	Central.Log.Debugf("Write FormatBuffer for structure of %s store=%v", value.Type().Name(), option.StoreCall)
-	structureType := value.Type().(*StructureType)
 	if option.SecondCall > 0 {
-		if structureType.Type() == FieldTypeMultiplefield && structureType.HasFlagSet(FlagOptionPE) {
-			Central.Log.Debugf("Generate FB for second call [%d,%d]", value.peIndex, value.muIndex)
-			if buffer.Len() > 0 {
-				buffer.WriteString(",")
-			}
-
-			x := value.peIndex
-			r := structureType.muRange.FormatBuffer()
-			buffer.WriteString(fmt.Sprintf("%s%dC,4,B,%s%d(%s),%d",
-				value.Type().ShortName(), x, value.Type().ShortName(), x, r, structureType.SubTypes[0].Length()))
-
-			Central.Log.Debugf("FB of second call %s", buffer.String())
-			return 4 + structureType.SubTypes[0].Length()
-		}
-		Central.Log.Debugf("Skip because second call")
-		return 0
+		return value.formatBufferSecondCall(buffer, option)
 	}
+	structureType := value.Type().(*StructureType)
 	recordBufferLength := uint32(0)
 	if structureType.NrFields() > 0 {
 		Central.Log.Debugf("Structure FormatBuffer %s type=%d nrFields=%d", value.Type().Name(), value.Type().Type(), structureType.NrFields())
 		switch value.Type().Type() {
 		case FieldTypeMultiplefield:
+			// if structureType.HasFlagSet(FlagOptionSingleIndex) {
+			// 	fmt.Println("FB:", structureType.peRange.FormatBuffer())
+			// }
 			if !option.StoreCall {
 				if buffer.Len() > 0 {
 					buffer.WriteString(",")
@@ -733,9 +742,11 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 				if buffer.Len() > 0 {
 					buffer.WriteString(",")
 				}
-				buffer.WriteString(value.Type().ShortName() + "C,4,B")
+				if !value.Type().HasFlagSet(FlagOptionSingleIndex) {
+					buffer.WriteString(value.Type().ShortName() + "C,4,B")
+				}
 				Central.Log.Debugf("%s Flag option %d %v %d", structureType.Name(), structureType.flags, structureType.HasFlagSet(FlagOptionPart), FlagOptionPart)
-				if !value.Type().HasFlagSet(FlagOptionMU) && !value.Type().HasFlagSet(FlagOptionPart) {
+				if !value.Type().HasFlagSet(FlagOptionAtomicFB) && !value.Type().HasFlagSet(FlagOptionPart) {
 					r := structureType.peRange.FormatBuffer()
 					Central.Log.Debugf("Add generic format buffer field with range %s", r)
 					buffer.WriteString("," + value.Type().ShortName() + r)

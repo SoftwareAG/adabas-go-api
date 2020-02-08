@@ -355,8 +355,8 @@ func createFieldType(fdt *adatypes.StructureValue, index int) (fieldType adatype
 			newType.EditMask = editMask
 			newType.SubOption = subOption
 
-			newType.AddFlag(adatypes.FlagOptionMU)
-			adatypes.Central.Log.Debugf("%s created as MU  on top of the field MU=%v %p", name, newType.HasFlagSet(adatypes.FlagOptionMU), newType)
+			newType.AddFlag(adatypes.FlagOptionAtomicFB)
+			adatypes.Central.Log.Debugf("%s created as MU  on top of the field MU=%v %p", name, newType.HasFlagSet(adatypes.FlagOptionAtomicFB), newType)
 
 			fieldTypes := []adatypes.IAdaType{newType}
 			fieldType = adatypes.NewStructureList(adatypes.FieldTypeMultiplefield, name, adatypes.OccUInt2, fieldTypes)

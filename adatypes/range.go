@@ -150,3 +150,11 @@ func (adaRange *AdaRange) index(pos uint32, max uint32) uint32 {
 	}
 	return pos
 }
+
+// IsSingleIndex is a single index query, although range available
+func (adaRange *AdaRange) IsSingleIndex() bool {
+	if adaRange.from == adaRange.to {
+		return true
+	}
+	return false
+}

@@ -194,32 +194,54 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 	buffer := &(adabasRequest.FormatBuffer)
 	switch adaType.Type() {
 	case FieldTypePeriodGroup:
-		if buffer.Len() > 0 {
-			buffer.WriteString(",")
-		}
-		structureType := adaType.(*StructureType)
-		r := structureType.peRange.FormatBuffer()
-		Central.Log.Debugf("------->>>>>> Range %s=%s%s %p", structureType.name, structureType.shortName, r, structureType)
-		buffer.WriteString(adaType.ShortName() + "C,4,B")
-		adabasRequest.RecordBufferLength += 4
-		if !adaType.HasFlagSet(FlagOptionMU) && !adaType.HasFlagSet(FlagOptionPart) {
-			Central.Log.Debugf("No MU field, use general range group query")
+		if !adaType.HasFlagSet(FlagOptionSingleIndex) {
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")
 			}
-			buffer.WriteString(fmt.Sprintf("%s%s", adaType.ShortName(), r))
-			adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
+			structureType := adaType.(*StructureType)
+			r := structureType.peRange.FormatBuffer()
+			Central.Log.Debugf("------->>>>>> Range %s=%s%s %p", structureType.name, structureType.shortName, r, structureType)
+			buffer.WriteString(adaType.ShortName() + "C,4,B")
+			adabasRequest.RecordBufferLength += 4
+			if !adaType.HasFlagSet(FlagOptionAtomicFB) && !adaType.HasFlagSet(FlagOptionPart) {
+				Central.Log.Debugf("No MU field, use general range group query")
+				if buffer.Len() > 0 {
+					buffer.WriteString(",")
+				}
+				buffer.WriteString(fmt.Sprintf("%s%s", adaType.ShortName(), r))
+				adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
+			}
 		}
+
 	case FieldTypeMultiplefield:
 		if adaType.HasFlagSet(FlagOptionPE) {
 			// structureType := adaType.(*StructureType)
 			// r := structureType.peRange.FormatBuffer()
 			// buffer.WriteString(adaType.ShortName() + r + "C,4,B")
+			if adaType.HasFlagSet(FlagOptionSingleIndex) {
+				structureType := adaType.(*StructureType)
+				// fmt.Println("PE Range:", structureType.peRange.FormatBuffer())
+				// fmt.Println("MU Range:", structureType.muRange.FormatBuffer())
+				if buffer.Len() > 0 {
+					buffer.WriteString(",")
+				}
+				at := structureType.SubTypes[0]
+				if !at.MultipleRange().IsSingleIndex() {
+					buffer.WriteString(adaType.ShortName() + structureType.peRange.FormatBuffer() + "C,4,B,")
+				}
+				buffer.WriteString(fmt.Sprintf("%s%s(%s),%d,%s",
+					at.ShortName(), at.PeriodicRange().FormatBuffer(), at.MultipleRange().FormatBuffer(),
+					at.Length(), at.Type().FormatCharacter()))
+			}
 		} else {
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")
 			}
-			buffer.WriteString(adaType.ShortName() + "C,4,B")
+			structureType := adaType.(*StructureType)
+			at := structureType.SubTypes[0]
+			if !at.MultipleRange().IsSingleIndex() {
+				buffer.WriteString(adaType.ShortName() + "C,4,B")
+			}
 		}
 		adabasRequest.RecordBufferLength += 4
 		if !adaType.HasFlagSet(FlagOptionPE) {
@@ -253,7 +275,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 	default:
 		if !adaType.IsStructure() {
 			if !adaType.HasFlagSet(FlagOptionMUGhost) && (!adaType.HasFlagSet(FlagOptionPE) ||
-				(adaType.HasFlagSet(FlagOptionPE) && (adaType.HasFlagSet(FlagOptionMU) || adaType.HasFlagSet(FlagOptionPart)))) {
+				(adaType.HasFlagSet(FlagOptionPE) && (adaType.HasFlagSet(FlagOptionAtomicFB) || adaType.HasFlagSet(FlagOptionPart)))) {
 				if buffer.Len() > 0 {
 					buffer.WriteString(",")
 				}

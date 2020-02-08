@@ -328,7 +328,7 @@ func adaptParentReference(adaType IAdaType, parentType IAdaType, level int, x in
 	if adaType.Type() == FieldTypeMultiplefield {
 		p := adaType.GetParent()
 		for p != nil {
-			p.AddFlag(FlagOptionMU)
+			p.AddFlag(FlagOptionAtomicFB)
 			p = p.GetParent()
 		}
 	}
@@ -353,15 +353,15 @@ func adaptFlags(adaType IAdaType, parentType IAdaType, level int, x interface{})
 			currentType := parentType
 			for currentType != nil {
 				Central.Log.Debugf("%s: Set MU flag", currentType.Name())
-				currentType.AddFlag(FlagOptionMU)
+				currentType.AddFlag(FlagOptionAtomicFB)
 				// TODO Adapt current type to adapt parent information
 				currentType = currentType.GetParent()
 			}
 		}
-		if adaType.HasFlagSet(FlagOptionMU) && adaType.IsStructure() {
+		if adaType.HasFlagSet(FlagOptionAtomicFB) && adaType.IsStructure() {
 			structureType := adaType.(*StructureType)
 			for _, t := range structureType.SubTypes {
-				t.AddFlag(FlagOptionMU)
+				t.AddFlag(FlagOptionAtomicFB)
 			}
 
 		}

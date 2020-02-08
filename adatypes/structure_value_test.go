@@ -160,13 +160,13 @@ func TestStructureValuePeriodMU(t *testing.T) {
 		l.AddFlag(FlagOptionMUGhost)
 		if l.Type() == FieldTypeMultiplefield {
 			s := l.(*StructureType)
-			l.AddFlag(FlagOptionMU)
+			l.AddFlag(FlagOptionAtomicFB)
 			s.occ = OccCapacity
 		}
 	}
 	sl := NewStructureList(FieldTypePeriodGroup, "PE", OccByte, groupLayout)
 	sl.AddFlag(FlagOptionMUGhost)
-	sl.AddFlag(FlagOptionMU)
+	sl.AddFlag(FlagOptionAtomicFB)
 	assert.Equal(t, "PE", sl.Name())
 	assert.Equal(t, " 1, PE ,PE ; PE", sl.String())
 	v, err := sl.Value()
