@@ -305,6 +305,7 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 	fieldMap.stackStructure = NewStack()
 	if len(field) != 0 {
 		for _, f := range field {
+			Central.Log.Debugf("Map new Field %s", f)
 			fl := strings.Trim(f, " ")
 			var re = regexp.MustCompile(`(?P<field>[^\[\(\]\)]+)(\[(?P<if>[\dN]+),?(?P<it>[\dN]*)\])?(\((?P<ps>\d+),(?P<pt>\d+)\))?`)
 			mt := re.FindStringSubmatch(fl)
