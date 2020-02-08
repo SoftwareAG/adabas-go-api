@@ -279,8 +279,8 @@ func (def *Definition) ShouldRestrictToFields(fields string) (err error) {
 		for _, f := range mt {
 			field = append(field, f[1])
 		}
-		//field = strings.Split(fields, ",")
 	}
+	Central.Log.Debugf("Split field into slice to %#v", field)
 	return def.ShouldRestrictToFieldSlice(field)
 }
 
