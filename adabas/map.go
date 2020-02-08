@@ -150,7 +150,9 @@ func (adabasMap *Map) addFields(shortName string, longName string) *MapField {
 func (adabasMap *Map) FieldNames() []string {
 	fields := make([]string, 0)
 	for _, f := range adabasMap.Fields {
-		fields = append(fields, f.LongName)
+		if strings.Trim(f.LongName, " ") != "" {
+			fields = append(fields, f.LongName)
+		}
 	}
 	return fields
 }
