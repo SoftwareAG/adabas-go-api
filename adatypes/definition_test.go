@@ -828,7 +828,7 @@ func TestDefinitionRestrictPeriodicWithMU(t *testing.T) {
 	request, err := testDefinition.CreateAdabasRequest(false, 0, false)
 	assert.Nil(t, err)
 
-	assert.Equal(t, "U4,4,B,PGC,4,B,PG1-N.",
+	assert.Equal(t, "U4,4,B,PGC,4,B,GC1-N,1,A,GS1-N,1,A,GP1-N,1,P.",
 		request.FormatBuffer.String())
 	testDefinition.DumpTypes(false, true)
 }

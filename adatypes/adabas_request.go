@@ -194,6 +194,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 	buffer := &(adabasRequest.FormatBuffer)
 	switch adaType.Type() {
 	case FieldTypePeriodGroup:
+		Central.Log.Debugf(" FOSI: %v",adaType.HasFlagSet(FlagOptionSingleIndex))
 		if !adaType.HasFlagSet(FlagOptionSingleIndex) {
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")

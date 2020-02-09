@@ -118,9 +118,19 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 	} else {
 		newStructure.RemoveFlag(FlagOptionToBeRemoved)
 	}
-	if newStructure.peRange.IsSingleIndex() || newStructure.muRange.IsSingleIndex() {
+	switch {
+	case newStructure.peRange.IsSingleIndex() && newStructure.Type() == FieldTypePeriodGroup:
 		newStructure.AddFlag(FlagOptionSingleIndex)
+	case newStructure.muRange.IsSingleIndex() && newStructure.Type() == FieldTypeMultiplefield:
+		newStructure.AddFlag(FlagOptionSingleIndex)
+	default:
 	}
+	//	if newStructure.peRange.IsSingleIndex() || newStructure.muRange.IsSingleIndex() {
+	Central.Log.Debugf("%s: set flag single index pe=%v(%s) mu=%v(%s)", adaType.Name(),
+		newStructure.peRange.IsSingleIndex(), newStructure.peRange.FormatBuffer(),
+		newStructure.muRange.IsSingleIndex(), newStructure.muRange.FormatBuffer())
+	//		newStructure.AddFlag(FlagOptionSingleIndex)
+	//	}
 	Central.Log.Debugf("Add structure for active tree %d >%s< remove=%v parent %d >%s<", newStructure.Level(),
 		adaType.Name(), newStructure.HasFlagSet(FlagOptionToBeRemoved), fieldMap.lastStructure.Level(), fieldMap.lastStructure.Name())
 	fieldMap.lastStructure = newStructure
