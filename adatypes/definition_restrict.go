@@ -197,9 +197,9 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 				pt := parentType.(*AdaType)
 				pt.muRange = t.muRange
 			}
-			Central.Log.Debugf("%s peRange=%s muRange=%s", t.name, t.peRange.FormatBuffer(), t.muRange.FormatBuffer())
-
 		}
+		Central.Log.Debugf("%s peRange=%s muRange=%s",
+			adaType.Name(), adaType.PeriodicRange().FormatBuffer(), adaType.MultipleRange().FormatBuffer())
 
 		// Skip MU field type if parent is not available
 		if parentType.Type() == FieldTypeMultiplefield && fieldMap.lastStructure.Name() != parentType.Name() {

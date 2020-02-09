@@ -194,7 +194,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 	buffer := &(adabasRequest.FormatBuffer)
 	switch adaType.Type() {
 	case FieldTypePeriodGroup:
-		Central.Log.Debugf(" FOSI: %v",adaType.HasFlagSet(FlagOptionSingleIndex))
+		Central.Log.Debugf(" FOSI: %v", adaType.HasFlagSet(FlagOptionSingleIndex))
 		if !adaType.HasFlagSet(FlagOptionSingleIndex) {
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")
@@ -235,12 +235,14 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 					at.Length(), at.Type().FormatCharacter()))
 			}
 		} else {
-			if buffer.Len() > 0 {
-				buffer.WriteString(",")
-			}
 			structureType := adaType.(*StructureType)
 			at := structureType.SubTypes[0]
-			if !at.MultipleRange().IsSingleIndex() {
+			Central.Log.Debugf("Multiple range FB CS: %s", structureType.MultipleRange().FormatBuffer())
+			Central.Log.Debugf("Multiple range FB C: %s", at.MultipleRange().FormatBuffer())
+			if !structureType.MultipleRange().IsSingleIndex() {
+				if buffer.Len() > 0 {
+					buffer.WriteString(",")
+				}
 				buffer.WriteString(adaType.ShortName() + "C,4,B")
 			}
 		}
@@ -252,7 +254,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			strType := adaType.(*StructureType)
 			subType := strType.SubTypes[0]
 			r := strType.muRange.FormatBuffer()
-			Central.Log.Debugf("Multiple range: %s", r)
+			Central.Log.Debugf("Multiple range FB: %s", r)
 			buffer.WriteString(fmt.Sprintf("%s%s,%d,%s", adaType.ShortName(), r, subType.Length(), subType.Type().FormatCharacter()))
 			adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
 		}
