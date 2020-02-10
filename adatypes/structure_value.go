@@ -340,6 +340,9 @@ func (value *StructureValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 // Evaluate the occurrence of the structure
 func (value *StructureValue) evaluateOccurrence(helper *BufferHelper) (occNumber int, err error) {
 	subStructureType := value.adatype.(*StructureType)
+	if subStructureType.HasFlagSet(FlagOptionSingleIndex) {
+		return 1, nil
+	}
 	occNumber = math.MaxInt32
 	Central.Log.Debugf("Current structure occurrence %d", subStructureType.occ)
 	if subStructureType.occ > 0 {

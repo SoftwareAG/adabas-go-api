@@ -73,9 +73,10 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 				Central.Log.Debugf("-------<<<< PE/MU Range %s=[%s,%s]", adaType.Name(),
 					fq.fieldRange[0].FormatBuffer(), fq.fieldRange[1].FormatBuffer())
 			} else {
-				newStructure.peRange = *fq.fieldRange[0]
+				newStructure.muRange = *fq.fieldRange[0]
 				Central.Log.Debugf("-------<<<< PE Range %s=%s", adaType.Name(), fq.fieldRange[0].FormatBuffer())
 				if len(fq.fieldRange) > 1 {
+					newStructure.peRange = *fq.fieldRange[0]
 					newStructure.muRange = *fq.fieldRange[1]
 					Central.Log.Debugf("-------<<<< MU Range %s=%s", adaType.Name(), fq.fieldRange[1].FormatBuffer())
 				}
