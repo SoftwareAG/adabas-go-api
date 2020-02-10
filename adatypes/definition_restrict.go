@@ -119,7 +119,7 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 		newStructure.RemoveFlag(FlagOptionToBeRemoved)
 	}
 	switch {
-	case newStructure.peRange.IsSingleIndex() && newStructure.Type() == FieldTypePeriodGroup:
+	case newStructure.peRange.IsSingleIndex():
 		newStructure.AddFlag(FlagOptionSingleIndex)
 	case newStructure.muRange.IsSingleIndex() && newStructure.Type() == FieldTypeMultiplefield:
 		newStructure.AddFlag(FlagOptionSingleIndex)

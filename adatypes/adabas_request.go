@@ -216,10 +216,12 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 
 	case FieldTypeMultiplefield:
 		if adaType.HasFlagSet(FlagOptionPE) {
-			// structureType := adaType.(*StructureType)
+			structureType := adaType.(*StructureType)
 			// r := structureType.peRange.FormatBuffer()
 			// buffer.WriteString(adaType.ShortName() + r + "C,4,B")
-			if adaType.HasFlagSet(FlagOptionSingleIndex) {
+			Central.Log.Debugf("Periodic range FB PE CS: %s", structureType.PeriodicRange().FormatBuffer())
+			Central.Log.Debugf("Multiple range FB PE CS: %s", structureType.MultipleRange().FormatBuffer())
+			if adaType.PeriodicRange().IsSingleIndex() {
 				structureType := adaType.(*StructureType)
 				// fmt.Println("PE Range:", structureType.peRange.FormatBuffer())
 				// fmt.Println("MU Range:", structureType.muRange.FormatBuffer())
@@ -258,6 +260,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			buffer.WriteString(fmt.Sprintf("%s%s,%d,%s", adaType.ShortName(), r, subType.Length(), subType.Type().FormatCharacter()))
 			adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
 		}
+		Central.Log.Debugf("FB MU %s", buffer.String())
 	case FieldTypeSuperDesc, FieldTypeHyperDesc:
 		if !adaType.IsOption(FieldOptionPE) {
 			if buffer.Len() > 0 {
