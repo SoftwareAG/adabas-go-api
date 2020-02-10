@@ -1765,3 +1765,49 @@ func TestConnectionAndSearchMap(t *testing.T) {
 	}
 
 }
+
+func TestConnectionOsMap(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, cerr := NewConnection("acj;map;config=[24,4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if assert.NoError(t, err) {
+		fmt.Println("Limit query data:")
+		err = request.QueryFields("*")
+		assert.NoError(t, err)
+		request.Limit = 20
+		fmt.Println("Read logigcal data:")
+		result, err := request.ReadLogicalBy("PERSONNEL-ID")
+		if !assert.NoError(t, err) {
+			return
+		}
+		result.DumpValues()
+		fmt.Println("Check size ...", len(result.Values))
+		if assert.Equal(t, 20, len(result.Values)) {
+			ae := result.Values[1].HashFields["NAME"]
+			fmt.Println("Check SCHIRM ...")
+			assert.Equal(t, "SCHIRM", strings.TrimSpace(ae.String()))
+			ei64, xErr := ae.Int64()
+			assert.Error(t, xErr, "Error should be send if value is string")
+			assert.Equal(t, int64(0), ei64)
+			ae = result.Values[19].HashFields["NAME"]
+			fmt.Println("Check BLAU ...")
+			assert.Equal(t, "BLAU", strings.TrimSpace(ae.String()))
+			validateResult(t, "osallread", result)
+		}
+	}
+
+}

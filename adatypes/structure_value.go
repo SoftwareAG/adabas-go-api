@@ -341,6 +341,7 @@ func (value *StructureValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 func (value *StructureValue) evaluateOccurrence(helper *BufferHelper) (occNumber int, err error) {
 	subStructureType := value.adatype.(*StructureType)
 	if subStructureType.HasFlagSet(FlagOptionSingleIndex) {
+		Central.Log.Debugf("Single index occurence only 1")
 		return 1, nil
 	}
 	occNumber = math.MaxInt32

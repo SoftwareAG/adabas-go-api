@@ -125,9 +125,11 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 		newStructure.RemoveFlag(FlagOptionToBeRemoved)
 	}
 	switch {
-	case newStructure.peRange.IsSingleIndex():
+	case newStructure.peRange.IsSingleIndex() && newStructure.HasFlagSet(FlagOptionPE):
+		Central.Log.Debugf("%s/%s: set single index due to PE range", newStructure.Name(), newStructure.ShortName())
 		newStructure.AddFlag(FlagOptionSingleIndex)
 	case newStructure.muRange.IsSingleIndex() && newStructure.Type() == FieldTypeMultiplefield:
+		Central.Log.Debugf("%s/%s: set single index due to MU range and Type MU", newStructure.Name(), newStructure.ShortName())
 		newStructure.AddFlag(FlagOptionSingleIndex)
 	default:
 	}
