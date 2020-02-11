@@ -75,14 +75,21 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 			} else {
 				if adaType.HasFlagSet(FlagOptionPE) {
 					newStructure.peRange = *fq.fieldRange[0]
+					st := newStructure.SubTypes[0].(*AdaType)
+					st.peRange = *fq.fieldRange[0]
 				} else {
 					newStructure.muRange = *fq.fieldRange[0]
+					st := newStructure.SubTypes[0].(*AdaType)
+					st.muRange = *fq.fieldRange[0]
 				}
 				Central.Log.Debugf("-------<<<< PE Range %s=%s -> %v", adaType.Name(), fq.fieldRange[0].FormatBuffer(),
 					adaType.HasFlagSet(FlagOptionPE))
 				if len(fq.fieldRange) > 1 {
 					newStructure.peRange = *fq.fieldRange[0]
+					st := newStructure.SubTypes[0].(*AdaType)
+					st.peRange = *fq.fieldRange[0]
 					newStructure.muRange = *fq.fieldRange[1]
+					st.muRange = *fq.fieldRange[1]
 					Central.Log.Debugf("-------<<<< MU Range %s=%s", adaType.Name(), fq.fieldRange[1].FormatBuffer())
 				}
 			}

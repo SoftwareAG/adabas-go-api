@@ -125,8 +125,8 @@ func evaluateFieldNames(adaValue IAdaValue, x interface{}) (TraverseResult, erro
 	Central.Log.Debugf("Evaluate field %s", adaValue.Type().Name())
 	if adaValue.Type().IsStructure() {
 		if adaValue.Type().Type() == FieldTypeMultiplefield {
-			if efns.second == 0 && adaValue.Type().HasFlagSet(FlagOptionPE) {
-				Central.Log.Debugf("Skip PE/multiple field %s in first call", adaValue.Type().Name())
+			if efns.second == 0 && adaValue.Type().HasFlagSet(FlagOptionPE) && !adaValue.Type().PeriodicRange().IsSingleIndex() {
+				Central.Log.Debugf("Skip PE/multiple field %s in first call (%s)", adaValue.Type().Name(), adaValue.Type().PeriodicRange().FormatBuffer())
 				efns.needSecond = ReadSecond
 				return SkipTree, nil
 			} else if _, ok := efns.namesMap[adaValue.Type().Name()]; !ok {
@@ -144,6 +144,7 @@ func evaluateFieldNames(adaValue IAdaValue, x interface{}) (TraverseResult, erro
 			}
 		}
 	}
+	Central.Log.Debugf("EFNS need second call %d", efns.needSecond)
 	return Continue, nil
 }
 
@@ -251,18 +252,20 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 			//v.setPeriodIndex(uint32(i + 1))
 			if v.Type().IsStructure() {
 				st := v.Type().(*StructureType)
-				if st.Type() == FieldTypeMultiplefield && st.HasFlagSet(FlagOptionPE) {
+				if st.Type() == FieldTypeMultiplefield && st.HasFlagSet(FlagOptionPE) && !st.PeriodicRange().IsSingleIndex() {
 					Central.Log.Debugf("Skip %s PE=%d", st.Name(), v.PeriodIndex())
 					if option.NeedSecondCall = ReadSecond; option.StoreCall {
 						option.NeedSecondCall = StoreSecond
 					}
+					Central.Log.Debugf("Parse PG: need second call %d", option.NeedSecondCall)
 				} else {
 					nrMu, nrMerr := helper.ReceiveUInt32()
 					if nrMerr != nil {
 						err = nrMerr
 						return
 					}
-					Central.Log.Debugf("Got Nr of Multiple Fields = %d creating them ... for %d", nrMu, v.PeriodIndex())
+					Central.Log.Debugf("Got Nr of Multiple Fields = %d creating them ... for %d (%s/%s)",
+						nrMu, v.PeriodIndex(), st.PeriodicRange().FormatBuffer(), st.MultipleRange().FormatBuffer())
 					/* Initialize MU elements dependent on the counter result */
 					for muIndex := uint32(0); muIndex < nrMu; muIndex++ {
 						muStructureType := v.Type().(*StructureType)
@@ -278,10 +281,18 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 						//sv.setPeriodIndex(uint32(i + 1))
 						sv.setPeriodIndex(v.PeriodIndex())
 						muStructure.addValue(sv, muIndex)
-						Central.Log.Debugf("MU index %d,%d -> %d", sv.PeriodIndex(), sv.MultipleIndex(), i)
-						Central.Log.Debugf("Due to Period and MU field, need second call call (PE/MU) for %s", value.Type().Name())
-						if option.NeedSecondCall = ReadSecond; option.StoreCall {
-							option.NeedSecondCall = StoreSecond
+						if st.PeriodicRange().IsSingleIndex() {
+							_, err = sv.parseBuffer(helper, option)
+							if err != nil {
+								return
+							}
+						} else {
+							Central.Log.Debugf("MU index %d,%d -> %d", sv.PeriodIndex(), sv.MultipleIndex(), i)
+							Central.Log.Debugf("Due to Period and MU field, need second call call (PE/MU) for %s", value.Type().Name())
+							if option.NeedSecondCall = ReadSecond; option.StoreCall {
+								option.NeedSecondCall = StoreSecond
+							}
+							Central.Log.Debugf("Parse PG2: need second call %d", option.NeedSecondCall)
 						}
 					}
 				}

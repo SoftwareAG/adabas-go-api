@@ -233,6 +233,7 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 			if option.NeedSecondCall = ReadSecond; option.StoreCall {
 				option.NeedSecondCall = StoreSecond
 			}
+			Central.Log.Debugf("ULOB: need second call %d", option.NeedSecondCall)
 		default:
 		}
 		if Central.IsDebugLevel() {
