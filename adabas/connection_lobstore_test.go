@@ -20,14 +20,16 @@
 package adabas
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
 
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
 )
 
-const BlockSize = 4096
+const BlockSize = adatypes.PartialStoreLobSizeChunks
 
 func TestConnectionStorePartial(t *testing.T) {
 	initTestLogWithFile(t, "connection_lobstore.log")
@@ -121,10 +123,21 @@ func TestConnectionStorePartialStream(t *testing.T) {
 	x, ferr := ioutil.ReadFile(name)
 	if assert.NoError(t, ferr) {
 		blockBegin := uint32(0)
-		err = record.SetPartialValue("RA", blockBegin, x[blockBegin:blockBegin+BlockSize])
-		assert.NoError(t, err)
-		//record.DumpValues()
-		err = storeRequest.Update(record)
-		assert.NoError(t, err)
+		for i := blockBegin; i < uint32(len(x)); i += BlockSize {
+			e := i + BlockSize
+			if e > uint32(len(x)) {
+				e = uint32(len(x))
+			}
+			fmt.Println("Write block", i, e, len(x))
+			err = record.SetPartialValue("RA", i+1, x[i:e])
+			if !assert.NoError(t, err) {
+				return
+			}
+			err = storeRequest.Update(record)
+			if !assert.NoError(t, err) {
+				return
+			}
+
+		}
 	}
 }

@@ -199,17 +199,24 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			}
 		}
 	} else {
-		recLength = value.commonFormatBuffer(buffer, option)
-		Central.Log.Debugf("String value format buffer length for %s -> %d", value.Type().ShortName(), recLength)
-		if recLength == 0 {
-			switch value.adatype.Type() {
-			case FieldTypeLAString:
-				recLength = 1114
-			case FieldTypeLBString:
-				recLength = 16381
-			default:
-				recLength = 253
+		if value.partial != nil {
+			Central.Log.Debugf("Generate partial format buffer")
+			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), value.partial[0], value.partial[1]))
+			recLength = value.partial[1]
+		} else {
+			recLength = value.commonFormatBuffer(buffer, option)
+			Central.Log.Debugf("String value format buffer length for %s -> %d", value.Type().ShortName(), recLength)
+			if recLength == 0 {
+				switch value.adatype.Type() {
+				case FieldTypeLAString:
+					recLength = 1114
+				case FieldTypeLBString:
+					recLength = 16381
+				default:
+					recLength = 253
+				}
 			}
+
 		}
 	}
 	return recLength
