@@ -98,6 +98,8 @@ func traverseDumpRecord(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Tr
 	// if x == nil {
 	buffer := x.(*bytes.Buffer)
 	brackets := ""
+	adatypes.Central.Log.Debugf("Dump record %s(%s) %d,%d", adaValue.Type().Name(), adaValue.Type().Type(),
+		adaValue.PeriodIndex(), adaValue.MultipleIndex())
 	switch {
 	case adaValue.PeriodIndex() > 0 && adaValue.MultipleIndex() > 0:
 		switch {
@@ -111,7 +113,7 @@ func traverseDumpRecord(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Tr
 			brackets = fmt.Sprintf("[%02d,%02d]", adaValue.PeriodIndex(), adaValue.MultipleIndex())
 		}
 	case adaValue.PeriodIndex() > 0:
-		if adaValue.Type().PeriodicRange().IsSingleIndex() {
+		if adaValue.Type().HasFlagSet(adatypes.FlagOptionPE) && adaValue.Type().PeriodicRange().IsSingleIndex() {
 			brackets = fmt.Sprintf("[%2s]", adaValue.Type().PeriodicRange().FormatBuffer())
 		} else {
 			brackets = fmt.Sprintf("[%02d]", adaValue.PeriodIndex())

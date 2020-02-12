@@ -153,6 +153,13 @@ func (adaRange *AdaRange) index(pos uint32, max uint32) uint32 {
 
 // IsSingleIndex is a single index query, although range available
 func (adaRange *AdaRange) IsSingleIndex() bool {
+	//Central.Log.Debugf("%d to %d", adaRange.from, adaRange.to)
+	if adaRange.from == 0 && adaRange.to == 0 {
+		return false
+	}
+	if adaRange.from == noEntry {
+		return false
+	}
 	if adaRange.from == adaRange.to {
 		return true
 	}
