@@ -127,4 +127,5 @@ ADG0000130=End of cursor
 ADG0000131=Driver not supported
 ADG0000132=Incorrect repository reference, use comma separated definition like <dbid>,<fnr>
 ADG0000133=Update record error: {0}
+ADG0000134=Wrong field type of {0}, partial lobs are only used with larg object alpha fields
 ADG0000150=Cannot scan value for type {0}

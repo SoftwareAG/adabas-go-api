@@ -231,6 +231,22 @@ func (record *Record) SetValueWithIndex(name string, index []uint32, x interface
 	return record.definition.SetValueWithIndex(name, index, x)
 }
 
+// SetPartialValue set the value for a partial part of a lob field
+func (record *Record) SetPartialValue(name string, offset uint32, data []byte) (err error) {
+	v, verr := record.SearchValue(name)
+	if verr != nil {
+		return verr
+	}
+	if v.Type().Type() != adatypes.FieldTypeLBString {
+		return adatypes.NewGenericError(134, v.Type().Name())
+	}
+	av := v.(adatypes.PartialValue)
+	v.SetValue(data)
+	av.SetPartial(offset, uint32(len(data)))
+
+	return nil
+}
+
 func extractIndex(name string) []uint32 {
 	var index []uint32
 	var re = regexp.MustCompile(`(?m)(\w+(\[(\d+),?(\d+)?\])?)`)

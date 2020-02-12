@@ -32,11 +32,17 @@ const PartialLobSize = 4096
 // PartialStoreLobSizeChunks chunk size storing lobs
 const PartialStoreLobSizeChunks = 4096 * 10
 
+// PartialValue partial value definition
+type PartialValue interface {
+	SetPartial(x, y uint32)
+}
+
 // stringValue string structure
 type stringValue struct {
 	adaValue
 	value   []byte
 	lobSize uint32
+	partial []uint32
 }
 
 func newStringValue(initType IAdaType) *stringValue {
@@ -410,4 +416,8 @@ func (value *stringValue) UInt64() (uint64, error) {
 }
 func (value *stringValue) Float() (float64, error) {
 	return 0, NewGenericError(105, value.Type().Name(), "64-bit float")
+}
+
+func (value *stringValue) SetPartial(x, y uint32) {
+	value.partial = []uint32{x, y}
 }
