@@ -320,7 +320,7 @@ func ExampleConnection_multiplefieldIndex() {
 
 }
 
-func XExampleConnectionSingleIndex() {
+func ExampleConnection_singleIndex() {
 	initLogWithFile("connection.log")
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
@@ -361,10 +361,12 @@ func XExampleConnectionSingleIndex() {
 	// Record Isn: 0252
 	//   PERSONNEL-ID = > 11100303 <
 	//   INCOME = [ 1 ]
-	//    BONUS[03] = [ 1 ]
-	//     BONUS[03,01] = > 1282 <
+	//    BONUS[ 3] = [ 1 ]
+	//     BONUS[ 3, 1] = > 1282 <
 	// Record Isn: 0253
 	//   PERSONNEL-ID = > 11100304 <
-	//   INCOME = [ 0 ]
+	//   INCOME = [ 1 ]
+	//    BONUS[ 3] = [ 1 ]
+	//     BONUS[ 3, 1] = > 0 <
 
 }

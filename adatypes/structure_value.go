@@ -179,12 +179,11 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		occNumber = value.NrElements()
 		Central.Log.Debugf("Second call use available occurrence %d Type %s", occNumber, value.Type().Type().name())
 	} else {
-		Central.Log.Debugf("Second call evaluate available Type %s", value.Type().Type().name())
 		occNumber, err = value.evaluateOccurrence(helper)
 		if err != nil {
 			return
 		}
-		Central.Log.Debugf("Second call got occurrence %d available Type %s", occNumber, value.Type().Type().name())
+		Central.Log.Debugf("Call got occurrence %d available Type %s", occNumber, value.Type().Type().name())
 	}
 	Central.Log.Debugf("PE occurrence %s has %d entries pos=%d", value.Type().Name(), occNumber, helper.offset)
 	if occNumber > 0 {
@@ -259,10 +258,12 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 					}
 					Central.Log.Debugf("Parse PG: need second call %d", option.NeedSecondCall)
 				} else {
-					nrMu, nrMerr := helper.ReceiveUInt32()
-					if nrMerr != nil {
-						err = nrMerr
-						return
+					nrMu := uint32(1)
+					if !st.MultipleRange().IsSingleIndex() {
+						nrMu, err = helper.ReceiveUInt32()
+						if err != nil {
+							return
+						}
 					}
 					Central.Log.Debugf("Got Nr of Multiple Fields = %d creating them ... for %d (%s/%s)",
 						nrMu, v.PeriodIndex(), st.PeriodicRange().FormatBuffer(), st.MultipleRange().FormatBuffer())
