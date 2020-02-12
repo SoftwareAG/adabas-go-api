@@ -311,12 +311,12 @@ func ExampleConnection_multiplefieldIndex() {
 	//   PERSONNEL-ID = > 11100303 <
 	//   FULL-ADDRESS = [ 1 ]
 	//    ADDRESS-LINE = [ 1 ]
-	//     ADDRESS-LINE[02] = > WIESENGRUND 10       <
+	//     ADDRESS-LINE[ 2] = > WIESENGRUND 10       <
 	// Record Isn: 0253
 	//   PERSONNEL-ID = > 11100304 <
 	//   FULL-ADDRESS = [ 1 ]
 	//    ADDRESS-LINE = [ 1 ]
-	//     ADDRESS-LINE[02] = > MANDELA-WEG 8        <
+	//     ADDRESS-LINE[ 2] = > MANDELA-WEG 8        <
 
 }
 
