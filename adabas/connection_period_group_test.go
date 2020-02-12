@@ -255,17 +255,17 @@ func ExampleConnection_periodGroupLastEntry() {
 	// Record Isn: 0252
 	//   PERSONNEL-ID = > 11100303 <
 	//   INCOME = [ 1 ]
-	//    CURR-CODE[03] = > EUR <
-	//    SALARY[03] = > 20307 <
-	//    BONUS[03] = [ 1 ]
-	//     BONUS[03,01] = > 1282 <
+	//    CURR-CODE[ N] = > EUR <
+	//    SALARY[ N] = > 20307 <
+	//    BONUS[ N] = [ 1 ]
+	//     BONUS[ N,01] = > 1282 <
 	// Record Isn: 0253
 	//   PERSONNEL-ID = > 11100304 <
 	//   INCOME = [ 1 ]
-	//    CURR-CODE[02] = > EUR <
-	//    SALARY[02] = > 24102 <
-	//    BONUS[02] = [ 1 ]
-	//     BONUS[02,01] = > 1948 <
+	//    CURR-CODE[ N] = > EUR <
+	//    SALARY[ N] = > 24102 <
+	//    BONUS[ N] = [ 1 ]
+	//     BONUS[ N,01] = > 1948 <
 
 }
 
