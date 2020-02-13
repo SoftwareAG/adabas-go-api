@@ -235,3 +235,46 @@ func TestConnectionStorePartialStream(t *testing.T) {
 	}
 	verifyReadWithStream(t, isn, x)
 }
+
+func TestReadLogicalWithCursoring_LOB(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection_cursoring.log")
+
+	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
+	if !assert.NoError(t, cerr) {
+		fmt.Println("Error creating new connection", cerr)
+		return
+	}
+	defer connection.Close()
+	request, rerr := connection.CreateFileReadRequest(17)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error creating map read request", rerr)
+		return
+	}
+	fmt.Println("Init stream ...")
+	col, cerr := request.ReadLobStream("", "RA")
+	if !assert.NoError(t, cerr) {
+		fmt.Println("Error reading stream with using cursoring", cerr)
+		return
+	}
+	fmt.Println("Read next cursor record...")
+	counter := 0
+	for col.HasNextRecord() {
+		record, rerr := col.NextRecord()
+		if record == nil {
+			fmt.Println("Record nil received")
+			return
+		}
+		counter++
+		if !assert.NoError(t, rerr) {
+			fmt.Println("Error reading logical with using cursoring", rerr)
+			return
+		}
+		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
+	}
+	assert.Equal(t, 1107, counter)
+	fmt.Println("Last cursor record read")
+
+}

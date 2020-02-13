@@ -875,5 +875,6 @@ var statisMessages = []struct {
 	{"ADG0000132", "en", "Incorrect repository reference, use comma separated definition like <dbid>,<fnr>"},
 	{"ADG0000133", "en", "Update record error: {0}"},
 	{"ADG0000134", "en", "Wrong field type of {0}, partial lobs are only used with larg object alpha fields"},
+	{"ADG0000135", "en", "Error length {0} of value and partial definition ({1}) don't match"},
 	{"ADG0000150", "en", "Cannot scan value for type {0}"},
 }

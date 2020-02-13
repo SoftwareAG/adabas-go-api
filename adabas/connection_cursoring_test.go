@@ -20,6 +20,10 @@ package adabas
 
 import (
 	"fmt"
+	"testing"
+
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
+	"github.com/stretchr/testify/assert"
 )
 
 func ExampleReadRequest_ReadLogicalWithCursoring() {
@@ -199,5 +203,51 @@ func ExampleReadRequest_readLogicalWithCursoringLimit() {
 	//   PERSONNEL-ID = > 11100118 <
 	//   FULL-NAME = [ 1 ]
 	//    NAME = > WAGNER               <
+
+}
+
+func TestReadLogicalWithCursoring(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection_cursoring.log")
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		fmt.Println("Error creating new connection", cerr)
+		return
+	}
+	defer connection.Close()
+	request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error creating map read request", rerr)
+		return
+	}
+	fmt.Println("Limit query data:")
+	request.QueryFields("NAME,PERSONNEL-ID")
+	request.Limit = 0
+	fmt.Println("Init cursor data...")
+	col, cerr := request.ReadLogicalWithCursoring("PERSONNEL-ID=[0:9]")
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error reading logical with using cursoring", cerr)
+		return
+	}
+	fmt.Println("Read next cursor record...")
+	counter := 0
+	for col.HasNextRecord() {
+		record, rerr := col.NextRecord()
+		if record == nil {
+			fmt.Println("Record nil received")
+			return
+		}
+		counter++
+		if !assert.NoError(t, rerr) {
+			fmt.Println("Error reading logical with using cursoring", rerr)
+			return
+		}
+		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
+	}
+	assert.Equal(t, 1107, counter)
+	fmt.Println("Last cursor record read")
 
 }
