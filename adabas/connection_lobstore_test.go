@@ -83,6 +83,7 @@ func storePerStream(t *testing.T, x []byte) (adatypes.Isn, error) {
 	}
 	defer connection.Close()
 
+	fmt.Println("Store LOB using partial lob")
 	storeRequest, serr := connection.CreateStoreRequest(17)
 	if !assert.NoError(t, serr) {
 		return 0, serr
@@ -142,6 +143,8 @@ func verifyStorePerStream(t *testing.T, isn adatypes.Isn, x []byte) error {
 	}
 	defer connection.Close()
 
+	fmt.Println("Verify stored LOB")
+
 	request, rErr := connection.CreateFileReadRequest(17)
 	if !assert.NoError(t, rErr) {
 		return rErr
@@ -158,8 +161,8 @@ func verifyStorePerStream(t *testing.T, isn adatypes.Isn, x []byte) error {
 		return nil
 	}
 	aaValue, _ := result.Values[0].SearchValue("AA")
-	assert.Equal(t, "STLOB", aaValue)
-	assert.Equal(t, "STLOB", result.Values[0].AlphaValue("AA"))
+	assert.Equal(t, "STLOB   ", aaValue.String())
+	assert.Equal(t, "STLOB   ", result.Values[0].AlphaValue("AA"))
 	raValue, rerr := result.Values[0].SearchValue("RA")
 	if !assert.NoError(t, rerr) {
 		return rerr
@@ -167,6 +170,42 @@ func verifyStorePerStream(t *testing.T, isn adatypes.Isn, x []byte) error {
 	raw := raValue.Bytes()
 	assert.Equal(t, 1386643, len(x))
 	assert.Equal(t, 1386643, len(raw))
+	if !assert.Equal(t, x, raw) {
+		return fmt.Errorf("Data read not equal")
+	}
+	return nil
+}
+
+func verifyReadWithStream(t *testing.T, isn adatypes.Isn, x []byte) error {
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
+	if !assert.NoError(t, err) {
+		return err
+	}
+	defer connection.Close()
+	fmt.Println("Verify stored LOB reading partial")
+
+	request, rErr := connection.CreateFileReadRequest(17)
+	if !assert.NoError(t, rErr) {
+		return rErr
+	}
+	err = request.QueryFields("RA(1,1000)")
+	if !assert.NoError(t, err) {
+		return err
+	}
+	result, verr := request.ReadISN(isn)
+	if !assert.NoError(t, verr) {
+		return err
+	}
+	if !assert.Equal(t, 1, len(result.Values)) {
+		return nil
+	}
+	raValue, rerr := result.Values[0].SearchValue("RA")
+	if !assert.NoError(t, rerr) {
+		return rerr
+	}
+	raw := raValue.Bytes()
+	assert.Equal(t, 1000, len(raw))
+	assert.Equal(t, x[0:1000], raw)
 	return nil
 }
 
@@ -183,12 +222,16 @@ func TestConnectionStorePartialStream(t *testing.T) {
 	}
 	name := p + string(os.PathSeparator) + "img" + string(os.PathSeparator) + "106-0687_IMG.JPG"
 	x, ferr := ioutil.ReadFile(name)
-	if assert.NoError(t, ferr) {
+	if !assert.NoError(t, ferr) {
 		return
 	}
 	isn, err := storePerStream(t, x)
 	if err != nil {
 		return
 	}
-	verifyStorePerStream(t, isn, x)
+	err = verifyStorePerStream(t, isn, x)
+	if err != nil {
+		return
+	}
+	verifyReadWithStream(t, isn, x)
 }

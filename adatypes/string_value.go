@@ -232,6 +232,17 @@ func (value *stringValue) StoreBuffer(helper *BufferHelper, option *BufferOption
 		}
 		return nil
 	}
+	if value.partial != nil {
+		if value.partial[1] != uint32(len(value.value)) {
+			return NewGenericError(135, len(value.value), value.partial[1])
+		}
+		err := helper.putBytes(value.value)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
 	Central.Log.Debugf("Store string %s at %d len=%d", value.Type().Name(), len(helper.buffer), value.Type().Length())
 	stringLen := len(value.value)
 	Central.Log.Debugf("Current buffer size = %d/%d offset = %d", len(helper.buffer), stringLen, helper.offset)
