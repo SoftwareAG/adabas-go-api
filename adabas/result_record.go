@@ -541,3 +541,12 @@ func (record *Record) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(req.dataMap)
 }
+
+// AlphaValue search value and provide string/alpha representation
+func (record *Record) AlphaValue(parameter ...interface{}) string {
+	v, err := record.SearchValue(parameter...)
+	if err == nil {
+		return v.String()
+	}
+	return ""
+}

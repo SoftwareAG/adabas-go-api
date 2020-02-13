@@ -76,26 +76,24 @@ func TestConnectionStorePartial(t *testing.T) {
 	}
 }
 
-func TestConnectionStorePartialStream(t *testing.T) {
-	initTestLogWithFile(t, "connection_lobstore.log")
-
+func storePerStream(t *testing.T, x []byte) (adatypes.Isn, error) {
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
-		return
+		return 0, err
 	}
 	defer connection.Close()
 
 	storeRequest, serr := connection.CreateStoreRequest(17)
 	if !assert.NoError(t, serr) {
-		return
+		return 0, serr
 	}
 	err = storeRequest.StoreFields("AA")
 	if !assert.NoError(t, err) {
-		return
+		return 0, err
 	}
 	record, rerr := storeRequest.CreateRecord()
 	if !assert.NoError(t, rerr) {
-		return
+		return 0, rerr
 	}
 	err = record.SetValue("AA", "STLOB")
 	assert.NoError(t, err)
@@ -104,17 +102,81 @@ func TestConnectionStorePartialStream(t *testing.T) {
 	isn := record.Isn
 	storeRequest, serr = connection.CreateStoreRequest(17)
 	if !assert.NoError(t, serr) {
-		return
+		return 0, serr
 	}
 	err = storeRequest.StoreFields("RA")
 	if !assert.NoError(t, err) {
-		return
+		return 0, err
 	}
 	record, rerr = storeRequest.CreateRecord()
 	if !assert.NoError(t, rerr) {
-		return
+		return 0, rerr
 	}
 	record.Isn = isn
+
+	blockBegin := uint32(0)
+	for i := blockBegin; i < uint32(len(x)); i += BlockSize {
+		e := i + BlockSize
+		if e > uint32(len(x)) {
+			e = uint32(len(x))
+		}
+		fmt.Println("Write block", i, e, len(x))
+		err = record.SetPartialValue("RA", i+1, x[i:e])
+		if !assert.NoError(t, err) {
+			return 0, err
+		}
+		err = storeRequest.Update(record)
+		if !assert.NoError(t, err) {
+			return 0, err
+		}
+
+	}
+	connection.EndTransaction()
+	return isn, nil
+}
+
+func verifyStorePerStream(t *testing.T, isn adatypes.Isn, x []byte) error {
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
+	if !assert.NoError(t, err) {
+		return err
+	}
+	defer connection.Close()
+
+	request, rErr := connection.CreateFileReadRequest(17)
+	if !assert.NoError(t, rErr) {
+		return rErr
+	}
+	err = request.QueryFields("AA,RA")
+	if !assert.NoError(t, err) {
+		return err
+	}
+	result, verr := request.ReadISN(isn)
+	if !assert.NoError(t, verr) {
+		return err
+	}
+	if !assert.Equal(t, 1, len(result.Values)) {
+		return nil
+	}
+	aaValue, _ := result.Values[0].SearchValue("AA")
+	assert.Equal(t, "STLOB", aaValue)
+	assert.Equal(t, "STLOB", result.Values[0].AlphaValue("AA"))
+	raValue, rerr := result.Values[0].SearchValue("RA")
+	if !assert.NoError(t, rerr) {
+		return rerr
+	}
+	raw := raValue.Bytes()
+	assert.Equal(t, 1386643, len(x))
+	assert.Equal(t, 1386643, len(raw))
+	return nil
+}
+
+func TestConnectionStorePartialStream(t *testing.T) {
+	initTestLogWithFile(t, "connection_lobstore.log")
+	cErr := clearFile(17)
+	if !assert.NoError(t, cErr) {
+		return
+	}
+
 	p := os.Getenv("TESTFILES")
 	if p == "" {
 		p = "."
@@ -122,22 +184,11 @@ func TestConnectionStorePartialStream(t *testing.T) {
 	name := p + string(os.PathSeparator) + "img" + string(os.PathSeparator) + "106-0687_IMG.JPG"
 	x, ferr := ioutil.ReadFile(name)
 	if assert.NoError(t, ferr) {
-		blockBegin := uint32(0)
-		for i := blockBegin; i < uint32(len(x)); i += BlockSize {
-			e := i + BlockSize
-			if e > uint32(len(x)) {
-				e = uint32(len(x))
-			}
-			fmt.Println("Write block", i, e, len(x))
-			err = record.SetPartialValue("RA", i+1, x[i:e])
-			if !assert.NoError(t, err) {
-				return
-			}
-			err = storeRequest.Update(record)
-			if !assert.NoError(t, err) {
-				return
-			}
-
-		}
+		return
 	}
+	isn, err := storePerStream(t, x)
+	if err != nil {
+		return
+	}
+	verifyStorePerStream(t, isn, x)
 }
