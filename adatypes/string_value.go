@@ -439,6 +439,9 @@ func (value *stringValue) Float() (float64, error) {
 }
 
 func (value *stringValue) SetPartial(x, y uint32) {
-	value.Type().SetPartialRange(NewRange(int(x), int(y)))
+	value.Type().SetPartialRange(NewPartialRange(int(x), int(y)))
+	if value.Type().PartialRange() == nil {
+		panic(fmt.Sprintf("Partial range errror: %d,%d", x, y))
+	}
 	//value.partial = []uint32{x, y}
 }

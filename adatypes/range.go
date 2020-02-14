@@ -98,6 +98,11 @@ func NewSingleRange(index int) *AdaRange {
 	return &AdaRange{from: index, to: index}
 }
 
+// NewPartialRange new partial range
+func NewPartialRange(from, to int) *AdaRange {
+	return &AdaRange{from: from, to: to}
+}
+
 // NewRange new range from a dimension to a dimension
 func NewRange(from, to int) *AdaRange {
 	if from > to {
