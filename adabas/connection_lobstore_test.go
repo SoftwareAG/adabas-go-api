@@ -248,13 +248,13 @@ func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 		return
 	}
 	defer connection.Close()
-	request, rerr := connection.CreateFileReadRequest(17)
+	request, rerr := connection.CreateFileReadRequest(9)
 	if !assert.NoError(t, rerr) {
 		fmt.Println("Error creating map read request", rerr)
 		return
 	}
 	fmt.Println("Init stream ...")
-	col, cerr := request.ReadLobStream("AA=STLOB", "RA")
+	col, cerr := request.ReadLobStream("AA=11300323", "RA")
 	if !assert.NoError(t, cerr) {
 		fmt.Println("Error reading stream with using cursoring", cerr)
 		return

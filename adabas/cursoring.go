@@ -101,8 +101,12 @@ func (request *ReadRequest) HistogramWithCursoring(search string) (cursor *Curso
 func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 	adatypes.Central.Log.Debugf("Check next record: %v offset=%d values=%d", hasNext, cursor.offset+1, len(cursor.result.Values))
 	if cursor.offset+1 > uint32(len(cursor.result.Values)) {
-		if cursor.adabasRequest == nil || cursor.adabasRequest.Response != AdaNormal {
-			adatypes.Central.Log.Debugf("Error adabas request empty of not normal response, may be EOF %#v\n", cursor.adabasRequest)
+		if cursor.adabasRequest == nil || (cursor.adabasRequest.Response != AdaNormal && cursor.adabasRequest.Response != AdaEOF) {
+			if cursor.adabasRequest != nil {
+				adatypes.Central.Log.Debugf("Error adabas request empty of not normal response, may be EOF %#v\n", cursor.adabasRequest.Response)
+			} else {
+				adatypes.Central.Log.Debugf("Error adabas request empty %#v\n", cursor.adabasRequest)
+			}
 			return false
 		}
 

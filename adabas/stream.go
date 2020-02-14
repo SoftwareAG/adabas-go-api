@@ -153,8 +153,9 @@ func (request *ReadRequest) ReadFieldStream(search string) (result *Response, er
 			return
 		}
 
+		adatypes.Central.Log.Debugf("read with ...cursoring ISN=%d", request.cursoring.adabasRequest.Isn)
 	} else {
-		adatypes.Central.Log.Debugf("read logical with ...cursoring")
+		adatypes.Central.Log.Debugf("Next read with ...cursoring ISN=%d", request.cursoring.adabasRequest.Isn)
 		//err = request.adabas.loopCall(request.cursoring.adabasRequest, result)
 		//err = request.adabas.loopCall(request.cursoring.adabasRequest, nil)
 	}

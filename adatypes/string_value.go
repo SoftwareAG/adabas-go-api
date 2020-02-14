@@ -167,8 +167,13 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			partialRange := value.Type().PartialRange()
 			Central.Log.Debugf("Partial Range %#v\n", partialRange)
 			if partialRange != nil {
-				buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), partialRange.from, partialRange.to))
-				recLength = uint32(partialRange.to - partialRange.from)
+				if partialRange.from == 0 {
+					buffer.WriteString(fmt.Sprintf("%s(*,%d)", value.Type().ShortName(), partialRange.to))
+					recLength = uint32(partialRange.to)
+				} else {
+					buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), partialRange.from, partialRange.to))
+					recLength = uint32(partialRange.to)
+				}
 			} else {
 				buffer.WriteString(fmt.Sprintf("%s(1,%d)", value.Type().ShortName(), PartialStoreLobSizeChunks))
 				recLength = 4 + PartialStoreLobSizeChunks
@@ -191,8 +196,13 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			partialRange := value.Type().PartialRange()
 			Central.Log.Debugf("Partial Range %#v\n------\n", partialRange)
 			if partialRange != nil {
-				buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), partialRange.from, partialRange.to))
-				recLength = uint32(partialRange.to - partialRange.from)
+				if partialRange.to == 0 {
+					buffer.WriteString(fmt.Sprintf("%s(*,%d)", value.Type().ShortName(), partialRange.to))
+					recLength = uint32(partialRange.to)
+				} else {
+					buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), partialRange.from, partialRange.to))
+					recLength = uint32(partialRange.to)
+				}
 			} else {
 				buffer.WriteString(fmt.Sprintf("%sL,4,%s(0,%d)", value.Type().ShortName(), value.Type().ShortName(), PartialLobSize))
 				recLength = 4 + PartialLobSize
