@@ -35,6 +35,7 @@ const PartialStoreLobSizeChunks = 4096 * 10
 // PartialValue partial value definition
 type PartialValue interface {
 	SetPartial(x, y uint32)
+	SetPartialRange(partial *AdaRange)
 }
 
 // stringValue string structure
@@ -42,7 +43,7 @@ type stringValue struct {
 	adaValue
 	value   []byte
 	lobSize uint32
-	partial []uint32
+	//partial []uint32
 }
 
 func newStringValue(initType IAdaType) *stringValue {
@@ -199,10 +200,11 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			}
 		}
 	} else {
-		if value.partial != nil {
+		partial := value.Type().PartialRange()
+		if partial != nil {
 			Central.Log.Debugf("Generate partial format buffer")
-			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), value.partial[0], value.partial[1]))
-			recLength = value.partial[1]
+			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), partial.from, partial.to))
+			recLength = uint32(partial.to)
 		} else {
 			recLength = value.commonFormatBuffer(buffer, option)
 			Central.Log.Debugf("String value format buffer length for %s -> %d", value.Type().ShortName(), recLength)
@@ -232,9 +234,10 @@ func (value *stringValue) StoreBuffer(helper *BufferHelper, option *BufferOption
 		}
 		return nil
 	}
-	if value.partial != nil {
-		if value.partial[1] != uint32(len(value.value)) {
-			return NewGenericError(135, len(value.value), value.partial[1])
+	partial := value.Type().PartialRange()
+	if partial != nil {
+		if partial.to != len(value.value) {
+			return NewGenericError(135, len(value.value), partial.to)
 		}
 		err := helper.putBytes(value.value)
 		if err != nil {
@@ -437,5 +440,6 @@ func (value *stringValue) Float() (float64, error) {
 }
 
 func (value *stringValue) SetPartial(x, y uint32) {
-	value.partial = []uint32{x, y}
+	value.Type().SetPartialRange(NewRange(int(x), int(y)))
+	//value.partial = []uint32{x, y}
 }

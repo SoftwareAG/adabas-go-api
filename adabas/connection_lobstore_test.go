@@ -254,12 +254,12 @@ func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 		return
 	}
 	fmt.Println("Init stream ...")
-	col, cerr := request.ReadLobStream("", "RA")
+	col, cerr := request.ReadLobStream("AA=STLOB", "RA")
 	if !assert.NoError(t, cerr) {
 		fmt.Println("Error reading stream with using cursoring", cerr)
 		return
 	}
-	fmt.Println("Read next cursor record...")
+	fmt.Println("Read next cursor stream entry...")
 	counter := 0
 	for col.HasNextRecord() {
 		record, rerr := col.NextRecord()
@@ -269,12 +269,12 @@ func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 		}
 		counter++
 		if !assert.NoError(t, rerr) {
-			fmt.Println("Error reading logical with using cursoring", rerr)
+			fmt.Println("Error reading partial stream with using cursoring", rerr)
 			return
 		}
-		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
+		adatypes.Central.Log.Debugf("Read next cursor stream entry...%d", counter)
 	}
-	assert.Equal(t, 1107, counter)
+	assert.Equal(t, 1, counter)
 	fmt.Println("Last cursor record read")
 
 }

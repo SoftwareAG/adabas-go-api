@@ -876,5 +876,8 @@ var statisMessages = []struct {
 	{"ADG0000133", "en", "Update record error: {0}"},
 	{"ADG0000134", "en", "Wrong field type of {0}, partial lobs are only used with larg object alpha fields"},
 	{"ADG0000135", "en", "Error length {0} of value and partial definition ({1}) don't match"},
+	{"ADG0000136", "en", "Stream query need search criterium"},
+	{"ADG0000137", "en", "Stream query returns multiple records"},
+	{"ADG0000138", "en", "Stream query returns no record"},
 	{"ADG0000150", "en", "Cannot scan value for type {0}"},
 }

@@ -429,6 +429,11 @@ func (commonType *CommonType) RemoveFlag(flagOption FlagOption) {
 	commonType.flags &= ^flagOption.Bit()
 }
 
+// SetPartialRange set partial range
+func (commonType *CommonType) SetPartialRange(partial *AdaRange) {
+	commonType.partialRange = partial
+}
+
 // PartialRange partial range provided
 func (commonType *CommonType) PartialRange() *AdaRange {
 	return commonType.partialRange

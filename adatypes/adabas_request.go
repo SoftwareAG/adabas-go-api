@@ -295,7 +295,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 					Central.Log.Debugf("Partial Range %#v\n------\n", partialRange)
 					if partialRange != nil {
 						buffer.WriteString(fmt.Sprintf("%s(%d,%d)", adaType.ShortName(), partialRange.from, partialRange.to))
-						adabasRequest.RecordBufferLength = uint32(partialRange.to - partialRange.from)
+						adabasRequest.RecordBufferLength += uint32(partialRange.to)
 					} else {
 						buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(1,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
 							PartialLobSize))

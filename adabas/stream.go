@@ -29,6 +29,10 @@ func (request *ReadRequest) ReadLobStream(search, field string) (cursor *Cursori
 	if err != nil {
 		return
 	}
+	request.definition.DumpTypes(true, true, "Lob stream restrict")
+	v := request.definition.Search(field)
+	vs := v.(adatypes.PartialValue)
+	vs.SetPartial(0, 4096)
 	request.cursoring = &Cursoring{}
 	if request.Limit == 0 {
 		request.Limit = 10
@@ -98,6 +102,8 @@ func (request *ReadRequest) ReadFieldStream(search string) (result *Response, er
 			}
 		} else {
 			adatypes.Central.Log.Debugf("No search ...")
+			err = adatypes.NewGenericError(136)
+			return
 		}
 
 		adatypes.Central.Log.Debugf("Definition generated ...")
@@ -127,22 +133,30 @@ func (request *ReadRequest) ReadFieldStream(search string) (result *Response, er
 		}
 
 		if searchInfo == nil {
-			adatypes.Central.Log.Debugf("read in ISN order ...from %d", request.Start)
-			adabasRequest.Isn = adatypes.Isn(request.Start)
-			err = request.adabas.ReadISNOrder(request.repository.Fnr, adabasRequest, nil)
-		} else {
-			adabasRequest.Isn = 0
-			if searchInfo.NeedSearch {
-				adatypes.Central.Log.Debugf("search logical with ...%#v", adabasRequest.Descriptors)
-				err = request.adabas.SearchLogicalWith(request.repository.Fnr, adabasRequest, nil)
-			} else {
-				adatypes.Central.Log.Debugf("read logical with ...%#v", adabasRequest.Descriptors)
-				err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, nil)
-			}
+			err = adatypes.NewGenericError(136)
+			return
 		}
+		adabasRequest.Isn = 0
+		if searchInfo.NeedSearch {
+			adatypes.Central.Log.Debugf("search logical with ...%#v", adabasRequest.Descriptors)
+			err = request.adabas.SearchLogicalWith(request.repository.Fnr, adabasRequest, result)
+		} else {
+			adatypes.Central.Log.Debugf("read logical with ...%#v", adabasRequest.Descriptors)
+			err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, result)
+		}
+		if len(result.Values) != 1 {
+			if len(result.Values) > 1 {
+				err = adatypes.NewGenericError(137)
+				return
+			}
+			err = adatypes.NewGenericError(138)
+			return
+		}
+
 	} else {
 		adatypes.Central.Log.Debugf("read logical with ...cursoring")
-		err = request.adabas.loopCall(request.cursoring.adabasRequest, nil)
+		//err = request.adabas.loopCall(request.cursoring.adabasRequest, result)
+		//err = request.adabas.loopCall(request.cursoring.adabasRequest, nil)
 	}
 	adatypes.Central.Log.Debugf("Read finished")
 	return
