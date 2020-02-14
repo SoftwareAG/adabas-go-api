@@ -35,7 +35,6 @@ const PartialStoreLobSizeChunks = 4096 * 10
 // PartialValue partial value definition
 type PartialValue interface {
 	SetPartial(x, y uint32)
-	SetPartialRange(partial *AdaRange)
 }
 
 // stringValue string structure
