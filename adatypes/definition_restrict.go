@@ -355,12 +355,12 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 				s := mt[3]
 				if fl != "" && !strings.HasPrefix(fl, "#ISN") {
 					rf := false
-					switch f[0] {
-					case '#':
+					switch {
+					case f[0] == '#' && strings.ToLower(f) != "#isn" && strings.ToLower(f) != "#key":
 						//fl = f[1:]
 						lenType := NewType(FieldTypeFieldLength, fl)
 						fieldMap.parentStructure.SubTypes = append(fieldMap.parentStructure.SubTypes, lenType)
-					case '@':
+					case f[0] == '@':
 						fl = f[1:]
 						rf = true
 						fallthrough
