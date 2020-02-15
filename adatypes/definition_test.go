@@ -20,7 +20,6 @@
 package adatypes
 
 import (
-	"encoding/binary"
 	"fmt"
 	"testing"
 
@@ -1186,7 +1185,7 @@ func TestDefinitionLength(t *testing.T) {
 		fmt.Println("Create request", rerr)
 		return
 	}
-	helper := NewDynamicHelper(binary.LittleEndian)
+	helper := NewDynamicHelper(endian())
 	req.RecordBuffer = helper
 	req.Parser = testParser
 	req.Limit = 1
