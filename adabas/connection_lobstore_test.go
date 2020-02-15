@@ -300,12 +300,14 @@ func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 	counter := 0
 	var v adatypes.IAdaValue
 	var buffer bytes.Buffer
+	adatypes.Central.Log.Debugf("===> Start next record check")
 	for col.HasNextRecord() {
 		record, err := col.NextRecord()
 		if record == nil || !assert.NoError(t, err) {
 			fmt.Println("Record nil received")
 			return
 		}
+		adatypes.Central.Log.Debugf("===> Got next record")
 		var vs adatypes.IAdaValue
 		vs, err = record.SearchValue("RA")
 		if !assert.NoError(t, err) {
@@ -315,23 +317,30 @@ func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 		if v == nil {
 			v = vs
 		}
-		fmt.Printf("-> VS=%p V=%p\n", vs, v)
-		//assert.Equal(t, v, vs)
-		buffer.Write(v.Bytes())
+		// fmt.Printf("-> VS=%p V=%p\n", vs, v)
+		// assert.Equal(t, v, vs)
+		raw := v.Bytes()
+		//adatypes.LogMultiLineString(adatypes.FormatBytes("Current bytes:", raw, len(raw), len(raw), 8, false))
+		buffer.Write(raw)
 		counter++
 		if !assert.NoError(t, rerr) {
 			fmt.Println("Error reading partial stream with using cursoring", rerr)
 			return
 		}
-		adatypes.Central.Log.Debugf("Read next cursor stream entry...%d", counter)
+		adatypes.Central.Log.Debugf("===> Read next cursor stream entry...%d", counter)
 	}
 	fmt.Println("Last cursor record read, counted slices=", counter)
-	assert.Equal(t, 256, counter)
-	assert.Equal(t, 1048576, buffer.Len())
+	assert.Equal(t, 45, counter)
+	assert.Equal(t, 184320, buffer.Len())
 	raw := buffer.Bytes()
 	x := md5.Sum(raw[0:183049])
 	assert.Equal(t, "8B124C139790221469EF6308D6554660", fmt.Sprintf("%X", x))
-	fmt.Printf("Got lob ...%X\n", md5.Sum(raw[4096:4096+4096]))
-	fmt.Printf("Got lob ...%X\n", md5.Sum(raw[0:4096]))
+	fmt.Printf("Got lob from    0...%X\n", md5.Sum(raw[0:4096]))
+	fmt.Printf("Got lob from 4096...%X\n", md5.Sum(raw[4096:4096+4096]))
+	fmt.Printf("Got End from 183000...%X\n", md5.Sum(raw[183000:183049]))
+	begRaw := raw[0:50]
+	adatypes.LogMultiLineString(adatypes.FormatBytes("Begin bytes:", begRaw, len(begRaw), len(begRaw), 8, false))
+	endRaw := raw[183000:183049]
+	adatypes.LogMultiLineString(adatypes.FormatBytes("End bytes:", endRaw, len(endRaw), len(endRaw), 8, false))
 
 }

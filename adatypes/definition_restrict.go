@@ -306,8 +306,8 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 
 // ShouldRestrictToFields Restrict the tree to contain only the given nodes, remove the value tree
 func (def *Definition) ShouldRestrictToFields(fields string) (err error) {
+	def.activeFieldTree = def.fileFieldTree
 	if fields == "*" {
-		def.activeFieldTree = def.fileFieldTree
 		return
 	}
 	var field []string

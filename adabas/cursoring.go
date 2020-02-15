@@ -27,6 +27,8 @@ import (
 // chunks defined by a search or descriptor
 type Cursoring struct {
 	offset        uint32
+	maxLength     uint32
+	bufferSize    uint32
 	search        string
 	result        *Response
 	request       *ReadRequest

@@ -279,6 +279,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			fn = fn[1:]
 		}
 		buffer.WriteString(fmt.Sprintf("%sL,4,B", fn))
+		adabasRequest.RecordBufferLength += 4
 	case FieldTypePhonetic, FieldTypeCollation, FieldTypeReferential:
 	case FieldTypeRedefinition:
 		if buffer.Len() > 0 {
@@ -376,7 +377,7 @@ func (def *Definition) CreateAdabasRequest(store bool, secondCall uint8, mainfra
 // all data into the given definition value tree, corresponding to the
 // field definition of the concurrent field
 func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (responseCode uint32, err error) {
-	Central.Log.Debugf("Parse Adabas request buffers")
+	Central.Log.Debugf("Parse Adabas request buffers avail.=%v", (adabasRequest.Definition.Values != nil))
 	// If parser is available, use the parser to extract content
 	if adabasRequest.Parser != nil {
 		Central.Log.Debugf("Parser method found")
@@ -418,6 +419,7 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 			if err != nil {
 				return
 			}
+			Central.Log.Debugf("Ready parse buffer .... %p values avail.=%v", adabasRequest.Definition, (adabasRequest.Definition.Values == nil))
 			if adabasRequest.Caller != nil {
 				err = adabasRequest.Caller.SendSecondCall(adabasRequest, x)
 				if err != nil {

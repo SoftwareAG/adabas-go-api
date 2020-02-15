@@ -227,7 +227,7 @@ func (adabasBuffer *Buffer) putCAbd(pabdArray *C.PABD, index int) {
 		pbuffer, C.uint32_t(uint32(adabasBuffer.abd.Abdsize)))
 	adabasBuffer.abd = cabd
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.Central.Log.Debugf("C ABD %c: recv=%d", cabd.Abdid, cabd.Abdrecv)
+		adatypes.Central.Log.Debugf("C ABD %c: send=%d recv=%d", cabd.Abdid, cabd.Abdsend, cabd.Abdrecv)
 		adatypes.LogMultiLineString(adatypes.FormatByteBuffer("Buffer content:", adabasBuffer.buffer))
 	}
 
@@ -286,7 +286,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 			ret := int(C.go_eadabasx((*C.ADAID_T)(unsafe.Pointer(adabas.ID.AdaID)),
 				(*C.ACBX)(unsafe.Pointer(adabas.Acbx)), C.int(len(adabas.AdabasBuffers)), pabdArray, x))
 			if adatypes.Central.IsDebugLevel() {
-				adatypes.Central.Log.Debugf("Send calling CC %c%c adabasp=%p URL=%s Adabas ID=%v",
+				adatypes.Central.Log.Debugf("Received calling CC %c%c adabasp=%p URL=%s Adabas ID=%v",
 					adabas.Acbx.Acbxcmd[0], adabas.Acbx.Acbxcmd[1],
 					adabas, adabas.URL.String(), adabas.ID.String())
 				adatypes.Central.Log.Debugf("Local Adabas call returns: %d", ret)

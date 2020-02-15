@@ -582,11 +582,16 @@ func (adabas *Adabas) ReadLogicalWith(fileNr Fnr, adabasRequest *adatypes.Reques
 // ReadStream Read partial lob stream
 func (adabas *Adabas) ReadStream(adabasRequest *adatypes.Request, offset uint64, x interface{}) (err error) {
 	adabas.Acbx.Acbxcmd = l1.code()
-	adabas.Acbx.Acbxcop[0] = ' '
+	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxcop[1] = 'L'
 	adabas.Acbx.Acbxisl = offset
+	adabas.Acbx.Acbxcid = [4]uint8{0xff, 0xff, 0xff, 0xff}
+
 	adabasRequest.Multifetch = 1
 	adabasRequest.Limit = 1
+
+	adabas.prepareBuffers(adabasRequest)
+
 	err = adabas.loopCall(adabasRequest, x)
 	return
 }
@@ -662,7 +667,7 @@ func (adabas *Adabas) SearchLogicalWith(fileNr Fnr, adabasRequest *adatypes.Requ
 
 // Loop call used to read a sequence of records
 func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (err error) {
-	adatypes.Central.Log.Debugf("Loop call records")
+	adatypes.Central.Log.Debugf("Loop call records avail.=%v", (adabasRequest.Definition.Values != nil))
 	count := uint64(0)
 	adabasRequest.CmdCode = adabas.Acbx.Acbxcmd
 	switch adabas.Acbx.Acbxcmd {
@@ -694,6 +699,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			}
 		}
 		adabas.resetSendSize()
+		adatypes.Central.Log.Debugf("Send call avail.=%v", (adabasRequest.Definition.Values != nil))
 		// Call Adabas
 		err = adabas.CallAdabas()
 		adatypes.Central.Log.Debugf("Received call response ret=%v", err)

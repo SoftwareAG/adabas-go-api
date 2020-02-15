@@ -92,7 +92,7 @@ func (def *Definition) ParseBuffer(helper *BufferHelper, option *BufferOption, p
 		Central.Log.Debugf("Parse buffer types...")
 		def.Values, err = parseBufferTypes(helper, option, def.activeFieldTree, 0)
 	} else {
-		Central.Log.Debugf("Parse buffer values...")
+		Central.Log.Debugf("Parse buffer values... avail.=%v", (def.Values != nil))
 		x := parserBufferTr{helper: helper, option: option, prefix: prefix, definition: def}
 		t := TraverserValuesMethods{EnterFunction: parseBufferValues}
 		res, err = def.TraverseValues(t, &x)
@@ -100,6 +100,7 @@ func (def *Definition) ParseBuffer(helper *BufferHelper, option *BufferOption, p
 			Central.Log.Debugf("Error parsing buffer values... %v", err)
 			return
 		}
+		Central.Log.Debugf("End parse buffer values... %p avail.=%v", def, (def.Values != nil))
 	}
 
 	return

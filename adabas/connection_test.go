@@ -1477,6 +1477,11 @@ func TestConnectionRead9FieldPicture(t *testing.T) {
 	assert.Equal(t, 183049, len(raw))
 	md5sum := fmt.Sprintf("%X", md5.Sum(raw))
 	assert.Equal(t, "8B124C139790221469EF6308D6554660", md5sum)
+	fmt.Printf("Got End from 183000...%X\n", md5.Sum(raw[183000:183049]))
+	begRaw := raw[0:50]
+	adatypes.LogMultiLineString(adatypes.FormatBytes("Begin bytes:", begRaw, len(begRaw), len(begRaw), 8, false))
+	endRaw := raw[183000:183049]
+	adatypes.LogMultiLineString(adatypes.FormatBytes("End bytes:", endRaw, len(endRaw), len(endRaw), 8, false))
 
 }
 
