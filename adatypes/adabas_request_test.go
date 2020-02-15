@@ -53,7 +53,9 @@ func initDefinition() *Definition {
 
 func testParser(adabasRequest *Request, x interface{}) (err error) {
 	fmt.Printf("Test parser called %T\n", x)
-	Central.Log.Debugf("Multifetch offset=%d RecordBuffer offset=%d", adabasRequest.MultifetchBuffer.offset, adabasRequest.RecordBuffer.offset)
+	if adabasRequest.MultifetchBuffer != nil {
+		Central.Log.Debugf("Multifetch offset=%d RecordBuffer offset=%d", adabasRequest.MultifetchBuffer.offset, adabasRequest.RecordBuffer.offset)
+	}
 	return
 }
 

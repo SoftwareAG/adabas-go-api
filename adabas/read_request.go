@@ -267,18 +267,21 @@ func parseReadToRecord(adabasRequest *adatypes.Request, x interface{}) (err erro
 	adatypes.Central.Log.Debugf("Parse read to record")
 	result := x.(*Response)
 
-	isn := adabasRequest.Isn
-	isnQuantity := adabasRequest.IsnQuantity
-	record, xerr := NewRecordIsn(isn, isnQuantity, adabasRequest.Definition)
-	if xerr != nil {
-		return xerr
+	if adabasRequest.Option.StreamCursor == 0 {
+		isn := adabasRequest.Isn
+		isnQuantity := adabasRequest.IsnQuantity
+		record, xerr := NewRecordIsn(isn, isnQuantity, adabasRequest.Definition)
+		if xerr != nil {
+			return xerr
+		}
+		if adabasRequest.Parameter != nil {
+			record.adabasMap = adabasRequest.Parameter.(*Map)
+		}
+		result.Values = append(result.Values, record)
+
+		record.fields = result.fields
+		adatypes.Central.Log.Debugf("Got ISN=%d Quantity=%d record", record.Isn, record.Quantity)
 	}
-	if adabasRequest.Parameter != nil {
-		record.adabasMap = adabasRequest.Parameter.(*Map)
-	}
-	result.Values = append(result.Values, record)
-	record.fields = result.fields
-	adatypes.Central.Log.Debugf("Got ISN=%d Quantity=%d record", record.Isn, record.Quantity)
 
 	return
 }

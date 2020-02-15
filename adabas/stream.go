@@ -34,13 +34,10 @@ func (request *ReadRequest) ReadLobStream(search, field string) (cursor *Cursori
 	vs := v.(adatypes.PartialValue)
 	vs.SetPartial(0, 4096)
 	request.cursoring = &Cursoring{}
-	if request.Limit == 0 {
-		request.Limit = 10
-	}
-	request.Multifetch = uint32(request.Limit)
-	if request.Multifetch > 20 {
-		request.Multifetch = 20
-	}
+	// Limit records to 3 because more then one record is error case, match should be only
+	// one record defining a stream
+	request.Limit = 3
+	request.Multifetch = 3
 	result, rerr := request.ReadFieldStream(search)
 	if rerr != nil {
 		return nil, rerr
@@ -54,9 +51,9 @@ func (request *ReadRequest) ReadLobStream(search, field string) (cursor *Cursori
 
 // ReadFieldStream read records with a field stream
 func (request *ReadRequest) ReadFieldStream(search string) (result *Response, err error) {
-	result = &Response{Definition: request.definition, fields: request.fields}
 	adatypes.Central.Log.Debugf("Read stream with parser")
 	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
+		result = &Response{Definition: request.definition, fields: request.fields}
 		opened, oErr := request.Open()
 		if oErr != nil {
 			err = oErr
@@ -152,13 +149,16 @@ func (request *ReadRequest) ReadFieldStream(search string) (result *Response, er
 			err = adatypes.NewGenericError(138)
 			return
 		}
-
-		adatypes.Central.Log.Debugf("read with ...cursoring ISN=%d", request.cursoring.adabasRequest.Isn)
+		adatypes.Central.Log.Debugf("read with ...streaming ISN=%d", request.cursoring.adabasRequest.Isn)
+		request.cursoring.adabasRequest.Option.StreamCursor++
+		adatypes.Central.Log.Debugf("After first stream definition values %p", request.cursoring.adabasRequest.Definition.Values)
 	} else {
-		adatypes.Central.Log.Debugf("Next read with ...cursoring ISN=%d", request.cursoring.adabasRequest.Isn)
-		//err = request.adabas.loopCall(request.cursoring.adabasRequest, result)
-		//err = request.adabas.loopCall(request.cursoring.adabasRequest, nil)
+		adatypes.Central.Log.Debugf("Definition values %p", request.cursoring.adabasRequest.Definition.Values)
+		adatypes.Central.Log.Debugf("Next read with ...streaming ISN=%d", request.cursoring.adabasRequest.Isn)
+		err = request.adabas.ReadStream(request.cursoring.adabasRequest, (uint64(request.cursoring.adabasRequest.Option.StreamCursor)*4096)+1, request.cursoring.result)
+		result = request.cursoring.result
+		adatypes.Central.Log.Debugf("Stream read finished: %v", err)
+		request.cursoring.adabasRequest.Option.StreamCursor++
 	}
-	adatypes.Central.Log.Debugf("Read finished")
 	return
 }

@@ -20,6 +20,8 @@
 package adabas
 
 import (
+	"bytes"
+	"crypto/md5"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -236,13 +238,48 @@ func TestConnectionStorePartialStream(t *testing.T) {
 	verifyReadWithStream(t, isn, x)
 }
 
+func TestReadLogical_LOB(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection_cursoring.log")
+
+	connection, cerr := NewConnection("acj;target=" + adabasStatDBIDs)
+	if !assert.NoError(t, cerr) {
+		fmt.Println("Error creating new connection", cerr)
+		return
+	}
+	defer connection.Close()
+	request, rerr := connection.CreateFileReadRequest(9)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error creating map read request", rerr)
+		return
+	}
+	request.QueryFields("RA")
+	fmt.Println("Init read ...")
+	result, err := request.ReadLogicalWith("AA=11300323")
+	if !assert.NoError(t, err) {
+		fmt.Println("Error reading request", err)
+		return
+	}
+	v, _ := result.Values[0].SearchValue("RA")
+	raw := v.Bytes()
+	assert.Equal(t, 183049, len(raw))
+	x := md5.Sum(raw)
+	fmt.Printf("Got lob ...%X\n", x)
+	assert.Equal(t, "8B124C139790221469EF6308D6554660", fmt.Sprintf("%X", x))
+	fmt.Printf("Got lob ...%X\n", md5.Sum(raw[4096:4096+4096]))
+	fmt.Printf("Got lob ...%X\n", md5.Sum(raw[0:4096]))
+
+}
+
 func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
 	initTestLogWithFile(t, "connection_cursoring.log")
 
-	connection, cerr := NewConnection("acj;target=" + adabasModDBIDs)
+	connection, cerr := NewConnection("acj;target=" + adabasStatDBIDs)
 	if !assert.NoError(t, cerr) {
 		fmt.Println("Error creating new connection", cerr)
 		return
@@ -261,12 +298,26 @@ func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 	}
 	fmt.Println("Read next cursor stream entry...")
 	counter := 0
+	var v adatypes.IAdaValue
+	var buffer bytes.Buffer
 	for col.HasNextRecord() {
-		record, rerr := col.NextRecord()
-		if record == nil {
+		record, err := col.NextRecord()
+		if record == nil || !assert.NoError(t, err) {
 			fmt.Println("Record nil received")
 			return
 		}
+		var vs adatypes.IAdaValue
+		vs, err = record.SearchValue("RA")
+		if !assert.NoError(t, err) {
+			fmt.Println("Error reading partial stream with using cursoring", rerr)
+			return
+		}
+		if v == nil {
+			v = vs
+		}
+		fmt.Printf("-> VS=%p V=%p\n", vs, v)
+		//assert.Equal(t, v, vs)
+		buffer.Write(v.Bytes())
 		counter++
 		if !assert.NoError(t, rerr) {
 			fmt.Println("Error reading partial stream with using cursoring", rerr)
@@ -274,7 +325,13 @@ func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 		}
 		adatypes.Central.Log.Debugf("Read next cursor stream entry...%d", counter)
 	}
-	assert.Equal(t, 1, counter)
-	fmt.Println("Last cursor record read")
+	fmt.Println("Last cursor record read, counted slices=", counter)
+	assert.Equal(t, 256, counter)
+	assert.Equal(t, 1048576, buffer.Len())
+	raw := buffer.Bytes()
+	x := md5.Sum(raw[0:183049])
+	assert.Equal(t, "8B124C139790221469EF6308D6554660", fmt.Sprintf("%X", x))
+	fmt.Printf("Got lob ...%X\n", md5.Sum(raw[4096:4096+4096]))
+	fmt.Printf("Got lob ...%X\n", md5.Sum(raw[0:4096]))
 
 }

@@ -20,6 +20,7 @@
 package adatypes
 
 import (
+	"encoding/binary"
 	"fmt"
 	"testing"
 
@@ -1168,4 +1169,44 @@ func TestDefinitionBothIndexes(t *testing.T) {
 	}
 	// TODO Implement range for partial lob
 	assert.Equal(t, "U4,4,B,PM1(2),10,A.", req.FormatBuffer.String())
+}
+
+func TestDefinitionLength(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	testDefinition := createLayout()
+	err = testDefinition.ShouldRestrictToFields("#ISN,U4,#GS,@GS")
+	assert.NoError(t, err)
+	req, rerr := testDefinition.CreateAdabasRequest(false, 0, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	helper := NewDynamicHelper(binary.LittleEndian)
+	req.RecordBuffer = helper
+	req.Parser = testParser
+	req.Limit = 1
+	req.Multifetch = 1
+	req.Isn = 10
+	req.Definition = testDefinition
+	if !assert.NotNil(t, req.Definition) {
+		return
+	}
+	req.RecordBuffer.PutInt32(2)
+	req.RecordBuffer.PutInt32(10)
+	// TODO do not parse references!!!
+	//req.RecordBuffer.PutInt64(0)
+	req.RecordBuffer.offset = 0
+	assert.Equal(t, "GSL,4,B,U4,4,B.", req.FormatBuffer.String())
+	count := uint64(0)
+	result, err := req.ParseBuffer(&count, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, uint32(0), result)
+	testDefinition.DumpValues(false)
+	assert.Equal(t, FieldTypeFieldLength, testDefinition.Values[0].Type().Type())
+	assert.Equal(t, "2", testDefinition.Values[0].String())
 }

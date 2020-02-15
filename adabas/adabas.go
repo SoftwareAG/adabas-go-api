@@ -540,6 +540,7 @@ func (adabas *Adabas) ReadLogicalWith(fileNr Fnr, adabasRequest *adatypes.Reques
 	}
 	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxisn = adabasRequest.Isn
+	adabas.Acbx.Acbxisl = 0
 	adabas.Acbx.Acbxcop[1] = 'A'
 	if adabasRequest.Multifetch > 1 {
 		if adabasRequest.HoldRecords == adatypes.HoldResponse {
@@ -574,6 +575,18 @@ func (adabas *Adabas) ReadLogicalWith(fileNr Fnr, adabasRequest *adatypes.Reques
 
 	adabas.Acbx.Acbxfnr = fileNr
 
+	err = adabas.loopCall(adabasRequest, x)
+	return
+}
+
+// ReadStream Read partial lob stream
+func (adabas *Adabas) ReadStream(adabasRequest *adatypes.Request, offset uint64, x interface{}) (err error) {
+	adabas.Acbx.Acbxcmd = l1.code()
+	adabas.Acbx.Acbxcop[0] = ' '
+	adabas.Acbx.Acbxcop[1] = 'L'
+	adabas.Acbx.Acbxisl = offset
+	adabasRequest.Multifetch = 1
+	adabasRequest.Limit = 1
 	err = adabas.loopCall(adabasRequest, x)
 	return
 }
@@ -674,7 +687,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 	}
 	var responseCode uint32
 	for responseCode == 0 {
-		if !(adabasRequest.Option.SecondCall > 0) {
+		if !(adabasRequest.Option.SecondCall > 0 || adabasRequest.Option.StreamCursor > 0) {
 			err = adabasRequest.Definition.CreateValues(false)
 			if err != nil {
 				return

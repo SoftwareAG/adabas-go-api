@@ -275,6 +275,9 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 		}
 		adaValue = newByteArrayValue(adaType)
 		return
+	case FieldTypeFieldLength:
+		adaValue = newLengthValue(adaType)
+		return
 	case FieldTypeLength, FieldTypeUByte, FieldTypeCharacter:
 		adaValue = newUByteValue(adaType)
 		return
@@ -295,6 +298,7 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 			return nil, NewGenericError(111, adaType.length, "large object alpha", adaType.Name())
 		}
 		adaValue = newStringValue(adaType)
+		Central.Log.Debugf("String value %p", adaValue)
 		return
 	case FieldTypeUnicode:
 		if adaType.length > 253 {

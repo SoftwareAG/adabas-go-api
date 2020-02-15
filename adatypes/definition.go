@@ -114,7 +114,7 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 		Central.Log.Debugf("Parent structure value not available")
 		parent = str.(*StructureType)
 	default:
-		Central.Log.Debugf("Parent structure value available")
+		Central.Log.Debugf("Parent structure value available %T", str)
 		parentStructure = str.(*StructureValue)
 		parent = parentStructure.adatype.(*StructureType)
 	}
@@ -157,6 +157,10 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 			if Central.IsDebugLevel() {
 				Central.Log.Debugf("Got out of map ->  ", value, " for index ", peIndex)
 			}
+		} else {
+			if parentStructure != nil {
+				Central.Log.Debugf("Len parent structure %d", len(parentStructure.Elements))
+			}
 		}
 		if value == nil {
 			if Central.IsDebugLevel() {
@@ -170,10 +174,20 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 				return
 			}
 			if Central.IsDebugLevel() {
-				Central.Log.Debugf("Append value to values : %v", parentStructure)
+				Central.Log.Debugf("Append value to values : %v %p <- %p", parentStructure, parentStructure, value)
 			}
 			adaValues = append(adaValues, value)
-
+			if parentStructure != nil && peIndex == 0 {
+				if len(parentStructure.Elements) > 0 {
+					parentStructure.Elements[0].Values = append(parentStructure.Elements[0].Values, value)
+					parentStructure.Elements[0].valueMap[types[i].Name()] = value
+				} else {
+					x := &structureElement{valueMap: make(map[string]IAdaValue)}
+					x.Values = append(x.Values, value)
+					x.valueMap[types[i].Name()] = value
+					parentStructure.Elements = append(parentStructure.Elements, x)
+				}
+			}
 		}
 		// If part of multiple field or period group set index value
 		if value.Type().HasFlagSet(FlagOptionPE) {

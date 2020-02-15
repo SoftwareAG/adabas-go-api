@@ -53,8 +53,9 @@ type BufferOption struct {
 	PartialLobSize bool
 	Ascending      bool
 	Mainframe      bool
-	SecondCall     uint8
 	multipleSize   uint32
+	StreamCursor   uint8
+	SecondCall     uint8
 }
 
 // NewBufferOption create option to parse the buffer

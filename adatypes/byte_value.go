@@ -121,6 +121,7 @@ func (value *byteValue) Float() (float64, error) {
 	return float64(value.value), nil
 }
 
+// unsigned byte value definition used to read 8-bit unsigned
 type ubyteValue struct {
 	adaValue
 	value uint8

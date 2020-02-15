@@ -63,11 +63,13 @@ func traverseHashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Tr
 
 // NewRecord new result record
 func NewRecord(definition *adatypes.Definition) (*Record, error) {
+	adatypes.Central.Log.Debugf("Create new record")
 	if definition == nil {
-		adatypes.Central.Log.Debugf("Definition values empty")
+		adatypes.Central.Log.Debugf("Definition empty")
 		return nil, adatypes.NewGenericError(69)
 	}
 	if definition.Values == nil {
+		adatypes.Central.Log.Debugf("Definition values empty")
 		err := definition.CreateValues(false)
 		if err != nil {
 			return nil, err

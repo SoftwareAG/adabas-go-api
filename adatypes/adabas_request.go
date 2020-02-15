@@ -270,6 +270,15 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 				adaType.Length()))
 			adabasRequest.RecordBufferLength += adaType.Length()
 		}
+	case FieldTypeFieldLength:
+		if buffer.Len() > 0 {
+			buffer.WriteString(",")
+		}
+		fn := adaType.ShortName()
+		if fn[0] == '#' {
+			fn = fn[1:]
+		}
+		buffer.WriteString(fmt.Sprintf("%sL,4,B", fn))
 	case FieldTypePhonetic, FieldTypeCollation, FieldTypeReferential:
 	case FieldTypeRedefinition:
 		if buffer.Len() > 0 {
@@ -363,7 +372,9 @@ func (def *Definition) CreateAdabasRequest(store bool, secondCall uint8, mainfra
 	return
 }
 
-// ParseBuffer parse given record buffer and multifetch buffer
+// ParseBuffer parse given record buffer and multifetch buffer and put
+// all data into the given definition value tree, corresponding to the
+// field definition of the concurrent field
 func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (responseCode uint32, err error) {
 	Central.Log.Debugf("Parse Adabas request buffers")
 	// If parser is available, use the parser to extract content
@@ -407,12 +418,14 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 			if err != nil {
 				return
 			}
+			if adabasRequest.Caller != nil {
 			err = adabasRequest.Caller.SendSecondCall(adabasRequest, x)
-			if err != nil {
-				return
+				if err != nil {
+					return
+			}	
 			}
 			Central.Log.Debugf("Found parser .... values avail.=%v", (adabasRequest.Definition.Values == nil))
-			err = adabasRequest.Parser(adabasRequest, x)
+				err = adabasRequest.Parser(adabasRequest, x)
 			if err != nil {
 				return
 			}
@@ -420,6 +433,7 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 
 			// If multifetch on, create values for next parse step, only possible on read calls
 			if nrMultifetchEntries > 0 {
+				Central.Log.Debugf("Create multifetch values")
 				//adabasRequest.Definition.Values = nil
 				err = adabasRequest.Definition.CreateValues(false)
 				if err != nil {
