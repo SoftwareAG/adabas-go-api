@@ -79,12 +79,12 @@ func TestAdabasFailure(t *testing.T) {
 		t.Fatal("Adabas call return value not correct", retb)
 	}
 	assert.Error(t, retb)
-	if adabas.Acbx.Acbxrsp != 148 {
+	if adabas.Acbx.Acbxrsp != AdaAnact {
 		t.Fatal(adabas.getAdabasMessage(), adabas.Acbx.Acbxrsp)
 	}
-	assert.Equal(t, uint16(148), adabas.Acbx.Acbxrsp)
+	assert.Equal(t, uint16(AdaAnact), adabas.Acbx.Acbxrsp)
 	adabas.Acbx.resetAcbx()
-	assert.Equal(t, uint16(148), adabas.Acbx.Acbxrsp)
+	assert.Equal(t, uint16(AdaAnact), adabas.Acbx.Acbxrsp)
 }
 
 func TestAdabasOk(t *testing.T) {

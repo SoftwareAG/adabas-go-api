@@ -252,6 +252,8 @@ func (adabas *Adabas) CallAdabas() (err error) {
 	if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
 		return adatypes.NewGenericError(2, string(adabas.Acbx.Acbxcmd[:]))
 	}
+	adabas.Acbx.Acbxrsp = AdaAnact
+	adabas.Acbx.Acbxerrc = 0
 	adatypes.Central.Log.Debugf("Input Adabas response = %d", adabas.Acbx.Acbxrsp)
 	recordBufferResize := uint8(5)
 	for {
@@ -260,12 +262,14 @@ func (adabas *Adabas) CallAdabas() (err error) {
 			if err != nil {
 				return
 			}
-			adatypes.LogMultiLineString(adabas.Acbx.String())
-			if adabas.Acbx.Acbxrsp != 0 {
-				if adabas.Acbx.Acbxrsp == 60 {
-					adatypes.Central.Log.Debugf("%s", adabas.Acbx.String())
-					for index := range adabas.AdabasBuffers {
-						adatypes.Central.Log.Debugf("%s", adabas.AdabasBuffers[index].String())
+			if adatypes.IsDebugLevel() {
+				adatypes.LogMultiLineString(adabas.Acbx.String())
+				if adabas.Acbx.Acbxrsp != AdaNormal {
+					if adabas.Acbx.Acbxrsp == AdaSYSBU {
+						adatypes.Central.Log.Debugf("%s", adabas.Acbx.String())
+						for index := range adabas.AdabasBuffers {
+							adatypes.Central.Log.Debugf("%s", adabas.AdabasBuffers[index].String())
+						}
 					}
 				}
 			}

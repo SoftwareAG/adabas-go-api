@@ -140,12 +140,12 @@ func callAdabas(c caller) {
 				fmt.Printf("Error calling adabas : %v rsp=%d\n", err, acbx.Acbxrsp)
 				return
 			}
-			if acbx.Acbxrsp != 0 {
+			if acbx.Acbxrsp != adabas.AdaNormal {
 				break
 			}
 			displayResult(acbx.Acbxisn, c.ada.AdabasBuffers[1].Bytes(), c.ada.AdabasBuffers[1].Received())
 		}
-		if acbx.Acbxrsp != 3 {
+		if acbx.Acbxrsp != adabas.AdaEOF {
 			fmt.Printf("Response code : %d\n", acbx.Acbxrsp)
 		}
 

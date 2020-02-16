@@ -119,7 +119,9 @@
 //
 // Partial large objects
 //
-// You can read a large objects using the `ReadStream` method to subdivide a
+// You can read a large objects using the
+///  ReadStream()
+// method to subdivide a
 // big large object into slices reading parts of the large objects instead of
 // read one big record of the large object.
 // The blocksize read in one stream call is defined in the `ReadRequest.Blocksize`.

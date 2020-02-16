@@ -117,7 +117,7 @@ func (acbx *Acbx) resetAcbx() {
 	adatypes.Central.Log.Debugf("Reset acbx len=%v", acbx.Acbxlen)
 	acbx.Acbxisn = 0
 	acbx.Acbxisq = 0
-	acbx.Acbxrsp = 148
+	acbx.Acbxrsp = AdaAnact
 
 	acbx.resetCop()
 	for i := 0; i < len(acbx.Acbxadd1); i++ {

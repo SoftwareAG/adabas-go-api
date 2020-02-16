@@ -56,11 +56,11 @@ func TestAdabasMessageError(t *testing.T) {
 
 	// Return: Hello, i18n
 	assert.Equal(t, "ADAGE94000: Adabas is not active or accessible (rsp=148,subrsp=0,dbid=21,file=0)", NewError(ada).Error())
-	ada.Acbx.Acbxrsp = 0
+	ada.Acbx.Acbxrsp = AdaNormal
 	assert.Equal(t, "ADAGE00000: Normal successful completion (rsp=0,subrsp=0,dbid=21,file=0)", NewError(ada).Error())
-	ada.Acbx.Acbxrsp = 17
+	ada.Acbx.Acbxrsp = AdaInvalidFileNumber
 	assert.Equal(t, "ADAGE11000: Invalid or unauthorized file number (rsp=17,subrsp=0,dbid=21,file=0)", NewError(ada).Error())
-	ada.Acbx.Acbxerrc = 1
+	ada.Acbx.Acbxerrc = AdaISNNotSorted
 	assert.Equal(t, "ADAGE11001: The program tried to access system file 1 or 2, and no OP command was issued. (rsp=17,subrsp=1,dbid=21,file=0)", NewError(ada).Error())
 	ada.Acbx.Acbxrsp = 120
 	ada.Acbx.Acbxerrc = 0
