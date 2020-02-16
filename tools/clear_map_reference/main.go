@@ -17,6 +17,7 @@
 *
  */
 
+// Package main Deprecated test application
 package main
 
 import (

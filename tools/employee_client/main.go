@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -17,7 +17,10 @@
 *
  */
 
-// Package main Test application to read demo data in Adabas
+// Test application to read data in Adabas using the Adabas example file 11,
+// containing EMPLOYEES example data.
+// It can start a read using multiple threads and loops.
+// A search string can restrict the query to a specific case.
 package main
 
 import (

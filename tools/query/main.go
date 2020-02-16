@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -17,6 +17,10 @@
 *
  */
 
+// Query application to read data in Adabas using classic database
+// access parameters like database id, file number and short names.
+// It can start a read using multiple threads and loops.
+// A search string can restrict the query to a specific case.
 package main
 
 import (

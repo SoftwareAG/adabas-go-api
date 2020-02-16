@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -17,6 +17,12 @@
 *
  */
 
+// Large object load example application to read file data in Adabas a predefined
+// Adabas Map "LOBEXAMPLE".
+// It loads a file content and stores it into a Adabas field defined by some
+// different file specific parameters like mimetype etc.
+// In advance a SHA checksum is generated and stored in a Adabas field. The
+// checksum can be used to validate storage late on.
 package main
 
 import (

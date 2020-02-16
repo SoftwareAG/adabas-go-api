@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -17,6 +17,11 @@
 *
  */
 
+// Test suite application to read data in Adabas. It provides the possibility
+// to define the Adabas file to be used.
+// It can start a read using multiple threads and loops.
+// A search string can restrict the query to a specific case.
+// It can track CPU and memory profiler informations.
 package main
 
 import (
