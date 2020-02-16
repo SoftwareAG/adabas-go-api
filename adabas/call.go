@@ -262,7 +262,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 			if err != nil {
 				return
 			}
-			if adatypes.IsDebugLevel() {
+			if adatypes.Central.IsDebugLevel() {
 				adatypes.LogMultiLineString(adabas.Acbx.String())
 				if adabas.Acbx.Acbxrsp != AdaNormal {
 					if adabas.Acbx.Acbxrsp == AdaSYSBU {
