@@ -120,10 +120,24 @@
 // Partial large objects
 //
 // You can read a large objects using the
-///  ReadStream()
+//   ReadStream()
+//
 // method to subdivide a
 // big large object into slices reading parts of the large objects instead of
 // read one big record of the large object.
-// The blocksize read in one stream call is defined in the `ReadRequest.Blocksize`.
+// The blocksize read in one stream call is defined in the
+//   ReadRequest.Blocksize
+//
+// In addition the field definition does have partial lob API to read a part
+// of the partial lob only.
+// A partial lob can be defined using the offset and length in brackets.
+// This query fields will read field RA (Large alpha object) beginning from
+// first entry. It will read a block of size 1000.
+//   err = request.QueryFields("RA(1,1000)")
+//
+// To define the range in a read or store call procedure, the value instance
+// of the field can set the partial lob range using
+//   partialValue := value.(adatypes.PartialValue)
+//   partialValue.SetPartial(offset, uint32(len(data)))
 //
 package adabas
