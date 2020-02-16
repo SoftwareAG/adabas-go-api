@@ -881,4 +881,3 @@ var statisMessages = []struct {
 	{"ADG0000138", "en", "Stream query returns no record"},
 	{"ADG0000150", "en", "Cannot scan value for type {0}"},
 }
-
