@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -60,6 +60,7 @@ func NewURL(url string) (*URL, error) {
 	return URL, nil
 }
 
+// examineURL examine and validate string representation of URL
 func (URL *URL) examineURL(url string) error {
 	adatypes.Central.Log.Debugf("New Adabas URL %s", url)
 	re := regexp.MustCompile(`([0-9]+)\((\w*):\/\/([^:]*?):([0-9]*)\)`)

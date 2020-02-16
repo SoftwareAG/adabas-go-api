@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -39,7 +39,7 @@ const messageFilePattern = `^\w+\.[a-zA-Z]{2}$`
 var locales map[string]map[string]string
 
 var headerTemplate = `/*
-* Copyright © 2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2019-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -71,8 +71,7 @@ var statisMessages = []struct {
 	}{
 		{{range $localekey, $localevalue := .Messages}}{{range $key, $value := $localevalue}}
 		  { "{{$key}}","en","{{$value}}" },{{end}} {{end}}
-	}
-`
+	}`
 
 func generateByTemplate(file *os.File) error {
 

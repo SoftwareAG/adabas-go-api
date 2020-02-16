@@ -1,7 +1,7 @@
 // +build !adalnk !cgo
 
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -24,14 +24,22 @@ package adabas
 import (
 	"os"
 	"os/user"
+	"sync/atomic"
 	"time"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
-// NewAdabasID create a new Adabas ID instance
+var idCounter uint32
+
+// NewAdabasID create a new unique Adabas ID instance using static data. Instead
+// using the current process id a generate unique time stamp and counter version
+// of the pid is used.
 func NewAdabasID() *ID {
-	adaid := AID{level: 3, Pid: uint32(os.Getpid()), size: adabasIDSize}
+	id := atomic.AddUint32(&idCounter, 1)
+	adaid := AID{level: 3, size: adabasIDSize}
+	adaid.Timestamp = uint64(time.Now().Unix())
+	adaid.Pid = uint32((adaid.Timestamp - (adaid.Timestamp % 100)) + uint64(id))
 	aid := ID{AdaID: &adaid, connectionMap: make(map[string]*Status)}
 	curUser, err := user.Current()
 	adatypes.Central.Log.Debugf("Create new ID(remote) with %s", curUser)
@@ -50,7 +58,9 @@ func NewAdabasID() *ID {
 	return &aid
 }
 
-// CallAdabas this method sends the call to the database
+// CallAdabas this method sends the call to the Adabas database. It uses only
+// remote Adabas calls with ADATCP because this part is not used with native
+// AdabasClient library support
 func (adabas *Adabas) CallAdabas() (err error) {
 	defer adatypes.TimeTrack(time.Now(), "CallAdabas "+string(adabas.Acbx.Acbxcmd[:]))
 

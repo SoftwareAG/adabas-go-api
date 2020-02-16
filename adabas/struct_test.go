@@ -103,7 +103,7 @@ func TestStructStore(t *testing.T) {
 	e := []*Employees{
 		&Employees{ID: "GOSTORE", Birth: 123478, Name: "ABC"},
 	}
-	err = ReflectStore(e, connection, "Employees")
+	err = connection.ReflectStore(e, "Employees")
 	if assert.NoError(t, err) {
 		connection.EndTransaction()
 	}
@@ -135,7 +135,7 @@ func TestStructSimple(t *testing.T) {
 	fmt.Println(e, ts)
 	employeesType := reflect.TypeOf((*Employees)(nil)).Elem()
 	fmt.Println(reflect.TypeOf((*Employees)(nil)).Elem())
-	list, err := ReflectSearch("Employees", employeesType, connection, "ID=GOSTORE")
+	list, err := connection.ReflectSearch("Employees", employeesType, "ID=GOSTORE")
 	if !assert.NoError(t, err) {
 		return
 	}

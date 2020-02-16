@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -78,8 +78,8 @@ func structParser(adabasRequest *adatypes.Request, x interface{}) error {
 	return nil
 }
 
-// ReflectSearch search in map using a structure given
-func ReflectSearch(mapName string, t reflect.Type, connection *Connection, search string) ([]interface{}, error) {
+// ReflectSearch search in map using a interface type given and a search query
+func (connection *Connection) ReflectSearch(mapName string, t reflect.Type, search string) ([]interface{}, error) {
 	adatypes.Central.Log.Debugf("Structured call, %s - %d", t.Name(), t.NumField())
 	var buffer bytes.Buffer
 	for i := 0; i < t.NumField(); i++ {
@@ -108,8 +108,8 @@ func ReflectSearch(mapName string, t reflect.Type, connection *Connection, searc
 	return structResult.entries, nil
 }
 
-// ReflectStore use reflect map to store data
-func ReflectStore(entries interface{}, connection *Connection, mapName string) error {
+// ReflectStore use reflect map to store data with a dynamic interface and Adabas Map name
+func (connection *Connection) ReflectStore(entries interface{}, mapName string) error {
 	t := reflect.TypeOf(entries)
 	adatypes.Central.Log.Debugf("Store type = %s", t.String())
 	switch reflect.TypeOf(entries).Kind() {

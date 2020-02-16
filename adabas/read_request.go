@@ -30,6 +30,7 @@ import (
 
 const (
 	maxReadRecordLimit = 20
+	defaultBlockSize   = 64000
 )
 
 type queryField struct {
@@ -53,9 +54,12 @@ type ReadRequest struct {
 	HoldRecords       adatypes.HoldType
 	queryFunction     func(string) (*Response, error)
 	cursoring         *Cursoring
+	BlockSize         uint32
 }
 
-// NewReadRequest create a request defined by another request (not even ReadRequest required)
+// NewReadRequest create a request defined by a dynamic list of parameters.
+// This constructor is used internally. Use the `Connection` instance to
+// use read requests to Adabas.
 func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 	if len(param) == 0 {
 		return nil, errors.New("Not enough parameters for NewReadRequest")
@@ -133,7 +137,7 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 
 // NewReadRequestCommon create a request defined by another request (not even ReadRequest required)
 func createNewReadRequestCommon(commonRequest *commonRequest) (*ReadRequest, error) {
-	request := &ReadRequest{HoldRecords: adatypes.HoldNone}
+	request := &ReadRequest{HoldRecords: adatypes.HoldNone, BlockSize: defaultBlockSize}
 	request.commonRequest = *commonRequest
 	request.commonRequest.adabasMap = nil
 	request.commonRequest.MapName = ""
@@ -160,12 +164,14 @@ func createNewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Rep
 	}
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
 	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
+		BlockSize: defaultBlockSize,
 		commonRequest: commonRequest{MapName: mapName, adabas: dataAdabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
 }
 
-// createNewMapReadRequest create a new Request instance
+// createNewMapReadRequest create a new Request instance defined by a Adabas Map
+// and a Adabas `instance`
 func createNewMapReadRequest(mapName string, adabas *Adabas) (request *ReadRequest, err error) {
 	var adabasMap *Map
 	if adabas == nil {
@@ -186,6 +192,7 @@ func createNewMapReadRequest(mapName string, adabas *Adabas) (request *ReadReque
 
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
 	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
+		BlockSize: defaultBlockSize,
 		commonRequest: commonRequest{MapName: mapName, adabas: adabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
@@ -203,21 +210,24 @@ func createNewMapPointerReadRequest(adabas *Adabas, adabasMap *Map) (request *Re
 
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
 	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
+		BlockSize: defaultBlockSize,
 		commonRequest: commonRequest{MapName: adabasMap.Name, adabas: cloneAdabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
 }
 
-// createNewReadRequestAdabas create a new Request instance
+// createNewReadRequestAdabas create a new Request instance using an `Adabas`
+// instance and a file number
 func createNewReadRequestAdabas(adabas *Adabas, fnr Fnr) *ReadRequest {
 	clonedAdabas := NewClonedAdabas(adabas)
 
 	return &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
+		BlockSize: defaultBlockSize,
 		commonRequest: commonRequest{adabas: clonedAdabas,
 			repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}
 }
 
-// Open Open the Adabas session
+// Open call Adabas session and open a user queue entry in the database.
 func (request *ReadRequest) Open() (opened bool, err error) {
 	return request.commonOpen()
 }
@@ -257,7 +267,9 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, e
 	return
 }
 
-// SetHoldRecords set hold record done
+// SetHoldRecords set hold record flag. All read operations will be done
+// setting the record in hold for atomic reads and possible update operations
+// afterwards.
 func (request *ReadRequest) SetHoldRecords(hold adatypes.HoldType) {
 	request.HoldRecords = hold
 }
@@ -319,7 +331,8 @@ func parseReadToInterface(adabasRequest *adatypes.Request, x interface{}) (err e
 	return
 }
 
-// ReadPhysicalSequence read records in physical order
+// ReadPhysicalSequence the Adabas records will be read in physical order. The
+// physical read is an I/O optimal read with physical order of the records.
 func (request *ReadRequest) ReadPhysicalSequence() (result *Response, err error) {
 	result = &Response{Definition: request.definition, fields: request.fields}
 	err = request.ReadPhysicalSequenceWithParser(nil, result)
@@ -329,7 +342,9 @@ func (request *ReadRequest) ReadPhysicalSequence() (result *Response, err error)
 	return
 }
 
-// ReadPhysicalSequenceStream read records in physical order
+// ReadPhysicalSequenceStream the Adabas records will be read in physical order. The
+// physical read is an I/O optimal read with physical order of the records.
+// For each read record a callback function defined by `streamFunction` will be called.
 func (request *ReadRequest) ReadPhysicalSequenceStream(streamFunction StreamFunction,
 	x interface{}) (result *Response, err error) {
 	s := &stream{streamFunction: streamFunction, result: &Response{Definition: request.definition, fields: request.fields}, x: x}
@@ -341,7 +356,10 @@ func (request *ReadRequest) ReadPhysicalSequenceStream(streamFunction StreamFunc
 	return result, nil
 }
 
-// ReadPhysicalInterface read records with a physical order given and calls interface function
+// ReadPhysicalInterface the Adabas records will be read in physical order. The
+// physical read is an I/O optimal read with physical order of the records.
+// For each read record a callback function defined by `interfaceFunction` will be called.
+// This variant is used if dynamic interface are used.
 func (request *ReadRequest) ReadPhysicalInterface(interfaceFunction InterfaceFunction,
 	x interface{}) (result *Response, err error) {
 	s := &stream{interfaceFunction: interfaceFunction, result: &Response{Definition: request.definition}, x: x}
@@ -353,7 +371,8 @@ func (request *ReadRequest) ReadPhysicalInterface(interfaceFunction InterfaceFun
 	return
 }
 
-// ReadPhysicalSequenceWithParser read records in physical order
+// ReadPhysicalSequenceWithParser read records in physical order using a
+// special parser metod. This function will be removed in further version.
 func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes.RequestParser, x interface{}) (err error) {
 	_, err = request.Open()
 	if err != nil {
@@ -384,7 +403,8 @@ func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes
 	return
 }
 
-// ReadISN read records defined by a given ISN
+// ReadISN this method reads a records defined by a given ISN. Ths ISN may
+// be read by an search query before.
 func (request *ReadRequest) ReadISN(isn adatypes.Isn) (result *Response, err error) {
 	result = &Response{Definition: request.definition, fields: request.fields}
 	err = request.ReadISNWithParser(isn, nil, result)
@@ -462,7 +482,9 @@ func streamRecord(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	return
 }
 
-// ReadLogicalWithStream read records with a logical order given by a search string and calls stream function
+// ReadLogicalWithStream this method does an logical read using a search operation.
+// The read records have  a logical order given by a search string. The result records will
+// be provied to the callback stream function
 func (request *ReadRequest) ReadLogicalWithStream(search string, streamFunction StreamFunction,
 	x interface{}) (result *Response, err error) {
 	s := &stream{streamFunction: streamFunction, result: &Response{Definition: request.definition}, x: x}
@@ -474,7 +496,9 @@ func (request *ReadRequest) ReadLogicalWithStream(search string, streamFunction 
 	return
 }
 
-// ReadLogicalWithInterface read records with a logical order given by a search string and calls interface function
+// ReadLogicalWithInterface this method does an logical read using a search operation.
+// The read records have  a logical order given by a search string. The result records will
+// be provied to the callback interface function
 func (request *ReadRequest) ReadLogicalWithInterface(search string, interfaceFunction InterfaceFunction,
 	x interface{}) (result *Response, err error) {
 	s := &stream{interfaceFunction: interfaceFunction, result: &Response{Definition: request.definition}, x: x}
@@ -486,7 +510,9 @@ func (request *ReadRequest) ReadLogicalWithInterface(search string, interfaceFun
 	return
 }
 
-// ReadLogicalWith read records with a logical order given by a search string
+// ReadLogicalWith this method does an logical read using a search operation.
+// The read records have  a logical order given by a search string. The result records will
+// be provied in the result `Response` structure value slice.
 func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, err error) {
 	result = &Response{Definition: request.definition, fields: request.fields}
 	err = request.ReadLogicalWithWithParser(search, nil, result)
@@ -496,7 +522,8 @@ func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, er
 	return
 }
 
-// ReadByISN read records with a logical order given by a ISN sequence
+// ReadByISN read records with a logical order given by a ISN sequence.
+// The ISN is to be set by the `Start` `ReadRequest` parameter.
 func (request *ReadRequest) ReadByISN() (result *Response, err error) {
 	result = &Response{Definition: request.definition, fields: request.fields}
 	err = request.ReadLogicalWithWithParser("", nil, result)
@@ -506,7 +533,8 @@ func (request *ReadRequest) ReadByISN() (result *Response, err error) {
 	return
 }
 
-// ReadLogicalWithWithParser read records with a logical order given by a search string
+// ReadLogicalWithWithParser read records with a logical order given by a search string.
+// The given parser will parse the corresponding data.
 func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParser adatypes.RequestParser, x interface{}) (err error) {
 	adatypes.Central.Log.Debugf("Read logical with parser")
 	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
@@ -605,7 +633,8 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 	return
 }
 
-// ReadLogicalBy read in logical order given by the descriptor argument
+// ReadLogicalBy this method read Adabas records in logical order given by the descriptor argument.
+// The access in the database will be reduce to I/O to the ASSO container.
 func (request *ReadRequest) ReadLogicalBy(descriptors string) (result *Response, err error) {
 	result = &Response{Definition: request.definition}
 	err = request.ReadLogicalByWithParser(descriptors, nil, result)
@@ -615,7 +644,9 @@ func (request *ReadRequest) ReadLogicalBy(descriptors string) (result *Response,
 	return
 }
 
-// ReadLogicalByStream read records with a logical order given by a descriptor sort and calls stream function
+// ReadLogicalByStream this method read Adabas records in logical order given by the descriptor argument.
+// The access in the database will NOT be reduce to I/O to the ASSO container.
+// The result set will be called using the `streamFunction` method given.
 func (request *ReadRequest) ReadLogicalByStream(descriptor string, streamFunction StreamFunction,
 	x interface{}) (result *Response, err error) {
 	s := &stream{streamFunction: streamFunction, result: &Response{Definition: request.definition, fields: request.fields}, x: x}
@@ -667,7 +698,8 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 	return
 }
 
-// HistogramBy read a descriptor in a descriptor order
+// HistogramBy this method read Adabas records in logical order given by the descriptor argument.
+// The access in the database will be reduce to I/O to the ASSO container.
 func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, err error) {
 	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
 		_, err = request.Open()
@@ -710,7 +742,10 @@ func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, er
 	return
 }
 
-// HistogramWithStream read a descriptor given by a search criteria
+// HistogramWithStream this method read Adabas records in logical order given by the descriptor-based
+// search argument.
+// The access in the database will be reduce to I/O to the ASSO container.
+// The result set will be called using the `streamFunction` method given.
 func (request *ReadRequest) HistogramWithStream(search string, streamFunction StreamFunction,
 	x interface{}) (result *Response, err error) {
 	s := &stream{streamFunction: streamFunction, result: &Response{Definition: request.definition}, x: x}
@@ -722,7 +757,9 @@ func (request *ReadRequest) HistogramWithStream(search string, streamFunction St
 	return result, nil
 }
 
-// HistogramWith read a descriptor given by a search criteria
+// HistogramWith this method read Adabas records in logical order given by the descriptor-based
+// search argument.
+// The access in the database will be reduce to I/O to the ASSO container.
 func (request *ReadRequest) HistogramWith(search string) (result *Response, err error) {
 	response := &Response{Definition: request.definition, fields: request.fields}
 	err = request.histogramWithWithParser(search, parseReadToRecord, response)
@@ -801,6 +838,7 @@ type evaluateFieldMap struct {
 	fields      map[string]int
 }
 
+// initFieldSubTypes initialize field sub types.
 func initFieldSubTypes(st *adatypes.StructureType, queryFields map[string]*queryField, current *int) {
 	for _, sub := range st.SubTypes {
 		if sub.IsStructure() {
@@ -841,7 +879,13 @@ func traverseFieldMap(adaType adatypes.IAdaType, parentType adatypes.IAdaType, l
 	return nil
 }
 
-// QueryFields define the fields queried in that request
+// QueryFields this method define the set of fields which are part of
+// the query. It restrict the fields and tree to the needed set.
+// If the parameter is set to "*" all fields are part of the request.
+// If the parameter is set to "" no field is returned and only the
+// ISN an quantity information are provided.
+// Following fields are keywords: #isn, #ISN, #key
+// Fields started with '#' will provide only field data length information.
 func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	if request.dynamic != nil {
 		if fieldq == "*" {
@@ -895,6 +939,7 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	return
 }
 
+// scanFieldsTraverser create parameter list of values
 func scanFieldsTraverser(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	sf := x.(*scanFields)
 	adatypes.Central.Log.Debugf("Scan field of %s", adaValue.Type().Name())
@@ -973,7 +1018,8 @@ func scanFieldsTraverser(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 	return adatypes.Continue, nil
 }
 
-// Scan scan for different field entries
+// Scan this method can be used to scan a number of parameters filled
+// by values in the result set. See README.md explanation
 func (request *ReadRequest) Scan(dest ...interface{}) error {
 	if request.cursoring.HasNextRecord() {
 		record, err := request.cursoring.NextRecord()
@@ -991,6 +1037,7 @@ type createTypeInterface struct {
 	fieldNames map[string][]string
 }
 
+// traverseCreateTypeInterface traverser method create type interface
 func traverseCreateTypeInterface(adaType adatypes.IAdaType, parentType adatypes.IAdaType, level int, x interface{}) error {
 	cti := x.(*createTypeInterface)
 	name := strings.ReplaceAll(adaType.Name(), "-", "")
@@ -1025,29 +1072,5 @@ func traverseCreateTypeInterface(adaType adatypes.IAdaType, parentType adatypes.
 		fmt.Println("Field Type", name, adaType.Type())
 		panic("Field type missing " + adaType.Type().FormatCharacter())
 	}
-	return nil
-}
-
-func (request *ReadRequest) createInterface(fieldList string) (err error) {
-	err = request.loadDefinition()
-	if err != nil {
-		return
-	}
-	err = request.QueryFields(fieldList)
-	if err != nil {
-		return
-	}
-
-	var structType reflect.Type
-	tm := adatypes.NewTraverserMethods(traverseCreateTypeInterface)
-	cti := createTypeInterface{fields: make([]reflect.StructField, 0), fieldNames: make(map[string][]string)}
-	isnField := reflect.StructField{Name: "ISN",
-		Type: reflect.TypeOf(uint64(0))}
-	cti.fields = append(cti.fields, isnField)
-	request.definition.TraverseTypes(tm, true, &cti)
-	structType = reflect.StructOf(cti.fields)
-	dynamic := &adatypes.DynamicInterface{DataType: structType, FieldNames: cti.fieldNames}
-	dynamic.FieldNames["#isn"] = []string{"ISN"}
-	request.dynamic = dynamic
 	return nil
 }

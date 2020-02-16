@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -112,7 +112,10 @@ type Map struct {
 	redefinitionFieldMap map[string][]*MapField
 }
 
-// NewAdabasMap create new Adabas map instance
+// NewAdabasMap create new Adabas map instance containing the long name
+// to short name definition. The definition is enhance to include extra
+// charset and dynamic length definition like the Natural DDM provides it.
+// In advance redefinition of fields to a subset of fields is possible.
 func NewAdabasMap(param ...interface{}) *Map {
 	redefinitionFieldMap := make(map[string][]*MapField)
 	switch param[0].(type) {
@@ -134,7 +137,7 @@ func NewAdabasMap(param ...interface{}) *Map {
 	return nil
 }
 
-// addFields Add a field to the Map
+// addFields Add a field shortname/long name definition to the Map
 func (adabasMap *Map) addFields(shortName string, longName string) *MapField {
 	adatypes.Central.Log.Debugf("Add map name %s to %s", shortName, longName)
 	mField := &MapField{ShortName: shortName, LongName: longName}
@@ -146,7 +149,7 @@ func (adabasMap *Map) addFields(shortName string, longName string) *MapField {
 	return mField
 }
 
-// FieldNames list of fields of map
+// FieldNames list of fields of the map is returned
 func (adabasMap *Map) FieldNames() []string {
 	fields := make([]string, 0)
 	for _, f := range adabasMap.Fields {
@@ -157,6 +160,9 @@ func (adabasMap *Map) FieldNames() []string {
 	return fields
 }
 
+// addRedefinitionField add a sub redefinition of an field of the Adabas file.
+// In Cobol and Natural it is possible to redefine Alpha fields to contain a
+// subset of other possible field types.
 func (adabasMap *Map) addRedefinitionField(mField *MapField) {
 	adabasMap.RedefinitionFields = append(adabasMap.RedefinitionFields, mField)
 	adatypes.Central.Log.Debugf("%s add redefinition -> %s", mField.ShortName, mField.ShortName[1:])
@@ -173,7 +179,7 @@ func (adabasMap *Map) addRedefinitionField(mField *MapField) {
 
 }
 
-// FieldShortNames list of fields of map
+// FieldShortNames list of field short names of the Map
 func (adabasMap *Map) FieldShortNames() []string {
 	fields := make([]string, 0)
 	for _, f := range adabasMap.Fields {
@@ -182,7 +188,7 @@ func (adabasMap *Map) FieldShortNames() []string {
 	return fields
 }
 
-// String report the Map repository, data reference and the fields mapping of a map
+// String reports the Map repository, data reference and the fields mapping of a map
 func (adabasMap *Map) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("MapName: " + adabasMap.Name + "\n")
@@ -204,7 +210,7 @@ func (adabasMap *Map) String() string {
 	return buffer.String()
 }
 
-// createFieldMap create a field map to find fields very quick
+// createFieldMap create a field hash map to find fields very quick
 func (adabasMap *Map) createFieldMap() {
 	adabasMap.fieldMap = make(map[string]*MapField)
 	for _, f := range adabasMap.Fields {
@@ -217,7 +223,8 @@ func (adabasMap *Map) createFieldMap() {
 	adatypes.Central.Log.Debugf("Number of hash map entries %d", len(adabasMap.fieldMap))
 }
 
-// URL current map data URL reference
+// URL current map data URL reference. This is the database URL where the
+// Map data is taken from.
 func (adabasMap *Map) URL() *URL {
 	return &adabasMap.Data.URL
 }
@@ -397,6 +404,8 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 	return nil
 }
 
+// adaptRedefintionFields read Map entry adapt the redefinition definition during
+// Map read process.
 func adaptRedefintionFields(redType *adatypes.RedefinitionType, fields []*MapField) {
 	adatypes.Central.Log.Debugf("Fields: %#v", fields)
 	for _, f := range fields {
@@ -449,7 +458,8 @@ func (adabasMap *Map) adaptFieldType(definition *adatypes.Definition, dynamic *a
 	return
 }
 
-// Store stores the Adabas map in the given repository
+// Store stores the Adabas map in the given Adabas Map repository. It generates
+// a new entry if it is new or update current entry
 func (adabasMap *Map) Store() error {
 	ID := NewAdabasID()
 	if adabasMap.Repository == nil {

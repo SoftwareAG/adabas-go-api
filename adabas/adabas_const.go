@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -430,6 +430,7 @@ func (cc commandCode) command() string {
 	return commandCodes[cc]
 }
 
+// validAcbxCommand validate ACBX command names
 func validAcbxCommand(cmd [2]byte) bool {
 	checkCmd := strings.ToUpper(string(cmd[:]))
 	for _, validCmd := range commandCodes {

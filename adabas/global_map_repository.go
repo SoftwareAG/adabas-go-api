@@ -1,5 +1,5 @@
 /*
-* Copyright © 2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2019-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -44,16 +44,21 @@ func init() {
 	}
 }
 
-// StartAsynchronousMapCache asynchronous map cache read
+// StartAsynchronousMapCache this method starts a thread which update the map cache
+// periodically. The asynchronous Map cache is a repository Adabas Map cache
+// which is asked for Adabas Maps defined. The given interval is the interval
+// the cache is updated.
 func StartAsynchronousMapCache(interval int) {
 	go loopMapCache(interval)
 }
 
-// EndAsynchronousMapCache end asynchronous cache
+// EndAsynchronousMapCache the Map cache update thread is initiated to end asynchronous
+// cache update.
 func EndAsynchronousMapCache() {
 	mapLoopRunning = false
 }
 
+// loopMapCache Adabas Map cache loop thread
 func loopMapCache(interval int) {
 	adatypes.Central.Log.Debugf("Init loop map cache check")
 	mapLoopRunning = true
@@ -75,7 +80,9 @@ func loopMapCache(interval int) {
 	}
 }
 
-// AddGlobalMapRepositoryReference add global map repository
+// AddGlobalMapRepositoryReference this method adds a Adabas Map
+// repository used to search for a used Adabas Map. This repository is
+// defined global.
 func AddGlobalMapRepositoryReference(reference string) error {
 	url, fnr, err := extractReference(reference)
 	if err != nil {
@@ -85,7 +92,9 @@ func AddGlobalMapRepositoryReference(reference string) error {
 	return nil
 }
 
-// AddGlobalMapRepository add global map repository
+// AddGlobalMapRepository this method adds a Adabas Map
+// repository used to search for a used Adabas Map. This repository is
+// defined global.
 func AddGlobalMapRepository(i interface{}, fnr Fnr) {
 	var url *URL
 	switch i.(type) {
@@ -107,7 +116,8 @@ func AddGlobalMapRepository(i interface{}, fnr Fnr) {
 	repositories[reference] = rep
 }
 
-// DelGlobalMapRepositoryReference delete global map repository
+// DelGlobalMapRepositoryReference this method removes a global map repository
+// entry.
 func DelGlobalMapRepositoryReference(reference string) error {
 	url, fnr, err := extractReference(reference)
 	if err != nil {
@@ -117,7 +127,8 @@ func DelGlobalMapRepositoryReference(reference string) error {
 	return nil
 }
 
-// DelGlobalMapRepository delete global map repository
+// DelGlobalMapRepository this method removes a global map repository
+// entry.
 func DelGlobalMapRepository(i interface{}, fnr Fnr) {
 	url := evaluateURL(i)
 	if repositories != nil {
@@ -134,7 +145,8 @@ func DelGlobalMapRepository(i interface{}, fnr Fnr) {
 	}
 }
 
-// CleanGlobalMapRepository remove all global defined repositories
+// CleanGlobalMapRepository this methods removes all global defined repositories
+// in the Adabas Map repository.
 func CleanGlobalMapRepository() {
 	mapHash = make(map[string]*Repository)
 	repositories = nil
@@ -164,7 +176,7 @@ func DumpGlobalMapRepositories() {
 	fmt.Printf("Number of entries in cache=%d\n", len(mapHash))
 }
 
-// AllGlobalMaps search in map repository all maps
+// AllGlobalMaps provides all Adabas Maps defined in the in global defined repositories
 func AllGlobalMaps(adabas *Adabas) (maps []*Map, err error) {
 	mm := make(map[string]string)
 	for mn, mr := range repositories {
@@ -187,7 +199,7 @@ func AllGlobalMaps(adabas *Adabas) (maps []*Map, err error) {
 	return
 }
 
-// AllGlobalMapNames search in map repositories global defined, all map names
+// AllGlobalMapNames provides all Adabas Map names defined in the in global defined repositories
 func AllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
 	// First map loop running using the cache map
 	if mapLoopRunning {
@@ -204,7 +216,7 @@ func AllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
 	return readAllGlobalMapNames(adabas)
 }
 
-// AllGlobalMapNames search in map repositories global defined, all map names
+// readAllGlobalMapNames search in map repositories global defined, all map names
 func readAllGlobalMapNames(ada *Adabas) (maps []string, err error) {
 	defer ada.Close()
 	maxCacheTime := time.Now().Add(time.Duration(-mapMaxMinutesCache) * time.Minute)
@@ -231,7 +243,7 @@ func readAllGlobalMapNames(ada *Adabas) (maps []string, err error) {
 	return
 }
 
-// SearchMapRepository search in map repository for a specific map name
+// SearchMapRepository searchs in global-defined Adabas Map repositories for a specific map name
 func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, repository *Repository, err error) {
 	// Check if hash is defined
 	if r, ok := mapHash[mapName]; ok {
@@ -276,6 +288,7 @@ func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, reposi
 	return
 }
 
+// extractReference extract string representation to URL and fnr
 func extractReference(reference string) (url *URL, fnr Fnr, err error) {
 	v := strings.Split(reference, ",")
 	if len(v) < 2 {

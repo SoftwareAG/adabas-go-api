@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -164,7 +164,7 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 	return
 }
 
-// search the repository for a map name
+// searchRepository search a Adabas Map by name in the Adabas Map repository
 func (connection *Connection) searchRepository(adabasID *ID, repository *Repository,
 	mapName string) (err error) {
 	if repository == nil {
@@ -219,7 +219,7 @@ func (connection *Connection) searchRepository(adabasID *ID, repository *Reposit
 	return
 }
 
-// parse the authentication credentials in the connection string
+// parseAuth parse the authentication credentials in the connection string
 func parseAuth(id *ID, value string) error {
 	re := regexp.MustCompile(`(\w+)=(\w+|'.+'|".+")(,)?`)
 	match := re.FindAllString(value, -1)
@@ -277,7 +277,9 @@ func (connection *Connection) Open() error {
 	return err
 }
 
-// Close close Adabas session
+// Close the Adabas session will be closed. An Adabas session/user queue entry
+// in the database will be removed. If transaction are open, the backout of the
+// transaction is called. All open transaction a rolled back and data restored.
 func (connection *Connection) Close() {
 	if connection.adabasToData != nil {
 		connection.adabasToData.BackoutTransaction()
@@ -289,7 +291,8 @@ func (connection *Connection) Close() {
 	}
 }
 
-// EndTransaction current transaction is finally stored in the database
+// EndTransaction all current transaction will be finally stored in the
+// Adabas database.
 func (connection *Connection) EndTransaction() error {
 	if connection.adabasToData != nil {
 		err := connection.adabasToData.EndTransaction()
@@ -324,6 +327,7 @@ func (connection *Connection) Release() error {
 }
 
 // ReleaseCID any database command id resources, like command id caches assigned to a user
+// are released on the database.
 func (connection *Connection) ReleaseCID() error {
 	if connection.adabasToData != nil {
 		err := connection.adabasToData.ReleaseCmdID()
@@ -340,12 +344,14 @@ func (connection *Connection) ReleaseCID() error {
 	return nil
 }
 
-// AddCredential add user id and password credentials
+// AddCredential this method adds user id and password credentials to the called.
+// The credentials are needed if the Adabas security is active in the database.
 func (connection *Connection) AddCredential(user string, pwd string) {
 	connection.ID.AddCredential(user, pwd)
 }
 
-// CreateReadRequest create a read request
+// CreateReadRequest this method create a read request defined by the given map in
+// the `Connection` creation. If no map is given, an error 83 is returned.
 func (connection *Connection) CreateReadRequest() (request *ReadRequest, err error) {
 	if connection.adabasMap == nil {
 		adatypes.Central.Log.Debugf("Map empty: %#v", connection)
@@ -357,14 +363,17 @@ func (connection *Connection) CreateReadRequest() (request *ReadRequest, err err
 	return
 }
 
-// CreateFileReadRequest create a read request
+// CreateFileReadRequest this method creates a read request using a given Adabas
+// file number. The file number request will be used with Adabas short names, not
+// long names.
 func (connection *Connection) CreateFileReadRequest(fnr Fnr) (*ReadRequest, error) {
 	adatypes.Central.Log.Debugf("Connection: %#v", connection)
 	adatypes.Central.Log.Debugf("Data referenced : %#v", connection.adabasToData)
 	return NewReadRequest(connection.adabasToData, fnr)
 }
 
-// CreateMapReadRequest create a read request using a given map
+// CreateMapReadRequest this method creates a read request using a given Adabas Map
+// definition. The Map will be searched in an globally defined Map repository only.
 func (connection *Connection) CreateMapReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 	t := reflect.TypeOf(param[0])
 	switch t.Kind() {
@@ -401,12 +410,14 @@ func (connection *Connection) CreateMapReadRequest(param ...interface{}) (reques
 	return
 }
 
-// CreateStoreRequest create a store request
+// CreateStoreRequest this method creates a store request for a Adabas file number.
+// The store will be used with Adabas short names only.
 func (connection *Connection) CreateStoreRequest(fnr Fnr) (*StoreRequest, error) {
 	return NewStoreRequestAdabas(connection.adabasToData, fnr), nil
 }
 
-// CreateMapWithInterface create map request using dynamic interface
+// CreateMapWithInterface this method create a Adabas Map request using the Map name
+// and a list of fields defined in the dynamic interface
 func (connection *Connection) CreateMapWithInterface(mapName string, fieldList string) (request *ReadRequest, err error) {
 	err = connection.prepareMapUsage(mapName)
 	if err != nil {
@@ -422,46 +433,14 @@ func (connection *Connection) CreateMapWithInterface(mapName string, fieldList s
 	return connection.CreateMapReadRequest(mapName, fieldList)
 }
 
+// prepareMapUsage prepare Map usage
 func (connection *Connection) prepareMapUsage(mapName string) (err error) {
 	return connection.searchRepository(connection.ID, connection.repository, mapName)
-	// if err == nil {
-	// 	return nil
-	// }
-	// if connection.repository == nil {
-	// 	return adatypes.NewGenericError(5)
-	// }
-	// // TODO search global enable
-	// adatypes.Central.Log.Debugf("Search Map : %s platform: %v", mapName, connection.adabasToMap.ID.platform)
-	// connection.adabasMap, err = connection.repository.SearchMap(connection.adabasToMap, mapName)
-	// if err != nil {
-	// 	return
-	// }
-	// if connection.adabasMap == nil {
-	// 	err = adatypes.NewGenericError(6, mapName)
-	// 	return
-	// }
-	// // Reuse Adabas handle
-	// if connection.adabasMap.Repository.URL.String() == connection.adabasMap.Data.URL.String() {
-	// 	connection.adabasToData = connection.adabasToMap
-	// }
-	// adatypes.Central.Log.Debugf("Found Adabas : %p", connection.adabasToData)
-	// if connection.adabasToData != nil {
-	// 	adatypes.Central.Log.Debugf("Found Adabas Map : %s", connection.adabasToData.URL.String())
-	// }
-	// adatypes.Central.Log.Debugf("Data Repository : %s", connection.adabasMap.Data.URL.String())
-	// if connection.adabasToData == nil || connection.adabasToData.URL.String() != connection.adabasMap.Data.URL.String() {
-	// 	adatypes.Central.Log.Debugf("Create new Adabas")
-	// 	connection.adabasToData, err = NewAdabas(connection.adabasMap.URL(), connection.ID)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-	// adatypes.Central.Log.Debugf("Platform Map : %#v", connection.adabasToMap.ID.platform)
-	// adatypes.Central.Log.Debugf("Platform Adabas : %#v", connection.adabasToData.ID.platform)
-	// return nil
 }
 
-// CreateMapStoreRequest create a store request using map name
+// CreateMapStoreRequest this method creates a store request using an Go struct which
+// struct field names fit to an Adabas Map field. The struct name will be used to search
+// the Adabas Map.
 func (connection *Connection) CreateMapStoreRequest(mapReference interface{}) (request *StoreRequest, err error) {
 	t := reflect.TypeOf(mapReference)
 	switch t.Kind() {
@@ -483,12 +462,12 @@ func (connection *Connection) CreateMapStoreRequest(mapReference interface{}) (r
 	return
 }
 
-// CreateDeleteRequest create a delete request
+// CreateDeleteRequest this method create a delete request using Adabas file numbers.
 func (connection *Connection) CreateDeleteRequest(fnr Fnr) (*DeleteRequest, error) {
 	return NewDeleteRequestAdabas(connection.adabasToData, fnr), nil
 }
 
-// CreateMapDeleteRequest create a read request using a given map
+// CreateMapDeleteRequest this method creates a delete request using a given Adabas Map name
 func (connection *Connection) CreateMapDeleteRequest(mapName string) (request *DeleteRequest, err error) {
 	err = connection.prepareMapUsage(mapName)
 	if err != nil {

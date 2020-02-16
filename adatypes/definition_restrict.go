@@ -1,5 +1,5 @@
 /*
-* Copyright © 2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2019-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -43,6 +43,8 @@ type fieldMap struct {
 	stackStructure  *Stack
 }
 
+// evaluateTopLevelStructure evaluate the structure node which is responsible
+// for the given level.
 func (fieldMap *fieldMap) evaluateTopLevelStructure(level uint8) {
 	Central.Log.Debugf("%d check level %d", fieldMap.lastStructure.Level(), level)
 	for fieldMap.lastStructure.Level() >= level {
@@ -60,6 +62,8 @@ func (fieldMap *fieldMap) evaluateTopLevelStructure(level uint8) {
 
 }
 
+// removeStructure set the `remove` flag to define, that the structure is not
+// part of the query.
 func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bool, parentLast bool) {
 	oldStructure := adaType.(*StructureType)
 	newStructure := NewStructure()
@@ -112,7 +116,6 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 	}
 	Central.Log.Debugf("%s current structure parent is %s (%v)", adaType.Name(),
 		fieldMap.lastStructure.Name(), fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved))
-	Central.Log.Debugf("Structure=%p -> %s", newStructure, newStructure.Name())
 	newStructure.SubTypes = []IAdaType{}
 	fieldMap.evaluateTopLevelStructure(newStructure.Level())
 	fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newStructure)
@@ -156,6 +159,8 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 
 }
 
+// removeFieldEnterTrav traverer method search for fields which are not part of the query
+// defined by the `fieldMap` structure.
 func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
 	fieldMap := x.(*fieldMap)
 	if Central.IsDebugLevel() {
@@ -304,7 +309,13 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 	return nil
 }
 
-// ShouldRestrictToFields Restrict the tree to contain only the given nodes, remove the value tree
+// ShouldRestrictToFields this method restrict the query to a given comma-separated list
+// of fields. If the fields is set to '*', then all fields are read.
+// A field definition may contain index information. The index information need to be set
+// in square brackets. For example AA[1] will provide the first entry of a multiple field
+// or all entries in the first occurence of the period group.
+// BB[1,2] will provide the first entry of the period group and the second entry of the
+// multiple field.
 func (def *Definition) ShouldRestrictToFields(fields string) (err error) {
 	def.activeFieldTree = def.fileFieldTree
 	if fields == "*" {
@@ -334,6 +345,8 @@ func (def *Definition) RemoveSpecialDescriptors() (err error) {
 	return nil
 }
 
+// newFieldMap create a new `fieldMap` instance used to restrict
+// query field set.
 func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 	// BUG(tkn) Check if fields are valid!!!!
 	fieldMap := &fieldMap{definition: def}
@@ -387,8 +400,13 @@ func (def *Definition) RestrictFieldSlice(field []string) (err error) {
 	return nil
 }
 
-// ShouldRestrictToFieldSlice Restrict the tree to contain only the given nodes
-// the corresponding remove flag is set to all fields which are not part of the query
+// ShouldRestrictToFieldSlice  this method restrict the query to a given string slice
+// of fields. If one field slice entry is set to '*', then all fields are read.
+// A field definition may contain index information. The index information need to be set
+// in square brackets. For example AA[1] will provide the first entry of a multiple field
+// or all entries in the first occurence of the period group.
+// BB[1,2] will provide the first entry of the period group and the second entry of the
+// multiple field.
 func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	Central.Log.Debugf("Should restrict fields to %#v", field)
 	if Central.IsDebugLevel() {
@@ -405,6 +423,8 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	if Central.IsDebugLevel() {
 		def.DumpTypes(true, false, "enter restrict")
 	}
+	// Traverse through field tree to reduce tree to fields which
+	// are part of the query
 	t := TraverserMethods{EnterFunction: removeFieldEnterTrav}
 	err = def.TraverseTypes(t, true, fieldMap)
 	if err != nil {
@@ -466,7 +486,7 @@ func removeFromTree(value *StructureType) {
 }
 
 // SetValueData dependent to the struct interface field the corresponding
-// reflection value will be set
+// reflection struct the value will be set with the struct value.
 func SetValueData(s reflect.Value, v IAdaValue) error {
 	Central.Log.Debugf("%s = %s", v.Type().Name(), s.Type().Name())
 	switch s.Interface().(type) {
@@ -505,6 +525,7 @@ func SetValueData(s reflect.Value, v IAdaValue) error {
 	return nil
 }
 
+// newFieldQuery new field query instance is generated using the given parameter
 func newFieldQuery(fl string, rf bool,
 	s, fRange, pRangeFrom, pRangeTo string) *fieldQuery {
 	fq := &fieldQuery{name: fl, reference: rf}

@@ -26,9 +26,9 @@ import (
 // Cursoring the structure support cursor instance handling reading record list in
 // chunks defined by a search or descriptor
 type Cursoring struct {
+	// FieldLength in streaming mode of a field the field length of the field
+	FieldLength   uint32
 	offset        uint32
-	maxLength     uint32
-	bufferSize    uint32
 	search        string
 	result        *Response
 	request       *ReadRequest
@@ -36,7 +36,10 @@ type Cursoring struct {
 	err           error
 }
 
-// ReadLogicalWithCursoring initialize the read records using cursoring
+// ReadLogicalWithCursoring this method provide the search of records in Adabas
+// and provide a cursor. The cursor will read a number of records using Multifetch
+// calls. The number of records is defined in `Limit`.
+// This method initialize the read records using cursoring.
 func (request *ReadRequest) ReadLogicalWithCursoring(search string) (cursor *Cursoring, err error) {
 	request.cursoring = &Cursoring{}
 	if request.Limit == 0 {
@@ -57,7 +60,10 @@ func (request *ReadRequest) ReadLogicalWithCursoring(search string) (cursor *Cur
 	return request.cursoring, nil
 }
 
-// HistogramByCursoring initialize the read records using cursoring
+// HistogramByCursoring provides the descriptor read of a field and uses
+// cursoring. The cursor will read a number of records using Multifetch
+// calls. The number of records is defined in `Limit`.
+// This method initialize the read records using cursoring.
 func (request *ReadRequest) HistogramByCursoring(descriptor string) (cursor *Cursoring, err error) {
 	request.cursoring = &Cursoring{}
 	if request.Limit == 0 {
@@ -78,7 +84,11 @@ func (request *ReadRequest) HistogramByCursoring(descriptor string) (cursor *Cur
 	return request.cursoring, nil
 }
 
-// HistogramWithCursoring initialize the read records using cursoring
+// HistogramWithCursoring provides the searched read of a descriptor of a
+// field. It uses a cursor to read only a part of the data and read further
+// only on request. The cursor will read a number of records using Multifetch
+// calls. The number of records is defined in `Limit`.
+// This method initialize the read records using cursoring.
 func (request *ReadRequest) HistogramWithCursoring(search string) (cursor *Cursoring, err error) {
 	request.cursoring = &Cursoring{}
 	if request.Limit == 0 {
@@ -99,7 +109,10 @@ func (request *ReadRequest) HistogramWithCursoring(search string) (cursor *Curso
 	return request.cursoring, nil
 }
 
-// HasNextRecord check cursoring if a next record exist in the query
+// HasNextRecord with cursoring this method checks if a next record
+// or stream entry is available return `true` if it is.
+// This method will call Adabas if no entry is available and reads new entries
+// using Multifetch or partial LOB.
 func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 	adatypes.Central.Log.Debugf("Check next record: %v offset=%d values=%d", hasNext, cursor.offset+1, len(cursor.result.Values))
 	if cursor.offset+1 > uint32(len(cursor.result.Values)) {
@@ -126,8 +139,9 @@ func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 	return
 }
 
-// NextRecord cursoring to next record, if current chunk contains record, no call is send. If
-// the chunk is not in memory, the next chunk is read in memory
+// NextRecord cursoring to next record, if current chunk contains a record, no call is send. If
+// the chunk is not in memory, the next chunk is read into memory. This method may be initiated,
+// if `HasNextRecord()` is called before.
 func (cursor *Cursoring) NextRecord() (record *Record, err error) {
 	if cursor.err != nil {
 		adatypes.Central.Log.Debugf("Error next record: %v", err)

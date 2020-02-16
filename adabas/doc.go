@@ -1,5 +1,5 @@
 /*
-* Copyright © 2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2019-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -116,4 +116,12 @@
 // the list using the result.Data list.
 // If using the stream callback method, then the stream will get an EmployeesMap
 // instance instead of a Record instance.
+//
+// Partial large objects
+//
+// You can read a large objects using the `ReadStream` method to subdivide a
+// big large object into slices reading parts of the large objects instead of
+// read one big record of the large object.
+// The blocksize read in one stream call is defined in the `ReadRequest.Blocksize`.
+//
 package adabas

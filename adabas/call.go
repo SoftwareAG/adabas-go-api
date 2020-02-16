@@ -1,7 +1,7 @@
 // +build adalnk,cgo
 
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -160,7 +160,9 @@ import "C"
 
 var idCounter uint32
 
-// NewAdabasID create a new Adabas ID instance
+// NewAdabasID create a new unique Adabas ID instance using static data. Instead
+// using the current process id a generate unique time stamp and counter version
+// of the pid is used.
 func NewAdabasID() *ID {
 	AdaID := AID{level: 3, size: adabasIDSize}
 	aid := ID{AdaID: &AdaID, connectionMap: make(map[string]*Status)}
@@ -183,11 +185,11 @@ func NewAdabasID() *ID {
 	adatypes.Central.Log.Debugf("Create new ID(local) with %v", AdaID.Node)
 	AdaID.Timestamp = uint64(time.Now().Unix())
 	AdaID.Pid = uint32((AdaID.Timestamp - (AdaID.Timestamp % 100)) + uint64(id))
-	// fmt.Printf("Create Adabas ID: %d -> %s", AdaID.Pid, aid.String())
 	adatypes.Central.Log.Debugf("Create Adabas ID: %d -> %s", AdaID.Pid, aid.String())
 	return &aid
 }
 
+// createCAbd create C native ABD
 func (adabasBuffer *Buffer) createCAbd(pabdArray *C.PABD, index int) {
 	adatypes.Central.Log.Debugf("Copy Metadata index=%d", index)
 	var pbuffer *C.char
@@ -209,6 +211,7 @@ func (adabasBuffer *Buffer) createCAbd(pabdArray *C.PABD, index int) {
 
 }
 
+// putCAbd put ABD array to C native ABD
 func (adabasBuffer *Buffer) putCAbd(pabdArray *C.PABD, index int) {
 	adatypes.Central.Log.Debugf("%d: receive index %c len=%d", index, adabasBuffer.abd.Abdid, len(adabasBuffer.buffer))
 	var pbuffer *C.char
@@ -233,7 +236,9 @@ func (adabasBuffer *Buffer) putCAbd(pabdArray *C.PABD, index int) {
 
 }
 
-// CallAdabas this method sends the call to the database
+// CallAdabas this method sends the call to the Adabas database. It uses
+// native local Adabas calls because this part is used with native
+// AdabasClient library support
 func (adabas *Adabas) CallAdabas() (err error) {
 	defer adatypes.TimeTrack(time.Now(), "CallAdabas "+string(adabas.Acbx.Acbxcmd[:]))
 

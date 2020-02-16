@@ -1,5 +1,5 @@
 /*
-* Copyright © 2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2019-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -881,3 +881,4 @@ var statisMessages = []struct {
 	{"ADG0000138", "en", "Stream query returns no record"},
 	{"ADG0000150", "en", "Cannot scan value for type {0}"},
 }
+

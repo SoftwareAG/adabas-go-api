@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -61,11 +61,12 @@ type Response struct {
 	Definition *adatypes.Definition
 }
 
-// NrRecords number of records in the result
+// NrRecords provides the number of records in the result
 func (Response *Response) NrRecords() int {
 	return len(Response.Values)
 }
 
+// prepareRecordDump prepare the record dump
 func prepareRecordDump(x interface{}, b interface{}) (adatypes.TraverseResult, error) {
 	record := x.(*Record)
 	var buffer *bytes.Buffer
@@ -92,6 +93,7 @@ func prepareRecordDump(x interface{}, b interface{}) (adatypes.TraverseResult, e
 	return adatypes.Continue, nil
 }
 
+// traverseDumpRecord traverser method to dump the record information
 func traverseDumpRecord(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	y := strings.Repeat(" ", int(adaValue.Type().Level()))
 
@@ -151,7 +153,9 @@ func (Response *Response) DumpValues() (err error) {
 	return
 }
 
-// DumpData dumps the result data
+// DumpData if the dynamic interface is used to query Adabas records, the response
+// does not create values. Instead the values are defined in the Data slice containing
+// the interface slice. This method dumps the result data
 func (Response *Response) DumpData() (err error) {
 	var buffer bytes.Buffer
 	fmt.Println("Dump all result data")
@@ -188,6 +192,7 @@ func (Response *Response) TraverseValues(t adatypes.TraverserValuesMethods, x in
 	return
 }
 
+// String string representation of the repsonse of the request
 func (Response *Response) String() string {
 	var buffer bytes.Buffer
 	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump, EnterFunction: traverseDumpRecord}
@@ -195,6 +200,7 @@ func (Response *Response) String() string {
 	return buffer.String()
 }
 
+// traverseMarshalXML Used by the XML Marshaller
 func traverseMarshalXML(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	enc := x.(*xml.Encoder)
 	start := xml.StartElement{Name: xml.Name{Local: adaValue.Type().Name()}}
@@ -206,6 +212,7 @@ func traverseMarshalXML(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Tr
 	return adatypes.Continue, nil
 }
 
+// traverseMarshalXMLEnd Used by the XML Marshaller
 func traverseMarshalXMLEnd(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	if adaValue.Type().IsStructure() {
 		enc := x.(*xml.Encoder)
@@ -215,7 +222,7 @@ func traverseMarshalXMLEnd(adaValue adatypes.IAdaValue, x interface{}) (adatypes
 	return adatypes.Continue, nil
 }
 
-// MarshalXML provide XML
+// MarshalXML provide XML representation of the response
 func (Response *Response) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	x := xml.StartElement{Name: xml.Name{Local: "Response"}}
 	e.EncodeToken(x)
@@ -242,11 +249,6 @@ func (Response *Response) MarshalXML(e *xml.Encoder, start xml.StartElement) err
 	e.EncodeToken(x.End())
 	return nil
 }
-
-// type dataValue struct {
-// 	Isn   adatypes.Isn `json:"ISN"`
-// 	Value map[string]string
-// }
 
 type responseJSON struct {
 	Values         []*map[string]interface{} `json:"Records"`
@@ -384,7 +386,7 @@ func traverseMarshalJSONEnd(adaValue adatypes.IAdaValue, x interface{}) (adatype
 	return adatypes.Continue, nil
 }
 
-// MarshalJSON provide JSON
+// MarshalJSON provide JSON Marshaller of the response
 func (Response *Response) MarshalJSON() ([]byte, error) {
 	req := &responseJSON{special: true}
 	adatypes.Central.Log.Debugf("Marshal JSON go through records -> %d", len(Response.Values))

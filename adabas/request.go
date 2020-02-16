@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -39,6 +39,7 @@ type StreamFunction func(record *Record, x interface{}) error
 // InterfaceFunction function callback used to go through the list of received interface instances
 type InterfaceFunction func(data interface{}, x interface{}) error
 
+// loadDefinition load the complete definition of the field
 func (request *commonRequest) loadDefinition() (err error) {
 	if request.definition == nil {
 		adatypes.Central.Log.Debugf("Load file Definition ....")
@@ -55,7 +56,8 @@ func (request *commonRequest) loadDefinition() (err error) {
 	return
 }
 
-// Close closes the Adabas session
+// Close call the CL call to Adabas. This closes the Adabas session.
+// Attention, this will not backout transaction. It will end the transactions.
 func (request *commonRequest) Close() {
 	if request == nil {
 		return
@@ -67,17 +69,20 @@ func (request *commonRequest) Close() {
 	request.initialized = false
 }
 
-// Endtransaction end the transaction of the Adabas session
+// Endtransaction  call the end of the transaction to the Adabas session.
+// If returned all transaction are ended.
 func (request *commonRequest) EndTransaction() error {
 	return request.adabas.EndTransaction()
 }
 
-// Backout closes the Adabas session
+// Backout this send the backout of the open transactions. All transactions
+// will be rolled back after the call.
 func (request *commonRequest) BackoutTransaction() error {
 	return request.adabas.BackoutTransaction()
 }
 
-// Open Open the Adabas session
+// Open this methods opens the connection to the database and create a suer
+// queue entry.
 func (request *commonRequest) commonOpen() (opened bool, err error) {
 	opened = false
 	adatypes.Central.Log.Debugf("Open read request")

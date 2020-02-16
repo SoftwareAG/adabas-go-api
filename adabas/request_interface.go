@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -20,9 +20,36 @@
 package adabas
 
 import (
+	"reflect"
+
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
 func (request *commonRequest) createDynamic(i interface{}) {
 	request.dynamic = adatypes.CreateDynamicInterface(i)
+}
+
+// createInterface create a interface of the type
+func (request *ReadRequest) createInterface(fieldList string) (err error) {
+	err = request.loadDefinition()
+	if err != nil {
+		return
+	}
+	err = request.QueryFields(fieldList)
+	if err != nil {
+		return
+	}
+
+	var structType reflect.Type
+	tm := adatypes.NewTraverserMethods(traverseCreateTypeInterface)
+	cti := createTypeInterface{fields: make([]reflect.StructField, 0), fieldNames: make(map[string][]string)}
+	isnField := reflect.StructField{Name: "ISN",
+		Type: reflect.TypeOf(uint64(0))}
+	cti.fields = append(cti.fields, isnField)
+	request.definition.TraverseTypes(tm, true, &cti)
+	structType = reflect.StructOf(cti.fields)
+	dynamic := &adatypes.DynamicInterface{DataType: structType, FieldNames: cti.fieldNames}
+	dynamic.FieldNames["#isn"] = []string{"ISN"}
+	request.dynamic = dynamic
+	return nil
 }

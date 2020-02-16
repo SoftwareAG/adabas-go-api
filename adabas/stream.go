@@ -25,13 +25,22 @@ import (
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
-// ReadLobStream initialize the read stream of a field using cursoring
+// ReadLobStream reads field data using partial lob reads and provide it
+// stream-like to the user. It is possible to use it to read big LOB data
+// or stream a video.
+// The value of the field is reused, so that the value does not need to
+// evaluate/searched in the result instance once more after the first
+// call.
+// This method initialize the first call by
+// - searching the record (it must be a unique result)
+// - prepare partial lob query
+// Important parameter is the blocksize in the `ReadRequest` which
+// defines the size of one block to be read
 func (request *ReadRequest) ReadLobStream(search, field string) (cursor *Cursoring, err error) {
 	err = request.QueryFields("#" + field)
 	if err != nil {
 		return
 	}
-	request.definition.DumpTypes(true, true, "Lob stream preparation")
 	result, rerr := request.ReadLogicalWith(search)
 	if rerr != nil {
 		return nil, rerr
@@ -61,57 +70,67 @@ func (request *ReadRequest) ReadLobStream(search, field string) (cursor *Cursori
 	if err != nil {
 		return
 	}
-	request.definition.DumpTypes(true, true, "Lob stream partial")
 
+	// Define partial range on field value
 	v = request.definition.Search(field)
 	vs := v.(adatypes.PartialValue)
-	vs.SetPartial(0, 4096)
+	vs.SetPartial(0, request.BlockSize)
 
+	// Init first read of the stream used in the cursoring
 	result, rerr = request.ReadFieldStream(search)
 	if rerr != nil {
 		return nil, rerr
 	}
+
+	// Prepare cursoring
 	request.cursoring.result = result
 	request.cursoring.search = search
 	request.cursoring.request = request
 	request.cursoring.offset = 0
-	request.cursoring.maxLength = recLen
-	request.cursoring.bufferSize = 4096
+	request.cursoring.FieldLength = recLen
 	request.queryFunction = request.ReadFieldStream
 	return request.cursoring, nil
 }
 
-// ReadFieldStream read records with a field stream
+// ReadFieldStream reads field data using partial lob reads and provide it
+// stream-like to the user. It is possible to use it to read big LOB data
+// or stream a video.
+// The value of the field is reused, so that the value does not need to
+// evaluate/searched in the result instance once more after the first
+// call.
+// The stream will be read in blocks. The blocksize is defined in the
+// `ReadRequest`. The last block will be filled up with space by Adabas.
+// To examine the length of the field, the `Cursoring` instance provide
+// the current block number in `StreamCursor` beginning by 0 and the
+// maximum field length in `FieldLength`.
 func (request *ReadRequest) ReadFieldStream(search string) (result *Response, err error) {
 	adatypes.Central.Log.Debugf("Read stream with parser")
 	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
 		request.cursoring = &Cursoring{}
 		result = &Response{Definition: request.definition, fields: request.fields}
 
-		adatypes.Central.Log.Debugf("Definition generated ...")
 		adabasRequest, prepareErr := request.prepareRequest()
 		if prepareErr != nil {
 			err = prepareErr
 			return
 		}
-		adatypes.Central.Log.Debugf("Prepare done ...")
+
+		// Define parser parameters
 		adabasRequest.Parser = parseReadToRecord
 		adabasRequest.Limit = request.Limit
 		request.cursoring.result = result
 		request.adaptDescriptorMap(adabasRequest)
-		if request.cursoring != nil {
-			request.cursoring.adabasRequest = adabasRequest
-		}
+		request.cursoring.adabasRequest = adabasRequest
+
+		// Call first
 		err = request.adabas.ReadStream(request.cursoring.adabasRequest, 0, request.cursoring.result)
 		if err != nil {
 			return
 		}
 		adatypes.Central.Log.Debugf("read with ...streaming ISN=%d", request.cursoring.adabasRequest.Isn)
 		request.cursoring.adabasRequest.Option.StreamCursor++
-		adatypes.Central.Log.Debugf("After first stream definition values %p avail.=%v", request.cursoring.adabasRequest.Definition.Values, (request.cursoring.adabasRequest.Definition.Values != nil))
 	} else {
-		adatypes.Central.Log.Debugf("Start offset=%d max=%d", request.cursoring.offset, request.cursoring.maxLength)
-		if uint32(request.cursoring.adabasRequest.Option.StreamCursor)*4096 > request.cursoring.maxLength {
+		if uint32(request.cursoring.adabasRequest.Option.StreamCursor)*request.BlockSize > request.cursoring.FieldLength {
 			return nil, fmt.Errorf("End reached")
 		}
 		request.cursoring.adabasRequest.Definition.Values = request.cursoring.result.Values[0].Value

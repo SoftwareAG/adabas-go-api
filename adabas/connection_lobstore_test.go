@@ -164,7 +164,7 @@ func verifyStorePerStream(t *testing.T, isn adatypes.Isn, x []byte) error {
 	}
 	aaValue, _ := result.Values[0].SearchValue("AA")
 	assert.Equal(t, "STLOB   ", aaValue.String())
-	assert.Equal(t, "STLOB   ", result.Values[0].AlphaValue("AA"))
+	assert.Equal(t, "STLOB", result.Values[0].TrimString("AA"))
 	raValue, rerr := result.Values[0].SearchValue("RA")
 	if !assert.NoError(t, rerr) {
 		return rerr
@@ -330,10 +330,10 @@ func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 		adatypes.Central.Log.Debugf("===> Read next cursor stream entry...%d", counter)
 	}
 	fmt.Println("Last cursor record read, counted slices=", counter)
-	assert.Equal(t, 45, counter)
-	assert.Equal(t, 184320, buffer.Len())
+	assert.Equal(t, 3, counter)
+	assert.Equal(t, 192000, buffer.Len())
 	raw := buffer.Bytes()
-	x := md5.Sum(raw[0:183049])
+	x := md5.Sum(raw[0:col.FieldLength])
 	assert.Equal(t, "8B124C139790221469EF6308D6554660", fmt.Sprintf("%X", x))
 	fmt.Printf("Got lob from    0...%X\n", md5.Sum(raw[0:4096]))
 	fmt.Printf("Got lob from 4096...%X\n", md5.Sum(raw[4096:4096+4096]))

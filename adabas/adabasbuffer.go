@@ -1,5 +1,5 @@
 /*
-* Copyright © 2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2019-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -126,7 +126,7 @@ func (adabasBuffer *Buffer) extend(addSize uint64) {
 	adabasBuffer.abd.Abdsize = adabasBuffer.abd.Abdsize + addSize
 }
 
-// WriteString write string intp buffer
+// WriteString write a string into the buffer
 func (adabasBuffer *Buffer) WriteString(content string) {
 	adatypes.Central.Log.Debugf("Write string in adabas buffer")
 	end := adabasBuffer.offset + len(content)
@@ -139,7 +139,7 @@ func (adabasBuffer *Buffer) WriteString(content string) {
 	adabasBuffer.abd.Abdsend = uint64(adabasBuffer.offset)
 }
 
-// WriteBinary write binary slice into buffer
+// WriteBinary write a binary slice into the buffer
 func (adabasBuffer *Buffer) WriteBinary(content []byte) {
 	adatypes.Central.Log.Debugf("Write binary in adabas buffer")
 	end := adabasBuffer.offset + len(content)

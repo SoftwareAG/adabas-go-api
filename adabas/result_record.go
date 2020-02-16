@@ -61,7 +61,7 @@ func traverseHashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Tr
 	return adatypes.Continue, nil
 }
 
-// NewRecord new result record
+// NewRecord create new result record
 func NewRecord(definition *adatypes.Definition) (*Record, error) {
 	adatypes.Central.Log.Debugf("Create new record")
 	if definition == nil {
@@ -83,7 +83,7 @@ func NewRecord(definition *adatypes.Definition) (*Record, error) {
 	return record, nil
 }
 
-// NewRecordIsn new result record with ISN or ISN quantity
+// NewRecordIsn create a new result record with ISN or ISN quantity
 func NewRecordIsn(isn adatypes.Isn, isnQuantity uint64, definition *adatypes.Definition) (*Record, error) {
 	record, err := NewRecord(definition)
 	if err != nil {
@@ -96,12 +96,14 @@ func NewRecordIsn(isn adatypes.Isn, isnQuantity uint64, definition *adatypes.Def
 	return record, nil
 }
 
+// recordValuesTraverser create buffer used to output values
 func recordValuesTraverser(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	buffer := x.(*bytes.Buffer)
 	buffer.WriteString(fmt.Sprintf(" %s=%#v\n", adaValue.Type().Name(), adaValue.String()))
 	return adatypes.Continue, nil
 }
 
+// createRecordBuffer create a record buffer
 func (record *Record) createRecordBuffer(helper *adatypes.BufferHelper, option *adatypes.BufferOption) (err error) {
 	adatypes.Central.Log.Debugf("Create store record buffer")
 	t := adatypes.TraverserValuesMethods{EnterFunction: createStoreRecordBuffer}
@@ -111,6 +113,7 @@ func (record *Record) createRecordBuffer(helper *adatypes.BufferHelper, option *
 	return
 }
 
+// String string representation of the record
 func (record *Record) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString(fmt.Sprintf("ISN=%d quantity=%d\n", record.Isn, record.Quantity))
@@ -169,6 +172,7 @@ func (record *Record) DumpValues() {
 	fmt.Printf("%s", buffer.String())
 }
 
+// searchValue search a value using a given field name
 func (record *Record) searchValue(field string) (adatypes.IAdaValue, bool) {
 	if adaValue, ok := record.HashFields[field]; ok {
 		return adaValue, true
@@ -176,7 +180,11 @@ func (record *Record) searchValue(field string) (adatypes.IAdaValue, bool) {
 	return nil, false
 }
 
-// SetValue set the value for a specific field
+// SetValue set the value for a specific field given by the field name. The
+// field value is defined by the interface given.
+// The field value index of a period group or multiple field might be defined
+// using square brackets. For example AA[1,2] will set the first entry of a
+// period group and the second entry of the multiple field.
 func (record *Record) SetValue(field string, value interface{}) (err error) {
 	adatypes.Central.Log.Debugf("Set value %s", field)
 	if strings.ContainsRune(field, '[') {
@@ -225,7 +233,10 @@ func (record *Record) SetValue(field string, value interface{}) (err error) {
 	return
 }
 
-// SetValueWithIndex Add value to an node element
+// SetValueWithIndex set the value for a specific field given by the field name. The
+// field value is defined by the interface given.
+// The field value index of a period group or multiple field might be defined
+// using the uint32 slice.
 func (record *Record) SetValueWithIndex(name string, index []uint32, x interface{}) error {
 	// TODO why specific?
 	record.definition.Values = record.Value
@@ -233,7 +244,7 @@ func (record *Record) SetValueWithIndex(name string, index []uint32, x interface
 	return record.definition.SetValueWithIndex(name, index, x)
 }
 
-// SetPartialValue set the value for a partial part of a lob field
+// SetPartialValue set the field value for a partial part of a lob field
 func (record *Record) SetPartialValue(name string, offset uint32, data []byte) (err error) {
 	v, verr := record.SearchValue(name)
 	if verr != nil {
@@ -249,6 +260,7 @@ func (record *Record) SetPartialValue(name string, offset uint32, data []byte) (
 	return nil
 }
 
+// extractIndex extract the index information of the field
 func extractIndex(name string) []uint32 {
 	var index []uint32
 	var re = regexp.MustCompile(`(?m)(\w+(\[(\d+),?(\d+)?\])?)`)
@@ -269,7 +281,8 @@ func extractIndex(name string) []uint32 {
 	return index
 }
 
-// SearchValue search value in the tree
+// SearchValue this method search for the value in the tree given by the
+// field parameter.
 func (record *Record) SearchValue(parameter ...interface{}) (adatypes.IAdaValue, error) {
 	name := parameter[0].(string)
 	var index []uint32
@@ -291,7 +304,7 @@ func (record *Record) SearchValue(parameter ...interface{}) (adatypes.IAdaValue,
 	return record.SearchValueIndex(name, index)
 }
 
-// SearchValueIndex search value in the tree with a given index
+// SearchValueIndex search value in the tree with a given index uint32 slice
 func (record *Record) SearchValueIndex(name string, index []uint32) (adatypes.IAdaValue, error) {
 	record.definition.Values = record.Value
 	adatypes.Central.Log.Debugf("Record value : %#v", record.Value)
@@ -310,7 +323,11 @@ func PeriodGroup(v adatypes.IAdaValue) adatypes.IAdaValue {
 	return nil
 }
 
-// ValueQuantity provide number of quantity in an PE or MU field
+// ValueQuantity this method provide the number of quantity of an PE
+// or MU field. If the field is referenced with a square bracket index,
+// the corresponding MU field of an period group is counted.
+// The quantity is not the Adabas record quantity. It represents the
+// record result quantity only.
 func (record *Record) ValueQuantity(param ...interface{}) int32 {
 	if len(param) == 0 {
 		return -1
@@ -388,6 +405,7 @@ func (record *Record) Scan(dest ...interface{}) (err error) {
 
 }
 
+// traverseMarshalXML2 traverser used by the XML Marshaller
 func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	enc := x.(*xml.Encoder)
 	if adaValue.Type().IsStructure() {
@@ -452,6 +470,7 @@ func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 	return adatypes.Continue, nil
 }
 
+// traverseMarshalXMLEnd2 traverser end function used by the XML Marshaller
 func traverseMarshalXMLEnd2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	if adaValue.Type().IsStructure() {
 		enc := x.(*xml.Encoder)
@@ -478,6 +497,7 @@ func traverseMarshalXMLEnd2(adaValue adatypes.IAdaValue, x interface{}) (adatype
 	return adatypes.Continue, nil
 }
 
+// traverseMarshalXMLElement traverser element function used by the XML Marshaller
 func traverseMarshalXMLElement(adaValue adatypes.IAdaValue, nr, max int, x interface{}) (adatypes.TraverseResult, error) {
 	enc := x.(*xml.Encoder)
 	if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup {
@@ -491,7 +511,7 @@ func traverseMarshalXMLElement(adaValue adatypes.IAdaValue, nr, max int, x inter
 	return adatypes.Continue, nil
 }
 
-// MarshalXML provide XML
+// MarshalXML provide XML marshal method of a record
 func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	adatypes.Central.Log.Debugf("Marshal XML record: %d", record.Isn)
 	var rec xml.StartElement
@@ -516,7 +536,7 @@ func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	return nil
 }
 
-// MarshalJSON provide JSON
+// MarshalJSON provide JSON marshal function of a record
 func (record *Record) MarshalJSON() ([]byte, error) {
 	adatypes.Central.Log.Debugf("Marshal JSON record: %d", record.Isn)
 	req := &responseJSON{special: true}
@@ -544,11 +564,20 @@ func (record *Record) MarshalJSON() ([]byte, error) {
 	return json.Marshal(req.dataMap)
 }
 
-// AlphaValue search value and provide string/alpha representation
-func (record *Record) AlphaValue(parameter ...interface{}) string {
+// TrimString search value and provide a trimmed string/alpha representation.
+func (record *Record) TrimString(parameter ...interface{}) string {
 	v, err := record.SearchValue(parameter...)
 	if err == nil {
-		return v.String()
+		return strings.Trim(v.String(), " ")
 	}
 	return ""
+}
+
+// Bytes search value and provide a raw byte slice representation.
+func (record *Record) Bytes(parameter ...interface{}) []byte {
+	v, err := record.SearchValue(parameter...)
+	if err == nil {
+		return v.Bytes()
+	}
+	return nil
 }

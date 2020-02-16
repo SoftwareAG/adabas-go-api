@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -34,7 +34,9 @@ type StoreRequest struct {
 	commonRequest
 }
 
-// NewStoreRequest create a new store Request instance
+// NewStoreRequest creates a new store Request instance using different
+// types of parameters. This is only for internal use. Use the `Connection`
+// instance to create store requests.
 func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 	if len(param) == 0 {
 		return nil, adatypes.NewGenericError(78)
@@ -125,14 +127,20 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 	return nil, adatypes.NewGenericError(79)
 }
 
-// NewStoreRequestAdabas create a new Request instance
+// NewStoreRequestAdabas creates a new store Request instance using an
+// Adabas instance and Adabas file number.
+// This is only for internal use. Use the `Connection`
+// instance to create store requests.
 func NewStoreRequestAdabas(adabas *Adabas, fnr Fnr) *StoreRequest {
 	clonedAdabas := NewClonedAdabas(adabas)
 	return &StoreRequest{commonRequest: commonRequest{adabas: clonedAdabas,
 		repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}
 }
 
-// NewAdabasMapNameStoreRequest create new map name store request
+// NewAdabasMapNameStoreRequest creates a new store Request instance using an
+// Adabas instance and Adabas Map.
+// This is only for internal use. Use the `Connection`
+// instance to create store requests.
 func NewAdabasMapNameStoreRequest(adabas *Adabas, adabasMap *Map) (request *StoreRequest, err error) {
 	clonedAdabas := NewClonedAdabas(adabas)
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
@@ -142,6 +150,7 @@ func NewAdabasMapNameStoreRequest(adabas *Adabas, adabasMap *Map) (request *Stor
 	return
 }
 
+// evaluateFnr evalute Adabas file number
 func evaluateFnr(p interface{}) (Fnr, error) {
 	switch p.(type) {
 	case int:
@@ -166,6 +175,8 @@ func (request *StoreRequest) Open() (err error) {
 	return
 }
 
+// prepareRequest prepare a store request create an adabas request information
+// like Format Buffer or Record Buffer
 func (request *StoreRequest) prepareRequest() (adabasRequest *adatypes.Request, err error) {
 	adabasRequest, err = request.definition.CreateAdabasRequest(true, 0, request.adabas.status.platform.IsMainframe())
 	if err != nil {
@@ -186,7 +197,8 @@ func (request *StoreRequest) prepareSecondRequest(secondCall uint8) (adabasReque
 	return
 }
 
-// StoreFields create record field definition for the next store
+// StoreFields defines the fields to be part of the store request.
+// This is to prepare the create record for the next store
 func (request *StoreRequest) StoreFields(param ...interface{}) (err error) {
 	if len(param) == 0 {
 		return adatypes.NewGenericError(0)
@@ -230,7 +242,8 @@ func (request *StoreRequest) StoreFields(param ...interface{}) (err error) {
 	return
 }
 
-// CreateRecord create a record for a special store request
+// CreateRecord create a record for a special store request. The fields
+// which are part of the record are defined using the `StoreFields` method.
 func (request *StoreRequest) CreateRecord() (record *Record, err error) {
 	err = request.definition.CreateValues(true)
 	if err != nil {
@@ -246,7 +259,9 @@ func (request *StoreRequest) CreateRecord() (record *Record, err error) {
 	return
 }
 
-// Store store a record
+// Store store/insert a given record into database.
+// Note: the data is stored, but is not final until the end of
+// transaction is done.
 func (request *StoreRequest) Store(storeRecord *Record) error {
 	request.definition.Values = storeRecord.Value
 	adatypes.Central.Log.Debugf("Prepare store request")
@@ -297,7 +312,11 @@ func (request *StoreRequest) Store(storeRecord *Record) error {
 	return err
 }
 
-// Update update a record
+// Update update a given record into database. The given record
+// need to include the corresponding Isn information provided by
+// a previous read call.
+// Note: the data is update in Adabas, but is not final until the end of
+// transaction is done. Dirty ready may be done.
 func (request *StoreRequest) Update(storeRecord *Record) error {
 	request.definition.Values = storeRecord.Value
 	adabasRequest, prepareErr := request.prepareRequest()
@@ -334,11 +353,12 @@ func (request *StoreRequest) update(adabasRequest *adatypes.Request, storeRecord
 	return err
 }
 
-// EndTransaction end of Adabas database transaction
+// EndTransaction call an end of Adabas database transaction
 func (request *StoreRequest) EndTransaction() error {
 	return request.adabas.EndTransaction()
 }
 
+// searchDynamicValue search dynamic value in the interface
 func searchDynamicValue(value reflect.Value, fn []string) (v reflect.Value, ok bool) {
 	adatypes.Central.Log.Debugf("Search dynamic interface value %v %d", fn, len(fn))
 	v = value
@@ -358,6 +378,7 @@ func searchDynamicValue(value reflect.Value, fn []string) (v reflect.Value, ok b
 	return v, ok
 }
 
+// storeValue used in dynamic interface mode to store records
 func (request *StoreRequest) storeValue(record reflect.Value, store bool) error {
 	if request.definition == nil {
 		q := request.dynamic.CreateQueryFields()
@@ -428,6 +449,7 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 	return nil
 }
 
+// evaluateKeyIsn evaluate key or Isn information by keywords #isn or #key
 func (request *StoreRequest) evaluateKeyIsn(record reflect.Value, storeRecord *Record) error {
 	var sn string
 	var keyValue string
