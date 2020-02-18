@@ -69,7 +69,7 @@ Most customers using Adabas have worked with Natural in the past. An important m
 Adabas only allows to use Adabas short name field definitions and database id. To provide a logical name of a database file and a logical name reference to the Adabas short name, a new Adabas Map is introduced. This Adabas Map will be stored inside the Adabas database in an extra Adabas repository file.
 Tools managing the Adabas Maps are part of the Adabas Client for Java product Software AG provides.
 
-The new Adabas Map technology is needed because the Natural and Predict logical views are stired separate from the Adabas database. In order to use the logical view independent of Natural storage in Adabas is elementary. The benefit is that the logical view and the data can now be part of a backup strategy and multiple logical views, dependent on the work case, can be provided.
+The new Adabas Map technology is needed because the Natural and Predict logical views are stored separate from the Adabas database. In order to use the logical view independent of Natural storage in Adabas is elementary. The benefit is that the logical view and the data can now be part of a backup strategy and multiple logical views, dependent on the work case, can be provided.
 
 Following import file formats are supported
 

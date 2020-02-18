@@ -9,7 +9,7 @@
     - [Enable native library access](#enable-native-library-access)
   - [First step](#first-step)
   - [Adabas Go API example](#adabas-go-api-example)
-  - [Standard usage](#standard-usage)
+    - [Standard usage](#standard-usage)
     - [Classic database usage](#classic-database-usage)
     - [Using a Go struct](#using-a-go-struct)
   - [Log output](#log-output)
@@ -84,7 +84,7 @@ Independent of the used environment of Docker (like Kubernetes or others), it de
 
 ## Adabas Go API example
 
-## Standard usage
+### Standard usage
 
 The logical view of the data can be defined using Adabas maps. A detailed description of Adabas maps is  [here](.//doc//AdabasMap.md)
 
