@@ -31,7 +31,7 @@ It is similar to the `Adabas Client for Java` product delivered by Software AG.
 
 This is a list of features which the Adabas Go API supports:
 
-- Read, Search, Insert, Delete and Update of Adabas records
+- Read, [Search](.//doc//QUERY.md), Insert, Delete and Update of Adabas records
 - Work with field descriptors and special descriptors like sub-/super-descriptors
 - Work with Adabas TCP/IP layer on Linux, Unix and Windows
 - Work with Adabas Mainframe using the Entire Network infrastructure

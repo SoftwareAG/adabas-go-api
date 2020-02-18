@@ -4,9 +4,9 @@
 
 - [API Search concept](#api-search-concept)
 	- [Content](#content)
-	- [Adabas Search](#adabas-search)
-	- [Direct search](#direct-search)
-	- [Search ranges](#search-ranges)
+	- [Adabas search adaptions](#adabas-search-adaptions)
+		- [Common search](#common-search)
+		- [Search ranges](#search-ranges)
 	- [Special searches](#special-searches)
 
 <!-- /TOC -->
@@ -15,21 +15,21 @@
 
 This document describes the search capability of the Go Adabas API. The Go API uses one-to-one match of the Adabas capabilities.
 
-## Adabas Search
+Adabas Go API provides search queries based on Adabas queries. The search syntax is limited. See Adabas documentation.
 
-Enhanced Adabas API provide search queries based on Adabas queries. The search syntax is limited. See Adabas documentation.
+## Adabas search adaptions
 
-Following search queries are possible.
+Following search queries are possible. It is independent if the Adabas Map or the Adabas field short-name is used.
 
-## Direct search
+### Common search
 
-It is possible to search for a special value. For example this query will search for the field `PERSONNEL-ID` to be `40003001`.
+It is possible to search a field is containing a special value. For example this query will search for the field `PERSONNEL-ID` to be `40003001`.
 
 ```sql
 PERSONNEL-ID=40003001
 ```
 
-Similar approach is to search for Alpha or Unicode fields with
+Similar approach is to search for Alpha or Unicode fields using brackets like
 
 ```sql
 FIRSTNAME='ADAM'
@@ -65,9 +65,9 @@ Similar approach is to not equals. Here an example
 NUMBER!=10
 ```
 
-## Search ranges
+### Search ranges
 
-Adabas provides the possibily to search for ranges. Inside the API the range search is providing with or without first range start value. Corresponding it is with last range value. This example will search in the range of `40003001` to `40005001` including the two values.
+Adabas provides the possibility to search for ranges. Inside the API the range search is providing with or without first range start value. Corresponding it is with last range value. This example will search in the range of `40003001` to `40005001` including the two values.
 
 ```sql
 PERSONNEL-ID=[40003001:40005001]
