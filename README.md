@@ -6,9 +6,10 @@
   - [Introduction](#introduction)
   - [Features](#features)
   - [Usage](#usage)
+    - [Enable native library access](#enable-native-library-access)
   - [First step](#first-step)
   - [Adabas Go API example](#adabas-go-api-example)
-  - [Standard usge](#standard-usge)
+  - [Standard usage](#standard-usage)
     - [Classic database usage](#classic-database-usage)
     - [Using a Go struct](#using-a-go-struct)
   - [Log output](#log-output)
@@ -18,39 +19,41 @@
 
 ## Introduction
 
-This package is designed for using Software AG Adabas databases from GO. You can find detailed overview about the design and technical implementation [here](.//doc//Overview.md)
+This package is designed for using Adabas databases from Go. You can find detailed overview about the design and technical implementation [here](.//doc//Overview.md)
 
 For details have a look at the API documentation. It can be referenced here: <https://godoc.org/github.com/SoftwareAG/adabas-go-api/adabas>
 
 ## Features
 
-In general users of the Adabas GO API do not need to know basic level of Adabas API's like Adabas control block or Adabas buffers layout.
-The Adabas GO API provides a more user friendly use of Adabas files and fields.
+In general users of the Adabas Go API do not need to know basic level of Adabas API's like Adabas control block or Adabas buffers layout.
+The Adabas Go API provides a more user friendly use of Adabas files and fields.
 It is similar to the `Adabas Client for Java` product delivered by Software AG.
 
-This is a list of features which the Adabas GO API supports:
+This is a list of features which the Adabas Go API supports:
 
 - Read, Search, Insert, Delete and Update of Adabas records
 - Work with field descriptors and special descriptors like sub-/super-descriptors
-- Work with Adabas period groups and multiple fields
-- Work with large objects reads and writes
-- Work with partial large object reads and writes
 - Work with Adabas TCP/IP layer on Linux, Unix and Windows
 - Work with Adabas Mainframe using the Entire Network infrastructure
 - Support unicode access of Adabas Unicode fields
 - Work with Adabas Maps, a short name to long name definition
-- Provide GO structure usage by reflect structure fields to Adabas Map definitions
+- Work with Adabas period groups and multiple fields
+- Work with large objects reads and writes
+- Work with partial large object reads and writes
+- Provide Go structure usage by reflect structure fields to Adabas Map definitions
 
 ## Usage
 
-Adabas Go API can be downloaded using the `go get` command:
+Inside the code the Adabas Go API can be used importing the Go API. Beside the API some small example application are part of the github. This examples of the Adabas Go API can be downloaded using the `go get` command:
 
 ```bash
 go get -u github.com/softwareag/adabas-go-api/adabas
 ```
 
-You can compile it with the new Linux,Unix,Windows Adabas TCP/IP interface. In this case no additional native library is needed.
+You can compile it with the new Adabas TCP/IP interface on Linux,Unix,Windows . In this case no additional native library is needed.
 Alternively the Adabas local access with Adabas client native libraries can be used. The `AdabasClient` installation is prerequisite in this case.
+
+### Enable native library access
 
 By default the Adabas TCP/IP interface is enabled only. To enable Adabas Client native link support you need to provide the Go build tag `adalnk` and the CGO compile flags defining build flags for the Adabas Client library. If the Adabas environment is sourced, you can define CGO compile flags as follow:
 
@@ -81,17 +84,20 @@ Independent of the used environment of Docker (like Kubernetes or others), it de
 
 ## Adabas Go API example
 
-## Standard usge
+## Standard usage
 
-The logical view to the data can be defined using Adabas maps. A detailed description of Adabas maps is  [here](.//doc//AdabasMap.md)
+The logical view of the data can be defined using Adabas maps. A detailed description of Adabas maps is  [here](.//doc//AdabasMap.md)
 
-For creating Adabas maps the infrastructure of the Java API for Adabas (Adabas Client for Java) can be used. The Adabas Data Designer rich client or Eclipse plugin provides the management of Adabas map definitions. A programmatical approach to create Adabas maps is part of the Adabas Go API.
+The creation of Adabas maps is done by the infrastructure of the Java API for Adabas (Adabas Client for Java). The Adabas Data Designer rich client or Eclipse plugin provides the management of Adabas map definitions. A programmatical approach to create Adabas maps is part of the Adabas Go API.
 
 In the next example a logical read on the database file is using Adabas maps
 
 ```go
-// Create new connection handler
-connection, cerr := NewConnection("acj;map;config=[24,4]")
+import (
+  "github.com/SoftwareAG/adabas-go-api/adabas"
+)
+// Create new connection handler using the Adabas Map repository in database 24 file 4
+connection, cerr := adabas.NewConnection("acj;map;config=[24,4]")
 if cerr != nil {
   return
 }
@@ -103,6 +109,7 @@ request.QueryFields("NAME,PERSONNEL-ID")
 request.Limit = 2
 // Read logical using a range search query
 result,rerr := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
+// Result is dumped to stdout
 result.DumpValues()
 ```
 
@@ -142,10 +149,10 @@ For example if the structure is defined like
 
 ```go
 type Employees struct {
-  	ID        string
-	Birth     int64
-	Name      string `adabas:"Name"`
-	FirstName string `adabas:"FirstName"`
+ID        string
+Birth     int64
+Name      string `adabas:"Name"`
+FirstName string `adabas:"FirstName"`
 }
 ```
 
@@ -154,7 +161,7 @@ The struct can be used to read or store data directly. The store of the whole st
 To store the struct record do
 
 ```go
-storeRequest, err := NewStoreRequest(Employees{}, ada, repository)
+storeRequest, err := adabas.NewStoreRequest(Employees{}, ada, repository)
 e:=  &Employees{ID: "ID3", Birth: 456, Name: "Name3", FirstName: "First name3"}
 err = storeRequest.StoreData(e)
 err = storeRequest.EndTransaction()
@@ -163,7 +170,7 @@ err = storeRequest.EndTransaction()
 The read of struct data will be done with
 
 ```go
-request, err := NewReadRequest(Employees{}, adabas, mapRepository)
+request, err := adabas.NewReadRequest(Employees{}, adabas, mapRepository)
 defer request.Close()
 result, err := request.ReadLogicalWith("ID>'ID'")
 e := result.Data[0].(*Employees)
