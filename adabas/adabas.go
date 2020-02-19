@@ -1043,7 +1043,8 @@ func (adabas *Adabas) EndTransaction() (err error) {
 
 // WriteBuffer write adabas call to buffer
 func (adabas *Adabas) WriteBuffer(buffer *bytes.Buffer, order binary.ByteOrder, serverMode bool) (err error) {
-	defer adatypes.TimeTrack(time.Now(), "Adabas Write buffer "+string(adabas.Acbx.Acbxcmd[:]))
+	defer adatypes.TimeTrack(time.Now(), fmt.Sprintf("Adabas Write buffer %s rsp=%d subrsp=%d",
+		string(adabas.Acbx.Acbxcmd[:]), adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxerrc))
 	adatypes.Central.Log.Debugf("Adabas write buffer, add  ACBX: ")
 	err = binary.Write(buffer, Endian(), adabas.Acbx)
 	if err != nil {
