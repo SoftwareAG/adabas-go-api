@@ -242,7 +242,7 @@ func (connection *AdaTCP) Connect() (err error) {
 	var buffer bytes.Buffer
 	err = binary.Write(&buffer, binary.BigEndian, header)
 	if err != nil {
-		adatypes.Central.Log.Debugf("Write TCP header in buffer error %s", err)
+		adatypes.Central.Log.Infof("Write TCP header in buffer error %s", err)
 		connection.connection.Close()
 		connection.connection = nil
 		return
@@ -259,7 +259,7 @@ func (connection *AdaTCP) Connect() (err error) {
 	// Send payload in big endian needed until remote knows the endianess of the client
 	err = binary.Write(&buffer, binary.BigEndian, payload)
 	if err != nil {
-		adatypes.Central.Log.Debugf("Write TCP connect payload in buffer error %s", err)
+		adatypes.Central.Log.Infof("Write TCP generate payload buffer error: %v", err)
 		connection.connection.Close()
 		connection.connection = nil
 		return
@@ -272,7 +272,7 @@ func (connection *AdaTCP) Connect() (err error) {
 	}
 	_, err = connection.connection.Write(send)
 	if err != nil {
-		adatypes.Central.Log.Debugf("Error writing data %s", err)
+		adatypes.Central.Log.Infof("Error TCP writing data %s", err)
 		connection.connection.Close()
 		connection.connection = nil
 		return
@@ -281,7 +281,7 @@ func (connection *AdaTCP) Connect() (err error) {
 	_, err = io.ReadFull(connection.connection, rcvBuffer)
 	//	_, err = connection.connection.Read(rcvBuffer)
 	if err != nil {
-		adatypes.Central.Log.Debugf("Error reading data %v", err)
+		adatypes.Central.Log.Infof("Error TCP reading data %v", err)
 		connection.connection.Close()
 		connection.connection = nil
 		return
@@ -294,7 +294,7 @@ func (connection *AdaTCP) Connect() (err error) {
 	buf := bytes.NewBuffer(rcvBuffer)
 	err = binary.Read(buf, binary.BigEndian, &header)
 	if err != nil {
-		adatypes.Central.Log.Debugf("Error parsing header %v", err)
+		adatypes.Central.Log.Infof("Error TCP buffer parsing header %v", err)
 		connection.connection.Close()
 		connection.connection = nil
 		return
@@ -302,7 +302,7 @@ func (connection *AdaTCP) Connect() (err error) {
 
 	err = binary.Read(buf, binary.BigEndian, &payload)
 	if err != nil {
-		adatypes.Central.Log.Debugf("Error parsing payload %v", err)
+		adatypes.Central.Log.Infof("Error parsing payload %v", err)
 		connection.connection.Close()
 		connection.connection = nil
 		return
@@ -440,6 +440,7 @@ func (connection *AdaTCP) SendData(buffer bytes.Buffer, nrAbdBuffers uint32) (er
 	adatypes.Central.Log.Debugf("Write TCP data of length=%d capacity=%d netto bytes send=%d", headerBuffer.Len(), headerBuffer.Cap(), len(send))
 	n, err = connection.connection.Write(send)
 	if err != nil {
+		adatypes.Central.Log.Infof("Send data TCP data error: %v", err)
 		return
 	}
 
@@ -468,6 +469,7 @@ func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32
 	//	n, err = io.ReadFull(connection.connection, rcvHeaderBuffer)
 	n, err = io.ReadAtLeast(connection.connection, rcvHeaderBuffer, hl)
 	if err != nil {
+		adatypes.Central.Log.Infof("Receive TCP data error: %v", err)
 		return
 	}
 	if adatypes.Central.IsDebugLevel() {
@@ -480,6 +482,7 @@ func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32
 	headerBuffer := bytes.NewBuffer(rcvHeaderBuffer)
 	err = binary.Read(headerBuffer, binary.BigEndian, &header)
 	if err != nil {
+		adatypes.Central.Log.Infof("Read TCP header error: %v", err)
 		return
 	}
 
@@ -487,6 +490,7 @@ func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32
 	adatypes.Central.Log.Debugf("Receive got header length .... size=%d error=%d", header.Length, header.ErrorCode)
 	err = binary.Read(headerBuffer, Endian(), &dataHeader)
 	if err != nil {
+		adatypes.Central.Log.Infof("Read TCP data header error: %v", err)
 		return
 	}
 	adatypes.Central.Log.Debugf("Receive got data length .... size=%d nrBuffer=%d", dataHeader.Length, dataHeader.NumberOfBuffers)

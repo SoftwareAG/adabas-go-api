@@ -261,7 +261,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 	adatypes.Central.Log.Debugf("Send buffer of length=%d lenBuffer=%d", buffer.Len(), len(adabas.AdabasBuffers))
 	err = tcpConn.SendData(buffer, uint32(len(adabas.AdabasBuffers)))
 	if err != nil {
-		adatypes.Central.Log.Infof("Transmit Adabas call error ", err)
+		adatypes.Central.Log.Infof("Transmit Adabas call error: %v", err)
 		tcpConn.Disconnect()
 		adabas.transactions.connection = nil
 		return
@@ -270,7 +270,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 	var nrAbdBuffers uint32
 	nrAbdBuffers, err = tcpConn.ReceiveData(&buffer)
 	if err != nil {
-		adatypes.Central.Log.Infof("Receive Adabas call error ", err)
+		adatypes.Central.Log.Infof("Receive Adabas call error: %v", err)
 		return
 	}
 	err = adabas.ReadBuffer(&buffer, Endian(), nrAbdBuffers, false)
