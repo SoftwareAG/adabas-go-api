@@ -1043,8 +1043,9 @@ func (adabas *Adabas) EndTransaction() (err error) {
 
 // WriteBuffer write adabas call to buffer
 func (adabas *Adabas) WriteBuffer(buffer *bytes.Buffer, order binary.ByteOrder, serverMode bool) (err error) {
-	defer adatypes.TimeTrack(time.Now(), fmt.Sprintf("Adabas Write buffer %s rsp=%d subrsp=%d",
-		string(adabas.Acbx.Acbxcmd[:]), adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxerrc))
+	defer adatypes.TimeTrack(time.Now(), info(adabas.Acbx))
+	// xx fmt.Sprintf("Adabas Write buffer %s rsp=%d subrsp=%d",
+	// 	string(adabas.Acbx.Acbxcmd[:]), adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxerrc))
 	adatypes.Central.Log.Debugf("Adabas write buffer, add  ACBX: ")
 	err = binary.Write(buffer, Endian(), adabas.Acbx)
 	if err != nil {
@@ -1181,6 +1182,11 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 	return
 }
 
+func info(acbx *Acbx) string {
+	return fmt.Sprintf("Adabas Write buffer %s rsp=%d subrsp=%d",
+		string(acbx.Acbxcmd[:]), acbx.Acbxrsp, acbx.Acbxerrc)
+
+}
 func (adabas *Adabas) multifetchBuffer() (helper *adatypes.BufferHelper, err error) {
 	for _, abd := range adabas.AdabasBuffers {
 		if abd.abd.Abdid == 'M' {
