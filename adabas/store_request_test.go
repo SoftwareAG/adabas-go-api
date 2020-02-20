@@ -958,3 +958,117 @@ func TestStoreBackout(t *testing.T) {
 	adatypes.Central.Log.Infof("First validate data in database ....")
 	checkUpdateCorrectReadNumber(t, "BTTEST", isns, 0)
 }
+
+func TestUpdateWithMapLob(t *testing.T) {
+	initTestLogWithFile(t, "store.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	p := os.Getenv("LOGPATH")
+	if p == "" {
+		p = "."
+	}
+	p = p + "/../files/img/P7160233.jpg"
+	f, err := os.Open(p)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+	fi, err := f.Stat()
+	data := make([]byte, fi.Size())
+	var n int
+	n, err = f.Read(data)
+	fmt.Printf("Number of bytes read: %d/%d\n", n, len(data))
+	if !assert.Equal(t, 12370049, len(data)) {
+		return
+	}
+
+	h := sha256.New()
+	h.Write(data)
+	fmt.Printf("SHA FILE: %x\n", h.Sum(nil))
+	chkPic := fmt.Sprintf("%X", h.Sum(nil))
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	storeRequest, err := connection.CreateMapStoreRequest("LOBEXAMPLE")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	adatypes.Central.Log.Debugf("Store fields prepare Picture")
+	fmt.Println("Store fields, insert record")
+	recErr := storeRequest.StoreFields("Filename,PictureSHAchecksum,ThumbnailSHAchecksum")
+	if !assert.NoError(t, recErr) {
+		return
+	}
+	storeRecord, rErr := storeRequest.CreateRecord()
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	if !assert.NotNil(t, storeRecord) {
+		return
+	}
+	storeRecord.SetValue("Filename", "lobtest")
+	storeRecord.SetValue("PictureSHAchecksum", chkPic)
+	storeRecord.SetValue("ThumbnailSHAchecksum", "x")
+
+	err = storeRequest.Store(storeRecord)
+	if !assert.NoError(t, err) {
+		return
+	}
+	fmt.Println("Store record into ISN=", storeRecord.Isn)
+	if !assert.True(t, storeRecord.Isn > 0) {
+		return
+	}
+	isn := storeRecord.Isn
+
+	recErr = storeRequest.StoreFields("Picture")
+	if !assert.NoError(t, recErr) {
+		return
+	}
+	storeRecord, rErr = storeRequest.CreateRecord()
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	if !assert.NotNil(t, storeRecord) {
+		return
+	}
+	storeRecord.Isn = isn
+	storeRecord.SetValue("Picture", data)
+	fmt.Println("Update record into ISN=", storeRecord.Isn)
+	err = storeRequest.Update(storeRecord)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	storeRequest.EndTransaction()
+
+	readRequest, rerr := connection.CreateMapReadRequest("LOBEXAMPLE")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+
+	rerr = readRequest.QueryFields("Picture")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	result, rrErr := readRequest.ReadISN(isn)
+	if !assert.NoError(t, rrErr) {
+		return
+	}
+	assert.Equal(t, 1, len(result.Values))
+	v, _ := result.Values[0].SearchValue("Picture")
+	vb := v.Bytes()
+	if !assert.Equal(t, 12370049, len(vb)) {
+		return
+	}
+	h = sha256.New()
+	h.Write(vb)
+	fmt.Printf("SHA SAVED: %x\n", h.Sum(nil))
+	savedPic := fmt.Sprintf("%X", h.Sum(nil))
+	assert.Equal(t, chkPic, savedPic)
+}
