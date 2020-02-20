@@ -398,7 +398,7 @@ func searchDynamicValue(value reflect.Value, fn []string) (v reflect.Value, ok b
 }
 
 // storeValue used in dynamic interface mode to store records
-func (request *StoreRequest) storeValue(record reflect.Value, store bool) error {
+func (request *StoreRequest) storeValue(record reflect.Value, store, etData bool) error {
 	if request.definition == nil {
 		q := request.dynamic.CreateQueryFields()
 		request.StoreFields(q)
@@ -439,6 +439,7 @@ func (request *StoreRequest) storeValue(record reflect.Value, store bool) error 
 		adatypes.Central.Log.Debugf("store/update=%v record ADA: %s", store, storeRecord.String())
 	}
 	storeRecord.Isn = request.dynamic.ExtractIsnField(record)
+	storeRecord.LobEndTransaction = etData
 	if adatypes.Central.IsDebugLevel() {
 		adatypes.Central.Log.Debugf("store/update to ISN=%d", storeRecord.Isn)
 	}
@@ -541,17 +542,25 @@ func (request *StoreRequest) evaluateKeyIsn(record reflect.Value, storeRecord *R
 }
 
 // StoreData store interface data, either struct or array
-func (request *StoreRequest) StoreData(data interface{}) error {
-	return request.modifyData(data, true)
+func (request *StoreRequest) StoreData(data ...interface{}) error {
+	etData := true
+	if len(data) > 1 {
+		etData = data[1].(bool)
+	}
+	return request.modifyData(data, true, etData)
 }
 
 // UpdateData update interface data, either struct or array
-func (request *StoreRequest) UpdateData(data interface{}) error {
-	return request.modifyData(data, false)
+func (request *StoreRequest) UpdateData(data ...interface{}) error {
+	etData := true
+	if len(data) > 1 {
+		etData = data[1].(bool)
+	}
+	return request.modifyData(data[0], false, etData)
 }
 
 // StoreData store interface data, either struct or array
-func (request *StoreRequest) modifyData(data interface{}, store bool) error {
+func (request *StoreRequest) modifyData(data interface{}, store, etData bool) error {
 	adatypes.Central.Log.Debugf("Store type = %T %v", data, reflect.TypeOf(data).Kind())
 	switch reflect.TypeOf(data).Kind() {
 	case reflect.Slice:
@@ -565,7 +574,7 @@ func (request *StoreRequest) modifyData(data interface{}, store bool) error {
 		}
 
 		for si := 0; si < s.Len(); si++ {
-			err := request.storeValue(s.Index(si), store)
+			err := request.storeValue(s.Index(si), store, etData)
 			if err != nil {
 				return err
 			}
@@ -575,7 +584,7 @@ func (request *StoreRequest) modifyData(data interface{}, store bool) error {
 			request.createDynamic(data)
 		}
 		ti := reflect.ValueOf(data).Elem()
-		err := request.storeValue(ti, store)
+		err := request.storeValue(ti, store, etData)
 		if err != nil {
 			return err
 		}
@@ -585,7 +594,7 @@ func (request *StoreRequest) modifyData(data interface{}, store bool) error {
 		}
 		adatypes.Central.Log.Debugf("Type data %T", data)
 		ti := reflect.ValueOf(data)
-		err := request.storeValue(ti, store)
+		err := request.storeValue(ti, store, etData)
 		if err != nil {
 			return err
 		}
