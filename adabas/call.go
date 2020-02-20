@@ -240,7 +240,7 @@ func (adabasBuffer *Buffer) putCAbd(pabdArray *C.PABD, index int) {
 // native local Adabas calls because this part is used with native
 // AdabasClient library support
 func (adabas *Adabas) CallAdabas() (err error) {
-	defer adatypes.TimeTrack(time.Now(), "CallAdabas "+string(adabas.Acbx.Acbxcmd[:]))
+	defer TimeTrack(time.Now(), "Call adabas", adabas.Acbx)
 
 	if adatypes.Central.IsDebugLevel() {
 		adatypes.Central.Log.Debugf("Send calling CC %c%c adabasp=%p URL=%s Adabas ID=%v",

@@ -968,7 +968,7 @@ func TestUpdateWithMapLob(t *testing.T) {
 	if p == "" {
 		p = "."
 	}
-	p = p + "/../files/img/P7160233.jpg"
+	p = p + "/../files/img/106-0687_IMG.JPG"
 	f, err := os.Open(p)
 	if err != nil {
 		fmt.Println(err)
@@ -980,7 +980,7 @@ func TestUpdateWithMapLob(t *testing.T) {
 	var n int
 	n, err = f.Read(data)
 	fmt.Printf("Number of bytes read: %d/%d\n", n, len(data))
-	if !assert.Equal(t, 12370049, len(data)) {
+	if !assert.Equal(t, 1386643, len(data)) {
 		return
 	}
 
@@ -1040,10 +1040,12 @@ func TestUpdateWithMapLob(t *testing.T) {
 	storeRecord.Isn = isn
 	storeRecord.SetValue("Picture", data)
 	fmt.Println("Update record into ISN=", storeRecord.Isn)
+	adatypes.Central.Log.Debugf("Update data in ISN=%d field Picture", isn)
 	err = storeRequest.Update(storeRecord)
 	if !assert.NoError(t, err) {
 		return
 	}
+	adatypes.Central.Log.Debugf("Dpne update data in ISN=%d field Picture", isn)
 
 	storeRequest.EndTransaction()
 
@@ -1063,7 +1065,7 @@ func TestUpdateWithMapLob(t *testing.T) {
 	assert.Equal(t, 1, len(result.Values))
 	v, _ := result.Values[0].SearchValue("Picture")
 	vb := v.Bytes()
-	if !assert.Equal(t, 12370049, len(vb)) {
+	if !assert.Equal(t, 1386643, len(vb)) {
 		return
 	}
 	h = sha256.New()

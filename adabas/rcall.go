@@ -62,7 +62,7 @@ func NewAdabasID() *ID {
 // remote Adabas calls with ADATCP because this part is not used with native
 // AdabasClient library support
 func (adabas *Adabas) CallAdabas() (err error) {
-	defer adatypes.TimeTrack(time.Now(), "CallAdabas "+string(adabas.Acbx.Acbxcmd[:]))
+	defer TimeTrack(time.Now(), "RCall adabas", adabas.Acbx)
 
 	adatypes.Central.Log.Debugf("Call Adabas (local disabled) adabasp=%p  %s\n%v", adabas, adabas.URL.String(), adabas.ID.String())
 	adatypes.LogMultiLineString(adabas.Acbx.String())

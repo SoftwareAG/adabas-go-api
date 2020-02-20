@@ -286,11 +286,17 @@ func (request *StoreRequest) Store(storeRecord *Record) error {
 	storeRecord.Isn = adabasRequest.Isn
 	// Reset values after storage to reset for next store request
 	adatypes.Central.Log.Debugf("After store request done need second = %v", adabasRequest.Option.NeedSecondCall)
+	return request.secondStore(adabasRequest, storeRecord)
+}
+
+func (request *StoreRequest) secondStore(adabasRequest *adatypes.Request, storeRecord *Record) error {
+
 	needSecondCall := adabasRequest.Option.NeedSecondCall
 	for needSecondCall != adatypes.NoneSecond {
 		adabasRequest.Option.SecondCall++
 		adabasRequest, prepareErr := request.prepareSecondRequest(adabasRequest.Option.SecondCall)
 		if prepareErr != nil {
+			adatypes.Central.Log.Debugf("Error preparing second call: %v", prepareErr)
 			return prepareErr
 		}
 		adabasRequest.Isn = storeRecord.Isn
@@ -309,7 +315,7 @@ func (request *StoreRequest) Store(storeRecord *Record) error {
 		adatypes.Central.Log.Debugf("After update request done need second = %v", adabasRequest.Option.NeedSecondCall)
 	}
 	request.definition.Values = nil
-	return err
+	return nil
 }
 
 // Update update a given record into database. The given record
@@ -323,7 +329,12 @@ func (request *StoreRequest) Update(storeRecord *Record) error {
 	if prepareErr != nil {
 		return prepareErr
 	}
-	return request.update(adabasRequest, storeRecord)
+	err := request.update(adabasRequest, storeRecord)
+	if err != nil {
+		return err
+	}
+	adatypes.Central.Log.Debugf("After update request done need second = %v", adabasRequest.Option.NeedSecondCall)
+	return request.secondStore(adabasRequest, storeRecord)
 }
 
 // Exchange exchange a record
@@ -349,7 +360,9 @@ func (request *StoreRequest) update(adabasRequest *adatypes.Request, storeRecord
 	adabasRequest.Isn = storeRecord.Isn
 	err = request.adabas.Update(request.repository.Fnr, adabasRequest)
 	// Reset values after storage to reset for next store request
-	request.definition.Values = nil
+	if adabasRequest.Option.NeedSecondCall == adatypes.NoneSecond {
+		request.definition.Values = nil
+	}
 	return err
 }
 

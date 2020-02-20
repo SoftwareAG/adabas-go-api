@@ -144,7 +144,7 @@ func (value *stringValue) SetValue(v interface{}) error {
 // FormatBuffer generate format buffer for the string value
 func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
 	recLength := uint32(0)
-	Central.Log.Debugf("Generate FormatBuffer %s of length=%d/%d and storeCall=%v", value.adatype.Type().name(), value.adatype.Length(), len(value.value), option.StoreCall)
+	Central.Log.Debugf("Generate FormatBuffer name=%s (%s) of length=%d/%d and storeCall=%v", value.adatype.Name(), value.adatype.Type().name(), value.adatype.Length(), len(value.value), option.StoreCall)
 	// If store is request and lobsize is bigger then chunk size, do partial lob store calls
 	if option.StoreCall && len(value.value) > PartialStoreLobSizeChunks {
 		if buffer.Len() > 0 {

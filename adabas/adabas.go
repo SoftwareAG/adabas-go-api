@@ -1043,7 +1043,7 @@ func (adabas *Adabas) EndTransaction() (err error) {
 
 // WriteBuffer write adabas call to buffer
 func (adabas *Adabas) WriteBuffer(buffer *bytes.Buffer, order binary.ByteOrder, serverMode bool) (err error) {
-	defer adatypes.TimeTrack(time.Now(), info(adabas.Acbx))
+	defer TimeTrack(time.Now(), "Adabas Write buffer", adabas.Acbx)
 	// xx fmt.Sprintf("Adabas Write buffer %s rsp=%d subrsp=%d",
 	// 	string(adabas.Acbx.Acbxcmd[:]), adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxerrc))
 	adatypes.Central.Log.Debugf("Adabas write buffer, add  ACBX: ")
@@ -1101,7 +1101,7 @@ func (adabas *Adabas) WriteBuffer(buffer *bytes.Buffer, order binary.ByteOrder, 
 
 // ReadBuffer read buffer and parse call
 func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, nCalBuf uint32, serverMode bool) (err error) {
-	defer adatypes.TimeTrack(time.Now(), "Adabas Read buffer")
+	defer TimeTrack(time.Now(), "Adabas Read buffer", adabas.Acbx)
 	if buffer == nil {
 		err = adatypes.NewGenericError(4)
 		return
@@ -1182,11 +1182,6 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 	return
 }
 
-func info(acbx *Acbx) string {
-	return fmt.Sprintf("Adabas Write buffer %s rsp=%d subrsp=%d",
-		string(acbx.Acbxcmd[:]), acbx.Acbxrsp, acbx.Acbxerrc)
-
-}
 func (adabas *Adabas) multifetchBuffer() (helper *adatypes.BufferHelper, err error) {
 	for _, abd := range adabas.AdabasBuffers {
 		if abd.abd.Abdid == 'M' {
@@ -1196,4 +1191,12 @@ func (adabas *Adabas) multifetchBuffer() (helper *adatypes.BufferHelper, err err
 		}
 	}
 	return
+}
+
+// TimeTrack defer function measure the difference end log it to log management, like
+//    defer TimeTrack(time.Now(), "CallAdabas "+string(adabas.Acbx.Acbxcmd[:]))
+func TimeTrack(start time.Time, name string, acbx *Acbx) {
+	elapsed := time.Since(start)
+
+	adatypes.Central.Log.Infof("%s took %s, %s rsp=%d subrsp=%d add2=%#v", name, elapsed, string(acbx.Acbxcmd[:]), acbx.Acbxrsp, acbx.Acbxerrc, []byte(acbx.Acbxadd2[:]))
 }
