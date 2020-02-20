@@ -313,6 +313,12 @@ func (request *StoreRequest) secondStore(adabasRequest *adatypes.Request, storeR
 		}
 		needSecondCall = adabasRequest.Option.NeedSecondCall
 		adatypes.Central.Log.Debugf("After update request done need second = %v", adabasRequest.Option.NeedSecondCall)
+		if storeRecord.LobEndTransaction {
+			err = request.EndTransaction()
+			if err != nil {
+				return err
+			}
+		}
 	}
 	request.definition.Values = nil
 	return nil

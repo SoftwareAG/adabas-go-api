@@ -1038,6 +1038,7 @@ func TestUpdateWithMapLob(t *testing.T) {
 		return
 	}
 	storeRecord.Isn = isn
+	storeRecord.LobEndTransaction = true
 	storeRecord.SetValue("Picture", data)
 	fmt.Println("Update record into ISN=", storeRecord.Isn)
 	adatypes.Central.Log.Debugf("Update data in ISN=%d field Picture", isn)
@@ -1047,7 +1048,10 @@ func TestUpdateWithMapLob(t *testing.T) {
 	}
 	adatypes.Central.Log.Debugf("Dpne update data in ISN=%d field Picture", isn)
 
-	storeRequest.EndTransaction()
+	err = storeRequest.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
 
 	readRequest, rerr := connection.CreateMapReadRequest("LOBEXAMPLE")
 	if !assert.NoError(t, rerr) {

@@ -40,13 +40,14 @@ import (
 // for each Adabas field in the tree. The tree includes group
 // nodes of the Adabas record.
 type Record struct {
-	Isn        adatypes.Isn `xml:"Isn,attr"`
-	Quantity   uint64       `xml:"Quantity,attr"`
-	Value      []adatypes.IAdaValue
-	HashFields map[string]adatypes.IAdaValue `xml:"-" json:"-"`
-	fields     map[string]*queryField
-	definition *adatypes.Definition
-	adabasMap  *Map
+	Isn               adatypes.Isn `xml:"Isn,attr"`
+	Quantity          uint64       `xml:"Quantity,attr"`
+	Value             []adatypes.IAdaValue
+	HashFields        map[string]adatypes.IAdaValue `xml:"-" json:"-"`
+	fields            map[string]*queryField
+	definition        *adatypes.Definition
+	adabasMap         *Map
+	LobEndTransaction bool
 }
 
 func traverseHashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
@@ -75,7 +76,7 @@ func NewRecord(definition *adatypes.Definition) (*Record, error) {
 			return nil, err
 		}
 	}
-	record := &Record{Value: definition.Values, definition: definition}
+	record := &Record{Value: definition.Values, definition: definition, LobEndTransaction: false}
 	definition.Values = nil
 	record.HashFields = make(map[string]adatypes.IAdaValue)
 	t := adatypes.TraverserValuesMethods{EnterFunction: traverseHashValues}
