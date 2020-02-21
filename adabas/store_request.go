@@ -547,7 +547,7 @@ func (request *StoreRequest) StoreData(data ...interface{}) error {
 	if len(data) > 1 {
 		etData = data[1].(bool)
 	}
-	return request.modifyData(data, true, etData)
+	return request.modifyData(data[0], true, etData)
 }
 
 // UpdateData update interface data, either struct or array
