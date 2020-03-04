@@ -1209,3 +1209,47 @@ func TestDefinitionLength(t *testing.T) {
 	assert.Equal(t, FieldTypeFieldLength, testDefinition.Values[0].Type().Type())
 	assert.Equal(t, "2", testDefinition.Values[0].String())
 }
+
+func TestDefinitionLastPeriodEntry(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	testDefinition := createLayoutWithPEandMU()
+	err = testDefinition.ShouldRestrictToFields("GS[N]")
+	assert.NoError(t, err)
+	req, rerr := testDefinition.CreateAdabasRequest(false, 0, false)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Create request", rerr)
+		return
+	}
+	helper := NewDynamicHelper(endian())
+	req.RecordBuffer = helper
+	req.Parser = testParser
+	req.Limit = 1
+	req.Multifetch = 1
+	req.Isn = 10
+	req.Definition = testDefinition
+	if !assert.NotNil(t, req.Definition) {
+		return
+	}
+	req.RecordBuffer.PutInt32(2)
+	req.RecordBuffer.putByte('a')
+	req.RecordBuffer.offset = 0
+	assert.Equal(t, "PGC,4,B,GSN,1,A.", req.FormatBuffer.String())
+	ty, terr := testDefinition.SearchType("GM")
+	assert.NoError(t, terr)
+	aty := ty.(*StructureType)
+	assert.Equal(t, FieldTypeMultiplefield, aty.Type())
+	assert.Equal(t, true, aty.peRange.IsSingleIndex(), "GM is no single index")
+	count := uint64(0)
+	result, err := req.ParseBuffer(&count, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, uint32(0), result)
+	testDefinition.DumpValues(false)
+	assert.Equal(t, FieldTypePeriodGroup, testDefinition.Values[0].Type().Type())
+	v := testDefinition.Values[0].(*StructureValue)
+	assert.Equal(t, 1, v.NrElements())
+}

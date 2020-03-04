@@ -69,6 +69,7 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 	newStructure := NewStructure()
 	*newStructure = *oldStructure
 	if fq != nil && fq.fieldRange != nil {
+		Central.Log.Debugf("-------<<<< No field Range ")
 		switch adaType.Type() {
 		case FieldTypeMultiplefield:
 			if adaType.HasFlagSet(FlagOptionMUGhost) {
@@ -290,9 +291,9 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 						} else {
 							newType.muRange = *r
 						}
-						Central.Log.Debugf("FB FQ peRange=%#v", r)
+						Central.Log.Debugf("Field range peRange=%#v", r)
 					}
-					Central.Log.Debugf("FB %s peRange=%s muRange=%s", newType.name, newType.peRange.FormatBuffer(), newType.muRange.FormatBuffer())
+					Central.Log.Debugf("FB range for field=%s peRange=%s muRange=%s", newType.name, newType.peRange.FormatBuffer(), newType.muRange.FormatBuffer())
 				}
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
 				if Central.IsDebugLevel() {
@@ -453,8 +454,8 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	def.activeFieldTree = fieldMap.parentStructure
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Final restricted type tree .........")
-		def.DumpTypes(true, false, "Not init restricted")
-		def.DumpTypes(true, true, "final restricted")
+		def.DumpTypes(true, false, "Not active restricted")
+		def.DumpTypes(true, true, "final active restricted")
 	}
 	return
 }
@@ -462,6 +463,7 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 // removeFromTree remove field from tree because of given remove flag
 func removeFromTree(value *StructureType) {
 	if !value.HasFlagSet(FlagOptionToBeRemoved) {
+		Central.Log.Debugf("Field %s already removed", value.Name())
 		return
 	}
 	Central.Log.Debugf("Remove empty nodes from value: %s len=%d", value.Name(), value.NrFields())
