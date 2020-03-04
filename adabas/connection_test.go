@@ -2296,3 +2296,50 @@ func TestConnectionFile9Isn297(t *testing.T) {
 
 	//fmt.Println(result.String())
 }
+
+func TestConnectionTestSuite(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	url := adabasStatDBIDs
+	fmt.Println("Connect to ", url)
+	connection, cerr := NewConnection("acj;target=" + url)
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	openErr := connection.Open()
+	assert.NoError(t, openErr)
+	request, err := connection.CreateFileReadRequest(11)
+	if !assert.NoError(t, err) {
+		return
+	}
+	request.QueryFields("AA,AB,AS[N]")
+	request.Limit = 0
+	var result *Response
+	result, err = request.ReadLogicalWith("AE=SMITH")
+	if !assert.NoError(t, err) {
+		return
+	}
+	if assert.NotNil(t, result) {
+		assert.Equal(t, 10, len(result.Values))
+		assert.Equal(t, 10, result.NrRecords())
+		// err = result.DumpValues()
+		// assert.NoError(t, err)
+		kaVal := result.Values[0].HashFields["AE"]
+		if assert.NotNil(t, kaVal) {
+			assert.Equal(t, "SMITH", kaVal.String())
+		}
+		kaVal = result.Values[9].HashFields["AA"]
+		if assert.NotNil(t, kaVal) {
+			assert.Equal(t, "XXX", kaVal.String())
+		}
+
+		record := result.Isn(1265)
+		assert.NotNil(t, record)
+	}
+}
