@@ -263,20 +263,21 @@ func TestConnectionMfTestSuite(t *testing.T) {
 		return
 	}
 	if assert.NotNil(t, result) {
-		assert.Equal(t, 10, len(result.Values))
-		assert.Equal(t, 10, result.NrRecords())
+		assert.Equal(t, 19, len(result.Values))
+		assert.Equal(t, 19, result.NrRecords())
 		// err = result.DumpValues()
 		// assert.NoError(t, err)
 		kaVal := result.Values[0].HashFields["AE"]
 		if assert.NotNil(t, kaVal) {
-			assert.Equal(t, "SMITH", kaVal.String())
+			assert.Equal(t, "SMITH               ", kaVal.String())
 		}
 		kaVal = result.Values[9].HashFields["AA"]
 		if assert.NotNil(t, kaVal) {
-			assert.Equal(t, "XXX", kaVal.String())
+			assert.Equal(t, "20001000", kaVal.String())
 		}
 
-		record := result.Isn(1265)
+		record := result.Isn(1106)
 		assert.NotNil(t, record)
+		validateResult(t, t.Name(), result)
 	}
 }
