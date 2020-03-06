@@ -116,7 +116,7 @@ func (value *StructureValue) PeriodIndex() uint32 {
 type evaluateFieldNameStructure struct {
 	names      []string
 	namesMap   map[string]bool
-	second     uint8
+	second     uint32
 	needSecond SecondCall
 }
 

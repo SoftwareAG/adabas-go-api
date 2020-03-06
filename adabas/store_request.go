@@ -187,7 +187,7 @@ func (request *StoreRequest) prepareRequest() (adabasRequest *adatypes.Request, 
 	return
 }
 
-func (request *StoreRequest) prepareSecondRequest(secondCall uint8) (adabasRequest *adatypes.Request, err error) {
+func (request *StoreRequest) prepareSecondRequest(secondCall uint32) (adabasRequest *adatypes.Request, err error) {
 	adabasRequest, err = request.definition.CreateAdabasRequest(true, secondCall, request.adabas.status.platform.IsMainframe())
 	if err != nil {
 		return

@@ -33,7 +33,7 @@ import (
 const defaultMultipleSize = 2048
 
 // SecondCall second call enum
-type SecondCall uint8
+type SecondCall uint32
 
 const (
 	// NoneSecond No second call
@@ -55,16 +55,16 @@ type BufferOption struct {
 	Mainframe      bool
 	multipleSize   uint32
 	StreamCursor   uint8
-	SecondCall     uint8
+	SecondCall     uint32
 }
 
 // NewBufferOption create option to parse the buffer
-func NewBufferOption(store bool, secondCall uint8) *BufferOption {
+func NewBufferOption(store bool, secondCall uint32) *BufferOption {
 	return NewBufferOption3(store, secondCall, false)
 }
 
 // NewBufferOption3 create option to parse the buffer
-func NewBufferOption3(store bool, secondCall uint8, mainframe bool) *BufferOption {
+func NewBufferOption3(store bool, secondCall uint32, mainframe bool) *BufferOption {
 	return &BufferOption{MultifetchCall: false, StoreCall: store,
 		ExchangeRecord: false, SecondCall: secondCall, NeedSecondCall: NoneSecond,
 		multipleSize: defaultMultipleSize, Ascending: true, Mainframe: mainframe}

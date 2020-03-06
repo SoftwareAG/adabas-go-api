@@ -162,7 +162,7 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			} else {
 				option.NeedSecondCall = StoreSecond
 			}
-			Central.Log.Infof("%d.Partial %d to %d/%d of %d", option.SecondCall, start, end, len(value.value))
+			Central.Log.Infof("%d.Partial %s -> %d/%d of %d", option.SecondCall, value.Type().ShortName(), start, end, len(value.value))
 			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), start, end))
 		} else {
 			partialRange := value.Type().PartialRange()

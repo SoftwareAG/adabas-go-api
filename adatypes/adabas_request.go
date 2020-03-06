@@ -346,7 +346,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 }
 
 // CreateAdabasRequest creates format buffer out of defined metadata tree
-func (def *Definition) CreateAdabasRequest(store bool, secondCall uint8, mainframe bool) (adabasRequest *Request, err error) {
+func (def *Definition) CreateAdabasRequest(store bool, secondCall uint32, mainframe bool) (adabasRequest *Request, err error) {
 	adabasRequest = &Request{FormatBuffer: bytes.Buffer{}, Option: NewBufferOption3(store, secondCall, mainframe),
 		Multifetch: DefaultMultifetchLimit}
 
