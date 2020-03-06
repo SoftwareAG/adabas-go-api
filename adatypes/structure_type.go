@@ -156,7 +156,6 @@ func (adaType *StructureType) adaptSubFields() {
 func (adaType *StructureType) String() string {
 
 	y := strings.Repeat(" ", int(adaType.level))
-	Central.Log.Debugf("FS: %s -> %d", adaType.Name(), len(adaType.SubTypes))
 	if adaType.fieldType == FieldTypeMultiplefield {
 		if len(adaType.SubTypes) == 0 {
 			return fmt.Sprintf("%s%d %s deleted", y, adaType.level, adaType.shortName)
@@ -208,18 +207,11 @@ func (adaType *StructureType) NrFields() int {
 func (adaType *StructureType) Traverse(t TraverserMethods, level int, x interface{}) (err error) {
 	// Go through sub types
 	for _, v := range adaType.SubTypes {
-		if Central.IsDebugLevel() {
-			Central.Log.Debugf("Traverse on %s/%s", v.Name(), v.ShortName())
-		}
-
 		err = t.EnterFunction(v, adaType, level, x)
 		if err != nil {
 			return
 		}
 		if v.IsStructure() {
-			if Central.IsDebugLevel() {
-				Central.Log.Debugf("Traverse into structure %s", v.Name())
-			}
 			err = v.(StructureTraverser).Traverse(t, level+1, x)
 			if err != nil {
 				return

@@ -89,7 +89,7 @@ func NewRangeParser(r string) *AdaRange {
 			return nil
 		}
 	}
-	Central.Log.Debugf("Ada range %d-%d", from, to)
+	Central.Log.Debugf("Create new range %d-%d", from, to)
 	return &AdaRange{from: from, to: to}
 }
 

@@ -1218,16 +1218,16 @@ func TestDefinitionLastPeriodEntry(t *testing.T) {
 	Central.Log.Infof("TEST: %s", t.Name())
 
 	testDefinition := createLayoutWithPEandMU()
-	Central.Log.Infof("Restrict fields")
+	Central.Log.Infof("_______ Restrict fields")
 	err = testDefinition.ShouldRestrictToFields("GS[N]")
 	assert.NoError(t, err)
-	Central.Log.Infof("Create request")
+	Central.Log.Infof("_______ Create request")
 	req, rerr := testDefinition.CreateAdabasRequest(false, 0, false)
 	if !assert.NoError(t, rerr) {
 		fmt.Println("Create request", rerr)
 		return
 	}
-	assert.Equal(t, "PGC,4,B,GSN,1,A.", req.FormatBuffer.String())
+	assert.Equal(t, "GSN,1,A.", req.FormatBuffer.String())
 	helper := NewDynamicHelper(endian())
 	req.RecordBuffer = helper
 	req.Parser = testParser
@@ -1238,16 +1238,14 @@ func TestDefinitionLastPeriodEntry(t *testing.T) {
 	if !assert.NotNil(t, req.Definition) {
 		return
 	}
-	req.RecordBuffer.PutInt32(2)
 	req.RecordBuffer.putByte('a')
 	req.RecordBuffer.offset = 0
 	ty, terr := testDefinition.SearchType("GM")
 	assert.NoError(t, terr)
 	aty := ty.(*StructureType)
 	assert.Equal(t, FieldTypeMultiplefield, aty.Type())
-	assert.Equal(t, true, aty.peRange.IsSingleIndex(), "GM is no single index")
 	count := uint64(0)
-	Central.Log.Infof("Parse buffer")
+	Central.Log.Infof("_______ Parse buffer")
 	result, err := req.ParseBuffer(&count, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, uint32(0), result)

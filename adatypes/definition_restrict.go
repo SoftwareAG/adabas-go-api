@@ -160,9 +160,10 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 
 }
 
-// removeFieldEnterTrav traverer method search for fields which are not part of the query
+// searchFieldToSetRemoveFlagTrav traverer method search for fields which are not part of the query
 // defined by the `fieldMap` structure.
-func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+// In addition the range is set and additional single range flags are set
+func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
 	fieldMap := x.(*fieldMap)
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Check remove field on type %s with parent %s(parent remove=%v)", adaType.Name(), parentType.Name(),
@@ -202,7 +203,7 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 		fieldMap.evaluateTopLevelStructure(adaType.Level())
 
 		if fq != nil && len(fq.fieldRange) > 0 {
-			Central.Log.Debugf("%s -> %s", adaType.Name(), fq.fieldRange[0].FormatBuffer())
+			Central.Log.Debugf("Field range for %s -> %s", adaType.Name(), fq.fieldRange[0].FormatBuffer())
 			index := 0
 			t := adaType.(*AdaType)
 			if adaType.HasFlagSet(FlagOptionPE) {
@@ -219,7 +220,7 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 				pt.muRange = t.muRange
 			}
 		}
-		Central.Log.Debugf("%s peRange=%s muRange=%s",
+		Central.Log.Debugf("Field range %s peRange=%s muRange=%s",
 			adaType.Name(), adaType.PeriodicRange().FormatBuffer(), adaType.MultipleRange().FormatBuffer())
 
 		// Skip MU field type if parent is not available
@@ -292,6 +293,9 @@ func removeFieldEnterTrav(adaType IAdaType, parentType IAdaType, level int, x in
 							newType.muRange = *r
 						}
 						Central.Log.Debugf("Field range peRange=%#v", r)
+						if r.IsSingleIndex() {
+							newType.AddFlag(FlagOptionSingleIndex)
+						}
 					}
 					Central.Log.Debugf("FB range for field=%s peRange=%s muRange=%s", newType.name, newType.peRange.FormatBuffer(), newType.muRange.FormatBuffer())
 				}
@@ -359,7 +363,7 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 	fieldMap.lastStructure = fieldMap.parentStructure
 	if len(field) != 0 {
 		for _, f := range field {
-			Central.Log.Debugf("Map new Field %s", f)
+			Central.Log.Debugf("Add to new Field %s to hash field", f)
 			fl := strings.Trim(f, " ")
 			if fl != "" {
 				var re = regexp.MustCompile(`(?P<field>[^\[\(\]\)]+)(\[(?P<if>[\dN]+),?(?P<it>[\dN]*)\])?(\((?P<ps>\d+),(?P<pt>\d+)\))?`)
@@ -386,7 +390,7 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 			}
 		}
 	}
-	Central.Log.Debugf("Init parent structure %v", fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved))
+	Central.Log.Debugf("initialized field hash map")
 	return fieldMap, nil
 }
 
@@ -411,7 +415,7 @@ func (def *Definition) RestrictFieldSlice(field []string) (err error) {
 func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	Central.Log.Debugf("Should restrict fields to %#v", field)
 	if Central.IsDebugLevel() {
-		def.DumpTypes(true, false, "before restrict")
+		def.DumpTypes(true, false, "Start status before restrict")
 	}
 	def.Values = nil
 	def.activeFields = make(map[string]IAdaType)
@@ -421,22 +425,18 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 		err = ferr
 		return
 	}
-	if Central.IsDebugLevel() {
-		def.DumpTypes(true, false, "enter restrict")
-	}
 	// Traverse through field tree to reduce tree to fields which
 	// are part of the query
-	t := TraverserMethods{EnterFunction: removeFieldEnterTrav}
+	t := TraverserMethods{EnterFunction: searchFieldToSetRemoveFlagTrav}
 	err = def.TraverseTypes(t, true, fieldMap)
 	if err != nil {
 		return
 	}
-	if Central.IsDebugLevel() {
-		def.DumpTypes(true, false, "remove restrict restrict")
-	}
+
+	Central.Log.Debugf("Set remove flag set")
 
 	if len(fieldMap.set) > 0 {
-		Central.Log.Debugf("Field map ... %v", fieldMap.set)
+		Central.Log.Debugf("Field map not empty, unknown fields found ... %v", fieldMap.set)
 		for f := range fieldMap.set {
 			err = NewGenericError(50, f)
 			if Central.IsDebugLevel() {
@@ -551,7 +551,7 @@ func newFieldQuery(fl string, rf bool,
 			return nil
 		}
 		fq.partialRange = NewRange(ps, pt)
-		Central.Log.Debugf("Partial %d:%d\n", fq.partialRange.from, fq.partialRange.to)
+		Central.Log.Debugf("Partial field range %d:%d\n", fq.partialRange.from, fq.partialRange.to)
 	}
 	if Central.IsDebugLevel() {
 		r := ""
@@ -561,7 +561,7 @@ func newFieldQuery(fl string, rf bool,
 			}
 			r = fq.fieldRange[0].FormatBuffer()
 		}
-		Central.Log.Debugf("Add to map: %s -> %s reference=%v", fq.name, r, rf)
+		Central.Log.Debugf("Init field range for field %s -> %s reference=%v", fq.name, r, rf)
 	}
 	return fq
 }
