@@ -957,7 +957,7 @@ func TestDefinition_restrict(t *testing.T) {
 		fmt.Println("Create request", rerr)
 		return
 	}
-	assert.Equal(t, "P1C,4,B,GCN,1,A.", req.FormatBuffer.String())
+	assert.Equal(t, "GCN,1,A.", req.FormatBuffer.String())
 
 }
 
