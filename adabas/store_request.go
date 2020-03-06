@@ -192,7 +192,7 @@ func (request *StoreRequest) prepareSecondRequest(secondCall uint8) (adabasReque
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("Second store FB: %s", adabasRequest.FormatBuffer.String())
+	adatypes.Central.Log.Infof("Second store FB: %s", adabasRequest.FormatBuffer.String())
 	adabasRequest.Definition = request.definition
 	return
 }
