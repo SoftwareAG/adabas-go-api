@@ -302,8 +302,8 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 				}
 				if adaType.Type() == FieldTypeLBString {
 					partialRange := adaType.PartialRange()
-					Central.Log.Infof("Partial Range %d:%d\n", partialRange.from, partialRange.to)
 					if partialRange != nil {
+						Central.Log.Infof("Partial Range %d:%d\n", partialRange.from, partialRange.to)
 						if partialRange.from == 0 {
 							buffer.WriteString(fmt.Sprintf("%s(*,%d)", adaType.ShortName(), partialRange.to))
 						} else {
