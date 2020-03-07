@@ -872,7 +872,7 @@ func (adabas *Adabas) Store(fileNr Fnr, adabasRequest *adatypes.Request) (err er
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("Store ISN rsp=%d ... %d", adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxisn)
+	adatypes.Central.Log.Debugf("Store ISN rsp=%d ... ISN=%d", adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxisn)
 	// Error received from Adabas
 	if adabas.Acbx.Acbxrsp != AdaNormal {
 		adatypes.Central.Log.Errorf("Error storing data: %s", adabas.getAdabasMessage())

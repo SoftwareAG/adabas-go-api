@@ -387,11 +387,11 @@ func (record *Record) ValueQuantity(param ...interface{}) int32 {
 // Scan scan for different field entries
 func (record *Record) Scan(dest ...interface{}) (err error) {
 	adatypes.Central.Log.Debugf("Scan Record %#v", record.fields)
-	if f, ok := record.fields["#ISN"]; ok {
+	if f, ok := record.fields["#isn"]; ok {
 		adatypes.Central.Log.Debugf("Fill Record ISN=%d", record.Isn)
 		*(dest[f.index].(*int)) = int(record.Isn)
 	}
-	if f, ok := record.fields["#ISNQUANTITY"]; ok {
+	if f, ok := record.fields["#isnquantity"]; ok {
 		adatypes.Central.Log.Debugf("Fill Record ISN quantity=%d", record.Quantity)
 		*(dest[f.index].(*int)) = int(record.Quantity)
 	}

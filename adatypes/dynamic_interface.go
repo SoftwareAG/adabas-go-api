@@ -24,6 +24,9 @@ func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string)
 			s := strings.Split(tag, ":")
 			if s[0] != "" {
 				adabasFieldName = s[0]
+				if strings.ToLower(adabasFieldName) == "#isn" {
+					adabasFieldName = "#isn"
+				}
 			}
 
 			if len(s) > 1 {
@@ -62,8 +65,10 @@ func CreateDynamicInterface(i interface{}) *DynamicInterface {
 		ri = ri.Elem()
 	}
 	dynamic := &DynamicInterface{DataType: ri, FieldNames: make(map[string][]string)}
-	Central.Log.Debugf("Dynamic interface %s", ri.Name())
-	Central.Log.Debugf("Dynamic interface %v nrFields=%d", ri, ri.NumField())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Dynamic interface %s", ri.Name())
+		Central.Log.Debugf("Dynamic interface %v nrFields=%d", ri, ri.NumField())
+	}
 	generateFieldNames(ri, dynamic.FieldNames, make([]string, 0))
 	return dynamic
 }
@@ -123,10 +128,20 @@ func (dynamic *DynamicInterface) PutIsnField(value reflect.Value, isn Isn) {
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
+	Central.Log.Debugf("Check FieldNames %v", dynamic.FieldNames)
 	if k, ok := dynamic.FieldNames["#isn"]; ok {
 		Central.Log.Debugf("Set ISN field: %s", k)
 		for _, kisn := range k {
-			v.FieldByName(kisn).SetUint(uint64(isn))
+			iv := v.FieldByName(kisn)
+			if iv.Kind() == reflect.Ptr {
+				iv = iv.Elem()
+			}
+			if iv.CanAddr() {
+				Central.Log.Debugf("Set ISN for %s to %d", kisn, isn)
+				iv.SetUint(uint64(isn))
+			} else {
+				Central.Log.Debugf("Cannot address ISN: %s", kisn)
+			}
 		}
 	}
 }

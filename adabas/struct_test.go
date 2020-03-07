@@ -30,6 +30,7 @@ import (
 )
 
 type Employees struct {
+	Index     uint64 `adabas:"#ISN" json:"-"`
 	ID        string
 	Birth     int64
 	Name      string `adabas:"Name"`

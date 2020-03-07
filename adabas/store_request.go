@@ -231,7 +231,10 @@ func (request *StoreRequest) StoreFields(param ...interface{}) (err error) {
 		// query. Remove field names which are not part.
 		for k := range request.dynamic.FieldNames {
 			if request.definition.Search(k) == nil {
-				delete(request.dynamic.FieldNames, k)
+				adatypes.Central.Log.Debugf("Remove dynamic field %s", k)
+				if k != "" && k[0] != '#' {
+					delete(request.dynamic.FieldNames, k)
+				}
 			}
 		}
 	}
@@ -413,11 +416,12 @@ func (request *StoreRequest) storeValue(record reflect.Value, store, etData bool
 	}
 	if adatypes.Central.IsDebugLevel() {
 		for k, v := range request.dynamic.FieldNames {
-			adatypes.Central.Log.Debugf("FN: %s=%v\n", k, v)
+			adatypes.Central.Log.Debugf("FN: %s=%v", k, v)
 		}
 		adatypes.Central.Log.Debugf("Slice index: %v", record)
 		request.definition.DumpTypes(true, true, "Active store entries")
 	}
+	adatypes.Central.Log.Debugf("Put request dynamic field %v", request.dynamic.FieldNames)
 	for an, fn := range request.dynamic.FieldNames {
 		if !strings.HasPrefix(an, "#") {
 			v, ok := searchDynamicValue(record, fn)
@@ -448,6 +452,7 @@ func (request *StoreRequest) storeValue(record reflect.Value, store, etData bool
 		if err != nil {
 			return adatypes.NewGenericError(53, err.Error())
 		}
+		adatypes.Central.Log.Debugf("Stored record to %d", storeRecord.Isn)
 		request.dynamic.PutIsnField(record, storeRecord.Isn)
 	} else {
 		if storeRecord.Isn == 0 {
@@ -574,11 +579,13 @@ func (request *StoreRequest) modifyData(data interface{}, store, etData bool) er
 		}
 
 		for si := 0; si < s.Len(); si++ {
+			adatypes.Central.Log.Debugf("Store slice entry %d", si)
 			err := request.storeValue(s.Index(si), store, etData)
 			if err != nil {
 				return err
 			}
 		}
+		adatypes.Central.Log.Debugf("Store all slice entries")
 	case reflect.Ptr:
 		if request.dynamic == nil {
 			request.createDynamic(data)

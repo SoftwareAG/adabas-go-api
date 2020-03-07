@@ -923,8 +923,9 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 			f := make(map[string]int)
 			ev := &evaluateFieldMap{queryFields: make(map[string]*queryField), fields: f}
 			for i, s := range strings.Split(fieldq, ",") {
-				if s == "#ISN" || s == "#ISNQUANTITY" {
-					ev.queryFields[s] = &queryField{field: s, index: i}
+				sl := strings.ToLower(s)
+				if sl == "#isn" || sl == "#isnquantity" {
+					ev.queryFields[sl] = &queryField{field: sl, index: i}
 				} else {
 					f[s] = i
 				}

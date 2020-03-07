@@ -371,10 +371,11 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 
 				fl = mt[1]
 				s := mt[3]
-				if fl != "" && !strings.HasPrefix(fl, "#ISN") {
+				if fl != "" {
 					rf := false
 					switch {
-					case f[0] == '#' && strings.ToLower(f) != "#isn" && strings.ToLower(f) != "#key":
+					case strings.ToLower(f) == "#isn" || strings.ToLower(f) == "#key":
+					case f[0] == '#':
 						//fl = f[1:]
 						lenType := NewType(FieldTypeFieldLength, fl)
 						fieldMap.parentStructure.SubTypes = append(fieldMap.parentStructure.SubTypes, lenType)

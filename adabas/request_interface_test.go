@@ -208,9 +208,17 @@ func storeInterface(t *testing.T) error {
 	employees = append(employees, &Employees{ID: "ID", Birth: 711999, Name: "Name", FirstName: "First name"})
 	employees = append(employees, &Employees{ID: "ID2", Birth: 234, Name: "Name2", FirstName: "First name2"})
 	employees = append(employees, &Employees{ID: "ABC", Birth: 978, Name: "XXX", FirstName: "HHHH name"})
+	for _, e := range employees {
+		assert.Equal(t, uint64(0), e.Index)
+	}
 	err = storeRequest.StoreData(employees)
 	if !assert.NoError(t, err) {
 		return err
+	}
+	for _, e := range employees {
+		if !assert.NotEqual(t, uint64(0), e.Index) {
+			return fmt.Errorf("Error ISN not returned")
+		}
 	}
 	err = storeRequest.StoreData(&Employees{ID: "ID3", Birth: 456, Name: "Name3", FirstName: "First name3"})
 	if !assert.NoError(t, err) {
