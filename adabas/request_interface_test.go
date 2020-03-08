@@ -307,6 +307,7 @@ func readLogicalInterface(t *testing.T) error {
 		assert.Equal(t, int64(711714), e.Birth)
 		assert.Equal(t, "Name4", strings.Trim(e.Name, " "))
 	}
+	validateResult(t, "LogicalInterface", result)
 	return nil
 }
 
@@ -350,6 +351,7 @@ func readLogicalIndexInterface(t *testing.T) error {
 		assert.NotEqual(t, uint64(0), e.Index)
 		assert.Equal(t, "Name4", strings.Trim(e.LastName, " "))
 	}
+	validateResult(t, "LogicalIndexInterface", result)
 
 	storeRequest, err := NewStoreRequest(EmployeesIndex{}, adabas, mapRepository)
 	if !assert.NoError(t, err) {
@@ -442,6 +444,7 @@ func readPhysicalInterface(t *testing.T) error {
 			assert.Equal(t, 0, nrNotFound)
 		}
 	}
+	validateResult(t, "PhysicalInterface", result)
 	return nil
 }
 

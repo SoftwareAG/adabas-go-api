@@ -1855,20 +1855,36 @@ func checkStoreByFile(t *testing.T, target string, file Fnr, search string) (int
 	return numberRecords, validateResult(t, search, result)
 }
 
+// validateResult validate result with stored json file. If json file not available,
+// generate new template json file
 func validateResult(t *testing.T, search string, result *Response) error {
 	if !assert.NotNil(t, result) {
 		return fmt.Errorf("Result empty")
 	}
-	fmt.Printf("Validate result %d values\n", len(result.Values))
-	if !assert.True(t, len(result.Values) > 0) {
+	fmt.Printf("Validate result %d/%d values\n", len(result.Values), len(result.Data))
+	var resultJSON []byte
+	var err error
+	switch {
+	case len(result.Values) > 0:
+		resultJSON, err = json.Marshal(result.Values)
+		if !assert.NoError(t, err) {
+			return err
+		}
+		var re = regexp.MustCompile(`(?m)[,]?"ISN[^,]*[},]`)
+		resultJSON = re.ReplaceAll(resultJSON, []byte(""))
+	case len(result.Data) > 0:
+		resultJSON, err = json.Marshal(result.Data)
+		if !assert.NoError(t, err) {
+			return err
+		}
+		var re = regexp.MustCompile(`(?m)[,]?"Index[^,]*[},]`)
+		resultJSON = re.ReplaceAll(resultJSON, []byte(""))
+	default:
+		assert.True(t, len(result.Values) > 0)
+
 		return fmt.Errorf("Result zero")
 	}
-	resultJSON, err := json.Marshal(result.Values)
-	if !assert.NoError(t, err) {
-		return err
-	}
-	var re = regexp.MustCompile(`(?m)[,]?"ISN[^,]*[},]`)
-	resultJSON = re.ReplaceAll(resultJSON, []byte(""))
+
 	// fmt.Println(string(resultJSON))
 	rw := os.Getenv("REFERENCES")
 	doWrite := os.Getenv("REFERENCE_WRITE")
