@@ -43,37 +43,26 @@ func structParser(adabasRequest *adatypes.Request, x interface{}) error {
 		if fieldName == "" {
 			fieldName = structResult.structType.Field(i).Name
 		}
-		adatypes.Central.Log.Debugf("%d %v", i, s.Field(i))
-		v, err := adabasRequest.GetValue(fieldName)
-		if err != nil {
-			return err
-		}
-		if v != nil {
-			err = adatypes.SetValueData(s.Field(i), v)
+		adatypes.Central.Log.Debugf("Work on %d %v:%s", i, s.Field(i), fieldName)
+		lfn := strings.ToLower(fieldName)
+		if lfn == "#isn" {
+			s.Field(i).SetUint(uint64(adabasRequest.Isn))
+		} else {
+			v, err := adabasRequest.GetValue(fieldName)
 			if err != nil {
 				return err
 			}
-			// fmt.Println(fieldName, v, s.Field(i), s.Field(i).Type())
-			// switch s.Field(i).Interface().(type) {
-			// case int8, int32, int64:
-			// 	vi, err := v.Int64()
-			// 	if err != nil {
-			// 		return err
-			// 	}
-			// 	s.Field(i).SetInt(vi)
-			// case uint8, uint32, uint64:
-			// 	vui, err := v.UInt64()
-			// 	if err != nil {
-			// 		return err
-			// 	}
-			// 	s.Field(i).SetUint(vui)
-			// case string:
-			// 	s.Field(i).SetString(v.String())
-			// default:
-			// 	return adatypes.NewGenericError(80, s.Field(i).Type(), fieldName)
-			// }
+
+			if v != nil {
+				err = adatypes.SetValueData(s.Field(i), v)
+				if err != nil {
+					return err
+				}
+			}
 		}
+
 	}
+	adatypes.Central.Log.Debugf("Ready parsing ISN: %d", adabasRequest.Isn)
 	structResult.entries = append(structResult.entries, s.Addr().Interface())
 	return nil
 }
@@ -86,8 +75,23 @@ func (connection *Connection) ReflectSearch(mapName string, t reflect.Type, sear
 		if i > 0 {
 			buffer.WriteRune(',')
 		}
-		adatypes.Central.Log.Debugf("Add to query %s", t.Field(i).Name)
-		buffer.WriteString(t.Field(i).Name)
+		ft := t.Field(i)
+		tag := ft.Tag.Get("adabas")
+		doAdd := true
+		if tag != "" {
+			tags := strings.Split(tag, ":")
+			for _, t := range tags {
+				lt := strings.ToLower(t)
+				lt = strings.Trim(lt, " ")
+				if lt != "" && lt[0] == '#' {
+					doAdd = false
+				}
+			}
+		}
+		if doAdd {
+			adatypes.Central.Log.Debugf("Add to query %s", t.Field(i).Name)
+			buffer.WriteString(ft.Name)
+		}
 	}
 
 	adatypes.Central.Log.Debugf("Add connection with: %s", buffer.String())
@@ -96,6 +100,7 @@ func (connection *Connection) ReflectSearch(mapName string, t reflect.Type, sear
 	if err != nil {
 		return nil, err
 	}
+
 	if qErr := request.QueryFields(buffer.String()); qErr != nil {
 		return nil, qErr
 	}

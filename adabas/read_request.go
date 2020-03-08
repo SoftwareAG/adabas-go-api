@@ -562,12 +562,12 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 				if err != nil {
 					return
 				}
-				adatypes.Central.Log.Debugf("Loaded Definition ...")
 				if request.dynamic != nil {
+					adatypes.Central.Log.Debugf("Dynamic query fields Definition ...")
 					q := request.dynamic.CreateQueryFields()
 					request.QueryFields(q)
-					adatypes.Central.Log.Debugf("Query fields Definition ...")
 				}
+				adatypes.Central.Log.Debugf("Loaded Definition ...")
 				searchInfo.Definition = request.definition
 				tree, err = searchInfo.GenerateTree()
 				if err != nil {

@@ -410,12 +410,12 @@ func (def *Definition) RestrictFieldSlice(field []string) (err error) {
 // of fields. If one field slice entry is set to '*', then all fields are read.
 // A field definition may contain index information. The index information need to be set
 // in square brackets. For example AA[1] will provide the first entry of a multiple field
-// or all entries in the first occurence of the period group.
+// or all entries in the first occurrence of the period group.
 // BB[1,2] will provide the first entry of the period group and the second entry of the
 // multiple field.
 func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
-	Central.Log.Debugf("Should restrict fields to %#v", field)
 	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Should restrict fields to %#v", field)
 		def.DumpTypes(true, false, "Start status before restrict")
 	}
 	def.Values = nil
@@ -433,8 +433,6 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	if err != nil {
 		return
 	}
-
-	Central.Log.Debugf("Set remove flag set")
 
 	if len(fieldMap.set) > 0 {
 		Central.Log.Debugf("Field map not empty, unknown fields found ... %v", fieldMap.set)
@@ -461,7 +459,7 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 	return
 }
 
-// removeFromTree remove field from tree because of given remove flag
+// removeFromTree Search for field to be removed and set remove flag
 func removeFromTree(value *StructureType) {
 	if !value.HasFlagSet(FlagOptionToBeRemoved) {
 		Central.Log.Debugf("Field %s already removed", value.Name())

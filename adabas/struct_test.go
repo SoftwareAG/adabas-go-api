@@ -132,7 +132,6 @@ func TestStructSimple(t *testing.T) {
 
 	e := Employees{Name: "ABC"}
 	ts := reflect.TypeOf(e)
-	//	st := reflect.StructOf(e)
 	fmt.Println(e, ts)
 	employeesType := reflect.TypeOf((*Employees)(nil)).Elem()
 	fmt.Println(reflect.TypeOf((*Employees)(nil)).Elem())
@@ -142,6 +141,7 @@ func TestStructSimple(t *testing.T) {
 	}
 	for c, l := range list {
 		e := l.(*Employees)
-		fmt.Printf("%d:%#v %s\n", c, l, e.Name)
+		fmt.Printf("%d.record:%#v %s -> Index=%d\n", c, l, e.Name, e.Index)
+		assert.NotEqual(t, uint64(0), e.Index)
 	}
 }
