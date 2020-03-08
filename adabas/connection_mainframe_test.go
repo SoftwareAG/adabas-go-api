@@ -303,7 +303,7 @@ func TestConnectionMfTestSuiteSalary(t *testing.T) {
 	fmt.Println(connection)
 	openErr := connection.Open()
 	assert.NoError(t, openErr)
-	request, err := connection.CreateFileReadRequest(11)
+	request, err := connection.CreateFileReadRequest(1)
 	if !assert.NoError(t, err) {
 		return
 	}
