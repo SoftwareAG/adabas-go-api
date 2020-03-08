@@ -281,3 +281,54 @@ func TestConnectionMfTestSuite(t *testing.T) {
 		validateResult(t, t.Name(), result)
 	}
 }
+
+func TestConnectionMfTestSuiteSalary(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	network := os.Getenv("ADAMFDBID")
+	if network == "" {
+		fmt.Println("Mainframe database not defined")
+		return
+	}
+	fmt.Println("Connect to ", network)
+	connection, cerr := NewConnection("acj;target=" + network)
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	fmt.Println(connection)
+	openErr := connection.Open()
+	assert.NoError(t, openErr)
+	request, err := connection.CreateFileReadRequest(11)
+	if !assert.NoError(t, err) {
+		return
+	}
+	request.QueryFields("AA,AB,AS,AT")
+	request.Limit = 0
+	var result *Response
+	result, err = request.ReadLogicalWith("AA=11100301 OR AA=11222222")
+	if !assert.NoError(t, err) {
+		return
+	}
+	if assert.NotNil(t, result) {
+		assert.Equal(t, 2, len(result.Values))
+		assert.Equal(t, 2, result.NrRecords())
+		kaVal := result.Values[0].HashFields["AE"]
+		if assert.NotNil(t, kaVal) {
+			assert.Equal(t, "BERGMANN            ", kaVal.String())
+		}
+		kaVal = result.Values[1].HashFields["AA"]
+		if assert.NotNil(t, kaVal) {
+			assert.Equal(t, "11222222", kaVal.String())
+		}
+
+		record := result.Isn(251)
+		assert.NotNil(t, record)
+
+		validateResult(t, t.Name(), result)
+	}
+}
