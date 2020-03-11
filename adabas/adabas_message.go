@@ -35,10 +35,10 @@ func (adabas *Adabas) getAdabasMessage() []string {
 	message := make([]string, 2)
 	msgCode := fmt.Sprintf("%s%02X%03X", messagePrefix, adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxerrc)
 	message[0] = msgCode
-	msg := adatypes.Translate("en", msgCode)
+	msg := adatypes.Translate(adatypes.Language(), msgCode)
 	if msg == "" && adabas.Acbx.Acbxerrc > 0 {
 		msgCode = fmt.Sprintf("%s%02X%03X", messagePrefix, adabas.Acbx.Acbxrsp, 0)
-		msg = adatypes.Translate("en", msgCode)
+		msg = adatypes.Translate(adatypes.Language(), msgCode)
 	}
 	if msg == "" {
 		msg = fmt.Sprintf("Unknown error response %d subcode %d (%s)", adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxerrc, msgCode)
@@ -60,10 +60,10 @@ type Error struct {
 // NewError Create new Adabas errror
 func NewError(adbas *Adabas) *Error {
 	msgCode := fmt.Sprintf("%s%02X%03X", messagePrefix, adbas.Acbx.Acbxrsp, adbas.Acbx.Acbxerrc)
-	msg := adatypes.Translate("en", msgCode)
+	msg := adatypes.Translate(adatypes.Language(), msgCode)
 	if msg == "" && adbas.Acbx.Acbxerrc > 0 {
 		msgCode = fmt.Sprintf("%s%02X%03X", messagePrefix, adbas.Acbx.Acbxrsp, 0)
-		msg = adatypes.Translate("en", msgCode)
+		msg = adatypes.Translate(adatypes.Language(), msgCode)
 	}
 	if msg == "" {
 		msg = fmt.Sprintf("Unknown error response %d subcode %d (%s)", adbas.Acbx.Acbxrsp, adbas.Acbx.Acbxerrc, msgCode)

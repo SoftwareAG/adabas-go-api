@@ -36,7 +36,12 @@ import (
 
 const messageFilePattern = `^\w+\.[a-zA-Z]{2}$`
 
-var locales map[string]map[string]string
+type mesg struct {
+	Lang string
+	Msg  string
+}
+
+var locales map[string]map[string]mesg
 
 var headerTemplate = `/*
 * Copyright © 2019-2020 Software AG, Darmstadt, Germany and/or its licensors
@@ -64,13 +69,13 @@ var headerTemplate = `/*
 
 package {{.Name}}
 
-var statisMessages = []struct {
+var staticMessages = []struct {
 		code    string
 		locale string
 		message  string
 	}{
 		{{range $localekey, $localevalue := .Messages}}{{range $key, $value := $localevalue}}
-		  { "{{$key}}","en","{{$value}}" },{{end}} {{end}}
+		  { "{{$key}}","{{$value.Lang}}","{{$value.Msg}}" },{{end}} {{end}}
 	}`
 
 func generateByTemplate(file *os.File) error {
@@ -85,7 +90,7 @@ func generateByTemplate(file *os.File) error {
 	// Generate header
 	if err := tmplHead.Execute(buff, struct {
 		Name     string
-		Messages map[string]map[string]string
+		Messages map[string]map[string]mesg
 	}{
 		"adatypes",
 		locales,
@@ -114,7 +119,7 @@ func parseTemplates() (*template.Template, error) {
 func main() {
 	fmt.Println("Generate message code")
 
-	locales = make(map[string]map[string]string)
+	locales = make(map[string]map[string]mesg)
 
 	curdir := os.Getenv("CURDIR")
 	if curdir == "" {
@@ -133,7 +138,7 @@ func main() {
 		}
 	}
 
-	locales = make(map[string]map[string]string)
+	locales = make(map[string]map[string]mesg)
 	file, err := os.OpenFile(destinationFile, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
 	if err != nil {
 		fmt.Println("Error opening file", err)
@@ -169,15 +174,16 @@ func loadMessageFile(path string, info os.FileInfo, osError error) error {
 	if info.IsDir() {
 		return nil
 	}
+
 	fmt.Printf("Check path %s\n", path)
 	locale := parseLocaleFromFileName(info.Name())
 	if matched, _ := regexp.MatchString(messageFilePattern, info.Name()); matched {
 		fmt.Printf("Info Name %s locale %s\n", info.Name(), locale)
 		// If already parsed a message file for this locale, merge both
-		var messages map[string]string
+		var messages map[string]mesg
 		var ok bool
 		if messages, ok = locales[locale]; !ok {
-			messages = make(map[string]string)
+			messages = make(map[string]mesg)
 			locales[locale] = messages
 		}
 		messageFile, err := os.OpenFile(path, os.O_RDONLY, 0666)
@@ -190,7 +196,7 @@ func loadMessageFile(path string, info os.FileInfo, osError error) error {
 			line := scanner.Text()
 			msg := line[11:]
 			msg = strings.Replace(msg, "\"", "'", -1)
-			messages[line[:10]] = msg
+			messages[line[:10]] = mesg{Msg: msg, Lang: locale}
 		}
 		fmt.Println("Scanned")
 	} else {

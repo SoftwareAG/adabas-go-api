@@ -21,6 +21,7 @@ package adatypes
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"runtime/debug"
 	"sync"
@@ -54,12 +55,25 @@ func (e Error) Error() string {
 	return fmt.Sprintf("%v: %v", e.Code, e.Message)
 }
 
+// Language current message language
+func Language() string {
+	lang := os.Getenv("LANG")
+	switch {
+	case lang == "":
+		lang = "en"
+	default:
+		lang = lang[0:2]
+	}
+	Central.Log.Infof("LANG: %s", lang)
+	return lang
+}
+
 // NewGenericError create a genernic non Adabas response error
 func NewGenericError(code errorCode, args ...interface{}) *Error {
 	Central.Log.Debugf("Generate generic error for error code %d", code)
 	msgCode := fmt.Sprintf("ADG%07d", code)
 	// fmt.Printf("Generated out of %d -> %s\n", code, msgCode)
-	msg := Translate("en", msgCode)
+	msg := Translate(Language(), msgCode)
 	if msg == "" {
 		msg = "Unknown message for code: " + msgCode
 	}
@@ -86,7 +100,7 @@ func initMessages() *Error {
 func loadMessagesOnce() *Error {
 	Central.Log.Debugf("Load messages")
 	locales = make(map[string]map[string]string)
-	for _, m := range statisMessages {
+	for _, m := range staticMessages {
 		var messages map[string]string
 		if messageMap, ok := locales[m.locale]; ok {
 			messages = messageMap
@@ -96,7 +110,7 @@ func loadMessagesOnce() *Error {
 		}
 		messages[m.code] = m.message
 	}
-	Central.Log.Debugf("Loaded messages: %d", len(statisMessages))
+	Central.Log.Debugf("Loaded messages: %d", len(staticMessages))
 
 	return nil
 }
@@ -112,5 +126,13 @@ func Translate(locale, message string, args ...interface{}) string {
 		}
 	}
 
+	// If no message found, use the english message
+	if locale != "en" {
+		if localeMap, ok := locales["en"]; ok {
+			if message, ok := localeMap[message]; ok {
+				return message
+			}
+		}
+	}
 	return ""
 }
