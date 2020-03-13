@@ -122,12 +122,15 @@ func Translate(locale, message string, args ...interface{}) string {
 	}
 	if localeMap, ok := locales[locale]; ok {
 		if message, ok := localeMap[message]; ok {
+			Central.Log.Debugf("Found %s message: %s", locale, message)
 			return message
 		}
+		Central.Log.Debugf("Message %s for locale %s not found", message, locale)
 	}
 
 	// If no message found, use the english message
 	if locale != "en" {
+		Central.Log.Debugf("Try locale en")
 		if localeMap, ok := locales["en"]; ok {
 			if message, ok := localeMap[message]; ok {
 				return message

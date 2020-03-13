@@ -13,26 +13,12 @@ ADAGE02005=An RI command with ISN=0 could not release all records held by the us
 ADAGE03000=Ende der Verarbeitung (EOF)
 ADAGE04000=S2/S9 ist nicht für erweiterte Dateien erlaubt
 ADAGE05000=Fehler im System view Kompression
-ADAGE05001=Compressed record area too small (internal error)
-ADAGE05002=Invalid CRC identifier (internal error)
-ADAGE05003=Invalid CRCE type (internal error)
-ADAGE05004=Compressed record length is 6 (internal error)
-ADAGE05005=Invalid CRCE-1 rule number (internal error)
-ADAGE05006=CRCE-0 encountered and R14 not zero (internal error)
-ADAGE05007=End of PG encountered and R14 zero (internal error)
-ADAGE05008=Invalid format in CRCE (internal error)
-ADAGE05009=Format U, the source length must be 1 thru 4 (internal error)
-ADAGE0500A=Source length (CRIL) is zero (internal error)
-ADAGE0500B=UFT specified but it's not an FCB (internal error)
-ADAGE0500C=CR type=6/7, input length 0 or > 4 (internal error)
 ADAGE0500D=CR type=26 (dmp) invalid address, storage not addressable
-ADAGE0500E=FDT length (CRFL) is zero (internal error)
-ADAGE0500F=CR type=2, DSECT MU count too high
+ADAGE0500F=CR type=2, DSECT MU Anzahl zu hoch
 ADAGE07000=SX Kommando aufgrund von Timeout unterbrochen
 ADAGE09000=Transaktion abgebrochen
 ADAGE09001=Der User wurde backed out da die Hold Queue voll war
 ADAGE09002=Das Transaktions Zeitlimit (TT) wurde überschritten, und die Transaktion wurde zurück genommen.
-ADAGE09003=One of the following is the case:\n- The transaction non-activity time limit (TNAE, TNAX, or TNAA) has been exceeded.\n- The user was stopped by the STOPF or STOPI operator, or an Adabas Online System command.\n- A security violation response code has been returned for an ET-logic user. Information about response codes for security violations is provided in the Adabas Security documentation.\n- When a new user issues an OP command with the same user ID (in ADD1) as an earlier user did and the earlier user was inactive for more than 60 seconds, the new user can, by issuing a second OP cmd again (the first OP cmd will get response code 9, sub-code 64), take over the user ID of the earlier user. When the earlier user becomes active again, this sub-code can be received.\n
 ADAGE0900F=The user was backed out because a pending Work area overflow occurred during this operation.
 ADAGE09011=At the end of an online recovery process that was initiated after the failure of a peer nucleus in an Adabas cluster, the nucleus was unable to re-acquire the ETID specified by the user in the Additions 1 field of the OP command.
 ADAGE09012=The user's active transaction was interrupted and backed out because a peer nucleus in an Adabas cluster terminated abnormally.

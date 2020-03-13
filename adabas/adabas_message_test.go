@@ -44,6 +44,8 @@ func TestAdabasMessage(t *testing.T) {
 	assert.Equal(t, "Normal successful completion", adatypes.Translate("en", "ADAGE00000"))
 	assert.Equal(t, "Invalid command ID value was detected", adatypes.Translate("en", "ADAGE15000"))
 	assert.Equal(t, "Insufficient space in attached buffer", adatypes.Translate("en", "ADAGEFF000"))
+	assert.Equal(t, "Adabas versuchte eine ISN in Hold zu setzen die gerade bei einem anderen User in Hold gesetzt ist.", adatypes.Translate("de", "ADAGE02001"))
+	assert.Equal(t, "Funktion noch nicht implementiert", adatypes.Translate("de", "ADAGEFA000"))
 	assert.Equal(t, "", adatypes.Translate("en", "ABC"))
 
 }

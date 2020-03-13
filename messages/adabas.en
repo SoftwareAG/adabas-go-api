@@ -6,7 +6,7 @@ ADAGE01003=S2 command does not have enough space.
 ADAGE01004=S2/S9 internal program error.
 ADAGE01005=System was not in save status at the end of an online ADASAV.
 ADAGE02000=Function not completely executed
-ADAGE02001= Adabas attempted to hold an ISN already being held by another user.
+ADAGE02001=Adabas attempted to hold an ISN already being held by another user.
 ADAGE02002=The number of ISNs as specified in the ISN buffer was too large compared to the ISN buffer length (ET or BT command with the M option).
 ADAGE02004=ISN is not on hold during multi-fetch ET/BT. ET/BT has successfully executed the ISNs so far released. The remaining ISNs are still on hold.
 ADAGE02005=An RI command with ISN=0 could not release all records held by the user, as requested, because one or more records had been updated earlier in the same transaction. Updated records cannot be released from hold status prior to transaction end. All records that had not been updated have been released from hold status.
