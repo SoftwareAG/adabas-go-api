@@ -353,7 +353,13 @@ func (request *StoreRequest) Exchange(storeRecord *Record) error {
 	if prepareErr != nil {
 		return prepareErr
 	}
-	return request.update(adabasRequest, storeRecord)
+	adabasRequest.Option.ExchangeRecord = true
+	err := request.update(adabasRequest, storeRecord)
+	if err != nil {
+		return err
+	}
+	adatypes.Central.Log.Debugf("After update request done need second = %v", adabasRequest.Option.NeedSecondCall)
+	return request.secondStore(adabasRequest, storeRecord)
 }
 
 // update update a record
