@@ -20,7 +20,9 @@
 package adabas
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"runtime"
@@ -29,11 +31,12 @@ import (
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"golang.org/x/net/html/charset"
+	"golang.org/x/text/encoding/charmap"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMapBasic(t *testing.T) {
+func TestMapCharset(t *testing.T) {
 	initTestLogWithFile(t, "map.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
@@ -43,11 +46,11 @@ func TestMapBasic(t *testing.T) {
 	fmt.Println("Lookup:", n, nus)
 	germanTests := []string{"���", "���", "���", "���"}
 	g2 := []int8{-28, -10, -4}
+	gb := make([]byte, 3)
+	for i, b := range g2 {
+		gb[i] = byte(b)
+	}
 	{
-		gb := make([]byte, 3)
-		for i, b := range g2 {
-			gb[i] = byte(b)
-		}
 		dst := make([]byte, 20)
 		enc := d.NewDecoder()
 		nd, ns, err := enc.Transform(dst, gb, false)
@@ -94,9 +97,16 @@ func TestMapBasic(t *testing.T) {
 	assert.Equal(t, "testmap", m.Name)
 	assert.Equal(t, "US-ASCII", m.DefaultCharset)
 	e, cname := charset.Lookup(m.DefaultCharset)
-	assert.Equal(t, "", e)
-	assert.Equal(t, "", cname)
-
+	assert.NotNil(t, e)
+	fmt.Println("Check convert")
+	s := convrtToUTF8([]byte(gb), "ISO-8859-1")
+	assert.Equal(t, "äöü", s)
+	assert.Equal(t, "windows-1252", cname)
+	e, cname = charset.Lookup("ISO-8859-1")
+	assert.NotNil(t, e)
+	assert.Equal(t, "windows-1252", cname)
+	cm := charmap.ISO8859_1
+	assert.Equal(t, "ISO 8859-1", cm.String())
 }
 
 func TestMapFieldFieldName(t *testing.T) {
@@ -241,4 +251,11 @@ func TestMapFieldsMainframe(t *testing.T) {
 	}
 	assert.Equal(t, "EMPLOYEES-NAT-MF", m.Name)
 	fmt.Println(m)
+}
+
+func convrtToUTF8(strBytes []byte, origEncoding string) string {
+	byteReader := bytes.NewReader(strBytes)
+	reader, _ := charset.NewReaderLabel(origEncoding, byteReader)
+	strBytes, _ = ioutil.ReadAll(reader)
+	return string(strBytes)
 }

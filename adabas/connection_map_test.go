@@ -1811,3 +1811,45 @@ func TestConnectionOsMap(t *testing.T) {
 	}
 
 }
+
+func TestConnection_cyrillicMap(t *testing.T) {
+	err := initLogWithFile("connection_map.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	request, rerr := connection.CreateMapReadRequest("Cyrilic2")
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err = request.QueryFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	request.Limit = 0
+	var result *Response
+	fmt.Println("Read logigcal data:")
+	result, err = request.ReadISN(1)
+	if !assert.NoError(t, err) {
+		return
+	}
+	result.DumpValues()
+	if assert.Equal(t, 1, len(result.Values)) {
+		v, verr := result.Values[0].SearchValue("cyrilic")
+		if !assert.NoError(t, verr) {
+			return
+		}
+		assert.Equal(t, "Покупатели", v.String())
+	}
+
+}
