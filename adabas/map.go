@@ -22,6 +22,7 @@ package adabas
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -47,8 +48,8 @@ const (
 	mapFieldReferenceURL
 	// Flag for this map
 	mapFieldFlags
-	// Directory information
-	mapFieldDirectory
+	// Options information
+	mapFieldOptions
 	// Data file number reference number
 	mapFieldDataFnr
 	// Data database reference URL
@@ -108,6 +109,7 @@ type Map struct {
 	// Time of last modification of the map
 	Generated            uint64
 	ModificationTime     []uint64
+	DefaultCharset       string
 	fieldMap             map[string]*MapField
 	redefinitionFieldMap map[string][]*MapField
 }
@@ -125,13 +127,13 @@ func NewAdabasMap(param ...interface{}) *Map {
 			return &Map{Name: name, redefinitionFieldMap: redefinitionFieldMap}
 		}
 		repository := param[1].(*DatabaseURL)
-		return &Map{Name: name, Repository: repository,
+		return &Map{Name: name, Repository: repository, DefaultCharset: "US-ASCII",
 			redefinitionFieldMap: redefinitionFieldMap}
 	case *DatabaseURL:
 		repository := param[0].(*DatabaseURL)
 		dataRepository := param[1].(*DatabaseURL)
 		redefinitionFieldMap := make(map[string][]*MapField)
-		return &Map{Repository: repository, Data: dataRepository,
+		return &Map{Repository: repository, Data: dataRepository, DefaultCharset: "US-ASCII",
 			redefinitionFieldMap: redefinitionFieldMap}
 	}
 	return nil
@@ -177,6 +179,20 @@ func (adabasMap *Map) addRedefinitionField(mField *MapField) {
 		adabasMap.redefinitionFieldMap[mField.ShortName[1:]] = rf
 	}
 
+}
+
+func (adabasMap *Map) setDefaultOptions(options string) {
+	if options != "" {
+		re := regexp.MustCompile(`(\w+)=([^,]*),?`)
+		rr := re.FindAllStringSubmatch(options, -1)
+		for _, r1 := range rr {
+			switch strings.ToLower(r1[1]) {
+			case "charset":
+				adabasMap.DefaultCharset = r1[2]
+			default:
+			}
+		}
+	}
 }
 
 // FieldShortNames list of field short names of the Map
@@ -258,6 +274,8 @@ func traverseExtractMapField(adaValue adatypes.IAdaValue, x interface{}) (adatyp
 			mapField.Length = int32(adaValue.Value().(uint32))
 		case mapFieldContentType.fieldName():
 			mapField.ContentType = adaValue.String()
+		case mapFieldOptions.fieldName():
+			adabasMap.setDefaultOptions(adaValue.String())
 		case mapFieldFormatType.fieldName():
 			mapField.FormatType = adaValue.String()
 		case mapFieldRemarks.fieldName():

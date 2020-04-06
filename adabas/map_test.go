@@ -28,9 +28,76 @@ import (
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
+	"golang.org/x/net/html/charset"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestMapBasic(t *testing.T) {
+	initTestLogWithFile(t, "map.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	e, n := charset.Lookup("ISO8859-1")
+	d, nus := charset.Lookup("US-ASCII")
+	fmt.Println("Lookup:", n, nus)
+	germanTests := []string{"���", "���", "���", "���"}
+	g2 := []int8{-28, -10, -4}
+	{
+		gb := make([]byte, 3)
+		for i, b := range g2 {
+			gb[i] = byte(b)
+		}
+		dst := make([]byte, 20)
+		enc := d.NewDecoder()
+		nd, ns, err := enc.Transform(dst, gb, false)
+		fmt.Println(nus, "->", g2, gb)
+		fmt.Println("G1 error ->", err)
+		fmt.Println("G1->", nd, ns, dst, string(dst))
+
+	}
+	for _, g := range g2 {
+		fmt.Printf("G2 %d\n", g)
+	}
+	{
+		gb := make([]byte, 3)
+		for i, b := range g2 {
+			gb[i] = byte(b)
+		}
+		dst := make([]byte, 10)
+		enc := e.NewDecoder()
+		nd, ns, err := enc.Transform(dst, gb, false)
+		fmt.Println("G2->", g2)
+		fmt.Println("G2->", gb)
+		fmt.Println("G2 error ->", err)
+		fmt.Println("G2->", nd, ns, dst, string(dst))
+
+	}
+	for _, g := range []byte(germanTests[0]) {
+		fmt.Printf("gx2 %d\n", g)
+	}
+
+	for _, g := range germanTests {
+		fmt.Println("Origin:", []byte(g), g)
+		fmt.Println("Lookup", n)
+		enc := e.NewEncoder()
+		dst := make([]byte, 10)
+		nd, ns, err := enc.Transform(dst, []byte(g), false)
+		fmt.Println(nd, ns, err, dst, string(dst))
+	}
+
+	m := NewAdabasMap("testmap")
+	m.setDefaultOptions("charset=ISO8859-1")
+	assert.Equal(t, "testmap", m.Name)
+	assert.Equal(t, "ISO8859-1", m.DefaultCharset)
+	m.setDefaultOptions("charset=US-ASCII")
+	assert.Equal(t, "testmap", m.Name)
+	assert.Equal(t, "US-ASCII", m.DefaultCharset)
+	e, cname := charset.Lookup(m.DefaultCharset)
+	assert.Equal(t, "", e)
+	assert.Equal(t, "", cname)
+
+}
 
 func TestMapFieldFieldName(t *testing.T) {
 	initTestLogWithFile(t, "map.log")

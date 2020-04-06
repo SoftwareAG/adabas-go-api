@@ -54,7 +54,8 @@ type Repository struct {
 	DatabaseURL
 	online     bool
 	mapNames   map[string]*mapNameFlags
-	CachedMaps map[string]*Map
+	cacheLock  *sync.Mutex
+	cachedMaps map[string]*Map
 	cacheTime  time.Time
 }
 
@@ -90,15 +91,34 @@ func evaluateURL(i interface{}) *URL {
 func NewMapRepository(i interface{}, fnr Fnr) *Repository {
 	url := evaluateURL(i)
 	mr := &Repository{DatabaseURL: DatabaseURL{URL: *url, Fnr: fnr}, online: true}
-	mr.CachedMaps = make(map[string]*Map)
+	mr.cacheLock = &sync.Mutex{}
+	mr.cachedMaps = make(map[string]*Map)
 	return mr
 }
 
 // NewMapRepositoryWithURL new map repository created
 func NewMapRepositoryWithURL(url DatabaseURL) *Repository {
 	mr := &Repository{DatabaseURL: url, online: true}
-	mr.CachedMaps = make(map[string]*Map)
+	mr.cacheLock = &sync.Mutex{}
+	mr.cachedMaps = make(map[string]*Map)
 	return mr
+}
+
+// AddMapToCache add map to cache
+func (repository *Repository) AddMapToCache(name string, adabasMap *Map) {
+	repository.cacheLock.Lock()
+	defer repository.cacheLock.Unlock()
+
+	repository.cachedMaps[name] = adabasMap
+}
+
+// GetMapFromCache get map from cache
+func (repository *Repository) GetMapFromCache(name string) (*Map, bool) {
+	repository.cacheLock.Lock()
+	defer repository.cacheLock.Unlock()
+
+	m, ok := repository.cachedMaps[name]
+	return m, ok
 }
 
 // SearchMapInRepository search map name in specific map repository
@@ -133,7 +153,7 @@ func (repository *Repository) SearchMapInRepository(adabas *Adabas, mapName stri
 		return
 	}
 	adatypes.Central.Log.Debugf("Found map <%s> in repository of %s/%d", adabasMap.Name, repository.URL.String(), repository.Fnr)
-	repository.CachedMaps[mapName] = adabasMap
+	repository.AddMapToCache(mapName, adabasMap)
 	return
 }
 
@@ -163,7 +183,7 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 	}
 	adatypes.Central.Log.Debugf("Got Adabas map %s", adabasMap.Name)
 	adabasMap.createFieldMap()
-	repository.CachedMaps[name] = adabasMap
+	repository.AddMapToCache(name, adabasMap)
 	var dbid Dbid
 	adatypes.Central.Log.Debugf("After Repository %#v\n", repository)
 	if adabasMap.Repository.URL.Dbid == 0 {
@@ -211,7 +231,7 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 		return nil, adatypes.NewGenericError(64)
 	}
 	adatypes.Central.Log.Debugf("Search map in cache: %s", mapName)
-	if m, ok := repository.CachedMaps[mapName]; ok {
+	if m, ok := repository.GetMapFromCache(mapName); ok {
 		adatypes.Central.Log.Debugf("Found map in cache: %s", mapName)
 		adabasMap = m
 		return
@@ -225,7 +245,7 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 		return
 	}
 	adatypes.Central.Log.Debugf("Read map repoistory searching %s", mapName)
-	if m, ok := repository.CachedMaps[mapName]; ok {
+	if m, ok := repository.GetMapFromCache(mapName); ok {
 		// adabasMap, err = repository.readAdabasMap(adabas, mapName)
 		// if err != nil {
 		// 	return nil, err
@@ -246,7 +266,7 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 func (repository *Repository) ClearCache(maxTime time.Time) {
 	if repository.cacheTime.Before(maxTime) {
 		adatypes.Central.Log.Debugf("Clear caching ... %v -> %v", maxTime, time.Now())
-		repository.CachedMaps = make(map[string]*Map)
+		repository.cachedMaps = make(map[string]*Map)
 	}
 }
 
@@ -273,7 +293,9 @@ func (repository *Repository) LoadAllMaps(adabas *Adabas) (adabasMaps []*Map, er
 		return
 	}
 	adatypes.Central.Log.Debugf("Read all map entries in repository")
-	for _, m := range repository.CachedMaps {
+	repository.cacheLock.Lock()
+	defer repository.cacheLock.Unlock()
+	for _, m := range repository.cachedMaps {
 		adabasMaps = append(adabasMaps, m)
 		adatypes.Central.Log.Debugf("Got map %s adabas to %s/%d", m.Name, m.Repository.URL.String(), m.Repository.Fnr)
 		adatypes.Central.Log.Debugf("with data adabas to %s/%d", m.Data.URL.String(), m.Data.Fnr)
@@ -322,7 +344,7 @@ func parseMaps(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	adabasMap.createFieldMap()
 
 	adatypes.Central.Log.Debugf("Add map name %s", adabasMap.Name)
-	repository.CachedMaps[adabasMap.Name] = adabasMap
+	repository.AddMapToCache(adabasMap.Name, adabasMap)
 	repository.Lock()
 	defer repository.Unlock()
 
