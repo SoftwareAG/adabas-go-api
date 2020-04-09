@@ -36,6 +36,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type testCharset struct {
+	charsetName string
+	testString  string
+	validate    []byte
+}
+
 func TestMapCharset(t *testing.T) {
 	initTestLogWithFile(t, "map.log")
 
@@ -107,6 +113,49 @@ func TestMapCharset(t *testing.T) {
 	assert.Equal(t, "windows-1252", cname)
 	cm := charmap.ISO8859_1
 	assert.Equal(t, "ISO 8859-1", cm.String())
+}
+
+func TestMapCharsetCheck(t *testing.T) {
+	charsetList := []*testCharset{
+		&testCharset{"ISO-8859-1", "abc$üäö()!+#", []byte{97, 98, 99, 36, 252, 228, 246, 40, 41, 33, 43, 35}},
+		&testCharset{"ISO-8859-15", "abc$€üäö()!+#", []byte{97, 98, 99, 36, 164, 252, 228, 246, 40, 41, 33, 43, 35}},
+		&testCharset{"windows-1251", "Покупатели", []byte{207, 238, 234, 243, 239, 224, 242, 229, 235, 232}},
+		&testCharset{"x-iscii91", "जाधव", []byte{186, 218, 197, 212, 0, 0, 0, 0}},
+		&testCharset{"ibm852", "Đorđe Balašević", []byte{209, 111, 114, 208, 101, 32, 66, 97, 108, 97, 231, 101, 118, 105, 134}},
+		&testCharset{"shift_jis", "明伯", []byte{150, 190, 148, 140}},
+		&testCharset{"US-ASCII", "ABCabcRSTUVXYZxyz$!-", []byte{65, 66, 67, 97, 98, 99, 82, 83, 84, 85, 86, 88, 89, 90, 120, 121, 122, 36, 33, 45}},
+		&testCharset{"CP037", "ABCabcRSTUVXYZxyz$!-", []byte{193, 194, 195, 129, 130, 131, 217, 226, 227, 228, 229, 231, 232, 233, 167, 168, 169, 91, 90, 96}},
+		&testCharset{"ISO-8859-1", "ABCabcRSTUVXYZxyz$!-", []byte{65, 66, 67, 97, 98, 99, 82, 83, 84, 85, 86, 88, 89, 90, 120, 121, 122, 36, 33, 45}},
+		&testCharset{"ISO-8859-15", "ABCabcRSTUVXYZxyz$!-", []byte{65, 66, 67, 97, 98, 99, 82, 83, 84, 85, 86, 88, 89, 90, 120, 121, 122, 36, 33, 45}},
+		&testCharset{"US-ASCII", "ABCabcRSTUVXYZxyz$!-", []byte{65, 66, 67, 97, 98, 99, 82, 83, 84, 85, 86, 88, 89, 90, 120, 121, 122, 36, 33, 45}},
+		&testCharset{"windows-1252", "ABCabcRSTUVXYZxyz$!-", []byte{65, 66, 67, 97, 98, 99, 82, 83, 84, 85, 86, 88, 89, 90, 120, 121, 122, 36, 33, 45}},
+		&testCharset{"ISO-8859-1", "Gérard Depardieu", []byte{71, 233, 114, 97, 114, 100, 32, 68, 101, 112, 97, 114, 100, 105, 101, 117}},
+	}
+	for _, c := range charsetList {
+		e, n := charset.Lookup(c.charsetName)
+		if e == nil {
+			fmt.Println(c.charsetName, "not found")
+			continue
+		}
+		dst := make([]byte, len(c.validate))
+		fmt.Println(c.charsetName, n)
+		nd, x, err := e.NewEncoder().Transform(dst, []byte(c.testString), false)
+		if err == nil {
+			fmt.Println(nd, x)
+			assert.Equal(t, c.validate, dst)
+		} else {
+			fmt.Println("Error", err)
+		}
+
+		dst = make([]byte, len([]byte(c.testString)))
+		nd, x, err = e.NewDecoder().Transform(dst, c.validate, false)
+		if err == nil {
+			fmt.Println(nd, x)
+			assert.Equal(t, c.validate, dst)
+		} else {
+			fmt.Println("Error", err)
+		}
+	}
 }
 
 func TestMapFieldFieldName(t *testing.T) {

@@ -1853,3 +1853,48 @@ func TestConnection_cyrillicMap(t *testing.T) {
 	}
 
 }
+
+func TestConnectionMapCharset(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, cerr := NewConnection("acj;map;config=[24,4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest("Cyrilic2")
+	if assert.NoError(t, err) {
+		fmt.Println("Limit query data:")
+		err = request.QueryFields("*")
+		assert.NoError(t, err)
+		request.Limit = 20
+		fmt.Println("Read logigcal data:")
+		result, err := request.ReadLogicalBy("ascii")
+		if !assert.NoError(t, err) {
+			return
+		}
+		result.DumpValues()
+		fmt.Println("Check size ...", len(result.Values))
+		if assert.Equal(t, 20, len(result.Values)) {
+			ae := result.Values[1].HashFields["cyrilic"]
+			assert.Equal(t, "ABC", strings.TrimSpace(ae.String()))
+			aa := result.Values[1].HashFields["ascii"]
+			assert.Equal(t, "10", strings.TrimSpace(aa.String()))
+			ae = result.Values[19].HashFields["cyrilic"]
+			assert.Equal(t, "BLAU", strings.TrimSpace(ae.String()))
+			aa = result.Values[19].HashFields["ascii"]
+			assert.Equal(t, "10H", strings.TrimSpace(aa.String()))
+			validateResult(t, "cyrilic2", result)
+		}
+	}
+
+}
