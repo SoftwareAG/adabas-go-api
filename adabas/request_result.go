@@ -271,6 +271,14 @@ func evaluateValue(adaValue adatypes.IAdaValue) (interface{}, error) {
 	case adatypes.FieldTypePacked, adatypes.FieldTypeUnpacked, adatypes.FieldTypeByte, adatypes.FieldTypeUByte,
 		adatypes.FieldTypeUInt2, adatypes.FieldTypeInt2, adatypes.FieldTypeUInt4, adatypes.FieldTypeInt4,
 		adatypes.FieldTypeUInt8, adatypes.FieldTypeInt8:
+		if adaValue.Type().Fractional() > 0 {
+			v, err := adaValue.Float()
+			if err != nil {
+				adatypes.Central.Log.Debugf("Error marshal JSON %s: %v", adaValue.Type().Name(), err)
+				return adatypes.EndTraverser, err
+			}
+			return v, nil
+		}
 		v, err := adaValue.Int64()
 		if err != nil {
 			adatypes.Central.Log.Debugf("Error marshal JSON %s: %v", adaValue.Type().Name(), err)

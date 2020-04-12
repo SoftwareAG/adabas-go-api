@@ -207,6 +207,7 @@ type CommonType struct {
 	FormatTypeCharacter rune
 	FormatLength        uint32
 	SubTypes            []IAdaType
+	convert             ConvertUnicode
 }
 
 // Type returns field type of the field
@@ -447,4 +448,23 @@ func (commonType *CommonType) PeriodicRange() *AdaRange {
 // MultipleRange range of MU field provided
 func (commonType *CommonType) MultipleRange() *AdaRange {
 	return &commonType.muRange
+}
+
+// Convert convert function if type is Alpha/String
+func (commonType *CommonType) Convert() ConvertUnicode {
+	return commonType.convert
+}
+
+// SetCharset set charset converter
+func (commonType *CommonType) SetCharset(name string) {
+	commonType.convert = NewUnicodeConverter(name)
+}
+
+// SetConvert set convert function if type is Alpha/String
+func (commonType *CommonType) SetConvert(c ConvertUnicode) {
+	switch commonType.fieldType {
+	case FieldTypeString, FieldTypeLAString, FieldTypeLBString:
+		commonType.convert = c
+	default:
+	}
 }

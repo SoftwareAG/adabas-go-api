@@ -83,9 +83,9 @@ func (adaType *AdaSuperType) Fractional() uint32 {
 	return 0
 }
 
-// SetCharset set fractional part
-func (adaType *AdaSuperType) SetCharset(x string) {
-}
+// // SetCharset set fractional part
+// func (adaType *AdaSuperType) SetCharset(x string) {
+// }
 
 // SetFormatType set format type
 func (adaType *AdaSuperType) SetFormatType(x rune) {

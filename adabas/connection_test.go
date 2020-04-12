@@ -1861,7 +1861,7 @@ func validateResult(t *testing.T, search string, result *Response) error {
 	if !assert.NotNil(t, result) {
 		return fmt.Errorf("Result empty")
 	}
-	fmt.Printf("Validate result %d/%d values\n", len(result.Values), len(result.Data))
+	fmt.Printf("Validate result values=%d/data values=%d\n", len(result.Values), len(result.Data))
 	var resultJSON []byte
 	var err error
 	switch {

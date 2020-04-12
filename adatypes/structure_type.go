@@ -299,9 +299,9 @@ func (adaType *StructureType) Fractional() uint32 {
 	return 0
 }
 
-// SetCharset set fractional part
-func (adaType *StructureType) SetCharset(x string) {
-}
+// // SetCharset set fractional part
+// func (adaType *StructureType) SetCharset(x string) {
+// }
 
 // SetFormatType set format type
 func (adaType *StructureType) SetFormatType(x rune) {

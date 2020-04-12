@@ -380,40 +380,41 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 	adaType.SetFormatLength(uint32(f.Length))
 	if !adaType.IsStructure() {
 		if f.Length < 0 {
-			adatypes.Central.Log.Debugf("Set %s length to 0", adaType.Name())
+			adatypes.Central.Log.Debugf("Set %s length to 0 formerly was %d or %d", adaType.Name(), adaType.Length(), f.Length)
 			adaType.SetLength(0)
 		} else {
 			adatypes.Central.Log.Debugf("Set %s length to %d, check content type=%s",
 				adaType.Name(), f.Length, f.ContentType)
 			adaType.SetLength(uint32(f.Length))
-			ct := strings.Split(f.ContentType, ",")
-			for _, c := range ct {
-				p := strings.Split(c, "=")
-				if len(p) > 1 {
-					adatypes.Central.Log.Debugf("%s=%s", p[0], p[1])
-					s := strings.ToLower(p[0])
-					switch s {
-					case "fractionalshift":
-						fs, ferr := strconv.Atoi(p[1])
-						if ferr != nil {
-							return ferr
-						}
-						adaType.SetFractional(uint32(fs))
-					case "charset":
-						adaType.SetCharset(p[1])
-					case "formattype":
-						if p[1] != "" {
-							adaType.SetFormatType(rune(p[1][0]))
-						}
-					case "length":
-						fs, ferr := strconv.Atoi(p[1])
-						if ferr != nil {
-							return ferr
-						}
-						adaType.SetFormatLength(uint32(fs))
-					default:
-						fmt.Println("Unknown paramteter", p[0])
+		}
+		ct := strings.Split(f.ContentType, ",")
+		for _, c := range ct {
+			p := strings.Split(c, "=")
+			if len(p) > 1 {
+				adatypes.Central.Log.Debugf("%s=%s", p[0], p[1])
+				s := strings.ToLower(p[0])
+				switch s {
+				case "fractionalshift":
+					fs, ferr := strconv.Atoi(p[1])
+					if ferr != nil {
+						return ferr
 					}
+					adaType.SetFractional(uint32(fs))
+				case "charset":
+					adatypes.Central.Log.Debugf("Set charset to %s", p[1])
+					adaType.SetCharset(p[1])
+				case "formattype":
+					if p[1] != "" {
+						adaType.SetFormatType(rune(p[1][0]))
+					}
+				case "length":
+					fs, ferr := strconv.Atoi(p[1])
+					if ferr != nil {
+						return ferr
+					}
+					adaType.SetFormatLength(uint32(fs))
+				default:
+					fmt.Println("Unknown paramteter", p[0])
 				}
 			}
 		}

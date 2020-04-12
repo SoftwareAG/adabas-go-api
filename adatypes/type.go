@@ -80,6 +80,7 @@ type IAdaType interface {
 	FormatType() rune
 	SetFormatLength(uint32)
 	Fractional() uint32
+	Convert() ConvertUnicode
 }
 
 // AdaType data type structure for field types, no structures
@@ -242,10 +243,10 @@ func (adaType *AdaType) Fractional() uint32 {
 	return adaType.FractValue
 }
 
-// SetCharset set fractional part
-func (adaType *AdaType) SetCharset(x string) {
-	adaType.Charset = x
-}
+// // SetCharset set fractional part
+// func (adaType *AdaType) SetCharset(x string) {
+// 	adaType.Charset = x
+// }
 
 // SetFormatType set format type
 func (adaType *AdaType) SetFormatType(x rune) {
@@ -508,9 +509,9 @@ func (adaType *RedefinitionType) Fractional() uint32 {
 	return 0
 }
 
-// SetCharset set fractional part
-func (adaType *RedefinitionType) SetCharset(x string) {
-}
+// // SetCharset set fractional part
+// func (adaType *RedefinitionType) SetCharset(x string) {
+// }
 
 // SetFormatLength set format length
 func (adaType *RedefinitionType) SetFormatLength(x uint32) {

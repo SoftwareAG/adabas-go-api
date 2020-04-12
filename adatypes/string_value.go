@@ -53,9 +53,6 @@ type stringValue struct {
 	adaValue
 	value   []byte
 	lobSize uint32
-	convert ConvertUnicode
-	// convertCharset string
-	// convertFct     AlphaConverter
 }
 
 func newStringValue(initType IAdaType) *stringValue {
@@ -84,8 +81,9 @@ func (value *stringValue) String() string {
 }
 
 func (value *stringValue) Value() interface{} {
-	if value.convert != nil {
-		convertedvalue, _ := value.convert.Encode(value.value)
+	converter := value.Type().Convert()
+	if converter != nil {
+		convertedvalue, _ := converter.Decode(value.value)
 		return convertedvalue
 	}
 	return value.value
@@ -473,8 +471,4 @@ func (value *stringValue) SetPartial(x, y uint32) {
 		panic(fmt.Sprintf("Partial range errror: %d,%d", x, y))
 	}
 	//value.partial = []uint32{x, y}
-}
-
-func (value *stringValue) SetCharset(name string) {
-	value.convert = NewUnicodeConverter(name)
 }

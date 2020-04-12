@@ -326,9 +326,15 @@ func TestStringConverter(t *testing.T) {
 		return
 	}
 	typ := NewType(FieldTypeString, "XX")
-	typ.length = 10
+	typ.SetCharset("ISO-8859-15")
+	typ.length = 13
 	adaValue := newStringValue(typ)
-	assert.Equal(t, "          ", adaValue.String())
-	adaValue.SetCharset("ISO-8859-15")
-	adaValue.SetValue([]byte{97, 98, 99, 36, 164, 252, 228, 246, 40, 41, 33, 43, 35})
+	assert.Equal(t, "             ", adaValue.String())
+	err = adaValue.SetValue([]byte{97, 98, 99, 36, 164, 252, 228, 246, 40, 41, 33, 43, 35})
+	assert.NoError(t, err)
+	assert.Equal(t, "abc$€üäö()!+#", adaValue.String())
+	typ.SetCharset("windows-1251")
+	err = adaValue.SetValue([]byte{207, 238, 234, 243, 239, 224, 242, 229, 235, 232})
+	assert.NoError(t, err)
+	assert.Equal(t, "Покупатели   ", adaValue.String())
 }

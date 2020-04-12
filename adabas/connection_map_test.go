@@ -1886,14 +1886,71 @@ func TestConnectionMapCharset(t *testing.T) {
 		fmt.Println("Check size ...", len(result.Values))
 		if assert.Equal(t, 20, len(result.Values)) {
 			ae := result.Values[1].HashFields["cyrilic"]
-			assert.Equal(t, "ABC", strings.TrimSpace(ae.String()))
+			assert.Equal(t, "АлтайГАЗавтосервис", strings.TrimSpace(ae.String()))
 			aa := result.Values[1].HashFields["ascii"]
 			assert.Equal(t, "10", strings.TrimSpace(aa.String()))
 			ae = result.Values[19].HashFields["cyrilic"]
-			assert.Equal(t, "BLAU", strings.TrimSpace(ae.String()))
+			assert.Equal(t, "XXI Век-Авто", strings.TrimSpace(ae.String()))
 			aa = result.Values[19].HashFields["ascii"]
 			assert.Equal(t, "10H", strings.TrimSpace(aa.String()))
 			validateResult(t, "cyrilic2", result)
+		}
+	}
+
+}
+
+func TestConnectionMapFractional(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, cerr := NewConnection("acj;map;config=[24,4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest("Fractional")
+	if assert.NoError(t, err) {
+		fmt.Println("Limit query data:")
+		err = request.QueryFields("*")
+		assert.NoError(t, err)
+		request.Limit = 7
+		fmt.Println("Read logigcal data:")
+		result, err := request.ReadByISN()
+		if !assert.NoError(t, err) {
+			return
+		}
+		// result.DumpValues()
+		fmt.Println("Check size ...", len(result.Values))
+		if assert.Equal(t, 7, len(result.Values)) {
+			ae := result.Values[1].HashFields["ALPHA10"]
+			assert.Equal(t, "ABC10", strings.TrimSpace(ae.String()))
+			aa := result.Values[1].HashFields["ALPHA3"]
+			assert.Equal(t, "ABC", strings.TrimSpace(aa.String()))
+			aa = result.Values[1].HashFields["FRACT1"]
+			assert.Equal(t, "10.44", strings.TrimSpace(aa.String()))
+			aa = result.Values[1].HashFields["FLOAT8"]
+			assert.Equal(t, "10.200000", strings.TrimSpace(aa.String()))
+			ae = result.Values[0].HashFields["ALPHA10"]
+			assert.Equal(t, "ABC1", strings.TrimSpace(ae.String()))
+			aa = result.Values[0].HashFields["FLOAT8"]
+			assert.Equal(t, "1.200000", strings.TrimSpace(aa.String()))
+			ae = result.Values[6].HashFields["ALPHA10"]
+			assert.Equal(t, "ABC1000000", strings.TrimSpace(ae.String()))
+			aa = result.Values[6].HashFields["ALPHA3"]
+			assert.Equal(t, "ABC", strings.TrimSpace(aa.String()))
+			aa = result.Values[6].HashFields["FRACT1"]
+			assert.Equal(t, "1000000.44", strings.TrimSpace(aa.String()))
+			aa = result.Values[6].HashFields["FLOAT8"]
+			assert.Equal(t, "1000000.200000", strings.TrimSpace(aa.String()))
+			validateResult(t, "fractional", result)
 		}
 	}
 
