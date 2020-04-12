@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/html/charset"
+	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/charmap"
 )
 
@@ -32,6 +33,22 @@ var charsetList = []*testCharset{
 	{"US-ASCII", "ABCabcRSTUVXYZxyz$!-", []byte{65, 66, 67, 97, 98, 99, 82, 83, 84, 85, 86, 88, 89, 90, 120, 121, 122, 36, 33, 45}},
 	{"windows-1252", "ABCabcRSTUVXYZxyz$!-", []byte{65, 66, 67, 97, 98, 99, 82, 83, 84, 85, 86, 88, 89, 90, 120, 121, 122, 36, 33, 45}},
 	{"ISO-8859-1", "Gérard Depardieu", []byte{71, 233, 114, 97, 114, 100, 32, 68, 101, 112, 97, 114, 100, 105, 101, 117}},
+}
+
+func TestLookupCharset(t *testing.T) {
+	initTestLogWithFile(t, "charset.log")
+
+	Central.Log.Infof("TEST: %s", t.Name())
+	ck := struct {
+		name     string
+		encoding encoding.Encoding
+	}{name: "ISO-8859-1", encoding: charmap.Windows1252}
+	ne := lookupCharset(ck.name)
+	if !assert.NotNil(t, ne) {
+		return
+	}
+	assert.Equal(t, ck.encoding, ne)
+
 }
 
 func TestMapCharset(t *testing.T) {
@@ -134,7 +151,7 @@ func TestMapCharsetCheck(t *testing.T) {
 		nd, x, err = e.NewDecoder().Transform(dst, c.validate, false)
 		if err == nil {
 			if !assert.Equal(t, c.testString, string(dst)) {
-				fmt.Println("Error retransforming ...", nd, x, string(dst))
+				fmt.Println("Error transforming ...", nd, x, string(dst))
 			}
 		} else {
 			fmt.Println("Error", err)
@@ -149,8 +166,20 @@ func TestUnicodeConverter(t *testing.T) {
 
 	for _, c := range charsetList {
 		x := NewUnicodeConverter(c.charsetName)
-		xsBytes, _ := x.Decode([]byte(c.testString))
-		assert.Equal(t, c.validate, xsBytes)
+		if !assert.NotNil(t, x, "Error lookup "+c.charsetName) {
+			continue
+		}
+		xsBytes, _ := x.Decode(c.validate)
+		if !assert.Equal(t, c.testString, string(xsBytes)) {
+			fmt.Println("Error coding", c.charsetName, c.testString)
+			return
+		}
+		orgBytes, _ := x.Encode(xsBytes)
+		if !assert.Equal(t, c.validate, orgBytes) {
+			fmt.Println("Error coding", c.charsetName, c.testString)
+			return
+		}
+
 	}
 
 }

@@ -20,6 +20,9 @@
 package adatypes
 
 import (
+	"fmt"
+	"strings"
+
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/encoding/japanese"
@@ -363,25 +366,53 @@ var encodings = [numEncodings]encoding.Encoding{
 }
 
 func lookupCharset(charName string) encoding.Encoding {
-	return encodings[nameMap[charName]]
+	c := strings.ToLower(charName)
+	if nr, ok := nameMap[c]; ok {
+		return encodings[nr]
+	}
+	return nil
 }
 
 // UnicodeConverter unicode converter
 type UnicodeConverter struct {
-	name string
+	name     string
+	encoding encoding.Encoding
 }
 
 // NewUnicodeConverter new unicode converter
 func NewUnicodeConverter(name string) *UnicodeConverter {
-	return &UnicodeConverter{name: name}
+	ne := lookupCharset(name)
+	if ne == nil {
+		return nil
+	}
+
+	return &UnicodeConverter{name: name, encoding: ne}
 }
 
 // Encode encodes string of charset to unicode
 func (converter *UnicodeConverter) Encode(source []byte) ([]byte, error) {
-	return nil, nil
+	dst := make([]byte, len(source)*2)
+	nd, x, err := converter.encoding.NewEncoder().Transform(dst, source, false)
+	if err != nil {
+		return nil, err
+	}
+	if x != len(source) {
+		return nil, fmt.Errorf("Less source encoded")
+	}
+
+	return dst[:nd], nil
 }
 
 // Decode decodes string of charset from unicode
 func (converter *UnicodeConverter) Decode(source []byte) ([]byte, error) {
-	return nil, nil
+	dst := make([]byte, len(source)*2)
+	nd, x, err := converter.encoding.NewDecoder().Transform(dst, source, false)
+	if err != nil {
+		return nil, err
+	}
+	if x != len(source) {
+		return nil, fmt.Errorf("Less source decoded")
+	}
+
+	return dst[:nd], nil
 }
