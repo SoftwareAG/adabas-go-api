@@ -37,12 +37,25 @@ type PartialValue interface {
 	SetPartial(x, y uint32)
 }
 
+// AlphaConverter Alpha converter
+// type AlphaConverter func(string, []byte) ([]byte, error)
+
+// ConvertUnicode unicode converter interface
+// - Decode to decode byte array from unicode
+// - Encode to encode byte array to unicode
+type ConvertUnicode interface {
+	Decode([]byte) ([]byte, error)
+	Encode([]byte) ([]byte, error)
+}
+
 // stringValue string structure
 type stringValue struct {
 	adaValue
 	value   []byte
 	lobSize uint32
-	//partial []uint32
+	convert ConvertUnicode
+	// convertCharset string
+	// convertFct     AlphaConverter
 }
 
 func newStringValue(initType IAdaType) *stringValue {
@@ -65,11 +78,16 @@ func (value *stringValue) ByteValue() byte {
 }
 
 func (value *stringValue) String() string {
-	b := bytes.Trim(value.value, "\x00")
+	convertedvalue := value.Value().([]byte)
+	b := bytes.Trim(convertedvalue, "\x00")
 	return string(b)
 }
 
 func (value *stringValue) Value() interface{} {
+	if value.convert != nil {
+		convertedvalue, _ := value.convert.Encode(value.value)
+		return convertedvalue
+	}
 	return value.value
 }
 
@@ -455,4 +473,8 @@ func (value *stringValue) SetPartial(x, y uint32) {
 		panic(fmt.Sprintf("Partial range errror: %d,%d", x, y))
 	}
 	//value.partial = []uint32{x, y}
+}
+
+func (value *stringValue) SetCharset(name string) {
+	value.convert = NewUnicodeConverter(name)
 }

@@ -319,3 +319,16 @@ func TestStringLBParseBufferVariable(t *testing.T) {
 	assert.Equal(t, TraverseResult(0), res)
 	assert.Equal(t, v, adaValue.Value())
 }
+
+func TestStringConverter(t *testing.T) {
+	err := initLogWithFile("string_value.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	typ := NewType(FieldTypeString, "XX")
+	typ.length = 10
+	adaValue := newStringValue(typ)
+	assert.Equal(t, "          ", adaValue.String())
+	adaValue.SetCharset("ISO-8859-15")
+	adaValue.SetValue([]byte{97, 98, 99, 36, 164, 252, 228, 246, 40, 41, 33, 43, 35})
+}
