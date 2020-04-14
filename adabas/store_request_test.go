@@ -42,6 +42,32 @@ const (
 	lengthPicture         = 1386643
 )
 
+func TestStoreErrorCase(t *testing.T) {
+	initTestLogWithFile(t, "store.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	s, err := NewStoreRequest()
+	assert.Nil(t, s)
+	assert.Error(t, err)
+	s, err = NewStoreRequest("aa", "a")
+	assert.Nil(t, s)
+	assert.Error(t, err)
+	fmt.Println(err.Error())
+	s, err = NewStoreRequest("aa", 1)
+	assert.Nil(t, s)
+	assert.Error(t, err)
+	fmt.Println(err.Error())
+	s, err = NewStoreRequest("99999", 1)
+	assert.Nil(t, s)
+	assert.Error(t, err)
+	fmt.Println(err.Error())
+	s, err = NewStoreRequest(256, 1)
+	assert.Nil(t, s)
+	assert.Error(t, err)
+	fmt.Println(err.Error())
+}
+
 func TestStoreAdabasFields(t *testing.T) {
 	initTestLogWithFile(t, "store.log")
 

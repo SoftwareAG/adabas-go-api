@@ -460,7 +460,7 @@ func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 		}
 		start := xml.StartElement{Name: xml.Name{Local: name}}
 		if isLink {
-			start.Attr = []xml.Attr{xml.Attr{Name: xml.Name{Local: "type"}, Value: "link"}}
+			start.Attr = []xml.Attr{{Name: xml.Name{Local: "type"}, Value: "link"}}
 		}
 		enc.EncodeToken(start)
 		x := adaValue.String()
@@ -523,10 +523,10 @@ func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		rec = xml.StartElement{Name: xml.Name{Local: "Record"}}
 	}
 	if record.Isn > 0 {
-		rec.Attr = []xml.Attr{xml.Attr{Name: xml.Name{Local: "ISN"}, Value: strconv.Itoa(int(record.Isn))}}
+		rec.Attr = []xml.Attr{{Name: xml.Name{Local: "ISN"}, Value: strconv.Itoa(int(record.Isn))}}
 	}
 	if record.Quantity > 0 {
-		rec.Attr = []xml.Attr{xml.Attr{Name: xml.Name{Local: "Quantity"}, Value: strconv.Itoa(int(record.Quantity))}}
+		rec.Attr = []xml.Attr{{Name: xml.Name{Local: "Quantity"}, Value: strconv.Itoa(int(record.Quantity))}}
 	}
 	e.EncodeToken(rec)
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalXML2, LeaveFunction: traverseMarshalXMLEnd2, ElementFunction: traverseMarshalXMLElement}

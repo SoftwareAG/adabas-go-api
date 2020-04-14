@@ -232,10 +232,10 @@ func (Response *Response) MarshalXML(e *xml.Encoder, start xml.StartElement) err
 		for _, record := range Response.Values {
 			rec := xml.StartElement{Name: xml.Name{Local: "Record"}}
 			if record.Isn > 0 {
-				rec.Attr = []xml.Attr{xml.Attr{Name: xml.Name{Local: "ISN"}, Value: strconv.Itoa(int(record.Isn))}}
+				rec.Attr = []xml.Attr{{Name: xml.Name{Local: "ISN"}, Value: strconv.Itoa(int(record.Isn))}}
 			}
 			if record.Quantity > 0 {
-				rec.Attr = []xml.Attr{xml.Attr{Name: xml.Name{Local: "Quantity"}, Value: strconv.Itoa(int(record.Quantity))}}
+				rec.Attr = []xml.Attr{{Name: xml.Name{Local: "Quantity"}, Value: strconv.Itoa(int(record.Quantity))}}
 			}
 			e.EncodeToken(rec)
 			// e.EncodeToken(xml.Attr{Name: xml.Name{Local: "ISN"}, Value: strconv.Itoa(int(record.Isn))})

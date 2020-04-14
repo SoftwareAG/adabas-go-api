@@ -102,7 +102,7 @@ func TestStructStore(t *testing.T) {
 	defer connection.Close()
 
 	e := []*Employees{
-		&Employees{ID: "GOSTORE", Birth: 123478, Name: "ABC"},
+		{ID: "GOSTORE", Birth: 123478, Name: "ABC"},
 	}
 	err = connection.ReflectStore(e, "Employees")
 	if assert.NoError(t, err) {

@@ -974,14 +974,14 @@ func TestConnectionReadMap(t *testing.T) {
 		tm := adatypes.TraverserValuesMethods{EnterFunction: registerTestedValuesAvailable}
 		tvc := &testedValueChecker{t: t}
 		tvc.tvcMap = map[string]*testedValue{
-			"AA": &testedValue{shortName: "AA", longName: "PERSONNEL-ID", length: 8, index: 1},
-			"AB": &testedValue{shortName: "AB", longName: "FULL-NAME", length: 0, index: 2},
-			"AD": &testedValue{shortName: "AD", longName: "MIDDLE-I", length: 10, index: 4},
-			"AG": &testedValue{shortName: "AG", longName: "SEX", length: 1, index: 7},
-			"AI": &testedValue{shortName: "AI", longName: "ADDRESS-LINE", length: 20, index: 10},
-			"AP": &testedValue{shortName: "AP", longName: "JOB-TITLE", length: 25, index: 18},
-			"AZ": &testedValue{shortName: "AZ", longName: "LANG", length: 3, index: 29},
-			"S3": &testedValue{shortName: "S3", longName: "CURRENCY-SALARY", length: 0, index: 33},
+			"AA": {shortName: "AA", longName: "PERSONNEL-ID", length: 8, index: 1},
+			"AB": {shortName: "AB", longName: "FULL-NAME", length: 0, index: 2},
+			"AD": {shortName: "AD", longName: "MIDDLE-I", length: 10, index: 4},
+			"AG": {shortName: "AG", longName: "SEX", length: 1, index: 7},
+			"AI": {shortName: "AI", longName: "ADDRESS-LINE", length: 20, index: 10},
+			"AP": {shortName: "AP", longName: "JOB-TITLE", length: 25, index: 18},
+			"AZ": {shortName: "AZ", longName: "LANG", length: 3, index: 29},
+			"S3": {shortName: "S3", longName: "CURRENCY-SALARY", length: 0, index: 33},
 		}
 		record.Traverse(tm, tvc)
 		// result.DumpValues()

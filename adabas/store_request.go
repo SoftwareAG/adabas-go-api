@@ -37,6 +37,7 @@ type StoreRequest struct {
 // NewStoreRequest creates a new store Request instance using different
 // types of parameters. This is only for internal use. Use the `Connection`
 // instance to create store requests.
+// This constructor is internal.
 func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 	if len(param) == 0 {
 		return nil, adatypes.NewGenericError(78)
@@ -63,6 +64,7 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 					return nil, err
 				}
 				var adabas *Adabas
+				// TODO should not be numeric only, anyway use Connection
 				if dbid, aerr := strconv.Atoi(url); aerr == nil {
 					adabas, err = NewAdabas(Dbid(dbid))
 					if err != nil {
@@ -131,6 +133,7 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 // Adabas instance and Adabas file number.
 // This is only for internal use. Use the `Connection`
 // instance to create store requests.
+// This constructor is internal.
 func NewStoreRequestAdabas(adabas *Adabas, fnr Fnr) *StoreRequest {
 	clonedAdabas := NewClonedAdabas(adabas)
 	return &StoreRequest{commonRequest: commonRequest{adabas: clonedAdabas,
@@ -141,6 +144,7 @@ func NewStoreRequestAdabas(adabas *Adabas, fnr Fnr) *StoreRequest {
 // Adabas instance and Adabas Map.
 // This is only for internal use. Use the `Connection`
 // instance to create store requests.
+// This constructor is internal.
 func NewAdabasMapNameStoreRequest(adabas *Adabas, adabasMap *Map) (request *StoreRequest, err error) {
 	clonedAdabas := NewClonedAdabas(adabas)
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
