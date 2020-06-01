@@ -169,7 +169,7 @@ func (Response *Response) DumpData() (err error) {
 // TraverseValues traverse through the tree of values calling a callback method
 func (Response *Response) TraverseValues(t adatypes.TraverserValuesMethods, x interface{}) (ret adatypes.TraverseResult, err error) {
 	adatypes.Central.Log.Debugf("Traverse result values")
-	if Response.Values == nil {
+	if Response == nil || Response.Values == nil {
 		// err = adatypes.NewGenericError(81)
 		return
 	}
