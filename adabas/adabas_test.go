@@ -739,3 +739,25 @@ func TestAdabasCloned(t *testing.T) {
 	assert.False(t, adabas.Acbx == clonedAdabas.Acbx)
 	assert.True(t, adabas.status == clonedAdabas.status)
 }
+
+func TestAdabasOpenUser(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "adabas.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	adabas, _ := NewAdabas(adabasStatDBID)
+	defer adabas.Close()
+
+	err := adabas.OpenUser("ABC")
+	assert.NoError(t, err)
+	assert.Equal(t, "ABC     ", string(adabas.Acbx.Acbxadd1[:]))
+	adabas.Close()
+	err = adabas.OpenUser("ABCDEFGHIJK")
+	assert.NoError(t, err)
+	assert.Equal(t, "ABCDEFGH", string(adabas.Acbx.Acbxadd1[:]))
+
+	// time.Sleep(time.Minute * 1)
+}

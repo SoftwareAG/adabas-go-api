@@ -123,6 +123,18 @@ func NewAdabas(p ...interface{}) (ada *Adabas, err error) {
 
 // Open opens a session to the database
 func (adabas *Adabas) Open() (err error) {
+	return adabas.OpenUser("")
+}
+
+// OpenUser opens a session to the database using a user session.
+// A USERID must be provided if the user intends to store and/or read user data, and the user wants this data to be available during a subsequent user– or Adabas session.
+//    The user intends to store and/or read user data, and the user wants this data to be available during a subsequent user- or Adabas session;
+//    The user is to be assigned a special processing priority;
+//
+// The value provided for the USERID must be unique for this user (not used by any other user), and must begin with a digit or an uppercase letter.
+//
+// Users for whom none of the above conditions are true should set this field to blanks.
+func (adabas *Adabas) OpenUser(user string) (err error) {
 	url := adabas.URL.String()
 	if adabas.ID.isOpen(url) {
 		adatypes.Central.Log.Debugf("Database %s already opened by ID %#v", url, adabas.ID)
@@ -133,6 +145,15 @@ func (adabas *Adabas) Open() (err error) {
 	adabas.AdabasBuffers = append(adabas.AdabasBuffers, NewBuffer(AbdAQRb))
 
 	adabas.Acbx.Acbxcmd = op.code()
+	copy(adabas.Acbx.Acbxcop[:], []byte{0, 0, 0, 0, 0, 0, 0, 0})
+	copy(adabas.Acbx.Acbxcid[0:4], []byte{0, 0, 0, 0})
+	if user != "" {
+		l := len(user)
+		if l > 8 {
+			l = 8
+		}
+		copy(adabas.Acbx.Acbxadd1[:l], user[:l])
+	}
 
 	adabas.AdabasBuffers[0].WriteString(" ")
 	adabas.AdabasBuffers[1].WriteString("UPD.")
