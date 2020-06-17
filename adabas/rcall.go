@@ -38,7 +38,7 @@ var idCounter uint32
 func NewAdabasID() *ID {
 	id := atomic.AddUint32(&idCounter, 1)
 	adaid := AID{level: 3, size: adabasIDSize}
-	adaid.Timestamp = uint64(time.Now().Unix())
+	adaid.Timestamp = uint64(time.Now().UnixNano() / 1000)
 	adaid.Pid = uint32((adaid.Timestamp - (adaid.Timestamp % 100)) + uint64(id))
 	aid := ID{AdaID: &adaid, connectionMap: make(map[string]*Status)}
 	curUser, err := user.Current()
