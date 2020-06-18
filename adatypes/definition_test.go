@@ -492,6 +492,43 @@ func createPeriodGroupMultiplerField() *Definition {
 	return testDefinition
 }
 
+func createPeriodGroupSuperDescriptor() *Definition {
+	multipleLayout := []IAdaType{
+		NewTypeWithLength(FieldTypePacked, "GM", 5),
+	}
+	for _, l := range multipleLayout {
+		l.SetLevel(2)
+		l.AddFlag(FlagOptionSecondCall)
+		l.AddFlag(FlagOptionMUGhost)
+	}
+	groupLayout := []IAdaType{
+		NewType(FieldTypeCharacter, "GC"),
+		NewStructureList(FieldTypeMultiplefield, "GM", OccNone, multipleLayout),
+		NewType(FieldTypeString, "GS"),
+		NewType(FieldTypePacked, "GP"),
+	}
+	for _, l := range groupLayout {
+		l.SetLevel(2)
+	}
+	layout := []IAdaType{
+		NewType(FieldTypeUInt4, "U4"),
+		NewType(FieldTypeByte, "B1"),
+		NewType(FieldTypeUByte, "UB"),
+		NewType(FieldTypeUInt2, "I2"),
+		NewType(FieldTypeUInt8, "U8"),
+		NewStructureList(FieldTypePeriodGroup, "GR", OccNone, groupLayout),
+		NewType(FieldTypeUInt8, "I8"),
+		NewSuperType("S1", 0),
+	}
+	for _, l := range layout {
+		l.SetLevel(1)
+	}
+
+	testDefinition := NewDefinitionWithTypes(layout)
+	testDefinition.InitReferences()
+	return testDefinition
+}
+
 func ExampleDefinition_dumpValues() {
 	err := initLogWithFile("definition.log")
 	if err != nil {
@@ -1253,4 +1290,54 @@ func TestDefinitionLastPeriodEntry(t *testing.T) {
 	assert.Equal(t, FieldTypePeriodGroup, testDefinition.Values[0].Type().Type())
 	v := testDefinition.Values[0].(*StructureValue)
 	assert.Equal(t, 1, v.NrElements())
+}
+
+func ExampleDefinition_treecopy() {
+	err := initLogWithFile("definition.log")
+	if err != nil {
+		return
+	}
+	testDefinition := createPeriodGroupSuperDescriptor()
+	testDefinition.DumpTypes(false, false)
+	if testDefinition.activeFieldTree != testDefinition.fileFieldTree {
+		fmt.Println("ERROR equal")
+	}
+	testDefinition.copyActiveTree()
+	if testDefinition.activeFieldTree == testDefinition.fileFieldTree {
+		fmt.Println("ERROR equal")
+	}
+	testDefinition.RemoveSpecialDescriptors()
+	testDefinition.DumpTypes(false, false)
+
+	// Output:
+	// 	Dump all file field types:
+	//   1, U4, 4, B  ; U4
+	//   1, B1, 1, F  ; B1
+	//   1, UB, 1, B  ; UB
+	//   1, I2, 2, B  ; I2
+	//   1, U8, 8, B  ; U8
+	//   1, GR ,PE ; GR
+	//     2, GC, 1, A  ; GC
+	//     2, GM, 5, P ,MU; GM
+	//       3, GM, 5, P  ; GM
+	//     2, GS, 1, A  ; GS
+	//     2, GP, 1, P  ; GP
+	//   1, I8, 8, B  ; I8
+	//  S1= ; S1
+	//
+	// Dump all file field types:
+	//   1, U4, 4, B  ; U4
+	//   1, B1, 1, F  ; B1
+	//   1, UB, 1, B  ; UB
+	//   1, I2, 2, B  ; I2
+	//   1, U8, 8, B  ; U8
+	//   1, GR ,PE ; GR
+	//     2, GC, 1, A  ; GC
+	//     2, GM, 5, P ,MU; GM
+	//       3, GM, 5, P  ; GM
+	//     2, GS, 1, A  ; GS
+	//     2, GP, 1, P  ; GP
+	//   1, I8, 8, B  ; I8
+	//  S1= ; S1
+
 }

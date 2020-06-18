@@ -701,6 +701,8 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 // HistogramBy this method read Adabas records in logical order given by the descriptor argument.
 // The access in the database will be reduce to I/O to the ASSO container.
 func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, err error) {
+	adatypes.Central.Log.Debugf("Read histogram of %s", descriptor)
+	// Check if cursoring uninitialized or normal first call then enter
 	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
 		_, err = request.Open()
 		if err != nil {
@@ -904,6 +906,7 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 		adatypes.Central.Log.Debugf("Query fields definition error: %v", err)
 		return
 	}
+	request.definition.ResetRestrictToFields()
 	if fieldq == "*" {
 		request.definition.RemoveSpecialDescriptors()
 	} else {

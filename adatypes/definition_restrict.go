@@ -314,6 +314,16 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 	return nil
 }
 
+// ResetRestrictToFields reset restriction to all field of tree
+func (def *Definition) ResetRestrictToFields() {
+	Central.Log.Debugf("Reset active tree to complete")
+	x := &StructureType{fieldMap: make(map[string]IAdaType)}
+	def.activeFieldTree = x
+	def.activeFields = make(map[string]IAdaType)
+	t := TraverserMethods{EnterFunction: traverseCacheCopy}
+	def.fileFieldTree.Traverse(t, 0, def)
+}
+
 // ShouldRestrictToFields this method restrict the query to a given comma-separated list
 // of fields. If the fields is set to '*', then all fields are read.
 // A field definition may contain index information. The index information need to be set
@@ -322,7 +332,7 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 // BB[1,2] will provide the first entry of the period group and the second entry of the
 // multiple field.
 func (def *Definition) ShouldRestrictToFields(fields string) (err error) {
-	def.activeFieldTree = def.fileFieldTree
+	def.ResetRestrictToFields()
 	if fields == "*" {
 		return
 	}

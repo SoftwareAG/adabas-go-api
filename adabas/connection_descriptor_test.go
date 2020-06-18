@@ -178,7 +178,7 @@ func TestConnectionDescriptorinMapWithQuery(t *testing.T) {
 		ae := result.Values[0].HashFields["DEPARTMENT"]
 		fmt.Println("Check DEPARTMENT ...")
 		if assert.NotNil(t, ae) {
-			assert.Equal(t, "ADAM", strings.TrimSpace(ae.String()))
+			assert.Equal(t, "ADMA", strings.TrimSpace(ae.String()))
 			validateResult(t, "descriptorinmap", result)
 		}
 	}
