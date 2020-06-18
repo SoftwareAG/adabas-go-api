@@ -20,6 +20,8 @@ package adabas
 
 import (
 	"fmt"
+	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -106,4 +108,114 @@ func TestConnectionSuperDescSearch(t *testing.T) {
 	}
 	fmt.Println("Complex search done")
 	fmt.Println(result)
+}
+
+func TestConnectionDescriptorinMap(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "connection_descriptor.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if assert.NoError(t, err) {
+		fmt.Println("Limit query data:")
+		request.QueryFields("*")
+		request.Limit = 5
+		fmt.Println("Read logigcal data:")
+		result, err := request.ReadLogicalBy("DEPARTMENT")
+		assert.NoError(t, err)
+		ae := result.Values[0].HashFields["DEPARTMENT"]
+		fmt.Println("Check DEPARTMENT ...")
+		if assert.NotNil(t, ae) {
+			assert.Equal(t, "ADAM", strings.TrimSpace(ae.String()))
+			validateResult(t, "descriptorinmap", result)
+		}
+	}
+
+}
+
+func TestConnectionDescriptorinMapWithQuery(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "connection_descriptor.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if assert.NoError(t, err) {
+		fmt.Println("Limit query data:")
+		err = request.QueryFields("*")
+		if !assert.NoError(t, err) {
+			return
+		}
+		request.Limit = 5
+		fmt.Println("Read logigcal data:")
+		result, err := request.HistogramBy("DEPARTMENT")
+		if !assert.NoError(t, err) {
+			return
+		}
+		ae := result.Values[0].HashFields["DEPARTMENT"]
+		fmt.Println("Check DEPARTMENT ...")
+		if assert.NotNil(t, ae) {
+			assert.Equal(t, "ADAM", strings.TrimSpace(ae.String()))
+			validateResult(t, "descriptorinmap", result)
+		}
+	}
+
+}
+
+func TestConnectionSuperDescriptorinMap(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "connection_descriptor.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if assert.NoError(t, err) {
+		fmt.Println("Limit query data:")
+		request.Limit = 5
+		fmt.Println("Read logigcal data:")
+		result, err := request.HistogramBy("DEPARTMENT")
+		assert.NoError(t, err)
+		ae := result.Values[0].HashFields["DEPARTMENT"]
+		fmt.Println("Check DEPARTMENT ...")
+		if assert.NotNil(t, ae) {
+			assert.Equal(t, "ADMA", strings.TrimSpace(ae.String()))
+			assert.Equal(t, uint64(8), result.Values[0].Quantity)
+			validateResult(t, "descriptorinmap", result)
+		}
+	}
+
 }

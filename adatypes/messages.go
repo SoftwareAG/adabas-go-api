@@ -64,7 +64,7 @@ func Language() string {
 	default:
 		lang = lang[0:2]
 	}
-	Central.Log.Infof("LANG: %s", lang)
+	Central.Log.Debugf("Current LANG: %s", lang)
 	return lang
 }
 
