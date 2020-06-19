@@ -814,6 +814,8 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 }
 
 // SearchAndOrder performs a search call and orders the result using defined descriptors
+//  A search term will
+// be used to search for and a descriptor defines the final result order.
 func (request *ReadRequest) SearchAndOrder(search, descriptors string) (result *Response, err error) {
 	result = &Response{Definition: request.definition}
 	err = request.SearchAndOrderWithParser(search, descriptors, nil, result)
@@ -823,7 +825,8 @@ func (request *ReadRequest) SearchAndOrder(search, descriptors string) (result *
 	return
 }
 
-// SearchAndOrderWithParser search and order with parser
+// SearchAndOrderWithParser search and order with parser. A search term will
+// be used to search for and a descriptor defines the final result order.
 func (request *ReadRequest) SearchAndOrderWithParser(search, descriptors string, resultParser adatypes.RequestParser, x interface{}) (err error) {
 	adatypes.Central.Log.Debugf("Search and order with descriptors")
 	if request.cursoring == nil || request.cursoring.adabasRequest == nil {

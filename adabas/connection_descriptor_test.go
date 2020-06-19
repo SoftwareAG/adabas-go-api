@@ -241,7 +241,6 @@ func TestConnectionDescriptorinMapSuper(t *testing.T) {
 	for _, s := range testcases {
 		wg.Add(1)
 		go testSearchAndOrder(t, s[0], s[1], s[2])
-		// time.Sleep(2 * time.Second)
 	}
 	wg.Wait()
 }
