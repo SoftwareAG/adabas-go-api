@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -216,6 +217,57 @@ func TestConnectionSuperDescriptorinMap(t *testing.T) {
 			assert.Equal(t, uint64(8), result.Values[0].Quantity)
 			validateResult(t, "descriptorinmap", result)
 		}
+	}
+
+}
+
+var wg sync.WaitGroup
+
+func TestConnectionDescriptorinMapSuper(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "connection_descriptor.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	var testcases = [][]string{{"searchandorder", "NAME='SMITH'", "DEPARTMENT"},
+		{"searchnoorder", "NAME='SMITH'", ""},
+		{"onlyorder", "", "DEPARTMENT"}}
+	for _, s := range testcases {
+		wg.Add(1)
+		go testSearchAndOrder(t, s[0], s[1], s[2])
+		// time.Sleep(2 * time.Second)
+	}
+	wg.Wait()
+}
+
+func testSearchAndOrder(t *testing.T, name, search, sortedby string) {
+	defer wg.Done()
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if assert.NoError(t, err, name) {
+		fmt.Println("Limit query data:")
+		err = request.QueryFields("FULL-NAME,DEPARTMENT")
+		if !assert.NoError(t, err, name) {
+			return
+		}
+		request.Limit = 5
+		fmt.Println("Read logigcal data:")
+		result, err := request.SearchAndOrder(search, sortedby)
+		if !assert.NoError(t, err, name) {
+			return
+		}
+		validateResult(t, name, result)
 	}
 
 }

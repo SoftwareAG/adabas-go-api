@@ -813,6 +813,125 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 	return
 }
 
+// SearchAndOrder performs a search call and orders the result using defined descriptors
+func (request *ReadRequest) SearchAndOrder(search, descriptors string) (result *Response, err error) {
+	result = &Response{Definition: request.definition}
+	err = request.SearchAndOrderWithParser(search, descriptors, nil, result)
+	if err != nil {
+		return nil, err
+	}
+	return
+}
+
+// SearchAndOrderWithParser search and order with parser
+func (request *ReadRequest) SearchAndOrderWithParser(search, descriptors string, resultParser adatypes.RequestParser, x interface{}) (err error) {
+	adatypes.Central.Log.Debugf("Search and order with descriptors")
+	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
+		opened, oErr := request.Open()
+		if oErr != nil {
+			err = oErr
+			return
+		}
+		if opened {
+			if request.dynamic != nil && request.definition == nil {
+				q := request.dynamic.CreateQueryFields()
+				request.QueryFields(q)
+			}
+			adatypes.Central.Log.Debugf("Query fields Definition ...")
+		}
+		adatypes.Central.Log.Debugf("Search logical, open done ...%#v with search=%s", request.adabas.ID.platform, search)
+		var searchInfo *adatypes.SearchInfo
+		var tree *adatypes.SearchTree
+		if search != "" {
+			searchInfo = adatypes.NewSearchInfo(request.adabas.ID.platform(request.adabas.URL.String()), search)
+			adatypes.Central.Log.Debugf("New search info ... %#v", searchInfo)
+			if request.definition == nil {
+				adatypes.Central.Log.Debugf("Load Definition (read logical)...")
+				err = request.loadDefinition()
+				if err != nil {
+					return
+				}
+				if request.dynamic != nil {
+					adatypes.Central.Log.Debugf("Dynamic query fields Definition ...")
+					q := request.dynamic.CreateQueryFields()
+					request.QueryFields(q)
+				}
+				adatypes.Central.Log.Debugf("Loaded Definition ...")
+				searchInfo.Definition = request.definition
+				tree, err = searchInfo.GenerateTree()
+				if err != nil {
+					return
+				}
+			} else {
+				adatypes.Central.Log.Debugf("Use Definition ...")
+				searchInfo.Definition = request.definition
+				tree, err = searchInfo.GenerateTree()
+				if err != nil {
+					return
+				}
+			}
+		} else {
+			adatypes.Central.Log.Debugf("No search ...")
+		}
+
+		adatypes.Central.Log.Debugf("Definition generated ...")
+		adabasRequest, prepareErr := request.prepareRequest()
+		if prepareErr != nil {
+			err = prepareErr
+			return
+		}
+
+		adatypes.Central.Log.Debugf("Prepare done ...")
+		switch {
+		case resultParser != nil:
+			adabasRequest.Parser = resultParser
+		case adabasRequest.DataType != nil:
+			adabasRequest.Parser = parseReadToInterface
+		default:
+			adabasRequest.Parser = parseReadToRecord
+		}
+		adabasRequest.Limit = request.Limit
+		//searchInfo.Definition = adabasRequest.Definition
+		if descriptors != "" {
+			adabasRequest.Descriptors, err = request.definition.Descriptors(descriptors)
+			if err != nil {
+				return
+			}
+		}
+		if tree != nil {
+			adabasRequest.SearchTree = tree
+			if descriptors == "" {
+				adabasRequest.Descriptors = tree.OrderBy()
+			}
+		}
+		request.adaptDescriptorMap(adabasRequest)
+		if request.cursoring != nil {
+			request.cursoring.adabasRequest = adabasRequest
+		}
+
+		if searchInfo == nil && descriptors == "" {
+			adatypes.Central.Log.Debugf("read in ISN order ...from %d", request.Start)
+			adabasRequest.Isn = adatypes.Isn(request.Start)
+			err = request.adabas.ReadISNOrder(request.repository.Fnr, adabasRequest, x)
+		} else {
+			adabasRequest.Isn = 0
+
+			if searchInfo != nil && searchInfo.NeedSearch || searchInfo != nil && descriptors != "" {
+				adatypes.Central.Log.Debugf("search logical with ...%#v", adabasRequest.Descriptors)
+				err = request.adabas.SearchLogicalWith(request.repository.Fnr, adabasRequest, x)
+			} else {
+				adatypes.Central.Log.Debugf("read logical with ...%#v", adabasRequest.Descriptors)
+				err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, x)
+			}
+		}
+	} else {
+		adatypes.Central.Log.Debugf("read logical with ...cursoring")
+		err = request.adabas.loopCall(request.cursoring.adabasRequest, x)
+	}
+	adatypes.Central.Log.Debugf("Read finished")
+	return
+}
+
 func (request *ReadRequest) adaptDescriptorMap(adabasRequest *adatypes.Request) error {
 	if request.adabasMap != nil {
 		adabasRequest.Parameter = request.adabasMap
