@@ -1955,3 +1955,41 @@ func TestConnectionMapFractional(t *testing.T) {
 	}
 
 }
+
+func TestConnectionMUsystemField(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "connection_map.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, cerr := NewConnection("acj;map;config=[23,4]")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest("ADABAS_MAP")
+	if assert.NoError(t, err) {
+		fmt.Println("Limit query data:")
+		err = request.QueryFields("MAPPING")
+		assert.NoError(t, err)
+		request.Limit = 10
+		request.Multifetch = 1
+		fmt.Println("Read logigcal data:")
+		result, err := request.ReadByISN()
+		if !assert.NoError(t, err) {
+			return
+		}
+		// result.DumpValues()
+		fmt.Println("Check size ...", len(result.Values))
+		if assert.Equal(t, 7, len(result.Values)) {
+			validateResult(t, "ADABAS_MAP", result)
+		}
+	}
+
+}
