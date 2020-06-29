@@ -181,7 +181,7 @@ func TestConnectionDescriptorinMapWithQuery(t *testing.T) {
 		fmt.Println("Check DEPARTMENT ...")
 		if assert.NotNil(t, ae) {
 			assert.Equal(t, "ADMA", strings.TrimSpace(ae.String()))
-			validateResult(t, "descriptorinmap", result)
+			validateResult(t, "descriptorinmapwithquery", result)
 		}
 	}
 
@@ -216,7 +216,7 @@ func TestConnectionSuperDescriptorinMap(t *testing.T) {
 		if assert.NotNil(t, ae) {
 			assert.Equal(t, "ADMA", strings.TrimSpace(ae.String()))
 			assert.Equal(t, uint64(8), result.Values[0].Quantity)
-			validateResult(t, "descriptorinmap", result)
+			validateResult(t, "superdescriptorinmap", result)
 		}
 	}
 

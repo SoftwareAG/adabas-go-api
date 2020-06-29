@@ -367,7 +367,10 @@ func traverseElementMarshalJSON(adaValue adatypes.IAdaValue, nr, max int, x inte
 }
 
 func traverseMarshalJSONEnd(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
-	if adaValue.Type().IsStructure() && adaValue.Type().Type() != adatypes.FieldTypeMultiplefield {
+	if adaValue.Type().Type() == adatypes.FieldTypeRedefinition {
+		// TODO handle redefinition in JSON marshal
+		adatypes.Central.Log.Debugf("TODO need handle redefinitions")
+	} else if adaValue.Type().IsStructure() && adaValue.Type().Type() != adatypes.FieldTypeMultiplefield {
 		sv := adaValue.(*adatypes.StructureValue)
 		req := x.(*responseJSON)
 		if adaValue.Type().Type() == adatypes.FieldTypePeriodGroup && len(sv.Elements) == 0 {

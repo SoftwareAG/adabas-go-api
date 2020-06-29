@@ -172,6 +172,7 @@ func TestReadPartRedefinition(t *testing.T) {
 		if assert.NotNil(t, f) {
 			assert.Equal(t, "", f.String())
 		}
+		validateResult(t, "partredefintion", result)
 	}
 }
 

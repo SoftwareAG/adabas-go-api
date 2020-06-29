@@ -243,7 +243,10 @@ func (adaType *StructureType) AddField(fieldType IAdaType) {
 		adaType.fieldMap = make(map[string]IAdaType)
 	}
 	adaType.fieldMap[fieldType.Name()] = fieldType
-	if fieldType.IsStructure() {
+	switch {
+	case fieldType.Type() == FieldTypeRedefinition:
+		// TODO handle redefinition in add field of structure type
+	case fieldType.IsStructure():
 		st := fieldType.(*StructureType)
 		st.fieldMap = adaType.fieldMap
 	}
