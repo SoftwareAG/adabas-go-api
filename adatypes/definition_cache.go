@@ -80,6 +80,10 @@ func traverseCacheCopy(adaType IAdaType, parentType IAdaType, level int, x inter
 		npt := &AdaSuperType{}
 		*npt = *(adaType.(*AdaSuperType))
 		newNode = npt
+	case *AdaCollationType:
+		npt := &AdaCollationType{}
+		*npt = *(adaType.(*AdaCollationType))
+		newNode = npt
 	default:
 		nat := &AdaType{}
 		*nat = *(adaType.(*AdaType))
