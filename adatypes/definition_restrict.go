@@ -352,11 +352,12 @@ func (def *Definition) ShouldRestrictToFields(fields string) (err error) {
 func (def *Definition) RemoveSpecialDescriptors() (err error) {
 	newTypes := make([]IAdaType, 0)
 	for _, s := range def.activeFieldTree.SubTypes {
-		if !s.IsSpecialDescriptor() {
+		if !s.IsSpecialDescriptor() || (s.IsSpecialDescriptor() && !s.IsOption(FieldOptionPE)) {
 			newTypes = append(newTypes, s)
 		}
 	}
 	def.activeFieldTree.SubTypes = newTypes
+	def.DumpTypes(true, true, "After remove descriptor")
 	return nil
 }
 

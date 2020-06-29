@@ -136,10 +136,11 @@ func TestConnectionDescriptorinMap(t *testing.T) {
 		fmt.Println("Read logigcal data:")
 		result, err := request.ReadLogicalBy("DEPARTMENT")
 		assert.NoError(t, err)
+		// result.DumpValues()
 		ae := result.Values[0].HashFields["DEPARTMENT"]
 		fmt.Println("Check DEPARTMENT ...")
 		if assert.NotNil(t, ae) {
-			assert.Equal(t, "ADAM", strings.TrimSpace(ae.String()))
+			assert.Equal(t, "ADMA", strings.TrimSpace(ae.String()))
 			validateResult(t, "descriptorinmap", result)
 		}
 	}
