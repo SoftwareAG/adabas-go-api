@@ -1978,7 +1978,7 @@ func TestConnectionMUsystemField(t *testing.T) {
 		fmt.Println("Limit query data:")
 		err = request.QueryFields("MAPPING")
 		assert.NoError(t, err)
-		request.Limit = 10
+		request.Limit = 3
 		request.Multifetch = 1
 		fmt.Println("Read logigcal data:")
 		result, err := request.ReadByISN()
@@ -1987,7 +1987,7 @@ func TestConnectionMUsystemField(t *testing.T) {
 		}
 		// result.DumpValues()
 		fmt.Println("Check size ...", len(result.Values))
-		if assert.Equal(t, 7, len(result.Values)) {
+		if assert.Equal(t, 3, len(result.Values)) {
 			validateResult(t, "ADABAS_MAP", result)
 		}
 	}

@@ -368,6 +368,7 @@ func adaptFlags(adaType IAdaType, parentType IAdaType, level int, x interface{})
 			currentType := parentType
 			for currentType != nil {
 				Central.Log.Debugf("%s: Set MU flag", currentType.Name())
+				Central.Log.Debugf("Adapt parent field flags for %s, need atomic FB", currentType.ShortName())
 				currentType.AddFlag(FlagOptionAtomicFB)
 				// TODO Adapt current type to adapt parent information
 				currentType = currentType.GetParent()
@@ -375,6 +376,7 @@ func adaptFlags(adaType IAdaType, parentType IAdaType, level int, x interface{})
 		}
 		if adaType.HasFlagSet(FlagOptionAtomicFB) && adaType.IsStructure() {
 			structureType := adaType.(*StructureType)
+			Central.Log.Debugf("Adapt sub field flags for %s, need atomic FB", adaType.ShortName())
 			for _, t := range structureType.SubTypes {
 				t.AddFlag(FlagOptionAtomicFB)
 			}

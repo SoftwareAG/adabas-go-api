@@ -403,26 +403,35 @@ func (commonType *CommonType) HasFlagSet(flagOption FlagOption) bool {
 // AddFlag add the flag to the type flag set
 func (commonType *CommonType) AddFlag(flagOption FlagOption) {
 	if commonType.HasFlagSet(flagOption) {
+		Central.Log.Debugf("Flag %s to %d already done", commonType.shortName, flagOption.Bit())
 		return
 	}
+	Central.Log.Debugf("Set Flag %s to %d", commonType.shortName, flagOption.Bit())
 	commonType.flags |= flagOption.Bit()
 
 	if flagOption == FlagOptionAtomicFB || flagOption == FlagOptionSingleIndex {
 		p := commonType.GetParent()
-		for p != nil {
+		for p != nil && p.ShortName() != "" {
+			Central.Log.Debugf("Set Parent Flag %s to %d", p.ShortName(), flagOption.Bit())
+			if !p.HasFlagSet(flagOption) {
+				break
+			}
 			p.AddFlag(flagOption)
 			p = p.GetParent()
 		}
 		if flagOption == FlagOptionAtomicFB {
 			// Only work in period group or group
-			if commonType.level > 1 {
-				for _, s := range commonType.SubTypes {
+			//			if !p.HasFlagSet(flagOption) {
+			for _, s := range commonType.SubTypes {
+				Central.Log.Debugf("Set Children Flag %s to %d", s.ShortName(), flagOption.Bit())
+				if !s.HasFlagSet(flagOption) {
 					s.AddFlag(flagOption)
 				}
-
 			}
+			//			}
 		}
 	}
+	Central.Log.Debugf("Set Flag %s to %d done", commonType.shortName, flagOption.Bit())
 }
 
 // RemoveFlag add the flag to the type flag set

@@ -220,6 +220,7 @@ func (adaType *AdaType) SetLength(length uint32) {
 	if (adaType.fieldType != FieldTypeFloat && adaType.fieldType != FieldTypeDouble) || length > 0 {
 		if adaType.HasFlagSet(FlagOptionPE) {
 			// Period length change, CANNNOT use collected FB entry!!!!
+			Central.Log.Debugf("Length not default and field %s is PE field, need atomic FB", adaType.shortName)
 			adaType.AddFlag(FlagOptionAtomicFB)
 		}
 		adaType.length = length

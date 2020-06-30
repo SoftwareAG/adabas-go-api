@@ -187,6 +187,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 	Central.Log.Debugf("Format Buffer Read traverser: %s-%s level=%d/%d -> %T", adaType.Name(), adaType.ShortName(),
 		adaType.Level(), level, adaType)
 	if adaType.HasFlagSet(FlagOptionReference) {
+		Central.Log.Debugf("Skip reference")
 		return nil
 	}
 	adabasRequest := x.(*Request)
@@ -290,6 +291,11 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			genType.Length(), genType.Type().FormatCharacter()))
 	default:
 		if !adaType.IsStructure() {
+			Central.Log.Debugf(" MUGhost: %v", adaType.HasFlagSet(FlagOptionMUGhost))
+			Central.Log.Debugf(" SingleIndex: %v", adaType.HasFlagSet(FlagOptionSingleIndex))
+			Central.Log.Debugf(" PE: %v", adaType.HasFlagSet(FlagOptionPE))
+			Central.Log.Debugf(" AtomicFB: %v", adaType.HasFlagSet(FlagOptionAtomicFB))
+			Central.Log.Debugf(" Part: %v", adaType.HasFlagSet(FlagOptionPart))
 			if !adaType.HasFlagSet(FlagOptionMUGhost) && (!adaType.HasFlagSet(FlagOptionPE) ||
 				(adaType.HasFlagSet(FlagOptionPE) && (adaType.HasFlagSet(FlagOptionAtomicFB) || adaType.HasFlagSet(FlagOptionPart)))) {
 				if buffer.Len() > 0 {
@@ -337,7 +343,11 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 					buffer.WriteString(fmt.Sprintf("%s%s,%d,%s", genType.ShortName(), fieldIndex,
 						genType.Length(), genType.Type().FormatCharacter()))
 				}
+			} else {
+				Central.Log.Debugf("MU ghost or PE")
 			}
+		} else {
+			Central.Log.Debugf("Unknown FB generator")
 		}
 	}
 	Central.Log.Debugf("Final type generated Format Buffer : %s", buffer.String())

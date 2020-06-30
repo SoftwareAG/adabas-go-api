@@ -127,6 +127,7 @@ func (adaType *StructureType) adaptSubFields() {
 	}
 	if adaType.Type() == FieldTypeMultiplefield {
 		Central.Log.Debugf("%s: set MU flag", adaType.Name())
+		Central.Log.Debugf("Adapt sub fields %s is PE field, need atomic FB", adaType.shortName)
 		adaType.AddFlag(FlagOptionAtomicFB)
 		adaType.occ = OccCapacity
 	}
