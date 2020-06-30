@@ -819,5 +819,9 @@ func ExampleReadRequest_readAllFields() {
 	//   AZ = [ 2 ]
 	//    AZ[01] = > FRE <
 	//    AZ[02] = > ENG <
+	//   PH = >  <
+	//   H1 = > 1905 <
+	//   S1 = > VENT <
+	//   S2 = > VENT59ADAM                 <
 
 }
