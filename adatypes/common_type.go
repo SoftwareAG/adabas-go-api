@@ -413,7 +413,7 @@ func (commonType *CommonType) AddFlag(flagOption FlagOption) {
 		p := commonType.GetParent()
 		for p != nil && p.ShortName() != "" {
 			Central.Log.Debugf("Set Parent Flag %s to %d", p.ShortName(), flagOption.Bit())
-			if !p.HasFlagSet(flagOption) {
+			if p.HasFlagSet(flagOption) {
 				break
 			}
 			p.AddFlag(flagOption)
