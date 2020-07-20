@@ -17,59 +17,59 @@
 
 ## Concept
 
-"The spirits that I called". In the more then fourthy years of processing of Adabas the tool environment has evaluate different concepts. In the past metadata were expensive and so Adabas is designed to have only two-character field names. Short after that additional 4GL-based programming languages like Natural are worked out. Natural and the add-on Predict extend the two-character field names to long names.
+"The spirits that I called". In the more than forty years of processing of Adabas, the tool environment has evolved with a range of concepts. In the past, metadata was expensive and so Adabas was designed to have only two-character field names. Shortly after that additional 4GL-based programming languages like Natural became widespread. Natural and the add-on Predict extend the two-character field names to long names.
 
-Unfortunately customers uses the independent long name facility to provide different views of one database file. Therefore it is not very easy to integrate it into the database. In advance there were different storage places where the long name definition was rested.
+Unfortunately, customers use the independent long name facility to provide different views of the same database file. Therefore it is not easy to integrate it into the database. As a result, there were different storage places where the long name definition was stored.
 
-The concept of Adabas Map is to consolidate all the places outside and inside the database to be in the database. This provide a possibility to integrate the metadata into an backup startegy.
+The concept of Adabas Map is to consolidate all the places outside and inside the database to be in the database. This provides the possibility of integrating the metadata into a backup strategy.
 
-But in time of continous delivery and continous testing the Adabas Map concept provides the possibilty, to define your Map configuration using an API.
+But in times of continuous delivery and continuous testing, the Adabas Map concept provides the possibilty to define your Map configuration using an API.
 
 ## Migration
 
 ### Object of migration
 
-Customers using Adabas work with Natural. The first important object of migration are customers using Natural or Predict. In advanced customers using Adabas without Natural are considered to use plain FDT definitions. A small possibility is provided to use Adabas short name field definitions and database id directly.
+Customers using Adabas work with Natural. The first important target group for migration are customers using Natural or Predict. In general, customers using Adabas without Natural are considered to use plain FDT definitions. A possibility is provided to use Adabas short name field definitions and database ID directly.
 
-To provide a Long name database file reference and a long name reference to the Adabas short name, a new Adabas Map is introduced. In advance this Adabas Map will be stored inside the Adabas database.
+To provide a long name database file reference and a long name reference to the Adabas short name, a new Adabas Map is introduced. This Adabas Map will be stored inside the Adabas database.
 
 ### New Map repository
 
-The Adabas Client for Java introduces a logical view of Adabas short names mapped to a long name. Various classical methods can be imported to the logical view called Adabas Maps. Using SYSTRANS Maps can be created out of
+The Adabas Client for Java introduces a logical view of Adabas short names mapped to long names. Various classical methods can be imported to the logical view called Adabas Maps. SYSTRANS Maps can be created out of:
 
 - Natural DDM
 - Natural Predict defnitions
 - CONNX SQL long name mapping to SQL structures
 
-All old long to short name mapping techniques have different repositories where the mapping is defined. Except Predict, the Map definition is stored outside the database. A full backup strategy could not be provided.
+All old long-to-short name mapping techniques have different repositories where the mapping is defined. Except Predict, the Map definition is stored outside the database. A full backup strategy could not be provided.
 
-To store all relevant data, metadata and bussiness data, inside the Adabas database, the corresponding new Adabas Map file is developed. A migration to the new Map for DDM's is provided. Natural Predict generates DDM. Natural provides export functionality (SYSTRANS) to migrate the DDM into the Map repository file.
+To store all relevant data, metadata and business data inside the Adabas database, the corresponding new Adabas Map file has been developed. A migration to the new Map for DDMs is provided. Natural Predict generates DDMs. Natural provides export functionality (SYSTRANS) to migrate the DDM into the Map repository file.
 
-A backup strategy containing Maps and Adabas data, metadata and bussiness data respectively, could be established.
+A backup strategy containing Maps and Adabas data, metadata and business data respectively, can be established.
 
 ## Adabas Data Designer
 
-The Data Designer is a graphical tool to create and maintain an Adabas file that contains the Meta data and the Maps. In Adabas the Meta data are stored in so-called Field Description Tables (FDT). The Maps are based on Adabas files (FDTs) extended by Long Names. The Data Designer is part of the Adabas Client for Java installation and is not part of the Go Adabas-API.
+The Data Designer is a graphical tool to create and maintain an Adabas file that contains the Meta data and the Maps. In Adabas the metadata are stored in so-called Field Description Tables (FDT). The Maps are based on Adabas files (FDTs) extended by Long Names. The Data Designer is part of the Adabas Client for Java installation and is not part of the Go Adabas-API.
 
-Using the Adabas Data Designer it is possible to use available definitions. Both FDTs and Maps can be imported in different way
+Using the Adabas Data Designer it is possible to use available definitions. Both FDTs and Maps can be imported in different ways:
 
-- import Meta data from Adabas (FDT)
+- import metadata from Adabas (FDT)
 - import Natural DDMs (SYSTRANS)
-- import JSON based configuration exchanged and adapted through the testing and production environments (see import/export functionality below)
+- import JSON based configurations exchanged and adapted through the testing and production environments (see import/export functionality below)
 
-It is also possible to create Meta data from scratch or adapt Maps.
+It is also possible to create metadata from scratch or adapt Maps.
 
-Adabas Files and Map of running databases are automatically shown when starting the Data Designer. Let's have a brief look into the Adabas Data Designer.
+Adabas Files and Maps of running databases are automatically shown when starting the Data Designer. Let's have a brief look at the Adabas Data Designer.
 
 ![Data Designer long name definition](.//media/image7.png)
 
-On the left side databases, files, maps are shown in a tree view. By double-clicking an object for example "TestMapEmployee" details are shown on the right upper side. Below a data browser is included to show the data in an Adabas file. Simply mark the fields you want to see in the data browser.
+On the left side databases, files and maps are shown in a tree view. By double-clicking an object for example "TestMapEmployee", details are shown on the right upper side. Below that, a data browser is included to show the data in an Adabas file. Simply mark the fields you want to see in the data browser.
 
 ### Design of the Adabas Map
 
-The new Adabas Map design contains a enhanced format definition reclined on DDM formats.
+The new Adabas Map design contains an enhanced format definition based on DDM formats.
 
-The Adabas Map FDT is containing several metadata for the Adabas field.
+The Adabas Map FDT contains several metadata for the Adabas field.
 
 | Field | Functionality | Remark |
 |----|---|---|
@@ -79,13 +79,13 @@ The Adabas Map FDT is containing several metadata for the Adabas field.
 |AD|Version of the Adabas Map|Valid version is 1|
 |RN|Name of the Adabas Map||
 |RF|Referenced Adabas file where the data are stored||
-|RD|Referenced Adabas database|If empty data file is located on same database as the Adabas Map|
+|RD|Referenced Adabas database|If empty, data file is located on same database as the Adabas Map|
 |MA|Period group containing field long name definition||
 |MB|Part of MA: Short name||
 |MC|Part of MA: Type of the field (extended DDM information)||
 |MB|Part of MA: Short name||
 |MD|Part of MA: Long name||
-|ML|Part of MA: Lenght override||
+|ML|Part of MA: Length override||
 |MT|Part of MA: Content type|Charset used to read Alpha fields. Needed to convert Alpha data to local charsets|
 |MY|Part of MA: Format type||
 |MR|Part of MA: Remarks||
@@ -131,17 +131,13 @@ Field Definition Table:
 
 Because the Adabas Maps are part of the basic concept of the Java and GO API, the Adabas Maps can be used in all components. The Adabas RESTful API provides the possibility to access Adabas RESTful data using the Adabas Map name.
 
-Inside the Adabas API the Adabas Map access is possible to be referenced using the repository and the name reference.
-
-Because the Adabas Maps are part of the basic concept of the Java and GO API, the Adabas Maps can be used in all components. The Adabas RESTful API provides the possibility to access Adabas RESTful data using the Adabas Map name.
-
-Inside the Adabas GO API the Adabas Map access is possible to be referenced using the repository and the name reference.
+Inside the Adabas API the Adabas Map access can be referenced using the repository and the name reference.
 
 ## Import and Export of maps
 
-It may be useful to administrate the Map definition. Especially to move them from development databases to the production database.
+It may be useful to administrate the Map definitions. Especially to move them from development databases to the production database.
 
-Therefore an import/export API is introduced. The file format is JSON. Here is an example JSON configuration for a Map
+Therefore an import/export API is introduced. The file format is JSON. Here is an example JSON configuration for a Map:
 
 ```json
 {"Maps":[
@@ -157,7 +153,7 @@ Therefore an import/export API is introduced. The file format is JSON. Here is a
 }
 ```
 
-You can use the GO api to load the JSON file and write it to an Map repository like that:
+You can use the GO API to load the JSON file and write it to a Map repository like this:
 
 ```GO
 maps, merr := LoadJSONMap("COPYEMPL.json")
