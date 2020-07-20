@@ -1,8 +1,8 @@
-# Technical overview about Go API
+# Technical overview of Go API
 
 <!-- TOC -->
 
-- [Technical overview about Go API](#technical-overview-about-go-api)
+- [Technical overview of Go API](#technical-overview-of-go-api)
   - [Content](#content)
   - [Build](#build)
   - [Usage](#usage)
@@ -19,17 +19,17 @@
 
 ## Content
 
-This is a documentation describing the Go based Adabas-API. The API can
+This documentation describes the Go-based Adabas API. The API can
 provide access to Adabas database data. It is the Go-based implementation of the Adabas Client for Java delivered by Software AG.
 
 This Go implementation contains various access methods to query Adabas database content.
 
-This implementation can access Adabas in various ways
+This implementation can access Adabas in various ways:
 
 - The local database IPC communication using the native Adabas client library
 - The new Adabas TCP/IP access without using the Adabas client
 
-The remote Adabas TCP/IP connection does not use the Adabas client library. To access local Adabas databases, the native Adabas Client library is prerequisite to compile with.
+The remote Adabas TCP/IP connection does not use the Adabas client library. To access local Adabas databases, the native Adabas Client library is a prerequisite to compile with.
 
 ## Build
 
@@ -45,16 +45,16 @@ To compile included query tools, use `git` to clone the complete repository
 git clone https://github.com/SoftwareAG/adabas-go-api.git
 ```
 
-The API runtime can be compiled with the Adabas TCP/IP interface only or using Adabas local access with Adabas Client native libraries. By default the Adabas TCP/IP interface is compiled only. To enable Adabas Client native link to Adabas you need to provide the Go build tag `adalnk` and the CGO compile flags defining build flags for the Adabas Client library. If the Adabas environment is sourced, you can define CGO compile flags as following:
+The API runtime can be compiled with the Adabas TCP/IP interface only or using Adabas local access with Adabas Client native libraries. By default the Adabas TCP/IP interface is compiled only. To enable the Adabas Client native link to Adabas you need to provide the Go build tag `adalnk` and the CGO compile flags defining build flags for the Adabas Client library. If the Adabas environment is sourced, you can define CGO compile flags as follows:
 
 ```Makefile
 CGO_CFLAGS = -I$(ACLDIR)/inc
 CGO_LDFLAGS = -L$(ACLDIR)/lib -ladalnkx -lsagsmp2 -lsagxts3 -ladazbuf
 ```
 
-In the Adabas Go API sources a `Makefile` contains build environment for Linux environments.
+In the Adabas Go API sources a `Makefile` contains the build environment for Linux environments.
 
-To compile start the `make` command. To compile the corresponding test tool, start `go` directly like
+To compile start the `make` command. To compile the corresponding test tool, start `go` directly like this:
 
 ```go
 go build -tag adalnk -o querm tests/querym/main.go
@@ -62,45 +62,45 @@ go build -tag adalnk -o querm tests/querym/main.go
 
 ## Usage
 
-Like the Adabas Client for Java implementation the Go Adabas API can be used with referencing
+Similar to the Adabas Client for Java implementation, the Go Adabas API can be used with referencing:
 
-- Adabas two-character short names and database id. This is the classic referenced used by Adabas
-- Using the Map definition used by the Adabas Client for Java version. Here the database name and the long name definitions can be defined by importing or defining Long names.
+- Adabas two-character short names and database ID. This is the classic reference used by Adabas.
+- Using the Map definition used by the Adabas Client for Java version. Here the database name and the long name definitions can be defined by importing or defining long names.
 
 ## Database connection string
 
-If classic Adabas database id's reference is used, the new Adabas TCP/IP uses a database connection string to reference the remote destination database. Example of database references are
+If the classic Adabas database ID's reference is used, the new Adabas TCP/IP uses a database connection string to reference the remote destination database. Examples of database references are:
 
 | URL  | Destination location  |
 |---|---|
 | "23" |  Local database 23 |
-| "23(tcpip://localhost:0)" |  Local database 23, port 0 indicate local usage |
+| "23(tcpip://localhost:0)" |  Local database 23, port 0 indicates local usage |
 | "23(adatcp://hutzle:60001)" |  Adabas TCP/IP based connection to remote database 23 on host `hutzle` at port 60001 |
 | "23(adatcps://hutzle:62001)" |  Adabas SSL based connection to remote database 23 on host `hutzle` at port 62001 |
 
 ## Request types
 
-Adabas internally works with a strict set of Adabas fields to be used in one Adabas access call. This enhance caching facilities  restrict the dynamic usage of different request field definitions. Similar to Adabas Client for Java, each request with different field sets need to have the own Request instance.
+Adabas internally works with a strict set of Adabas fields to be used in one Adabas access call. These enhanced caching facilities restrict the dynamic usage of different request field definitions. Similar to the Adabas Client for Java, each request with different field sets needs to have its own Request instance.
 
-Three Request types are provided
+Three Request types are provided:
 
 - `ReadRequest`: needed to read or search Adabas data
 - `StoreRequest`: needed to update or insert Adabas data
 - `DeleteRequest`: needed to delete Adabas data
 
-The request can be created and combined using a `Connection` instance. All these Request can be combined to an transaction. Final update, insert or delete can be finished using the end transaction call.
+The request can be created and combined using a `Connection` instance. All these Requests can be combined into an transaction. The final update, insert or delete can be finished using the end transaction call.
 
 ## Example usage
 
-There is a set of tests call Adabas calls to the database. The database data are the demo daatabase files delivered with Adabas.
+There is a set of tests with Adabas calls to the database. The database data are the demo database files delivered with Adabas.
 
-All the examples are done with the single Adabas example EMPLOYEES database file 11. The demo database contains the file. The Map definitions can be created using the Adabas Data Designer or the Mapping tool provided with  Adabas Client for Java. Only basic Map creation functionality is included.
+All the examples are done with the single Adabas example EMPLOYEES database file 11. The demo database contains the file. The Map definitions can be created using the Adabas Data Designer or the Mapping tool provided with the Adabas Client for Java. Only basic Map creation functionality is included.
 
 ### Search Adabas
 
-Similar to Natural logic it is possible to request descriptor and various search variantes.
+Similar to Natural logic it is possible to request descriptor and various search variants.
 
-You can read data using
+You can read data using:
 
 - logical searches based one descriptor order queries
 - physical order reads based on the order in the Adabas container
@@ -108,7 +108,7 @@ You can read data using
 
 Detailed documentation about search facilities are documented [here](.//QUERY.md).
 
-Below is an example showing a logical read on an descriptor value. This is an classical Adabas access example:
+Below is an example showing a logical read on an descriptor value. This is a classical Adabas access example:
 
 ```go
 connection, err := NewConnection("acj;target=23(adatcp://remote:60001)")
@@ -124,7 +124,7 @@ result := &Response{}
 err := request.ReadLogicalWith("AA=60010001", nil, result)
 ```
 
-Using the Adabas Map EMPLOYEES for this query it would look like the next example. Here the Range including values for the PERSONNEL-ID from 11100301 to 11100303 including both values are searched for:
+Using the Adabas Map EMPLOYEES for this query it would look like the next example. Here the range for the PERSONNEL-ID from 11100301 to 11100303 (including both values) is searched for:
 
 ```go
 // Create an connection handler containing map search locations
@@ -148,7 +148,7 @@ if rerr != nil {
 result.DumpValues()
 ```
 
-The result of the last example would look like this
+The result of the last example would look like this:
 
 ```output
 Dump all result values
@@ -197,19 +197,19 @@ err=storeRequest.EndTransaction()
 
 ### Search syntax
 
-see documentation [here](.//QUERY.md)
+See the documentation [here](.//QUERY.md).
 
 ## Dynamic result function
 
-Similar to the listener in Adabas Client for Java, the result data can be processed during query and does not needed to be stored in an result list lowering the memory consumpion.
+Similar to the listener in the Adabas Client for Java, the result data can be processed during the query and does not need to be stored in a result list, thus reducing the memory consumption.
 
-By default using the Record instance, the query will be store in a list
+By default using the Record instance, the query will be stored in a list:
 
 ```go
 result, err := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
 ```
 
-But you can work with a function to pass structures and methods to process the result received by the database. Here the result can be traversered field by field.
+But you can work with a function to pass structures and methods to process the result received by the database. Here the result can be traversered field by field:
 
 ```go
 // Work on all records without storing the records memory space in any list
@@ -227,7 +227,7 @@ result, err := request.ReadLogicalWithStream("AE='SMITH'", dumpStream, &i)
 
 ## Transactions
 
-Inside a `Connection` instance a chain of different request can define a transaction. A read request combined with a store request can finally end using either the end of transaction or the backout transaction method.
+Inside a `Connection` instance a chain of different requests can define a transaction. A read request combined with a store request can finally end using either the end of transaction or the backout transaction method.
 
 ______________________
 These tools are provided as-is and without warranty or support. They do not constitute part of the Software AG product suite. Users are free to use, fork and modify them, subject to the license agreement. While Software AG welcomes contributions, we cannot guarantee to include every contribution in the master project.	
