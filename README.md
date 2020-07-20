@@ -1,14 +1,14 @@
-# Exploit your assets in Adabas by using the Adabas Go API
+# Exploit your assets in Adabas by using the Adabas API for Go
 
 <!-- TOC -->
 
-- [Exploit your assets in Adabas by using the Adabas-Go API](#exploit-your-assets-in-adabas-by-using-the-go-adabas-api)
+- [Exploit your assets in Adabas by using the Adabas API for Go](#exploit-your-assets-in-adabas-by-using-the-adabas-api-for-go)
   - [Introduction](#introduction)
   - [Features](#features)
   - [Usage](#usage)
     - [Enable native library access](#enable-native-library-access)
   - [First step](#first-step)
-  - [Adabas Go API example](#adabas-go-api-example)
+  - [Adabas API for Go example](#adabas-api-for-go-example)
     - [Standard usage](#standard-usage)
     - [Classic database usage](#classic-database-usage)
     - [Using a Go struct](#using-a-go-struct)
@@ -25,11 +25,11 @@ For details have a look at the API documentation. It can be referenced here: <ht
 
 ## Features
 
-In general, users of the Adabas Go API do not need to know a basic level of Adabas APIs such as Adabas control blocks or Adabas buffer layouts.
-The Adabas Go API provides a more user friendly use of Adabas files and fields.
+In general, users of the Adabas API for Go do not need to know a basic level of Adabas APIs such as Adabas control blocks or Adabas buffer layouts.
+The Adabas API for Go provides a more user friendly use of Adabas files and fields.
 It is similar to the `Adabas Client for Java` product delivered by Software AG.
 
-This is a list of features which the Adabas Go API supports:
+This is a list of features which the Adabas API for Go supports:
 
 - Read, [Search](.//doc//QUERY.md), Insert, Delete and Update of Adabas records
 - Work with field descriptors and special descriptors like sub-/super-descriptors
@@ -44,7 +44,7 @@ This is a list of features which the Adabas Go API supports:
 
 ## Usage
 
-Inside the code the Adabas Go API can be used importing the Go API. Beside the API, some small sample applications are provided in GitHub. These examples of the Adabas Go API can be downloaded using the `go get` command:
+Inside the code the Adabas API for Go can be used importing the Go API. Beside the API, some small sample applications are provided in GitHub. These examples of the Adabas API for Go can be downloaded using the `go get` command:
 
 ```bash
 go get -u github.com/softwareag/adabas-go-api/adabas
@@ -71,7 +71,7 @@ CGO_CFLAGS=-I%ACLDIR%\..\inc
 CGO_LDFLAGS=-L%ACLDIR%\..\bin -L%ACLDIR%\..\lib -ladalnkx
 ```
 
-The application is built with Adabas Go API as follows (please note that the tag `adalnk` is needed to enable local IPC access):
+The application is built with Adabas API for Go as follows (please note that the tag `adalnk` is needed to enable local IPC access):
 
 ```go
 go build -tags adalnk application.go
@@ -82,13 +82,13 @@ go build -tags adalnk application.go
 A detailed description how to do the first steps using the Adabas Docker community edition is provided [here](.//doc//FirstSteps.md).
 Independent of the used environment of Docker (like Kubernetes or others), it describes how to call Adabas.
 
-## Adabas Go API example
+## Adabas API for Go example
 
 ### Standard usage
 
 The logical view of the data can be defined using Adabas maps. A detailed description of Adabas maps is available [here](.//doc//AdabasMap.md).
 
-The creation of Adabas maps is done by the infrastructure of the Java API for Adabas (Adabas Client for Java). The Adabas Data Designer rich client or Eclipse plugin provides the management of Adabas map definitions. A programmatical approach to create Adabas maps is part of the Adabas Go API.
+The creation of Adabas maps is done by the infrastructure of the Java API for Adabas (Adabas Client for Java). The Adabas Data Designer rich client or Eclipse plugin provides the management of Adabas map definitions. A programmatical approach to create Adabas maps is part of the Adabas API for Go.
 
 In the next example a logical read on the database file uses Adabas maps:
 
@@ -143,7 +143,7 @@ The example code is referenced [here](.//tests//simple_read.go). See detailed do
 
 ### Using a Go struct
 
-The Adabas Go API can handle simple Go struct definitions to map them to a Adabas Map definition.
+The Adabas API for Go can handle simple Go struct definitions to map them to a Adabas Map definition.
 
 For example if the structure is defined like this:
 
@@ -190,7 +190,7 @@ adatypes.Central.Log = logger
 
 ## Summary
 
-The Adabas Go API offers easy access to store or read data in or out of Adabas. The Go API should help developers to work with data in Adabas without needing to be an expert on special Adabas database features.
+The Adabas API for Go offers easy access to store or read data in or out of Adabas. The Go API should help developers to work with data in Adabas without needing to be an expert on special Adabas database features.
 Go functions enable developers to use Go as a programming language to access Adabas in the same way as other data sources are embedded in a Go project.
 By using the native `AdabasClient` library, you can access all platforms Adabas runs on like Linux, Unix, Windows and Mainframe (z/OS with Entire Network).
 Step by step all relevant Adabas features are supported.

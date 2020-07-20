@@ -17,12 +17,12 @@ Go is the de facto standard in terms of programming in Microservice environments
 (see <https://www.tiobe.com/tiobe-index/>).
 
 To be part of the Go community, all data stores must provide a Go-based interface to access data.
-The Adabas Go API provides the possibility to maintain and handle Adabas metadata.
+The Adabas API for Go provides the possibility to maintain and handle Adabas metadata.
 Besides Java, Natural and 3GL languages it is compulsory and a logical way to have a state-of-the-art Go based interface for Adabas to be considered as a data store that can be easily used in projects.
 
 The new interface addresses developers and software designers who work primarily with Go and related concepts. However, developers who are used to working with other programming languages also can benefit from this approach. The usage is similar to the Adabas Client for Java product that Software AG provides to work in Java environments.
 
-The Adabas Go API
+The Adabas API for Go
 
 - makes it easy for everyone to write Go-based applications and interact with Adabas databases.
 - uses Go methods for data access.
@@ -39,7 +39,7 @@ Actually, although it's notcompulsory for an interface, but worth mentioning, th
 
 ## Feature set
 
-Software AG does not guarantee support if there are issues with the Adabas Go API.
+Software AG does not guarantee support if there are issues with the Adabas API for Go.
 All current Adabas database versions are accessible. On Adabas Mainframe there might be some issues. Current features include:
 
 - Read, insert, update and delete records. Reference data in Adabas fields with Adabas short name or logical field names defined in Adabas maps
@@ -55,7 +55,7 @@ All current Adabas database versions are accessible. On Adabas Mainframe there m
 
 ## Technical Overview
 
-The graphic below shows how the Adabas Go API works in general.
+The graphic below shows how the Adabas API for Go works in general.
 
 ![Technical Overview](.//media/Go-Design.png)
 

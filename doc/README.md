@@ -33,7 +33,7 @@ The remote Adabas TCP/IP connection does not use the Adabas client library. To a
 
 ## Build
 
-Adabas Go API can be download using the `go get` command:
+Adabas API for Go can be download using the `go get` command:
 
 ```bash
 go get -u github.com/SoftwareAG/adabas-go-api/adabas
@@ -52,7 +52,7 @@ CGO_CFLAGS = -I$(ACLDIR)/inc
 CGO_LDFLAGS = -L$(ACLDIR)/lib -ladalnkx -lsagsmp2 -lsagxts3 -ladazbuf
 ```
 
-In the Adabas Go API sources a `Makefile` contains the build environment for Linux environments.
+In the Adabas API for Go sources a `Makefile` contains the build environment for Linux environments.
 
 To compile start the `make` command. To compile the corresponding test tool, start `go` directly like this:
 
@@ -62,7 +62,7 @@ go build -tag adalnk -o querm tests/querym/main.go
 
 ## Usage
 
-Similar to the Adabas Client for Java implementation, the Go Adabas API can be used with referencing:
+Similar to the Adabas Client for Java implementation, the Adabas API for Go can be used with referencing:
 
 - Adabas two-character short names and database ID. This is the classic reference used by Adabas.
 - Using the Map definition used by the Adabas Client for Java version. Here the database name and the long name definitions can be defined by importing or defining long names.

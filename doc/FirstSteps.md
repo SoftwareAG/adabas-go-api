@@ -1,8 +1,8 @@
-# First steps using GO Adabas API
+# First steps using Adabas API for Go
 
 <!-- TOC -->
 
-- [First steps using GO Adabas API](#first-steps-using-go-adabas-api)
+- [First steps using Adabas API for Go](#first-steps-using-adabas-api-for-go)
   - [Prerequisite](#prerequisite)
   - [Testing](#testing)
   - [Query tool using Adabas Database id](#query-tool-using-adabas-database-id)
@@ -12,9 +12,9 @@
 
 ## Prerequisite
 
-A basic prerequisite is the Adabas database. The GO Adabas API can use the native Adabas client library to access the Adabas database using local and Entire Net-Work as a destination. Corresponding configuration of the Adabas Client is needed.
+A basic prerequisite is the Adabas database. The Adabas API for Go can use the native Adabas client library to access the Adabas database using local and Entire Net-Work as a destination. Corresponding configuration of the Adabas Client is needed.
 
-Besides the native access to Adabas, the GO Adabas API supports the new Adabas TCP/IP link introduced in Adabas v6.7. With the Adabas TCP/IP a direct connection to the Adabas nucleus can be established.
+Besides the native access to Adabas, the Adabas API for Go supports the new Adabas TCP/IP link introduced in Adabas v6.7. With the Adabas TCP/IP a direct connection to the Adabas nucleus can be established.
 
 To test Adabas you can use the Adabas Community Edition for Docker. The containers are available in the Docker store. Only registration is required.
 Since Adabas version v6.7 the Docker image contains the Adabas TCP/IP link. You can start the Docker container like this:

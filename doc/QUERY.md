@@ -13,9 +13,9 @@
 
 ## Content
 
-This document describes the search capability of the Adabas Go API. The Go API uses a one-to-one match of the Adabas capabilities.
+This document describes the search capability of the Adabas API for Go. The Go API uses a one-to-one match of the Adabas capabilities.
 
-The Adabas Go API provides search queries based on Adabas queries. The search syntax is limited. See the Adabas documentation.
+The Adabas API for Go provides search queries based on Adabas queries. The search syntax is limited. See the Adabas documentation.
 
 ## Adabas search adaptions
 
