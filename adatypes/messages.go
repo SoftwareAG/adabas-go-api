@@ -62,7 +62,11 @@ func Language() string {
 	case lang == "":
 		lang = "en"
 	default:
-		lang = lang[0:2]
+		if len(lang) < 2 {
+			lang = "en"
+		} else {
+			lang = lang[0:2]
+		}
 	}
 	Central.Log.Debugf("Current LANG: %s", lang)
 	return lang
