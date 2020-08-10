@@ -40,9 +40,3 @@ jobs:
         FILES: ${{ github.workspace }}/files
         REFERENCES: ${{ github.workspace }}/files/references
 
-    - name: TestAdabas
-      run: go test -v ./adabas
-      env:
-        LOGPATH: ${{ github.workspace }}
-        FILES: ${{ github.workspace }}/files
-        REFERENCES: ${{ github.workspace }}/files/references
