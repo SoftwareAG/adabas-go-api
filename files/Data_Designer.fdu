@@ -1,0 +1,13 @@
+;############## ADABAS #########################################################
+;#
+;#  File       : Data_Designer.fdu
+;#  Description: Input for ADAFDU to load ADABAS Map definition
+;#  Parameter  : 
+;#
+;##############################################################################
+name   = DATA_DESIGNER
+dssize = 1m
+nisize = 90b
+uisize = 15b
+maxisn = 70000
+reuse  = (isn,ds)

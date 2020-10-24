@@ -1,0 +1,30 @@
+;/************* ADABAS DATA DESIGNER EXPORT ******************* 2020/10/21
+;*
+;* Description: Data_Designe.fdt DATA_DESIGNER[200(tcpip://mirolan:0) 4]
+;*
+;*************************************************************************/
+;
+   1    , TY                    
+    2   , TA,   1,  B, NU,DE    
+   1    , AA                    
+    2   , AB,   0,  A, NU       
+    2   , AC,   8,  B, NU       
+    2   , AD,   2,  B, FI       
+   1    , RA                    
+    2   , RF,   4,  B, NU       
+    2   , RD,   0,  A, NU,DE    
+    2   , RN,   0,  A, NU,DE,UQ 
+    2   , RB,   1,  B, FI       
+    2   , RO,   0,  A, NU       
+   1    , DL                    
+    2   , DF,   4,  B, NU       
+    2   , DD,   0,  A, NU,DE    
+   1    , MA         , PE       
+    2   , MB,  20,  A, NU       
+    2   , MC,   4,  B, NU       
+    2   , MD,   0,  A, NU       
+    2   , ML,   4,  B, NU       
+    2   , MT,   0,  A, NU       
+    2   , MY,   2,  A, FI       
+    2   , MR,   0,  A, NU       
+   1    , ZB,   8,  B, DE,MU,SY=TIME,DT=E(DATETIME)
