@@ -423,7 +423,7 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 			}
 			Central.Log.Debugf("Use subset of lob partial: %d of %d", value.lobSize, len(value.value))
 			if value.lobSize > 4 {
-				value.value = value.value[:value.lobSize-4]
+				value.value = value.value[:value.lobSize]
 			} else {
 				value.value = make([]byte, 0)
 			}
