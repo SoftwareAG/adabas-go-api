@@ -22,10 +22,14 @@ func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string)
 		Central.Log.Debugf("fieldName=%s/%s -> tag=%s", adabasFieldName, fieldName, tag)
 		if tag != "" {
 			s := strings.Split(tag, ":")
-			if s[0] != "" {
-				adabasFieldName = s[0]
-				if strings.ToLower(adabasFieldName) == "#isn" {
-					adabasFieldName = "#isn"
+			if len(s) > 2 {
+				adabasFieldName = s[2]
+			} else {
+				if s[0] != "" {
+					adabasFieldName = s[0]
+					if strings.ToLower(adabasFieldName) == "#isn" {
+						adabasFieldName = "#isn"
+					}
 				}
 			}
 
@@ -38,8 +42,13 @@ func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string)
 					f["#isn"] = []string{adabasFieldName}
 					// No sub value and not relevant Adabas field, skip rest
 					continue
+				case "ignore":
+					continue
+				case "":
+					// this is if the inmap repository-less map is used
 				default:
-					Central.Log.Debugf("Unknown control tag %s", s[1])
+					Central.Log.Debugf("Unknown control tag >%s<", s[1])
+					continue
 				}
 			}
 		}

@@ -1293,7 +1293,9 @@ func TestConnectionADATCPReadRemote(t *testing.T) {
 	defer connection.Close()
 	fmt.Println("Connection:", connection)
 	openErr := connection.Open()
-	assert.NoError(t, openErr)
+	if !assert.NoError(t, openErr) {
+		return
+	}
 	request, err := connection.CreateFileReadRequest(11)
 	if !assert.NoError(t, err) {
 		return

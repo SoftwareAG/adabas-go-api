@@ -491,3 +491,13 @@ func (adabasMap *Map) Store() error {
 	repository := NewMapRepository(adabas.URL, adabasMap.Repository.Fnr)
 	return repository.writeAdabasMapsWithAdabas(adabas, adabasMap)
 }
+
+// define the map definition using interface tags
+func (adabasMap *Map) defineByInterface(i interface{}) error {
+	dynamic := adatypes.CreateDynamicInterface(i)
+	for index, f := range dynamic.FieldNames {
+		fmt.Println(index, f)
+		adabasMap.addFields(index, index)
+	}
+	return nil // fmt.Errorf("Not implemented")
+}

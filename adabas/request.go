@@ -103,15 +103,19 @@ func (request *commonRequest) commonOpen() (opened bool, err error) {
 			}
 		}
 		var dbid Dbid
-		dbid, err = request.adabasMap.Repository.dbid()
-		if err != nil {
-			return
+		if request.adabasMap.Repository == nil {
+			dbid = request.adabasMap.URL().Dbid
+		} else {
+			dbid, err = request.adabasMap.Repository.dbid()
+			if err != nil {
+				return
+			}
+			adatypes.Central.Log.Debugf("Load definition on fnr=%d/%d for map %s", request.repository.Fnr, request.adabasMap.Repository.Fnr, request.adabasMap.Name)
 		}
 		adatypes.Central.Log.Debugf("Reset database to new database: %d current: %d", dbid, request.adabas.Acbx.Acbxdbid)
 		if dbid != 0 {
 			request.adabas.SetDbid(dbid)
 		}
-		adatypes.Central.Log.Debugf("Load definition on fnr=%d/%d for map %s", request.repository.Fnr, request.adabasMap.Repository.Fnr, request.adabasMap.Name)
 		err = request.loadDefinition()
 		if err != nil {
 			return

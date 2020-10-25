@@ -21,6 +21,7 @@ package adabas
 
 import (
 	"bytes"
+	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -41,6 +42,8 @@ type Connection struct {
 }
 
 var once sync.Once
+
+const inmapMapName = "<inmap>"
 
 var onceBody = func() {
 	adatypes.Central.Log.Infof("Adabas GO API version %s", adatypes.Version)
@@ -104,6 +107,29 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 				adatypes.Central.Log.Debugf("Connection to map : %v", maps)
 				mapName = maps[1]
 			}
+		case strings.HasPrefix(p, "inmap"):
+			if strings.Contains(p, "=") {
+				maps := strings.Split(parts[1], "=")
+				adatypes.Central.Log.Debugf("Connection to map : %v", maps)
+				// mapName = inmapMapName
+				adabasMap = NewAdabasMap(inmapMapName)
+				ref := strings.Split(maps[1], ",")
+				url, err := NewURL(ref[0])
+				if err != nil {
+					return nil, err
+				}
+				adabasMap.Data = &DatabaseURL{URL: *url}
+				fnr, err := strconv.Atoi(ref[1])
+				if err != nil {
+					return nil, err
+				}
+				adabasMap.Data.Fnr = Fnr(fnr)
+				fmt.Println(url, fnr)
+				adabasToData, err = NewAdabas(url, adabasID)
+				if err != nil {
+					return nil, err
+				}
+			}
 		case strings.HasPrefix(p, "config="):
 			e := strings.Index(p, "]")
 			a := strings.Index(p, "[") + 1
@@ -152,7 +178,6 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 
 	connection = &Connection{adabasToData: adabasToData, ID: adabasID,
 		adabasToMap: adabasToMap, adabasMap: adabasMap, repository: repository}
-
 	if mapName != "" {
 		connection.searchRepository(adabasID, repository, mapName)
 		if err != nil {
@@ -379,7 +404,16 @@ func (connection *Connection) CreateMapReadRequest(param ...interface{}) (reques
 	switch t.Kind() {
 	case reflect.Ptr, reflect.Struct:
 		if connection.repository == nil {
-			request, err = NewReadRequest(param[0], connection.adabasToMap)
+			if connection.adabasMap != nil && connection.adabasMap.Name == inmapMapName {
+				fmt.Println("Map used ", connection.adabasMap.Name)
+				err = connection.adabasMap.defineByInterface(param[0])
+				if err != nil {
+					return nil, err
+				}
+				request, err = NewReadRequest(connection.adabasToData, connection.adabasMap)
+			} else {
+				request, err = NewReadRequest(param[0], connection.adabasToMap)
+			}
 		} else {
 			request, err = NewReadRequest(param[0], connection.adabasToMap, connection.repository)
 		}
