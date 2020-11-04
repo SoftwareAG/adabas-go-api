@@ -343,6 +343,12 @@ func (request *StoreRequest) secondStore(adabasRequest *adatypes.Request, storeR
 // Note: the data is update in Adabas, but is not final until the end of
 // transaction is done. Dirty ready may be done.
 func (request *StoreRequest) Update(storeRecord *Record) error {
+	if request.definition == nil {
+		sErr := request.StoreFields(storeRecord)
+		if sErr != nil {
+			return sErr
+		}
+	}
 	request.definition.Values = storeRecord.Value
 	adabasRequest, prepareErr := request.prepareRequest()
 	if prepareErr != nil {
