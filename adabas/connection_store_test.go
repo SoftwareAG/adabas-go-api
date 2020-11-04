@@ -79,7 +79,7 @@ type testCopy struct {
 
 func copyStream(record *Record, x interface{}) error {
 	tc := x.(*testCopy)
-	fmt.Printf("Read %d -> %d\n", record.Isn, record.Quantity)
+	fmt.Printf("Store %d -> %d\n", record.Isn, record.Quantity)
 	err := tc.store.Store(record)
 	tc.i++
 	return err
@@ -103,34 +103,41 @@ func checkContent(t *testing.T, name, target string, file Fnr) error {
 	return validateResult(t, name, result)
 }
 
-func TestConnectionStoreCopy(t *testing.T) {
-	initTestLogWithFile(t, "connection_store.log")
-
-	clearAdabasFile(t, "23", 16)
-
-	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
+func copyAdabasFile(t *testing.T, fields, target string, org, dest Fnr) error {
+	connection, err := NewConnection("acj;target=" + target)
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	defer connection.Close()
 
-	readRequest, rerr := connection.CreateFileReadRequest(11)
+	readRequest, rerr := connection.CreateFileReadRequest(org)
 	if !assert.NoError(t, rerr) {
-		return
+		return rerr
 	}
-	readRequest.QueryFields("*")
+	readRequest.QueryFields(fields)
 
-	storeRequest, serr := connection.CreateStoreRequest(16)
+	storeRequest, serr := connection.CreateStoreRequest(dest)
 	if !assert.NoError(t, serr) {
-		return
+		return serr
 	}
-	fmt.Println("Read physical read...")
+	fmt.Println("Read physical read...", target, dest)
 	tc := &testCopy{store: storeRequest}
 	_, err = readRequest.ReadPhysicalSequenceStream(copyStream, tc)
 	if !assert.NoError(t, err) {
-		return
+		return err
 	}
 	err = storeRequest.EndTransaction()
+	if !assert.NoError(t, err) {
+		return err
+	}
+	return nil
+}
+
+func TestConnectionStoreCopy(t *testing.T) {
+	initTestLogWithFile(t, "connection_store.log")
+
+	clearAdabasFile(t, adabasModDBIDs, 16)
+	err := copyAdabasFile(t, adabasModDBIDs, "*", 11, 16)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -141,7 +148,32 @@ func TestConnectionStoreCopy(t *testing.T) {
 func TestConnectionStoreRestrictedCopy(t *testing.T) {
 	initTestLogWithFile(t, "connection_store.log")
 
-	clearAdabasFile(t, "23", 16)
+	clearAdabasFile(t, adabasModDBIDs, 16)
+
+	err := copyAdabasFile(t, adabasModDBIDs, "AA,AB,AQ", 11, 16)
+	if !assert.NoError(t, err) {
+		return
+	}
+	checkContent(t, "checkTestRestrictedCopy", adabasModDBIDs, 16)
+}
+
+func updateStream(record *Record, x interface{}) error {
+	tc := x.(*testCopy)
+	fmt.Printf("Update %d -> %d\n", record.Isn, record.Quantity)
+	record.SetValue("AA", fmt.Sprintf("%05d", tc.i))
+	err := tc.store.Update(record)
+	tc.i++
+	return err
+}
+
+func TestConnectionStoreCopyUpdate(t *testing.T) {
+	initTestLogWithFile(t, "connection_store.log")
+
+	clearAdabasFile(t, adabasModDBIDs, 16)
+	err := copyAdabasFile(t, adabasModDBIDs, "*", 11, 16)
+	if !assert.NoError(t, err) {
+		return
+	}
 
 	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
@@ -149,19 +181,19 @@ func TestConnectionStoreRestrictedCopy(t *testing.T) {
 	}
 	defer connection.Close()
 
-	readRequest, rerr := connection.CreateFileReadRequest(11)
+	readRequest, rerr := connection.CreateFileReadRequest(16)
 	if !assert.NoError(t, rerr) {
 		return
 	}
-	readRequest.QueryFields("AA,AB,AQ")
+	readRequest.QueryFields("AA")
 
 	storeRequest, serr := connection.CreateStoreRequest(16)
 	if !assert.NoError(t, serr) {
 		return
 	}
-	fmt.Println("Read physical read...")
+	fmt.Println("Read physical read...", adabasModDBIDs, 16)
 	tc := &testCopy{store: storeRequest}
-	_, err = readRequest.ReadPhysicalSequenceStream(copyStream, tc)
+	_, err = readRequest.ReadPhysicalSequenceStream(updateStream, tc)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -169,6 +201,5 @@ func TestConnectionStoreRestrictedCopy(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-
-	checkContent(t, "checkTestRestrictedCopy", adabasModDBIDs, 16)
+	checkContent(t, "checkTestUpdate", adabasModDBIDs, 16)
 }
