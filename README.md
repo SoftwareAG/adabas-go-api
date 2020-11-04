@@ -90,7 +90,7 @@ The logical view of the data can be defined using Adabas maps. A detailed descri
 
 The creation of Adabas maps is done by the infrastructure of the Java API for Adabas (Adabas Client for Java). The Adabas Data Designer rich client or Eclipse plugin provides the management of Adabas map definitions. A programmatical approach to create Adabas maps is part of the Adabas API for Go.
 
-In the next example a logical read on the database file uses Adabas maps:
+In the first example a logical read on the database file uses Adabas maps:
 
 ```go
 import (
@@ -111,6 +111,18 @@ request.Limit = 2
 result,rerr := request.ReadLogicalWith("PERSONNEL-ID=[11100301:11100303]")
 // Result is dumped to stdout
 result.DumpValues()
+```
+
+The next example shows a cursor read  on the database file:
+
+```go
+// Read logical with cursor using a range search query
+result,rerr := request.ReadLogicalWithCursoring("PERSONNEL-ID=[11100301:11100303]")
+// Result is dumped to stdout
+for col.HasNextRecord() {
+  record, rerr := col.NextRecord()
+    ...
+}
 ```
 
 See detailed documentation [here](.//doc//AdabasMap.md).

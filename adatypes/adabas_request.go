@@ -317,6 +317,10 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 						}
 						adabasRequest.RecordBufferLength += uint32(partialRange.to)
 					} else {
+						if genType.HasFlagSet(FlagOptionPE) {
+							t := genType.(*AdaType)
+							fieldIndex = t.peRange.FormatBuffer()
+						}
 						buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(1,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
 							PartialLobSize))
 						adabasRequest.RecordBufferLength += (4 + PartialLobSize)

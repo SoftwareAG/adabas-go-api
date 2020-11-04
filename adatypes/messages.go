@@ -47,12 +47,13 @@ type Error struct {
 	When    time.Time
 	Code    string
 	Message string
+	args    []interface{}
 }
 
 // Error error interface function, providing message error code and message. The Adabas error provides
 // message code and message text
-func (e Error) Error() string {
-	return fmt.Sprintf("%v: %v", e.Code, e.Message)
+func (adaErr *Error) Error() string {
+	return fmt.Sprintf("%v: %v", adaErr.Code, adaErr.Message)
 }
 
 // Language current message language
@@ -91,7 +92,22 @@ func NewGenericError(code errorCode, args ...interface{}) *Error {
 		Central.Log.Debugf("Generic error message created:[%s] %s", msgCode, msg)
 		Central.Log.Debugf("Stack trace:\n%s", string(debug.Stack()))
 	}
-	return &Error{When: time.Now(), Code: msgCode, Message: msg}
+	return &Error{When: time.Now(), Code: msgCode, Message: msg, args: args}
+}
+
+// Translate translate to language
+func (adaErr *Error) Translate(lang string) string {
+	msg := Translate(lang, adaErr.Code)
+	if msg == "" {
+		msg = "Unknown message for code: " + adaErr.Code
+	}
+	for i, x := range adaErr.args {
+		m := fmt.Sprintf("%v", x)
+		c := fmt.Sprintf("\\{%d\\}", i)
+		re := regexp.MustCompile(c)
+		msg = re.ReplaceAllString(msg, m)
+	}
+	return msg
 }
 
 // initMessages loads messages from all message files on the given path.

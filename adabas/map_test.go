@@ -150,7 +150,7 @@ func TestMapFieldsMainframe(t *testing.T) {
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
-	if network == "" {
+	if !assert.NotEqual(t, "", network) {
 		fmt.Println("Mainframe database not defined")
 		return
 	}

@@ -36,6 +36,7 @@ func TestMessage(t *testing.T) {
 	err := NewGenericError(02, "XX")
 	assert.Equal(t, "ADG0000002: Invalid Adabas command send: XX", err.Error())
 	assert.Equal(t, "ADG0000002: Invalid Adabas command send: XX", err.Error())
+	assert.Equal(t, "Falsches Adabas Kommando gesendet: XX", err.Translate("de"))
 
 }
 
