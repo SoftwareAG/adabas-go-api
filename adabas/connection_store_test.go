@@ -137,7 +137,7 @@ func TestConnectionStoreCopy(t *testing.T) {
 	initTestLogWithFile(t, "connection_store.log")
 
 	clearAdabasFile(t, adabasModDBIDs, 16)
-	err := copyAdabasFile(t, adabasModDBIDs, "*", 11, 16)
+	err := copyAdabasFile(t, "*", adabasModDBIDs, 11, 16)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -150,7 +150,7 @@ func TestConnectionStoreRestrictedCopy(t *testing.T) {
 
 	clearAdabasFile(t, adabasModDBIDs, 16)
 
-	err := copyAdabasFile(t, adabasModDBIDs, "AA,AB,AQ", 11, 16)
+	err := copyAdabasFile(t, "AA,AB,AQ", adabasModDBIDs, 11, 16)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -170,7 +170,7 @@ func TestConnectionStoreCopyUpdate(t *testing.T) {
 	initTestLogWithFile(t, "connection_store.log")
 
 	clearAdabasFile(t, adabasModDBIDs, 16)
-	err := copyAdabasFile(t, adabasModDBIDs, "*", 11, 16)
+	err := copyAdabasFile(t, "*", adabasModDBIDs, 11, 16)
 	if !assert.NoError(t, err) {
 		return
 	}
