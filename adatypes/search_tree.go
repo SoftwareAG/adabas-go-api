@@ -788,6 +788,8 @@ func appendNumericValue(buffer *bytes.Buffer, v string) {
 				}
 				buffer.Write(bs[:x])
 				Central.Log.Debugf("Byte value -> offset=%d\n", buffer.Len())
+			} else {
+				buffer.WriteByte(0)
 			}
 		}
 	}
