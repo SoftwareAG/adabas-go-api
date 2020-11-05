@@ -21,6 +21,7 @@ package adatypes
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"math" //"encoding/binary"
@@ -775,9 +776,19 @@ func appendNumericValue(buffer *bytes.Buffer, v string) {
 			if err != nil {
 				Central.Log.Fatal(err)
 			}
-
-			buffer.WriteByte(byte(va))
-			Central.Log.Debugf("Byte value -> offset=%d\n", buffer.Len())
+			if va > 0 {
+				bs := make([]byte, 4)
+				binary.LittleEndian.PutUint32(bs, uint32(va))
+				x := len(bs)
+				for x > 0 {
+					if bs[x-1] > 0 {
+						break
+					}
+					x--
+				}
+				buffer.Write(bs[:x])
+				Central.Log.Debugf("Byte value -> offset=%d\n", buffer.Len())
+			}
 		}
 	}
 }
