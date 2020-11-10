@@ -8,6 +8,7 @@
     - [Object of migration](#object-of-migration)
     - [New Map repository](#new-map-repository)
   - [Adabas Data Designer](#adabas-data-designer)
+    - [Loading Adabas Map file definition table](#loading-adabas-map-file-definition-table)
     - [Design of the Adabas Map](#design-of-the-adabas-map)
     - [Adabas Map FDT](#adabas-map-fdt)
   - [Usage of Adabas Maps](#usage-of-adabas-maps)
@@ -35,7 +36,7 @@ To provide a long name database file reference and a long name reference to the 
 
 ### New Map repository
 
-The Adabas Client for Java introduces a logical view of Adabas short names mapped to long names. Various classical methods can be imported to the logical view called Adabas Maps. SYSTRANS Maps can be created out of:
+The Adabas Client for Java introduces a logical view of Adabas short names mapped to long names. Various classical methods can be imported to the logical view called Adabas Maps. Adabas Maps can be created out of:
 
 - Natural DDM
 - Natural Predict defnitions
@@ -49,7 +50,7 @@ A backup strategy containing Maps and Adabas data, metadata and business data re
 
 ## Adabas Data Designer
 
-The Data Designer is a graphical tool to create and maintain an Adabas file that contains the Meta data and the Maps. In Adabas the metadata are stored in so-called Field Description Tables (FDT). The Maps are based on Adabas files (FDTs) extended by Long Names. The Data Designer is part of the Adabas Client for Java installation and is not part of the Go Adabas-API.
+The Data Designer is a graphical tool to create and maintain an Adabas file that contains the Meta data and the Maps. In Adabas the metadata are stored in so-called Field Description Tables (FDT). The Maps are based on Adabas files (FDTs) extended by Long Names and special Types. The Data Designer is part of the Adabas Client for Java installation and is not part of the Go Adabas-API.
 
 Using the Adabas Data Designer it is possible to use available definitions. Both FDTs and Maps can be imported in different ways:
 
@@ -64,6 +65,25 @@ Adabas Files and Maps of running databases are automatically shown when starting
 ![Data Designer long name definition](.//media/image7.png)
 
 On the left side databases, files and maps are shown in a tree view. By double-clicking an object for example "TestMapEmployee", details are shown on the right upper side. Below that, a data browser is included to show the data in an Adabas file. Simply mark the fields you want to see in the data browser.
+
+### Loading Adabas Map file definition table
+
+At first the Adabas Data Designer can be used to create a Adabas Map file inside the database.
+
+In the Adabas Go API `doc` directory is a FDT file. This file can be used to create a Adabas Map file manually. You need to use standard Adabas utilities or tools:
+
+1. If you able to start Adabas utility or are able accessing the container bash shell, you may using the old ADAFDU utility.
+  Here you can use the normal FDUFDT=DataDesigner.fdt environments and finally load the data with
+  `adafdu <DesignerData.fdu`
+2. You can downlaod and usethe Adabas REST API administration command line tools at <https://github.com/SoftwareAG/adabas-admin-restful-client>
+    You can load the file by setting `ADABAS_ADMIN_URL` to the Adabas REST server URL and use with password (default is “manage”).
+    The FDT is loaded using following command:
+    `adabas-restful-client -dbid 1 -input "fdt:Data_Designe.fdt" -input fdu:create-mapping.json createfile`
+3. Each Adabas REST administartion installation and Adabas Community Edition docker container delivers with a backup containing standard example Adabas Map definitions. This backup can be used to load the example data. Use the standard Adabas Backup utility to restore the example backup if the database contains already all examples with
+    `BCK001=/opt/softwareag/AdabasRestAdministration/data/example.bck adabck db=<your dbid> restore=”(4,202)”`
+    or restore everything in an empty Adabas database with
+`BCK001=/opt/softwareag/AdabasRestAdministration/data/example.bck adabck db=<your dbid> restore=”(4-202)”`
+
 
 ### Design of the Adabas Map
 

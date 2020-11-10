@@ -86,6 +86,38 @@ func TestSearchSecondTree(t *testing.T) {
 
 }
 
+func TestSearchSecondTreeBigNumber(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "U4=12345 AND SA='ABC'")
+	searchInfo.Definition = tDefinition()
+	searchValue := &SearchValue{}
+	adaType := NewType(FieldTypeString, "BC")
+	adaType.SetLength(0)
+	searchValue.value, _ = adaType.Value()
+
+	assert.Equal(t, "ABC", searchInfo.constants[0])
+	assert.Equal(t, "U4=12345 AND SA=#{1}", searchInfo.search)
+	assert.False(t, searchInfo.NeedSearch)
+	xerr := searchInfo.expandConstants(searchValue, "#{1}")
+	assert.Equal(t, []byte{0x41, 0x42, 0x43}, searchValue.value.Bytes())
+	assert.NoError(t, xerr)
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
+	Central.Log.Debugf(tree.String())
+	assert.Equal(t, "U4,4,B,EQ,D,SA,3,A,EQ.", tree.SearchBuffer())
+	var buffer bytes.Buffer
+	tree.ValueBuffer(&buffer)
+	valueBuffer := buffer.Bytes()
+	assert.Equal(t, []uint8([]byte{0x39, 0x30, 0x0, 0x0, 0x41, 0x42, 0x43}), valueBuffer)
+
+}
 func TestSearchExtractAndBinding(t *testing.T) {
 	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {
@@ -672,6 +704,28 @@ func TestSearchMixedValue(t *testing.T) {
 	assert.False(t, searchInfo.NeedSearch)
 	xerr := searchInfo.expandConstants(searchValue, "0x00#{1}0")
 	assert.Equal(t, []byte{0, 65, 66, 67, 68, 0}, searchValue.value.Bytes())
+	assert.NoError(t, xerr)
+
+}
+
+func TestSearchMixedValue2(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "AA=0x01'ABCD'101")
+	searchValue := &SearchValue{}
+	adaType := NewType(FieldTypeString, "BC")
+	adaType.SetLength(0)
+	searchValue.value, _ = adaType.Value()
+	assert.Equal(t, "ABCD", searchInfo.constants[0])
+	assert.Equal(t, "AA=0x01#{1}101", searchInfo.search)
+	assert.False(t, searchInfo.NeedSearch)
+	xerr := searchInfo.expandConstants(searchValue, "0x01#{1}1010")
+	assert.Equal(t, []byte{01, 65, 66, 67, 68, 0xf2, 03}, searchValue.value.Bytes())
 	assert.NoError(t, xerr)
 
 }

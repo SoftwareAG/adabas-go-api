@@ -135,7 +135,9 @@ func TestConnectionDescriptorinMap(t *testing.T) {
 		request.Limit = 5
 		fmt.Println("Read logigcal data:")
 		result, err := request.ReadLogicalBy("DEPARTMENT")
-		assert.NoError(t, err)
+		if !assert.NoError(t, err) {
+			return
+		}
 		// result.DumpValues()
 		ae := result.Values[0].HashFields["DEPARTMENT"]
 		fmt.Println("Check DEPARTMENT ...")

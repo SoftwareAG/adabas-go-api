@@ -87,7 +87,7 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 			adatypes.Central.Log.Debugf("It's a struct %s", ti.Name())
 			mapName := ti.Name()
 			if len(param) < 2 {
-				return nil, errors.New("Not enough parameters for NewReadRequest")
+				return nil, errors.New("Not enough parameters for NewStoreRequest")
 			}
 			var request *StoreRequest
 			ada := param[1].(*Adabas)
@@ -270,6 +270,12 @@ func (request *StoreRequest) CreateRecord() (record *Record, err error) {
 // Note: the data is stored, but is not final until the end of
 // transaction is done.
 func (request *StoreRequest) Store(storeRecord *Record) error {
+	if request.definition == nil {
+		sErr := request.StoreFields(storeRecord)
+		if sErr != nil {
+			return sErr
+		}
+	}
 	request.definition.Values = storeRecord.Value
 	adatypes.Central.Log.Debugf("Prepare store request")
 	adabasRequest, prepareErr := request.prepareRequest()
@@ -337,6 +343,12 @@ func (request *StoreRequest) secondStore(adabasRequest *adatypes.Request, storeR
 // Note: the data is update in Adabas, but is not final until the end of
 // transaction is done. Dirty ready may be done.
 func (request *StoreRequest) Update(storeRecord *Record) error {
+	if request.definition == nil {
+		sErr := request.StoreFields(storeRecord)
+		if sErr != nil {
+			return sErr
+		}
+	}
 	request.definition.Values = storeRecord.Value
 	adabasRequest, prepareErr := request.prepareRequest()
 	if prepareErr != nil {

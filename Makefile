@@ -35,7 +35,7 @@ MESSAGES      = $(CURDIR)/messages
 # Test parameter
 WCPHOST      ?= wcphost:30011
 ADATCPHOST   ?= tcphost:60177
-ADAMFDBID    ?= 54712
+ADAMFDBID    ?= 
 TESTOUTPUT   ?= $(CURDIR)/test
 ENABLE_DEBUG ?= 0
 DOCKER_GO     = 1.12

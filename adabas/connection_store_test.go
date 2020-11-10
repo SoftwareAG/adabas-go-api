@@ -20,6 +20,7 @@
 package adabas
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -69,4 +70,97 @@ func TestConnectionStorePEMU(t *testing.T) {
 	//record.DumpValues()
 	err = storeRequest.Store(record)
 	assert.NoError(t, err)
+}
+
+type testCopy struct {
+	i          uint32
+	indexField string
+	store      *StoreRequest
+}
+
+func copyStream(record *Record, x interface{}) error {
+	tc := x.(*testCopy)
+	// fmt.Printf("Store %d -> %d\n", record.Isn, record.Quantity)
+	err := tc.store.Store(record)
+	tc.i++
+	return err
+}
+
+func checkContent(t *testing.T, name, target string, file Fnr) error {
+	connection, err := NewConnection("acj;target=" + target)
+	if !assert.NoError(t, err) {
+		return err
+	}
+	defer connection.Close()
+	readRequest, rerr := connection.CreateFileReadRequest(file)
+	if !assert.NoError(t, rerr) {
+		return rerr
+	}
+	err = readRequest.QueryFields("*")
+	if !assert.NoError(t, err) {
+		return err
+	}
+
+	result, rErr := readRequest.ReadPhysicalSequence()
+	if !assert.NoError(t, rErr) {
+		return rErr
+	}
+	return validateResult(t, name, result)
+}
+
+func copyAdabasFile(t *testing.T, fields, target string, org, dest Fnr) error {
+	connection, err := NewConnection("acj;target=" + target)
+	if !assert.NoError(t, err) {
+		return err
+	}
+	defer connection.Close()
+
+	readRequest, rerr := connection.CreateFileReadRequest(org)
+	if !assert.NoError(t, rerr) {
+		return rerr
+	}
+	err = readRequest.QueryFields(fields)
+	if !assert.NoError(t, err) {
+		return err
+	}
+
+	storeRequest, serr := connection.CreateStoreRequest(dest)
+	if !assert.NoError(t, serr) {
+		return serr
+	}
+	fmt.Println("Read physical read...", target, dest)
+	tc := &testCopy{store: storeRequest, indexField: "AA"}
+	_, err = readRequest.ReadPhysicalSequenceStream(copyStream, tc)
+	if !assert.NoError(t, err) {
+		return err
+	}
+	err = storeRequest.EndTransaction()
+	if !assert.NoError(t, err) {
+		return err
+	}
+	return nil
+}
+
+func TestConnectionStoreCopy(t *testing.T) {
+	initTestLogWithFile(t, "connection_store.log")
+
+	clearAdabasFile(t, adabasModDBIDs, 16)
+	err := copyAdabasFile(t, "*", adabasModDBIDs, 11, 16)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	checkContent(t, "checkTestCopy", adabasModDBIDs, 16)
+}
+
+func TestConnectionStoreRestrictedCopy(t *testing.T) {
+	initTestLogWithFile(t, "connection_store.log")
+
+	clearAdabasFile(t, adabasModDBIDs, 16)
+
+	err := copyAdabasFile(t, "AA,AB,AQ", adabasModDBIDs, 11, 16)
+	if !assert.NoError(t, err) {
+		return
+	}
+	checkContent(t, "checkTestRestrictedCopy", adabasModDBIDs, 16)
 }
