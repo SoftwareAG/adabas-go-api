@@ -169,7 +169,7 @@ func NewAdabasID() *ID {
 	//	C.lnk_get_adabas_id(adabasIDSize, (*C.uchar)(unsafe.Pointer(&AdaID)))
 	curUser, err := user.Current()
 	if err != nil {
-		copy(AdaID.User[:], ([]byte("Unknown"))[:8])
+		copy(AdaID.User[:], ([]byte("Unknown "))[:8])
 	} else {
 		adatypes.Central.Log.Debugf("Create new ID(local) with %s", curUser.Username)
 		copy(AdaID.User[:], ([]byte(curUser.Username + "        "))[:8])
