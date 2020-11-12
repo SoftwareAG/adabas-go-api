@@ -168,10 +168,10 @@ func NewAdabasID() *ID {
 	aid := ID{AdaID: &AdaID, connectionMap: make(map[string]*Status)}
 	//	C.lnk_get_adabas_id(adabasIDSize, (*C.uchar)(unsafe.Pointer(&AdaID)))
 	curUser, err := user.Current()
-	adatypes.Central.Log.Debugf("Create new ID(local) with %s", curUser.Username)
 	if err != nil {
 		copy(AdaID.User[:], ([]byte("Unknown"))[:8])
 	} else {
+		adatypes.Central.Log.Debugf("Create new ID(local) with %s", curUser.Username)
 		copy(AdaID.User[:], ([]byte(curUser.Username + "        "))[:8])
 	}
 	host, err := os.Hostname()
