@@ -289,7 +289,7 @@ func TestStringLBParseBufferVariable(t *testing.T) {
 	assert.NotNil(t, adaValue)
 	option := &BufferOption{}
 	var buffer bytes.Buffer
-	checkInfo := []byte{0xc3, 0xa4, 0xc3, 0xb6, 0xc3, 0xbc, 0xc3, 0x9f}
+	checkInfo := []byte{0xc3, 0xa4, 0xc3, 0xb6, 0xc3, 0xbc, 0xc3, 0x9f, 0x0, 0x0, 0x0, 0x0}
 	buffer.Write([]byte{0xc, 0x0, 0x0, 0x0})
 	buffer.Write(checkInfo)
 	gs := 4100 - buffer.Len()
@@ -305,7 +305,7 @@ func TestStringLBParseBufferVariable(t *testing.T) {
 	assert.Equal(t, TraverseResult(0), res)
 	assert.Equal(t, checkInfo, adaValue.Value())
 	buffer.Reset()
-	v := []byte{0x41, 0x42, 0x43}
+	v := []byte{0x41, 0x42, 0x43, 0x0, 0x0, 0x0, 0x0}
 	buffer.Write([]byte{0x7, 0x0, 0x0, 0x0})
 	buffer.Write(v)
 	gs = 4100 - buffer.Len()
