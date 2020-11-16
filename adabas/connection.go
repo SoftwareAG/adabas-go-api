@@ -479,9 +479,22 @@ func (connection *Connection) CreateMapStoreRequest(mapReference interface{}) (r
 	t := reflect.TypeOf(mapReference)
 	switch t.Kind() {
 	case reflect.Ptr, reflect.Struct:
-		request, err = NewStoreRequest(mapReference, connection.adabasToMap, connection.repository)
-		if err != nil {
-			return
+		if connection.repository == nil {
+			if connection.adabasMap != nil && connection.adabasMap.Name == inmapMapName {
+				fmt.Println("InMap used ", connection.adabasMap.Name)
+				err = connection.adabasMap.defineByInterface(mapReference)
+				if err != nil {
+					return nil, err
+				}
+				request, err = NewStoreRequest(connection.adabasToData, connection.adabasMap)
+			} else {
+				request, err = NewStoreRequest(mapReference, connection.adabasToMap)
+			}
+		} else {
+			request, err = NewStoreRequest(mapReference, connection.adabasToMap, connection.repository)
+			if err != nil {
+				return
+			}
 		}
 		connection.fnr = request.adabasMap.Data.Fnr
 		connection.adabasMap = request.adabasMap

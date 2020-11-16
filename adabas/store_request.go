@@ -42,10 +42,10 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 	if len(param) == 0 {
 		return nil, adatypes.NewGenericError(78)
 	}
-	switch param[0].(type) {
+	switch p := param[0].(type) {
 	case string:
 		if len(param) > 1 {
-			url := param[0].(string)
+			url := p
 			switch param[1].(type) {
 			case *Adabas:
 				ada := param[1].(*Adabas)
@@ -77,6 +77,9 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 					repository: &Repository{DatabaseURL: DatabaseURL{Fnr: Fnr(fnr)}}}}, nil
 			}
 		}
+	case *Adabas:
+		m := param[1].(*Map)
+		return createNewMapPointerStoreRequest(p, m)
 	default:
 		ti := reflect.TypeOf(param[0])
 		adatypes.Central.Log.Debugf("It's a struct %s", ti.Name())
@@ -127,6 +130,23 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 	}
 
 	return nil, adatypes.NewGenericError(79)
+}
+
+// createNewMapPointerReadRequest create a new Request instance
+func createNewMapPointerStoreRequest(adabas *Adabas, adabasMap *Map) (request *StoreRequest, err error) {
+	if adabasMap == nil {
+		err = adatypes.NewGenericError(22, "")
+		return
+	}
+	adatypes.Central.Log.Debugf("Read: Adabas new map reference for %s to %d -> %#v", adabasMap.Name,
+		adabasMap.Data.Fnr, adabas.ID.platform)
+	cloneAdabas := NewClonedAdabas(adabas)
+
+	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
+	request = &StoreRequest{
+		commonRequest: commonRequest{MapName: adabasMap.Name, adabas: cloneAdabas, adabasMap: adabasMap,
+			repository: dataRepository}}
+	return
 }
 
 // NewStoreRequestAdabas creates a new store Request instance using an

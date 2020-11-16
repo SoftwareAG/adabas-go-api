@@ -82,3 +82,42 @@ func TestInlineMap(t *testing.T) {
 	response.DumpData()
 	response.DumpValues()
 }
+
+func TestInlineStoreMap(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "inmap.log")
+
+	clearAdabasFile(t, adabasModDBIDs, 16)
+
+	connection, cerr := NewConnection("acj;inmap=23,16")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapStoreRequest(&EmployeesInMap{})
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = request.StoreFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	e := &EmployeesInMap{FullName: &FullNameInMap{FirstName: "Anton", Name: "Skeleton", MiddleName: "Otto"}, Birth: 1234}
+	rerr := request.StoreData(e)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	err = request.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
+	checkContent(t, "inmapstore", "23", 16)
+}
