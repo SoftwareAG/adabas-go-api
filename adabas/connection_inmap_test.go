@@ -20,6 +20,7 @@
 package adabas
 
 import (
+	"fmt"
 	"runtime"
 	"testing"
 
@@ -96,6 +97,7 @@ func TestInlineStoreMap(t *testing.T) {
 
 	clearAdabasFile(t, adabasModDBIDs, 16)
 
+	fmt.Println("Starting inmap store ....")
 	connection, cerr := NewConnection("acj;inmap=23,16")
 	if !assert.NoError(t, cerr) {
 		return
@@ -106,11 +108,13 @@ func TestInlineStoreMap(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
+	fmt.Println("Storing fields ....")
 	err = request.StoreFields("*")
 	if !assert.NoError(t, err) {
 		return
 	}
 	e := &EmployeesInMap{FullName: &FullNameInMap{FirstName: "Anton", Name: "Skeleton", MiddleName: "Otto"}, Birth: 1234}
+	fmt.Println("Storing record ....")
 	rerr := request.StoreData(e)
 	if !assert.NoError(t, rerr) {
 		return

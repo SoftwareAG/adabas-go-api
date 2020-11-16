@@ -496,7 +496,7 @@ func (adabasMap *Map) Store() error {
 func (adabasMap *Map) defineByInterface(i interface{}) error {
 	dynamic := adatypes.CreateDynamicInterface(i)
 	for index, f := range dynamic.FieldNames {
-		fmt.Println(index, f)
+		adatypes.Central.Log.Debugf("Define field %s: %s", index, f)
 		adabasMap.addFields(index, index)
 	}
 	return nil // fmt.Errorf("Not implemented")

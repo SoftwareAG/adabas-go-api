@@ -21,7 +21,6 @@ package adabas
 
 import (
 	"bytes"
-	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -124,7 +123,7 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 					return nil, err
 				}
 				adabasMap.Data.Fnr = Fnr(fnr)
-				fmt.Println(url, fnr)
+				adatypes.Central.Log.Debugf("inmap %s,%d", url, fnr)
 				adabasToData, err = NewAdabas(url, adabasID)
 				if err != nil {
 					return nil, err
@@ -405,7 +404,7 @@ func (connection *Connection) CreateMapReadRequest(param ...interface{}) (reques
 	case reflect.Ptr, reflect.Struct:
 		if connection.repository == nil {
 			if connection.adabasMap != nil && connection.adabasMap.Name == inmapMapName {
-				fmt.Println("Map used ", connection.adabasMap.Name)
+				adatypes.Central.Log.Debugf("InMap used %s", connection.adabasMap.Name)
 				err = connection.adabasMap.defineByInterface(param[0])
 				if err != nil {
 					return nil, err
@@ -481,7 +480,7 @@ func (connection *Connection) CreateMapStoreRequest(mapReference interface{}) (r
 	case reflect.Ptr, reflect.Struct:
 		if connection.repository == nil {
 			if connection.adabasMap != nil && connection.adabasMap.Name == inmapMapName {
-				fmt.Println("InMap used ", connection.adabasMap.Name)
+				adatypes.Central.Log.Debugf("InMap used: %s", connection.adabasMap.Name)
 				err = connection.adabasMap.defineByInterface(mapReference)
 				if err != nil {
 					return nil, err
