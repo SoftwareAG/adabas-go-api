@@ -125,3 +125,108 @@ func TestInlineStoreMap(t *testing.T) {
 	}
 	checkContent(t, "inmapstore", "23", 16)
 }
+
+type EmployeeInMapPe struct {
+	Name        string         `adabas:"::AE"`
+	FirstName   string         `adabas:"::AD"`
+	Isn         uint64         `adabas:":isn"`
+	ID          string         `adabas:"::AA"`
+	Income      []*InmapIncome `adabas:"::AQ"`
+	AddressLine []string       `adabas:"::AI"`
+	LeaveBooked []*InmapLeave  `adabas:"::AW"`
+}
+
+// Income income
+type InmapIncome struct {
+	Currency string `adabas:"::AR"`
+	Salary   uint32 `adabas:"::AS"`
+}
+
+type InmapLeave struct {
+	LeaveStart uint64 `adabas:"::AX"`
+	LeaveEnd   uint64 `adabas:"::AY"`
+}
+
+func TestInlineStorePE(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "inmap.log")
+
+	clearAdabasFile(t, adabasModDBIDs, 16)
+
+	fmt.Println("Starting inmap store ....")
+	connection, cerr := NewConnection("acj;inmap=23,16")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapStoreRequest(&EmployeeInMapPe{})
+	if !assert.NoError(t, err) {
+		return
+	}
+	fmt.Println("Storing fields ....")
+	err = request.StoreFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	j := &EmployeeInMapPe{Name: "XXX", ID: "fdlldnfg", LeaveBooked: []*InmapLeave{{LeaveStart: 3434, LeaveEnd: 232323}}}
+	fmt.Println("Storing record ....")
+	rerr := request.StoreData(j)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	err = request.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
+	checkContent(t, "inmapstorepe", "23", 16)
+}
+
+func TestInlineStorePEMU(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "inmap.log")
+
+	clearAdabasFile(t, adabasModDBIDs, 16)
+
+	fmt.Println("Starting inmap store ....")
+	connection, cerr := NewConnection("acj;inmap=23,16")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapStoreRequest(&EmployeeInMapPe{})
+	if !assert.NoError(t, err) {
+		return
+	}
+	fmt.Println("Storing fields ....")
+	err = request.StoreFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	j := &EmployeeInMapPe{Name: "XXX", ID: "fdlldnfg", Income: []*InmapIncome{{Currency: "ABB", Salary: 121324}}}
+	fmt.Println("Storing record ....")
+	rerr := request.StoreData(j)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	err = request.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
+	checkContent(t, "inmapstorepemu", "23", 16)
+}

@@ -21,6 +21,7 @@ package adatypes
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"math"
 	"reflect"
@@ -671,20 +672,44 @@ func (value *StructureValue) SetValue(v interface{}) error {
 			if ti.Kind() == reflect.Ptr {
 				ti = ti.Elem()
 			}
-			Central.Log.Infof("Work on group entry %s", ti.Name())
+			jsonV, _ := json.Marshal(v)
+			Central.Log.Infof("Work on group entry %s -> %s", ti.Name(), string(jsonV))
 			for i := 0; i < vi.Len(); i++ {
 				value.initMultipleSubValues(uint32(i), uint32(i+1), 0, false)
-				Central.Log.Debugf("Element len", len(value.Elements))
+				Central.Log.Debugf("%d. Element len is %d", i, len(value.Elements))
 				iv := vi.Index(i)
 				if iv.Kind() == reflect.Ptr {
 					iv = iv.Elem()
 				}
 				ti = reflect.TypeOf(iv.Interface())
-				for _, x := range value.Elements[i].Values {
+				for j, x := range value.Elements[i].Values {
+					Central.Log.Debugf("Try setting element %d/%d -> %s", i, j, x.Type().Name())
+
 					s := iv.FieldByName(x.Type().Name())
-					x.SetValue(s.Interface())
+					if s.IsValid() {
+						err := x.SetValue(s.Interface())
+						if err != nil {
+							Central.Log.Debugf("Error seting value for %s", x.Type().Name())
+							return err
+						}
+					} else {
+						Central.Log.Debugf("Try search tag of number of fields %d", ti.NumField())
+						sn := extractAdabasTagShortName(ti, x.Type().Name())
+						s := iv.FieldByName(sn)
+						if s.IsValid() {
+							err := x.SetValue(s.Interface())
+							if err != nil {
+								Central.Log.Debugf("Error setting value for %s", x.Type().Name())
+								return err
+							}
+							// return nil
+						} else {
+							Central.Log.Errorf("Invalid or missing field for %s", x.Type().Name())
+						}
+					}
 				}
 			}
+			Central.Log.Debugf("PE entries %d", value.NrElements())
 		default:
 		}
 	case reflect.Ptr, reflect.Struct:
@@ -692,9 +717,24 @@ func (value *StructureValue) SetValue(v interface{}) error {
 			Central.Log.Infof("Check struct possible")
 		}
 	default:
+		Central.Log.Infof("Structure set interface, not implement yet %s -> %v", value.Type().Name(), v)
 	}
-	Central.Log.Infof("Structure set interface, not implement yet %s -> %v", value.Type().Name(), v)
 	return nil
+}
+
+func extractAdabasTagShortName(ti reflect.Type, searchName string) string {
+	for fi := 0; fi < ti.NumField(); fi++ {
+		s := ti.FieldByIndex([]int{fi})
+		Central.Log.Debugf("%d Tag =  %s -> %s", fi, s.Tag, s.Name)
+		if x, ok := s.Tag.Lookup("adabas"); ok {
+			Central.Log.Debugf("Adabas tag: %s", x)
+			p := strings.Split(x, ":")
+			if len(p) > 2 && p[2] == searchName {
+				return s.Name
+			}
+		}
+	}
+	return ""
 }
 
 func (value *StructureValue) formatBufferSecondCall(buffer *bytes.Buffer, option *BufferOption) uint32 {

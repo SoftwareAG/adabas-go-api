@@ -100,7 +100,7 @@ func NewRecordIsn(isn adatypes.Isn, isnQuantity uint64, definition *adatypes.Def
 // recordValuesTraverser create buffer used to output values
 func recordValuesTraverser(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	buffer := x.(*bytes.Buffer)
-	buffer.WriteString(fmt.Sprintf(" %s=%#v\n", adaValue.Type().Name(), adaValue.String()))
+	buffer.WriteString(fmt.Sprintf(" %s=%#v %T\n", adaValue.Type().Name(), adaValue.String(), adaValue))
 	return adatypes.Continue, nil
 }
 
