@@ -96,8 +96,13 @@ func (URL *URL) examineURL(url string) error {
 	}
 	if (dbid < 0) || dbid > 65536 {
 		err = adatypes.NewGenericError(70, dbid)
+		return err
 	}
 	URL.Dbid = Dbid(dbid)
+	if (port < 0) || port > 65536 {
+		err = adatypes.NewGenericError(72, port)
+		return err
+	}
 	URL.Port = uint32(port)
 	if URL.Port > 0 {
 		URL.Driver = strings.ToLower(match[2])

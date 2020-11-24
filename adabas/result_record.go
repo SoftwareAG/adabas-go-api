@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -202,6 +203,12 @@ func (record *Record) SetValue(field string, value interface{}) (err error) {
 			if xerr != nil {
 				return xerr
 			}
+			if index1 < 0 || index1 > math.MaxUint32 {
+				return adatypes.NewGenericError(118, index1)
+			}
+			if index2 < 0 || index2 > math.MaxUint32 {
+				return adatypes.NewGenericError(118, index2)
+			}
 			return record.SetValueWithIndex(eField, []uint32{uint32(index1), uint32(index2)}, value)
 		}
 
@@ -213,12 +220,21 @@ func (record *Record) SetValue(field string, value interface{}) (err error) {
 		f := field[e+1:]
 		i = strings.IndexRune(f, '[')
 		if i == -1 {
+			if index < 0 || index > math.MaxUint32 {
+				return adatypes.NewGenericError(118, index)
+			}
 			return record.SetValueWithIndex(eField, []uint32{uint32(index)}, value)
 		}
 		e = strings.IndexRune(f, ']')
 		muindex, merr := strconv.Atoi(f[i+1 : e])
 		if merr != nil {
 			return merr
+		}
+		if index < 0 || index > math.MaxUint32 {
+			return adatypes.NewGenericError(118, index)
+		}
+		if muindex < 0 || muindex > math.MaxUint32 {
+			return adatypes.NewGenericError(118, muindex)
 		}
 
 		return record.SetValueWithIndex(eField, []uint32{uint32(index), uint32(muindex)}, value)
@@ -270,10 +286,16 @@ func extractIndex(name string) []uint32 {
 		if err != nil {
 			return index
 		}
+		if v < 0 || v > math.MaxUint32 {
+			return index
+		}
 		index = append(index, uint32(v))
 		if s[4] != "" {
 			v, err = strconv.Atoi(s[4])
 			if err != nil {
+				return index
+			}
+			if v < 0 || v > math.MaxUint32 {
 				return index
 			}
 			index = append(index, uint32(v))

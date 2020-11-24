@@ -66,6 +66,9 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 				var adabas *Adabas
 				// TODO should not be numeric only, anyway use Connection
 				if dbid, aerr := strconv.Atoi(url); aerr == nil {
+					if dbid < 0 || dbid > 65535 {
+						return nil, adatypes.NewGenericError(70, dbid)
+					}
 					adabas, err = NewAdabas(Dbid(dbid))
 					if err != nil {
 						return nil, err

@@ -55,6 +55,9 @@ func (value *byteValue) Bytes() []byte {
 func (value *byteValue) SetStringValue(stValue string) {
 	iv, err := strconv.Atoi(stValue)
 	if err == nil {
+		if iv < math.MinInt8 || iv > math.MaxInt8 {
+			return
+		}
 		value.value = int8(iv)
 	}
 }
@@ -186,7 +189,7 @@ func (value *ubyteValue) SetValue(v interface{}) error {
 	if err != nil {
 		return err
 	}
-	if val > math.MaxUint8 {
+	if val < 0 || val > math.MaxUint8 {
 		return NewGenericError(117, val)
 	}
 

@@ -23,6 +23,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -88,12 +89,22 @@ func (value *byteArrayValue) SetStringValue(stValue string) {
 			case len(value.value) >= 8:
 				endian().PutUint64(value.value, iv)
 			case len(value.value) >= 4:
+				if iv < 0 || iv > math.MaxUint32 {
+					return
+				}
+
 				endian().PutUint32(value.value, uint32(iv))
 			case len(value.value) >= 2:
+				if iv < 0 || iv > math.MaxUint64 {
+					return
+				}
 				endian().PutUint16(value.value, uint16(iv))
 			case len(value.value) >= 1:
 				x, aerr := strconv.Atoi(stValue)
 				if aerr != nil {
+					return
+				}
+				if x < math.MinInt8 || x > math.MaxInt8 {
 					return
 				}
 				value.value[0] = byte(x)

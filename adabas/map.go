@@ -22,6 +22,7 @@ package adabas
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -399,6 +400,9 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 					if ferr != nil {
 						return ferr
 					}
+					if fs < 0 && fs > math.MaxUint32 {
+						return fmt.Errorf("Fractional %d out of range", fs)
+					}
 					adaType.SetFractional(uint32(fs))
 				case "charset":
 					adatypes.Central.Log.Debugf("Set charset to %s", p[1])
@@ -411,6 +415,9 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 					fs, ferr := strconv.Atoi(p[1])
 					if ferr != nil {
 						return ferr
+					}
+					if fs < 0 && fs > math.MaxUint32 {
+						return fmt.Errorf("Length %d out of range", fs)
 					}
 					adaType.SetFormatLength(uint32(fs))
 				default:

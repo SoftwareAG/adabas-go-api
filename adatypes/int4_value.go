@@ -57,6 +57,9 @@ func (value *uint32Value) Bytes() []byte {
 func (value *uint32Value) SetStringValue(stValue string) {
 	iv, err := strconv.Atoi(stValue)
 	if err == nil {
+		if iv < 0 || iv > math.MaxUint32 {
+			return
+		}
 		value.value = uint32(iv)
 	}
 }
@@ -65,6 +68,9 @@ func (value *uint32Value) SetValue(v interface{}) error {
 	x, err := value.commonUInt64Convert(v)
 	if err != nil {
 		return err
+	}
+	if x < 0 || x > math.MaxUint32 {
+		return NewGenericError(117, x)
 	}
 	value.value = uint32(x)
 	return nil

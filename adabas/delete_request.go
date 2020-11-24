@@ -34,6 +34,10 @@ type DeleteRequest struct {
 func NewDeleteRequest(url string, fnr Fnr) (*DeleteRequest, error) {
 	var adabas *Adabas
 	if dbid, err := strconv.Atoi(url); err == nil {
+		if (dbid < 0) || dbid > 65536 {
+			err = adatypes.NewGenericError(70, dbid)
+			return nil, err
+		}
 		adabas, err = NewAdabas(Dbid(dbid))
 		if err != nil {
 			return nil, err

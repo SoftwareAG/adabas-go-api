@@ -21,6 +21,7 @@ package adabas
 
 import (
 	"bytes"
+	"math"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -163,6 +164,10 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 			if serr != nil {
 				return nil, serr
 			}
+			if fnr < 0 || fnr > 32000 {
+				return nil, adatypes.NewGenericError(116, fnr)
+			}
+
 			adabasToMap, err = NewAdabas(r[0], adabasID)
 			if err != nil {
 				return nil, err
@@ -268,6 +273,9 @@ func parseAuth(id *ID, value string) error {
 			i, err := strconv.Atoi(v)
 			if err != nil {
 				return err
+			}
+			if i < 0 || i > math.MaxInt32 {
+				return adatypes.NewGenericError(119, i)
 			}
 			id.SetID(uint32(i))
 		}

@@ -308,9 +308,6 @@ func parseSystransFileForFields(file *os.File) (maps []*Map, err error) {
 
 		}
 	}
-	// fmt.Printf("Field: %#v\n", curEntry)
-	// fmt.Printf("Adabas Map: %s\n", curEntry.adabasMap.String())
-	// fmt.Printf("Fields: %s\n", curEntry.rootField.String())
 	if err = scanner.Err(); err != nil {
 		return
 	}
