@@ -122,6 +122,9 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 				if err != nil {
 					return nil, err
 				}
+				if fnr < 0 || fnr > 32000 {
+					return nil, adatypes.NewGenericError(116, fnr)
+				}
 				adabasMap.Data.Fnr = Fnr(fnr)
 				adatypes.Central.Log.Debugf("inmap %s,%d", url, fnr)
 				adabasToData, err = NewAdabas(url, adabasID)

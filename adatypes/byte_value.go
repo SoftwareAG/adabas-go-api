@@ -22,6 +22,7 @@ package adatypes
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"strconv"
 )
 
@@ -76,6 +77,9 @@ func (value *byteValue) SetValue(v interface{}) error {
 		ba, err := strconv.Atoi(sv)
 		if err != nil {
 			return err
+		}
+		if ba < math.MinInt8 || ba > math.MaxInt8 {
+			return NewGenericError(117, ba)
 		}
 		value.value = int8(ba)
 		return nil
@@ -157,6 +161,9 @@ func (value *ubyteValue) Bytes() []byte {
 func (value *ubyteValue) SetStringValue(stValue string) {
 	iv, err := strconv.Atoi(stValue)
 	if err == nil {
+		if iv < 0 || iv > math.MaxUint8 {
+			return // NewGenericError(117, val)
+		}
 		value.value = uint8(iv)
 	}
 }
@@ -179,6 +186,10 @@ func (value *ubyteValue) SetValue(v interface{}) error {
 	if err != nil {
 		return err
 	}
+	if val > math.MaxUint8 {
+		return NewGenericError(117, val)
+	}
+
 	value.value = uint8(val)
 	return nil
 }

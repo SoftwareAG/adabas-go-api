@@ -22,6 +22,7 @@ package adatypes
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"strconv"
 )
 
@@ -65,6 +66,9 @@ func (value *lengthValue) SetValue(v interface{}) error {
 	val, err := value.commonUInt64Convert(v)
 	if err != nil {
 		return err
+	}
+	if val > math.MaxUint32 {
+		return NewGenericError(117, val)
 	}
 	value.value = uint32(val)
 	return nil

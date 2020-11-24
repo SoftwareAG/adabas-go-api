@@ -94,6 +94,9 @@ func (URL *URL) examineURL(url string) error {
 		err = adatypes.NewGenericError(72, match[4])
 		return err
 	}
+	if (dbid < 0) || dbid > 65536 {
+		err = adatypes.NewGenericError(70, dbid)
+	}
 	URL.Dbid = Dbid(dbid)
 	URL.Port = uint32(port)
 	if URL.Port > 0 {

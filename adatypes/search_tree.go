@@ -772,9 +772,14 @@ func appendNumericValue(buffer *bytes.Buffer, v string) {
 				buffer.Write(dst[:n])
 			}
 		} else {
-			va, err := strconv.Atoi(v)
+			va, err := strconv.ParseInt(v, 10, 0)
 			if err != nil {
 				Central.Log.Fatal(err)
+			}
+			if va > math.MaxUint32 {
+				Central.Log.Fatal("value is greate then maximum")
+				// TODO add error return
+				return
 			}
 			if va > 0 {
 				bs := make([]byte, 4)
