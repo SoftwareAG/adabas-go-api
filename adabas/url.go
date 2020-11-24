@@ -72,6 +72,9 @@ func (URL *URL) examineURL(url string) error {
 			err = adatypes.NewGenericError(70, url)
 			return err
 		}
+		if (dbid < 0) || dbid > 65536 {
+			return adatypes.NewGenericError(70, url)
+		}
 		URL.Dbid = Dbid(dbid)
 		return nil
 	}
