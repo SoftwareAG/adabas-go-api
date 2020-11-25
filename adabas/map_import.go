@@ -291,6 +291,10 @@ func parseSystransFileForFields(file *os.File) (maps []*Map, err error) {
 								if len(line) > 46 && line[46:47] == "D" {
 									field.options |= optDescriptor
 								}
+								if field.length < 0 && field.length > 65000 {
+									err = fmt.Errorf("Field length wrong")
+									return
+								}
 								if field.length > 0 && field.length < 3 && !field.isGroup() {
 									field.options ^= optNullField
 									field.options |= optFixField

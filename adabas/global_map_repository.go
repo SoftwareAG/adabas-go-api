@@ -21,6 +21,7 @@ package adabas
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -298,9 +299,12 @@ func extractReference(reference string) (url *URL, fnr Fnr, err error) {
 	if err != nil {
 		return
 	}
-	f, ferr := strconv.Atoi(v[1])
+	f, ferr := strconv.ParseUint(v[1], 10, 0)
 	if ferr != nil {
 		err = ferr
+		return
+	}
+	if f < 0 || f > math.MaxUint32 {
 		return
 	}
 	fnr = Fnr(f)
