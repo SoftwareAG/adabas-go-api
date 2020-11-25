@@ -282,7 +282,7 @@ func extractIndex(name string) []uint32 {
 	var index []uint32
 	var re = regexp.MustCompile(`(?m)(\w+(\[(\d+),?(\d+)?\])?)`)
 	for _, s := range re.FindAllStringSubmatch(name, -1) {
-		v, err := strconv.Atoi(s[3])
+		v, err := strconv.ParseInt(s[3], 10, 0)
 		if err != nil {
 			return index
 		}
@@ -291,7 +291,7 @@ func extractIndex(name string) []uint32 {
 		}
 		index = append(index, uint32(v))
 		if s[4] != "" {
-			v, err = strconv.Atoi(s[4])
+			v, err = strconv.ParseInt(s[4], 10, 0)
 			if err != nil {
 				return index
 			}

@@ -69,11 +69,11 @@ func (value *uint32Value) SetValue(v interface{}) error {
 	if err != nil {
 		return err
 	}
-	if x < 0 || x > math.MaxUint32 {
-		return NewGenericError(117, x)
+	if x >= 0 && x <= math.MaxUint32 {
+		value.value = uint32(x)
+		return nil
 	}
-	value.value = uint32(x)
-	return nil
+	return NewGenericError(117, x)
 }
 
 func (value *uint32Value) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
