@@ -148,6 +148,13 @@ func (value *stringValue) SetValue(v interface{}) error {
 			}
 			copy(value.value, val[:length])
 		}
+	case byte:
+		if value.Type().Length() == 0 {
+			value.value = []byte{v.(byte)}
+		} else {
+			value.value = []byte(strings.Repeat(" ", int(value.Type().Length())))
+			value.value[0] = v.(byte)
+		}
 	case reflect.Value:
 		vv := v.(reflect.Value)
 		value.setStringWithSize(vv.String())
