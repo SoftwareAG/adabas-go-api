@@ -245,6 +245,14 @@ func (record *Record) SetValue(field string, value interface{}) (err error) {
 		// TODO check if the field which is not found and stored should be checked
 	} else {
 		adatypes.Central.Log.Debugf("Field %s not found %v", field, adaValue)
+		s, e2 := record.definition.SearchType(field)
+		adatypes.Central.Log.Debugf("Type %v not found %v", s, e2)
+		if e2 == nil {
+			if s.IsSpecialDescriptor() {
+				err = nil
+				return
+			}
+		}
 		err = adatypes.NewGenericError(28, field)
 	}
 	return
