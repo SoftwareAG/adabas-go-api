@@ -88,7 +88,47 @@ func TestConnectionSecure_pwd(t *testing.T) {
 	fmt.Println("Read logigcal data:")
 	var result *Response
 	result, err = request.ReadLogicalWith("AA=[11100315:11100316]")
-	if err != nil {
+	if !assert.NoError(t, err) {
+		fmt.Println("Error read logical data", err)
+		return
+	}
+	result.DumpValues()
+	// Output: XX
+}
+
+func TestConnectionSecureAdaTcp_pwd(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "connection_secure.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("acj;target=25(adatcp://localhost:64025);auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
+	if !assert.NoError(t, err) {
+		return
+	}
+	connection.AddCredential("hkaf", "dummy1")
+
+	request, rerr := connection.CreateFileReadRequest(11)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error create request", rerr)
+		return
+	}
+	err = request.QueryFields("AA,AE")
+
+	if !assert.NoError(t, err) {
+		fmt.Println("Error query fields for request", err)
+		return
+	}
+	request.Limit = 0
+	fmt.Println("Read logigcal data:")
+	var result *Response
+	result, err = request.ReadLogicalWith("AA=[11100315:11100316]")
+	if !assert.NoError(t, err) {
 		fmt.Println("Error read logical data", err)
 		return
 	}
