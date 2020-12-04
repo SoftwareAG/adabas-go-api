@@ -169,16 +169,18 @@ func NewAdabasID() *ID {
 	//	C.lnk_get_adabas_id(adabasIDSize, (*C.uchar)(unsafe.Pointer(&AdaID)))
 	curUser, err := user.Current()
 	if err != nil {
+		adatypes.Central.Log.Infof("Error evaluing user")
 		copy(AdaID.User[:], ([]byte("Unknown "))[:8])
 	} else {
 		adatypes.Central.Log.Debugf("Create new ID(local) with %s", curUser.Username)
 		copy(AdaID.User[:], ([]byte(curUser.Username + "        "))[:8])
 	}
 	host, err := os.Hostname()
-	adatypes.Central.Log.Debugf("Current host is %s", curUser)
 	if err != nil {
+		adatypes.Central.Log.Infof("Error evaluing host")
 		copy(AdaID.Node[:], ([]byte("Unknown"))[:8])
 	} else {
+		adatypes.Central.Log.Debugf("Current host is %s", curUser)
 		copy(AdaID.Node[:], ([]byte(host + "        "))[:8])
 	}
 	id := atomic.AddUint32(&idCounter, 1)

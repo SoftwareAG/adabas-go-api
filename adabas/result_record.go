@@ -244,14 +244,16 @@ func (record *Record) SetValue(field string, value interface{}) (err error) {
 		adatypes.Central.Log.Debugf("Set %s [%T] value err=%v", field, adaValue, err)
 		// TODO check if the field which is not found and stored should be checked
 	} else {
-		adatypes.Central.Log.Debugf("Field %s not found %v", field, adaValue)
+		adatypes.Central.Log.Debugf("Field %s not found %p", field, adaValue)
 		s, e2 := record.definition.SearchType(field)
 		adatypes.Central.Log.Debugf("Type %v not found %v", s, e2)
 		if e2 == nil {
 			if s.IsSpecialDescriptor() {
 				err = nil
+				adatypes.Central.Log.Debugf("Found %v is super descriptor and is ignored", field)
 				return
 			}
+			adatypes.Central.Log.Debugf("Found %v but no super descriptor", field)
 		}
 		err = adatypes.NewGenericError(28, field)
 	}
