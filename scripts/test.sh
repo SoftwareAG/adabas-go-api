@@ -8,5 +8,5 @@ CGO_CFLAGS="-I${ACLDIR}/inc"
 CGO_LDFLAGS="-L${ACLDIR}/lib -ladalnkx -lsagsmp2 -lsagxts3 -ladazbuf"
 export CGO_CFLAGS CGO_LDFLAGS
 
-${GO} test --json -timeout ${TIMEOUT}s -count=1 ${GO_FLAGS} -v $* ./adabas
-${GO} test --json -timeout ${TIMEOUT}s -count=1 ${GO_FLAGS} -v $* ./adatypes
+${GO} test --json -timeout ${TIMEOUT}s -count=1 -tags "release adalnk" -v $* ./adabas
+${GO} test --json -timeout ${TIMEOUT}s -count=1 -tags "release adalnk" -v $* ./adatypes
