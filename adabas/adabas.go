@@ -247,6 +247,7 @@ func (adabas *Adabas) callRemoteAdabas() (err error) {
 	case "adatcp", "adatcps":
 		return adabas.sendTCP()
 	case "":
+		adabas.Acbx.Acbxrsp = AdaSysCe
 		return adatypes.NewGenericError(49)
 	}
 	return adatypes.NewGenericError(1, adabas.URL.Driver)

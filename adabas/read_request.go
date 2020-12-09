@@ -591,7 +591,7 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 			err = prepareErr
 			return
 		}
-		adatypes.Central.Log.Debugf("Prepare done ...")
+		adatypes.Central.Log.Debugf("Read logical prepare done ...")
 		switch {
 		case resultParser != nil:
 			adabasRequest.Parser = resultParser
@@ -884,7 +884,7 @@ func (request *ReadRequest) SearchAndOrderWithParser(search, descriptors string,
 			return
 		}
 
-		adatypes.Central.Log.Debugf("Prepare done ...")
+		adatypes.Central.Log.Debugf("Search prepare done ... request is %#v", adabasRequest)
 		switch {
 		case resultParser != nil:
 			adabasRequest.Parser = resultParser
@@ -1012,9 +1012,12 @@ func traverseFieldMap(adaType adatypes.IAdaType, parentType adatypes.IAdaType, l
 // Fields started with '#' will provide only field data length information.
 func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	if request.dynamic != nil {
+		adatypes.Central.Log.Debugf("Query fields of dynamic interface")
 		if fieldq == "*" {
 			fieldq = request.dynamic.CreateQueryFields()
 		}
+	} else {
+		adatypes.Central.Log.Debugf("Query fields NO dynamic interface")
 	}
 	adatypes.Central.Log.Debugf("Query fields to %s", fieldq)
 	_, err = request.Open()

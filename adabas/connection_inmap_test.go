@@ -81,7 +81,79 @@ func TestInlineMap(t *testing.T) {
 		return
 	}
 	response.DumpData()
+	assert.Len(t, response.Data, 1)
 	response.DumpValues()
+	assert.Len(t, response.Values, 0)
+}
+
+func TestInlineMapSearchAndOrder(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "inmap.log")
+
+	connection, cerr := NewConnection("acj;inmap=23,11")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest(&EmployeesInMap{})
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = request.QueryFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	response, rerr := request.SearchAndOrder("AA=50005600", "AE")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	response.DumpData()
+	assert.Len(t, response.Data, 1)
+	response.DumpValues()
+	assert.Len(t, response.Values, 0)
+}
+
+func TestInlineMapHistogram(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "inmap.log")
+
+	connection, cerr := NewConnection("acj;inmap=23,11")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest(&EmployeesInMap{})
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = request.QueryFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	response, rerr := request.HistogramWith("AA=50005600")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	response.DumpData()
+	assert.Len(t, response.Data, 1)
+	response.DumpValues()
+	assert.Len(t, response.Values, 0)
 }
 
 func TestInlineStoreMap(t *testing.T) {
