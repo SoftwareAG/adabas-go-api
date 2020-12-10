@@ -212,7 +212,7 @@ func createNewMapPointerReadRequest(adabas *Adabas, adabasMap *Map) (request *Re
 	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
 		BlockSize: defaultBlockSize,
 		commonRequest: commonRequest{MapName: adabasMap.Name, adabas: cloneAdabas, adabasMap: adabasMap,
-			repository: dataRepository}}
+			repository: dataRepository, dynamic: adabasMap.dynamic}}
 	return
 }
 

@@ -81,7 +81,12 @@ func TestInlineMap(t *testing.T) {
 		return
 	}
 	response.DumpData()
-	assert.Len(t, response.Data, 1)
+	if assert.Len(t, response.Data, 1) {
+		assert.Equal(t, "30021228", response.Data[0].(*EmployeesInMap).ID)
+		assert.Equal(t, "JAMES               ", response.Data[0].(*EmployeesInMap).FullName.FirstName)
+		assert.Equal(t, "SMEDLEY             ", response.Data[0].(*EmployeesInMap).FullName.Name)
+		assert.Equal(t, "COMP02", response.Data[0].(*EmployeesInMap).Department)
+	}
 	response.DumpValues()
 	assert.Len(t, response.Values, 0)
 }
@@ -116,7 +121,12 @@ func TestInlineMapSearchAndOrder(t *testing.T) {
 		return
 	}
 	response.DumpData()
-	assert.Len(t, response.Data, 1)
+	if assert.Len(t, response.Data, 1) {
+		assert.Equal(t, "50005600", response.Data[0].(*EmployeesInMap).ID)
+		assert.Equal(t, "HUMBERTO            ", response.Data[0].(*EmployeesInMap).FullName.FirstName)
+		assert.Equal(t, "MORENO              ", response.Data[0].(*EmployeesInMap).FullName.Name)
+		assert.Equal(t, "VENT07", response.Data[0].(*EmployeesInMap).Department)
+	}
 	response.DumpValues()
 	assert.Len(t, response.Values, 0)
 }
@@ -146,14 +156,16 @@ func TestInlineMapHistogram(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	response, rerr := request.HistogramWith("AA=50005600")
+	response, rerr := request.HistogramWith("AO=VENT07")
 	if !assert.NoError(t, rerr) {
 		return
 	}
 	response.DumpData()
-	assert.Len(t, response.Data, 1)
+	assert.Len(t, response.Data, 0)
 	response.DumpValues()
-	assert.Len(t, response.Values, 0)
+	if assert.Len(t, response.Values, 1) {
+		assert.Equal(t, uint64(5), response.Values[0].Quantity)
+	}
 }
 
 func TestInlineStoreMap(t *testing.T) {

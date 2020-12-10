@@ -113,6 +113,7 @@ type Map struct {
 	DefaultCharset       string
 	fieldMap             map[string]*MapField
 	redefinitionFieldMap map[string][]*MapField
+	dynamic              *adatypes.DynamicInterface
 }
 
 // NewAdabasMap create new Adabas map instance containing the long name
@@ -501,8 +502,8 @@ func (adabasMap *Map) Store() error {
 
 // define the map definition using interface tags
 func (adabasMap *Map) defineByInterface(i interface{}) error {
-	dynamic := adatypes.CreateDynamicInterface(i)
-	for index, f := range dynamic.FieldNames {
+	adabasMap.dynamic = adatypes.CreateDynamicInterface(i)
+	for index, f := range adabasMap.dynamic.FieldNames {
 		adatypes.Central.Log.Debugf("Define field %s: %s", index, f)
 		adabasMap.addFields(index, index)
 	}
