@@ -33,7 +33,7 @@ V = 0
 Q = $(if $(filter 1,$V),,@)
 M = $(shell printf "\033[34;1m▶\033[0m")
 
-export TIMEOUT GO
+export TIMEOUT GO CGO_CFLAGS CGO_LDFLAGS GO_TAGS
 
 .PHONY: all
 all: prepare generate fmt lint lib $(EXECS) test-build
@@ -92,9 +92,6 @@ $(BIN)/gocov: REPOSITORY=github.com/axw/gocov/...
 
 GOCOVXML = $(BIN)/gocov-xml
 $(BIN)/gocov-xml: REPOSITORY=github.com/AlekSi/gocov-xml
-
-GO2XUNIT = $(BIN)/go2xunit
-$(BIN)/go2xunit: REPOSITORY=github.com/tebeka/go2xunit
 
 GOTESTSUM = $(BIN)/gotestsum
 $(BIN)/gotestsum: REPOSITORY=gotest.tools/gotestsum
