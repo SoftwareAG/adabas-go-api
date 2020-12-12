@@ -136,7 +136,7 @@ test-xml: prepare fmt lint $(TESTOUTPUT) | $(GOTESTSUM) ; $(info $(M) running $(
 	    DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
 	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
-	    $(GOTESTSUM) --junitfile $(TESTOUTPUT)/tests.xml --raw-command -- $(CURDIR)/scripts/test.sh $(ARGS)
+	    $(GOTESTSUM) --junitfile $(TESTOUTPUT)/tests.xml --raw-command -- $(CURDIR)/scripts/test.sh $(ARGS) ||:
 	sh $(CURDIR)/scripts/evaluateQueues.sh
 
 test-adatypes-pprof: prepare | ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
