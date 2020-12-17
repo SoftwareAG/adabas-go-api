@@ -30,6 +30,7 @@ type Cursoring struct {
 	FieldLength   uint32
 	offset        uint32
 	search        string
+	descriptors   string
 	result        *Response
 	request       *ReadRequest
 	adabasRequest *adatypes.Request
@@ -56,7 +57,32 @@ func (request *ReadRequest) ReadLogicalWithCursoring(search string) (cursor *Cur
 	request.cursoring.result = result
 	request.cursoring.search = search
 	request.cursoring.request = request
-	request.queryFunction = request.ReadLogicalWith
+	request.queryFunction = request.readLogicalWith
+	return request.cursoring, nil
+}
+
+// SearchAndOrderWithCursoring this method provide the search of records in Adabas
+// ordered by a descriptor. It provide a cursor. The cursor will read a number of records using Multifetch
+// calls. The number of records is defined in `Limit`.
+// This method initialize the read records using cursoring.
+func (request *ReadRequest) SearchAndOrderWithCursoring(search, descriptors string) (cursor *Cursoring, err error) {
+	request.cursoring = &Cursoring{}
+	if request.Limit == 0 {
+		request.Limit = 10
+	}
+	request.Multifetch = uint32(request.Limit)
+	if request.Multifetch > 20 {
+		request.Multifetch = 20
+	}
+	result, rerr := request.SearchAndOrder(search, descriptors)
+	if rerr != nil {
+		return nil, rerr
+	}
+	request.cursoring.result = result
+	request.cursoring.search = search
+	request.cursoring.descriptors = descriptors
+	request.cursoring.request = request
+	request.queryFunction = request.SearchAndOrder
 	return request.cursoring, nil
 }
 
@@ -79,8 +105,9 @@ func (request *ReadRequest) HistogramByCursoring(descriptor string) (cursor *Cur
 	}
 	request.cursoring.result = result
 	request.cursoring.search = ""
+	request.cursoring.descriptors = descriptor
 	request.cursoring.request = request
-	request.queryFunction = request.HistogramBy
+	request.queryFunction = request.histogramBy
 	return request.cursoring, nil
 }
 
@@ -105,7 +132,7 @@ func (request *ReadRequest) HistogramWithCursoring(search string) (cursor *Curso
 	request.cursoring.result = result
 	request.cursoring.search = search
 	request.cursoring.request = request
-	request.queryFunction = request.HistogramWith
+	request.queryFunction = request.histogramWith
 	return request.cursoring, nil
 }
 
@@ -125,7 +152,7 @@ func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 			return false
 		}
 
-		cursor.result, cursor.err = cursor.request.queryFunction(cursor.search)
+		cursor.result, cursor.err = cursor.request.queryFunction(cursor.search, cursor.descriptors)
 		if cursor.err != nil || cursor.result == nil {
 			adatypes.Central.Log.Debugf("Error query function %v %#v\n", cursor.err, cursor.result)
 			return false

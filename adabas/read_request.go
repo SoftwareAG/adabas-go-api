@@ -52,7 +52,7 @@ type ReadRequest struct {
 	RecordBufferShift uint32
 	fields            map[string]*queryField
 	HoldRecords       adatypes.HoldType
-	queryFunction     func(string) (*Response, error)
+	queryFunction     func(string, string) (*Response, error)
 	cursoring         *Cursoring
 	BlockSize         uint32
 }
@@ -522,6 +522,10 @@ func (request *ReadRequest) ReadLogicalWith(search string) (result *Response, er
 	return
 }
 
+func (request *ReadRequest) readLogicalWith(search, descriptors string) (result *Response, err error) {
+	return request.ReadLogicalWith(search)
+}
+
 // ReadByISN read records with a logical order given by a ISN sequence.
 // The ISN is to be set by the `Start` `ReadRequest` parameter.
 func (request *ReadRequest) ReadByISN() (result *Response, err error) {
@@ -744,6 +748,10 @@ func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, er
 	return
 }
 
+func (request *ReadRequest) histogramBy(search, descriptor string) (result *Response, err error) {
+	return request.HistogramBy(descriptor)
+}
+
 // HistogramWithStream this method read Adabas records in logical order given by the descriptor-based
 // search argument.
 // The access in the database will be reduce to I/O to the ASSO container.
@@ -769,6 +777,10 @@ func (request *ReadRequest) HistogramWith(search string) (result *Response, err 
 		return nil, err
 	}
 	return response, nil
+}
+
+func (request *ReadRequest) histogramWith(search, descriptors string) (result *Response, err error) {
+	return request.HistogramWith(search)
 }
 
 // histogramWithWithParser read a descriptor given by a search criteria

@@ -168,6 +168,47 @@ func TestInlineMapHistogram(t *testing.T) {
 	}
 }
 
+func TestInlineMapHistogramDesc(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "inmap.log")
+
+	connection, cerr := NewConnection("acj;inmap=23,11")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest(&EmployeesInMap{})
+	if !assert.NoError(t, err) {
+		return
+	}
+	request.Limit = 4
+	err = request.QueryFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	response, rerr := request.HistogramBy("AO")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	response.DumpData()
+	assert.Len(t, response.Data, 0)
+	response.DumpValues()
+	if assert.Len(t, response.Values, 4) {
+		assert.Equal(t, uint64(5), response.Values[0].Quantity)
+		assert.Equal(t, "ADMA01", response.Values[0].HashFields["AO"].String())
+		assert.Equal(t, uint64(35), response.Values[3].Quantity)
+		assert.Equal(t, "COMP02", response.Values[3].HashFields["AO"].String())
+	}
+}
+
 func TestInlineStoreMap(t *testing.T) {
 
 	if testing.Short() {

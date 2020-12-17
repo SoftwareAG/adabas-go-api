@@ -88,7 +88,7 @@ func (request *ReadRequest) ReadLobStream(search, field string) (cursor *Cursori
 	request.cursoring.request = request
 	request.cursoring.offset = 0
 	request.cursoring.FieldLength = recLen
-	request.queryFunction = request.ReadFieldStream
+	request.queryFunction = request.readFieldStream
 	return request.cursoring, nil
 }
 
@@ -142,4 +142,8 @@ func (request *ReadRequest) ReadFieldStream(search string) (result *Response, er
 	}
 	request.cursoring.offset = uint32(request.cursoring.adabasRequest.Option.StreamCursor) * 4096
 	return
+}
+
+func (request *ReadRequest) readFieldStream(search, descriptors string) (result *Response, err error) {
+	return request.ReadFieldStream(search)
 }
