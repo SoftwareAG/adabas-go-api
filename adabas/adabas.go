@@ -482,10 +482,11 @@ func (adabas *Adabas) readISN(fileNr Fnr, adabasRequest *adatypes.Request, x int
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("Read ISN %d ... %s dbid=%d fnr=%d", adabasRequest.Isn, l1.command(), adabas.Acbx.Acbxdbid, fileNr)
 	if adabasRequest.HoldRecords.IsHold() {
+		adatypes.Central.Log.Debugf("Read ISN %d ... %s dbid=%d fnr=%d", adabasRequest.Isn, l4.command(), adabas.Acbx.Acbxdbid, fileNr)
 		adabas.Acbx.Acbxcmd = l4.code()
 	} else {
+		adatypes.Central.Log.Debugf("Read ISN %d ... %s dbid=%d fnr=%d", adabasRequest.Isn, l1.command(), adabas.Acbx.Acbxdbid, fileNr)
 		adabas.Acbx.Acbxcmd = l1.code()
 	}
 	adabas.Acbx.resetCop()
@@ -515,10 +516,11 @@ func (adabas *Adabas) ReadISNOrder(fileNr Fnr, adabasRequest *adatypes.Request, 
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("Read ISN order ... %s dbid=%d multifetch=%d", l3.command(), adabas.Acbx.Acbxdbid, adabasRequest.Multifetch)
 	if adabasRequest.HoldRecords.IsHold() {
+		adatypes.Central.Log.Debugf("Read ISN order ... %s dbid=%d multifetch=%d", l4.command(), adabas.Acbx.Acbxdbid, adabasRequest.Multifetch)
 		adabas.Acbx.Acbxcmd = l4.code()
 	} else {
+		adatypes.Central.Log.Debugf("Read ISN order ... %s dbid=%d multifetch=%d", l1.command(), adabas.Acbx.Acbxdbid, adabasRequest.Multifetch)
 		adabas.Acbx.Acbxcmd = l1.code()
 	}
 	adabas.Acbx.resetCop()
@@ -624,7 +626,7 @@ func (adabas *Adabas) SearchLogicalWith(fileNr Fnr, adabasRequest *adatypes.Requ
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("Read logical ... %s dbid=%d", l3.command(), adabas.Acbx.Acbxdbid)
+	adatypes.Central.Log.Debugf("Search logical ... %s dbid=%d hold=%v", s2.command(), adabas.Acbx.Acbxdbid, adabasRequest.HoldRecords.IsHold())
 	adabas.Acbx.Acbxcmd = s2.code()
 	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxcop[0] = 'H'
@@ -664,9 +666,11 @@ func (adabas *Adabas) SearchLogicalWith(fileNr Fnr, adabasRequest *adatypes.Requ
 	}
 
 	if adabasRequest.HoldRecords.IsHold() {
-		adabas.Acbx.Acbxcmd = l1.code()
-	} else {
+		adatypes.Central.Log.Debugf("Read logical after search ... %s dbid=%d", l4.command(), adabas.Acbx.Acbxdbid)
 		adabas.Acbx.Acbxcmd = l4.code()
+	} else {
+		adatypes.Central.Log.Debugf("Read logical after search ... %s dbid=%d", l1.command(), adabas.Acbx.Acbxdbid)
+		adabas.Acbx.Acbxcmd = l1.code()
 	}
 	adabas.Acbx.resetCop()
 	if adabasRequest.Multifetch > 1 {

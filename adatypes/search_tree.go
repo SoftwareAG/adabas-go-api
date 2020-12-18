@@ -647,6 +647,9 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode,
 		if err != nil {
 			return
 		}
+		if lowerLevel.comp == NE {
+			searchInfo.NeedSearch = true
+		}
 		fields[lowerLevel.adaType.Name()] = lowerLevel.adaType.IsSpecialDescriptor() || lowerLevel.adaType.IsOption(FieldOptionDE)
 		node.addValue(lowerLevel)
 	}
@@ -675,7 +678,7 @@ func (searchInfo *SearchInfo) searchFieldValue(searchValue *SearchValue, value s
 		return NewGenericError(0)
 	}
 
-	Central.Log.Debugf("Search value type: %T", searchValue.adaType)
+	Central.Log.Debugf("Search value type: %T (length=%d)", searchValue.adaType, searchValue.adaType.Length())
 	searchValue.value, err = searchValue.adaType.Value()
 	if err != nil {
 		return

@@ -2408,3 +2408,85 @@ func TestConnectionTestSuiteSalary(t *testing.T) {
 		validateResult(t, t.Name(), result)
 	}
 }
+
+func TestConnectionSimpleSearchDesc(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("ada;target=" + adabasStatDBIDs)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	err = connection.Open()
+	if !assert.NoError(t, err) {
+		return
+	}
+	readRequest, rErr := connection.CreateFileReadRequest(11)
+	assert.NoError(t, rErr)
+	readRequest.QueryFields("AE,AP")
+	readRequest.Limit = 0
+	assert.False(t, readRequest.HoldRecords.IsHold())
+	result, rErr := readRequest.ReadLogicalWith(`AP=`)
+	if !assert.NoError(t, rErr) {
+		return
+	}
+
+	// result.DumpData()
+	// result.DumpValues()
+	assert.Equal(t, 0, result.NrRecords())
+
+	result, rErr = readRequest.ReadLogicalWith(`AP!=`)
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	assert.False(t, readRequest.HoldRecords.IsHold())
+
+	// result.DumpData()
+	// result.DumpValues()
+	assert.Equal(t, 1107, result.NrRecords())
+}
+
+func TestConnectionSimpleSearchNoDesc(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("ada;target=" + adabasStatDBIDs)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	err = connection.Open()
+	if !assert.NoError(t, err) {
+		return
+	}
+	readRequest, rErr := connection.CreateFileReadRequest(11)
+	assert.NoError(t, rErr)
+	readRequest.QueryFields("AE,AD")
+	readRequest.Limit = 0
+	assert.False(t, readRequest.HoldRecords.IsHold())
+	result, rErr := readRequest.ReadLogicalWith(`AD=''`)
+	if !assert.NoError(t, rErr) {
+		return
+	}
+
+	// result.DumpData()
+	// result.DumpValues()
+	assert.Equal(t, 368, result.NrRecords())
+
+	result, rErr = readRequest.ReadLogicalWith(`AD!=`)
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	assert.False(t, readRequest.HoldRecords.IsHold())
+
+	// result.DumpData()
+	// result.DumpValues()
+	assert.Equal(t, 740, result.NrRecords())
+}

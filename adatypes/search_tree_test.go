@@ -137,6 +137,44 @@ func TestSearchExtractAndBinding(t *testing.T) {
 
 }
 
+func TestSearchEqualValue(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "SA=''")
+	searchInfo.Definition = tDefinition()
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
+	Central.Log.Debugf(tree.String())
+	assert.Equal(t, "SA,0,A,EQ.", tree.SearchBuffer())
+	assert.False(t, searchInfo.NeedSearch)
+
+}
+
+func TestSearchNotEqualValue(t *testing.T) {
+	err := initLogWithFile("search_tree.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	searchInfo := NewSearchInfo(opensystem, "SA!=''")
+	searchInfo.Definition = tDefinition()
+	tree := &SearchTree{platform: searchInfo.platform}
+	fields := make(map[string]bool)
+	searchInfo.extractBinding(tree, searchInfo.search, fields)
+	Central.Log.Debugf(tree.String())
+	assert.Equal(t, "SA,0,A,NE.", tree.SearchBuffer())
+	assert.True(t, searchInfo.NeedSearch)
+
+}
+
 func TestSearchExtractOrBinding(t *testing.T) {
 	err := initLogWithFile("search_tree.log")
 	if !assert.NoError(t, err) {

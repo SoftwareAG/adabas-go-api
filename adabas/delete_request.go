@@ -137,3 +137,14 @@ func (deleteRequest *DeleteRequest) Delete(isn adatypes.Isn) (err error) {
 		deleteRequest.repository.URL.String(), deleteRequest.repository.Fnr)
 	return deleteRequest.adabas.DeleteIsn(deleteRequest.repository.Fnr, isn)
 }
+
+// DeleteList delete a list of isns
+func (deleteRequest *DeleteRequest) DeleteList(isnList []adatypes.Isn) (err error) {
+	for _, isn := range isnList {
+		err = deleteRequest.Delete(isn)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
