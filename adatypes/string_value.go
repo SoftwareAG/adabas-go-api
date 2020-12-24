@@ -239,7 +239,11 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), partial.from, partial.to))
 			recLength = uint32(partial.to)
 		} else {
-			recLength = value.commonFormatBuffer(buffer, option, uint32(len(value.value)))
+			l := uint32(len(value.value))
+			if l == 0 {
+				l = 1
+			}
+			recLength = value.commonFormatBuffer(buffer, option, l)
 			Central.Log.Debugf("String value format buffer length for %s -> %d", value.Type().ShortName(), recLength)
 			if recLength == 0 {
 				switch value.adatype.Type() {
