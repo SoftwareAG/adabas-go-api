@@ -137,6 +137,7 @@ func (tree *SearchTree) String() string {
 
 // SearchBuffer returns search buffer of the search tree
 func (tree *SearchTree) SearchBuffer() string {
+	Central.Log.Debugf("Create search buffer ...")
 	var buffer bytes.Buffer
 	if tree.node != nil {
 		tree.node.searchBuffer(&buffer)
@@ -144,7 +145,6 @@ func (tree *SearchTree) SearchBuffer() string {
 		tree.value.searchBuffer(&buffer)
 	}
 	buffer.WriteRune('.')
-	Central.Log.Debugf("Search buffer %s", buffer.String())
 	return buffer.String()
 }
 
@@ -382,7 +382,7 @@ func (value *SearchValue) searchBuffer(buffer *bytes.Buffer) {
 	if curLen > 0 {
 		curLen++
 	}
-	value.value.FormatBuffer(buffer, &BufferOption{})
+	value.value.FormatBuffer(buffer, &BufferOption{StoreCall: true})
 	if value.comp != NONE {
 		if value.platform.IsMainframe() && value.comp == EQ {
 			buffer.WriteString(",S," + buffer.String()[curLen:])
