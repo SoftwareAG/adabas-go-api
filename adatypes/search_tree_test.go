@@ -151,7 +151,7 @@ func TestSearchEqualValue(t *testing.T) {
 	fields := make(map[string]bool)
 	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	Central.Log.Debugf(tree.String())
-	assert.Equal(t, "SA,0,A,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "SA,1,A,EQ.", tree.SearchBuffer())
 	assert.False(t, searchInfo.NeedSearch)
 
 }
@@ -170,7 +170,7 @@ func TestSearchNotEqualValue(t *testing.T) {
 	fields := make(map[string]bool)
 	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	Central.Log.Debugf(tree.String())
-	assert.Equal(t, "SA,0,A,NE.", tree.SearchBuffer())
+	assert.Equal(t, "SA,1,A,NE.", tree.SearchBuffer())
 	assert.True(t, searchInfo.NeedSearch)
 
 }

@@ -237,7 +237,7 @@ func TestStringStoreBufferVariable(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	v := []byte{0x9, 0xc3, 0xa4, 0xc3, 0xb6, 0xc3, 0xbc, 0xc3, 0x9f}
+	v := []byte{0xc3, 0xa4, 0xc3, 0xb6, 0xc3, 0xbc, 0xc3, 0x9f}
 	assert.Equal(t, v, helper.Buffer())
 	adaValue.SetValue("ABC")
 	helper = &BufferHelper{}
@@ -245,7 +245,7 @@ func TestStringStoreBufferVariable(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	v = []byte{0x4, 0x41, 0x42, 0x43}
+	v = []byte{0x41, 0x42, 0x43}
 	assert.Equal(t, v, helper.Buffer())
 }
 

@@ -1066,7 +1066,7 @@ func TestDefinitionStoreBigLob(t *testing.T) {
 		fmt.Println("Create request", rerr)
 		return
 	}
-	assert.Equal(t, "U4,4,B,CH,1,A,LB(1,40960),ST,0,A,UB,1,B.", req.FormatBuffer.String())
+	assert.Equal(t, "U4,4,B,CH,1,A,LB(1,40960),ST,1,A,UB,1,B.", req.FormatBuffer.String())
 	Central.Log.Debugf("Test: second call, store")
 	req, rerr = testDefinition.CreateAdabasRequest(true, 1, false)
 	if !assert.NoError(t, rerr) {

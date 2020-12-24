@@ -438,15 +438,19 @@ func NewSearchInfo(platform *Platform, search string) *SearchInfo {
 			endConstants = partStartConstants + strings.IndexByte(searchWithConstants, '\'') + 1
 			searchWithConstants = searchWithConstants[endConstants-startConstants:]
 			partStartConstants = endConstants
-			Central.Log.Debugf("start: %d end:%d rest=%s", startConstants, endConstants, searchWithConstants)
-			Central.Log.Debugf("Check %d", endConstants-startConstants-1)
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("start: %d end:%d rest=%s", startConstants, endConstants, searchWithConstants)
+				Central.Log.Debugf("Check %d", endConstants-startConstants-1)
+			}
 			if searchString[endConstants-1] != '\\' {
 				break
 			}
 		}
-		Central.Log.Debugf("after for: %s", searchWithConstants)
-		Central.Log.Debugf("[%d,%d]",
-			startConstants, endConstants)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("after for: %s", searchWithConstants)
+			Central.Log.Debugf("[%d,%d]",
+				startConstants, endConstants)
+		}
 		searchWithConstants = searchString
 		Central.Log.Debugf("Constant %s [%d,%d]", searchWithConstants[startConstants+1:endConstants],
 			startConstants, endConstants)
@@ -641,8 +645,10 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode,
 		comparer := search[len(field) : len(search)-len(value)]
 		Central.Log.Debugf("Comparer extracted: %s", comparer)
 		lowerLevel.comp = checkComparator(comparer)
-		Central.Log.Debugf("Search value: %#v", lowerLevel)
-		Central.Log.Debugf("Value: %s", value)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Search value: %#v", lowerLevel)
+			Central.Log.Debugf("Value: %s", value)
+		}
 		err = searchInfo.searchFieldValue(lowerLevel, value)
 		if err != nil {
 			return
