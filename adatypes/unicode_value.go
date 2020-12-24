@@ -128,7 +128,7 @@ func (value *unicodeValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOpti
 			len = 4 + PartialLobSize
 		}
 	} else {
-		len = value.commonFormatBuffer(buffer, option)
+		len = value.commonFormatBuffer(buffer, option, value.Type().Length())
 		if len == 0 {
 			switch value.adatype.Type() {
 			case FieldTypeLAUnicode:

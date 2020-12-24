@@ -94,7 +94,7 @@ func (value *byteValue) SetValue(v interface{}) error {
 }
 
 func (value *byteValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
-	return value.commonFormatBuffer(buffer, option)
+	return value.commonFormatBuffer(buffer, option, value.Type().Length())
 }
 
 func (value *byteValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
@@ -198,7 +198,7 @@ func (value *ubyteValue) SetValue(v interface{}) error {
 }
 
 func (value *ubyteValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
-	return value.commonFormatBuffer(buffer, option)
+	return value.commonFormatBuffer(buffer, option, value.Type().Length())
 }
 
 func (value *ubyteValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {

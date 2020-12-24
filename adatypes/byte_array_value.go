@@ -133,7 +133,7 @@ func (value *byteArrayValue) SetValue(v interface{}) error {
 }
 
 func (value *byteArrayValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
-	len := value.commonFormatBuffer(buffer, option)
+	len := value.commonFormatBuffer(buffer, option, value.Type().Length())
 	if len == 0 {
 		len = 126
 	}

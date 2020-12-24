@@ -243,7 +243,7 @@ func convertDate2NatDate(d, m, y int) int64 {
 }
 
 func (value *packedValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
-	len := value.commonFormatBuffer(buffer, option)
+	len := value.commonFormatBuffer(buffer, option, value.Type().Length())
 	if len == 0 {
 		len = 15
 	}

@@ -239,7 +239,7 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), partial.from, partial.to))
 			recLength = uint32(partial.to)
 		} else {
-			recLength = value.commonFormatBuffer(buffer, option)
+			recLength = value.commonFormatBuffer(buffer, option, uint32(len(value.value)))
 			Central.Log.Debugf("String value format buffer length for %s -> %d", value.Type().ShortName(), recLength)
 			if recLength == 0 {
 				switch value.adatype.Type() {
@@ -281,7 +281,7 @@ func (value *stringValue) StoreBuffer(helper *BufferHelper, option *BufferOption
 
 	Central.Log.Debugf("Store string %s at %d len=%d", value.Type().Name(), len(helper.buffer), value.Type().Length())
 	stringLen := len(value.value)
-	Central.Log.Debugf("Current buffer size = %d/%d offset = %d", len(helper.buffer), stringLen, helper.offset)
+	Central.Log.Debugf("Current buffer size = %d/%d offset = %d/%x", len(helper.buffer), stringLen, helper.offset, helper.offset)
 	if stringLen > PartialStoreLobSizeChunks {
 		start := uint32(option.SecondCall) * PartialStoreLobSizeChunks
 		end := start + PartialStoreLobSizeChunks
@@ -301,25 +301,27 @@ func (value *stringValue) StoreBuffer(helper *BufferHelper, option *BufferOption
 		stringLen = 1
 		wrBytes = []byte{' '}
 	}
-	if value.Type().Length() == 0 {
-		Central.Log.Debugf("Add length to buffer ...%d", stringLen)
-		switch value.adatype.Type() {
-		case FieldTypeLAString:
-			helper.PutUInt16(uint16(stringLen) + 2)
-		case FieldTypeLBString:
-			helper.PutUInt32(uint32(stringLen) + 4)
-		default:
-			helper.PutUInt8(uint8(stringLen) + 1)
-		}
-	}
+	// if value.Type().Length() == 0 {
+	// 	Central.Log.Debugf("Add length to buffer ...%d", stringLen)
+	// 	switch value.adatype.Type() {
+	// 	case FieldTypeLAString:
+	// 		helper.PutUInt16(uint16(stringLen) + 2)
+	// 	case FieldTypeLBString:
+	// 		helper.PutUInt32(uint32(stringLen) + 4)
+	// 	default:
+	// 		helper.PutUInt8(uint8(stringLen) + 1)
+	// 	}
+	// }
 	if uint32(len(wrBytes)) < value.Type().Length() {
 		for i := uint32(len(wrBytes)); i < value.Type().Length(); i++ {
 			wrBytes = append(wrBytes, ' ')
 		}
 	}
 	helper.putBytes(wrBytes)
-	Central.Log.Debugf("All data buffer size = %d written %d", len(helper.buffer), len(wrBytes))
-	Central.Log.Debugf("Done store string %s at %d", value.Type().Name(), len(helper.buffer))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("All data buffer size = %d written %d", len(helper.buffer), len(wrBytes))
+		Central.Log.Debugf("Done store string %s at %d", value.Type().Name(), len(helper.buffer))
+	}
 	return nil
 }
 

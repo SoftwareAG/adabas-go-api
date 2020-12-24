@@ -114,7 +114,7 @@ func (value *floatValue) SetValue(v interface{}) error {
 }
 
 func (value *floatValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
-	return value.commonFormatBuffer(buffer, option)
+	return value.commonFormatBuffer(buffer, option, value.Type().Length())
 }
 
 func (value *floatValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {

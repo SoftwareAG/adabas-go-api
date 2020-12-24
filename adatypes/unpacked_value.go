@@ -144,7 +144,7 @@ func (value *unpackedValue) createLength(v int64) uint32 {
 }
 
 func (value *unpackedValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
-	len := value.commonFormatBuffer(buffer, option)
+	len := value.commonFormatBuffer(buffer, option, value.Type().Length())
 	if len == 0 {
 		len = 29
 	}

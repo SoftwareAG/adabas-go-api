@@ -110,7 +110,7 @@ func (value *doubleValue) SetValue(v interface{}) error {
 }
 
 func (value *doubleValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
-	return value.commonFormatBuffer(buffer, option)
+	return value.commonFormatBuffer(buffer, option, value.Type().Length())
 }
 
 func (value *doubleValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {

@@ -122,7 +122,7 @@ func endian() binary.ByteOrder {
 }
 
 // common format buffer generation
-func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
+func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *BufferOption, storeSize uint32) uint32 {
 	if option.SecondCall > 0 {
 		Central.Log.Debugf("Work on %s -> second=%v\n", adavalue.Type().Name(), adavalue.Type().HasFlagSet(FlagOptionSecondCall))
 		if adavalue.Type().HasFlagSet(FlagOptionSecondCall) {
@@ -163,13 +163,15 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 		default:
 		}
 		buffer.WriteString(fmt.Sprintf("%s%s,%d,%s", adavalue.Type().ShortName(),
-			fieldIndex, adavalue.Type().Length(), adavalue.Type().Type().FormatCharacter()))
-		return 0
+			fieldIndex, storeSize, adavalue.Type().Type().FormatCharacter()))
+		return storeSize
 	}
-	Central.Log.Debugf("Common FormatBuffer for %s", adavalue.Type().Name())
-	Central.Log.Debugf("PE flag set=%v Type is MU %v[%v] MU ghost=%v[%v]", adavalue.adatype.HasFlagSet(FlagOptionPE),
-		(adavalue.adatype.Type() == FieldTypeMultiplefield), adavalue.adatype.Type(),
-		adavalue.adatype.HasFlagSet(FlagOptionMUGhost), adavalue.adatype.HasFlagSet(FlagOptionAtomicFB))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Common FormatBuffer for %s", adavalue.Type().Name())
+		Central.Log.Debugf("PE flag set=%v Type is MU %v[%v] MU ghost=%v[%v]", adavalue.adatype.HasFlagSet(FlagOptionPE),
+			(adavalue.adatype.Type() == FieldTypeMultiplefield), adavalue.adatype.Type(),
+			adavalue.adatype.HasFlagSet(FlagOptionMUGhost), adavalue.adatype.HasFlagSet(FlagOptionAtomicFB))
+	}
 	// Skip PE fields with MU fields
 	if adavalue.adatype.HasFlagSet(FlagOptionPE) && adavalue.Type().HasFlagSet(FlagOptionMUGhost) {
 		Central.Log.Debugf("Skip ... because PE and MU ghost")
@@ -190,15 +192,19 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 		buffer.WriteString(",")
 	}
 	buffer.WriteString(adavalue.Type().ShortName())
-	Central.Log.Debugf("FormatBuffer generation: %s has flag PE %v", adavalue.Type().Name(), adavalue.Type().HasFlagSet(FlagOptionPE))
-	Central.Log.Debugf("%s Type %p", adavalue.Type().Name(), adavalue.Type())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("FormatBuffer generation: %s has flag PE %v", adavalue.Type().Name(), adavalue.Type().HasFlagSet(FlagOptionPE))
+		Central.Log.Debugf("%s Type %p", adavalue.Type().Name(), adavalue.Type())
+	}
 	both := false
 	if adavalue.Type().HasFlagSet(FlagOptionPE) {
 		buffer.WriteString("1-N")
 		both = true
 	}
-	Central.Log.Debugf("%s has flag MU %v MU ghost %v period %v", adavalue.Type().Name(), adavalue.Type().HasFlagSet(FlagOptionAtomicFB),
-		adavalue.Type().HasFlagSet(FlagOptionMUGhost), adavalue.Type().HasFlagSet(FlagOptionPE))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("%s has flag MU %v MU ghost %v period %v", adavalue.Type().Name(), adavalue.Type().HasFlagSet(FlagOptionAtomicFB),
+			adavalue.Type().HasFlagSet(FlagOptionMUGhost), adavalue.Type().HasFlagSet(FlagOptionPE))
+	}
 	if adavalue.adatype.Type() == FieldTypeMultiplefield {
 		if both {
 			buffer.WriteString("(")
