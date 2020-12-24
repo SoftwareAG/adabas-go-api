@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"time"
 	"unsafe"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -414,6 +415,7 @@ func (connection *AdaTCP) Disconnect() (err error) {
 
 // SendData send data to remote TCP/IP Adabas nucleus
 func (connection *AdaTCP) SendData(buffer bytes.Buffer, nrAbdBuffers uint32) (err error) {
+	defer TimeTrack(time.Now(), "ADATCP Send data", nil)
 	header := NewAdatcpHeader(DataRequest)
 	dataHeader := newAdatcpDataHeader(adabasRequest)
 	dataHeader.NumberOfBuffers = nrAbdBuffers
@@ -455,6 +457,7 @@ func generateError(errorCode uint32) error {
 
 // ReceiveData receive data from remote TCP/IP Adabas nucleus
 func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32, err error) {
+	defer TimeTrack(time.Now(), "ADATCP Receive data", nil)
 	adatypes.Central.Log.Debugf("Receive data .... size=%d", buffer.Len())
 
 	header := NewAdatcpHeader(DataReply)
@@ -511,10 +514,24 @@ func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32
 	if header.Length > uint32(n) {
 		dataBytes := make([]byte, int(header.Length)-n)
 		adatypes.Central.Log.Debugf("Create buffer of size %d to read rest of missingdata", len(dataBytes))
-		n, err = io.ReadFull(connection.connection, dataBytes)
-		// _, err = connection.connection.Read(dataBytes)
+		// n, err = io.ReadFull(connection.connection, dataBytes)
+		// if err != nil {
+		// 	return
+		// }
+		n, err = connection.connection.Read(dataBytes)
 		if err != nil {
 			return
+		}
+		if n != len(dataBytes) {
+			b := make([]byte, len(dataBytes)-n)
+			for n != len(dataBytes) {
+				n1, nerr := connection.connection.Read(b)
+				if nerr != nil {
+					return
+				}
+				copy(dataBytes[n:], b[:n1])
+				n += n1
+			}
 		}
 		adatypes.Central.Log.Debugf("Extra read receive %d number of bytes", n)
 		buffer.Write(dataBytes)

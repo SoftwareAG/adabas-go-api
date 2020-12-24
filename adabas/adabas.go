@@ -1223,6 +1223,10 @@ func (adabas *Adabas) multifetchBuffer() (helper *adatypes.BufferHelper, err err
 //    defer TimeTrack(time.Now(), "CallAdabas "+string(adabas.Acbx.Acbxcmd[:]))
 func TimeTrack(start time.Time, name string, acbx *Acbx) {
 	elapsed := time.Since(start)
-
-	adatypes.Central.Log.Infof("%s took %s, %s rsp=%d subrsp=%d add2=%#v", name, elapsed, string(acbx.Acbxcmd[:]), acbx.Acbxrsp, acbx.Acbxerrc, []byte(acbx.Acbxadd2[:]))
+	if acbx == nil {
+		adatypes.Central.Log.Debugf("%s took %s", name, elapsed)
+		return
+	}
+	adatypes.Central.Log.Debugf("%s took %s, %s file=%d rsp=%d subrsp=%d add2=%#v", name, elapsed,
+		string(acbx.Acbxcmd[:]), acbx.Acbxfnr, acbx.Acbxrsp, acbx.Acbxerrc, []byte(acbx.Acbxadd2[:]))
 }
