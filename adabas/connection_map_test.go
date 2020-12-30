@@ -183,6 +183,88 @@ func TestConnectionRemoteMap(t *testing.T) {
 	}
 }
 
+func TestConnectionRemoteMapStat(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	err := initLogWithFile("connection_map.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+
+	adatypes.InitDefinitionCache()
+
+	statistics = true
+	connection, cerr := NewConnection("acj;map;config=[177(adatcp://" + adabasTCPLocation() + "),4];auth=NONE,user=TCRemMap")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+
+	for i := 0; i < 3; i++ {
+		request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+		if !assert.NoError(t, rerr) {
+			fmt.Println("Error create request", rerr)
+			return
+		}
+		err := request.QueryFields("NAME,FIRST-NAME,PERSONNEL-ID")
+		if !assert.NoError(t, err) {
+			return
+		}
+		request.Limit = 2
+		var result *Response
+		result, err = request.ReadLogicalBy("NAME")
+		if !assert.NoError(t, err) {
+			return
+		}
+		if !assert.Equal(t, 2, len(result.Values)) {
+			return
+		}
+	}
+
+	assert.Equal(t, "", connection.adabasToData.ID.user)
+	assert.Equal(t, "TCRemMap", string(connection.adabasToData.ID.AdaID.User[:]))
+
+	adabas := connection.adabasToData
+	if assert.NotNil(t, adabas.statistics) {
+		dumpAdabasStats(adabas.statistics)
+		assert.Equal(t, adabas.statistics, connection.adabasToMap.statistics)
+		assert.Equal(t, adabas.transactions, connection.adabasToMap.transactions)
+		s := adabas.statistics.statMap["OP"]
+		if assert.NotNil(t, s) {
+			// Should be only one OP
+			assert.Equal(t, uint64(1), s.calls)
+		}
+		s = adabas.statistics.statMap["LF"]
+		if assert.NotNil(t, s) {
+			// Should be LF of Map file and Data file
+			assert.Equal(t, uint64(2), s.calls)
+		}
+		assert.Equal(t, uint64(1), adabas.statistics.remote)
+		assert.Equal(t, uint64(8), adabas.statistics.remoteSend)
+		assert.Equal(t, uint64(8), adabas.statistics.remoteReceive)
+		assert.Equal(t, uint64(0), adabas.statistics.remoteClosed)
+	}
+
+	statistics = true
+}
+
+func dumpAdabasStats(stat *Statistics) {
+	fmt.Println("Number of calls:", stat.calls)
+	adatypes.Central.Log.Infof("Adabas statistics:")
+	for o, s := range stat.statMap {
+		fmt.Printf("%s[%s] = %v (%d)\n", s.code, o, s.timeNeeded, s.calls)
+	}
+	fmt.Printf("Remote opened  : %d\n", stat.remote)
+	fmt.Printf("Remote closed  : %d\n", stat.remoteClosed)
+	fmt.Printf("Remote send    : %d\n", stat.remoteSend)
+	fmt.Printf("Remote received: %d\n", stat.remoteReceive)
+
+}
+
 func TestConnectionMap(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")

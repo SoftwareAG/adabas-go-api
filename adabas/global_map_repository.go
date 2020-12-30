@@ -245,13 +245,14 @@ func readAllGlobalMapNames(ada *Adabas) (maps []string, err error) {
 }
 
 // SearchMapRepository searchs in global-defined Adabas Map repositories for a specific map name
-func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, repository *Repository, err error) {
+func SearchMapRepository(adabasID *ID, mapName string) (adabasMap *Map, repository *Repository, err error) {
 	// Check if hash is defined
 	if r, ok := mapHash[mapName]; ok {
 		if r.online {
 			adatypes.Central.Log.Debugf("Found in map hash, query map...")
-			adabas.SetURL(&r.DatabaseURL.URL)
-			adabasMap, err = r.SearchMap(adabas, mapName)
+			ada := adabasID.getAdabas(&r.DatabaseURL.URL)
+			// adabas.SetURL(&r.DatabaseURL.URL)
+			adabasMap, err = r.SearchMap(ada, mapName)
 			if err == nil {
 				repository = r
 				return
@@ -263,12 +264,11 @@ func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, reposi
 	// Not in hash search repository
 	for _, mr := range repositories {
 		if mr.online {
+			ada := adabasID.getAdabas(&mr.DatabaseURL.URL)
 			adatypes.Central.Log.Debugf("Search in repository using Adabas %s for %s,%03d",
-				adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr)
+				ada.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr)
 			var serr error
-			adabas.SetURL(&mr.DatabaseURL.URL)
-			//adabas.SetDbid(mr.DatabaseURL.URL.Dbid)
-			adabasMap, serr = mr.SearchMapInRepository(adabas, mapName)
+			adabasMap, serr = mr.SearchMapInRepository(ada, mapName)
 			if serr != nil {
 				adatypes.Central.Log.Debugf("Continue in next repository because of error %v\n", serr)
 			} else {
@@ -279,7 +279,7 @@ func SearchMapRepository(adabas *Adabas, mapName string) (adabasMap *Map, reposi
 					return adabasMap, mr, nil
 				}
 			}
-			adatypes.Central.Log.Debugf("Not found in repository using Adabas %s/%03d", adabas.URL.String(), mr.Fnr)
+			adatypes.Central.Log.Debugf("Not found in repository using Adabas %s/%03d", ada.URL.String(), mr.Fnr)
 		} else {
 			adatypes.Central.Log.Debugf("Repository offline: %s-%d", mr.DatabaseURL.URL.String(), mr.DatabaseURL.Fnr)
 		}

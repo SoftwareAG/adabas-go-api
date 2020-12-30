@@ -244,7 +244,7 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("Read map repoistory searching %s", mapName)
+	adatypes.Central.Log.Debugf("Read map repository searching %s", mapName)
 	if m, ok := repository.GetMapFromCache(mapName); ok {
 		// adabasMap, err = repository.readAdabasMap(adabas, mapName)
 		// if err != nil {
@@ -256,9 +256,11 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 	} else {
 		return nil, adatypes.NewGenericError(82, mapName)
 	}
-	adatypes.Central.Log.Debugf("Got map adabas to %s/%d", adabasMap.Repository.URL.String(), adabasMap.Repository.Fnr)
-	adatypes.Central.Log.Debugf("with data adabas to %s/%d", adabasMap.Data.URL.String(), adabasMap.Data.Fnr)
-	adatypes.Central.Log.Debugf("out of %s/%d", repository.URL.String(), repository.Fnr)
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Got map adabas to %s/%d", adabasMap.Repository.URL.String(), adabasMap.Repository.Fnr)
+		adatypes.Central.Log.Debugf("with data adabas to %s/%d", adabasMap.Data.URL.String(), adabasMap.Data.Fnr)
+		adatypes.Central.Log.Debugf("out of %s/%d", repository.URL.String(), repository.Fnr)
+	}
 	return
 }
 

@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -49,6 +50,24 @@ type transactions struct {
 	connection interface{}
 }
 
+// CallStatistic statistic of one Adabas call
+type CallStatistic struct {
+	code       string
+	calls      uint64
+	timeNeeded time.Duration
+}
+
+// Statistics Adabas call statistic of all calls with counting remote calls
+type Statistics struct {
+	calls         uint64
+	success       uint64
+	statMap       map[string]*CallStatistic
+	remote        uint64
+	remoteClosed  uint64
+	remoteSend    uint64
+	remoteReceive uint64
+}
+
 // Adabas is an main Adabas structure containing all call specific parameters
 type Adabas struct {
 	URL           *URL
@@ -57,6 +76,16 @@ type Adabas struct {
 	Acbx          *Acbx
 	AdabasBuffers []*Buffer
 	transactions  *transactions
+	statistics    *Statistics
+}
+
+var statistics = false
+
+func init() {
+	s := os.Getenv("ADASTATISTICS")
+	if strings.ToUpper(s) == "YES" {
+		statistics = true
+	}
 }
 
 func (option adabasOption) Bit() uint32 {
@@ -73,6 +102,7 @@ func NewClonedAdabas(clone *Adabas) *Adabas {
 		Acbx:         acbx,
 		URL:          clone.URL,
 		transactions: clone.transactions,
+		statistics:   clone.statistics,
 	}
 }
 
@@ -116,9 +146,30 @@ func NewAdabas(p ...interface{}) (ada *Adabas, err error) {
 		URL:          url,
 		Acbx:         acbx,
 		transactions: &transactions{},
+		statistics:   newStatistics(),
 	}
+	adaID.setAdabas(ada)
 	return ada, nil
 
+}
+
+func newStatistics() *Statistics {
+	if statistics {
+		return &Statistics{statMap: make(map[string]*CallStatistic)}
+	}
+	return nil
+}
+
+// DumpStatistics dump statistics of service
+func (adabas *Adabas) DumpStatistics() {
+	adatypes.Central.Log.Infof("Adabas statistics:")
+	for o, s := range adabas.statistics.statMap {
+		adatypes.Central.Log.Infof("%s[%s] = %v (%d)", s.code, o, s.timeNeeded, s.calls)
+	}
+	adatypes.Central.Log.Infof("Remote opened  : %d", adabas.statistics.remote)
+	adatypes.Central.Log.Infof("Remote closed  : %d", adabas.statistics.remoteClosed)
+	adatypes.Central.Log.Infof("Remote send    : %d", adabas.statistics.remoteSend)
+	adatypes.Central.Log.Infof("Remote received: %d", adabas.statistics.remoteReceive)
 }
 
 // Open opens a session to the database
@@ -262,6 +313,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 
 		tcpConn = NewAdaTCP(adabas.URL, Endian(), adabas.ID.AdaID.User,
 			adabas.ID.AdaID.Node, adabas.ID.AdaID.Pid, adabas.ID.AdaID.Timestamp)
+		tcpConn.stats = adabas.statistics
 		err = tcpConn.Connect()
 		if err != nil {
 			adabas.Acbx.Acbxrsp = AdaSysCe
@@ -1069,7 +1121,7 @@ func (adabas *Adabas) EndTransaction() (err error) {
 
 // WriteBuffer write adabas call to buffer
 func (adabas *Adabas) WriteBuffer(buffer *bytes.Buffer, order binary.ByteOrder, serverMode bool) (err error) {
-	defer TimeTrack(time.Now(), "Adabas Write buffer", adabas.Acbx)
+	defer TimeTrack(time.Now(), "Adabas Write buffer", adabas)
 	// xx fmt.Sprintf("Adabas Write buffer %s rsp=%d subrsp=%d",
 	// 	string(adabas.Acbx.Acbxcmd[:]), adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxerrc))
 	adatypes.Central.Log.Debugf("Adabas write buffer, add  ACBX: ")
@@ -1127,7 +1179,7 @@ func (adabas *Adabas) WriteBuffer(buffer *bytes.Buffer, order binary.ByteOrder, 
 
 // ReadBuffer read buffer and parse call
 func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, nCalBuf uint32, serverMode bool) (err error) {
-	defer TimeTrack(time.Now(), "Adabas Read buffer", adabas.Acbx)
+	defer TimeTrack(time.Now(), "Adabas Read buffer", adabas)
 	if buffer == nil {
 		err = adatypes.NewGenericError(4)
 		return
@@ -1221,11 +1273,27 @@ func (adabas *Adabas) multifetchBuffer() (helper *adatypes.BufferHelper, err err
 
 // TimeTrack defer function measure the difference end log it to log management, like
 //    defer TimeTrack(time.Now(), "CallAdabas "+string(adabas.Acbx.Acbxcmd[:]))
-func TimeTrack(start time.Time, name string, acbx *Acbx) {
+func TimeTrack(start time.Time, name string, adabas *Adabas) {
 	elapsed := time.Since(start)
-	if acbx == nil {
+	if adabas == nil {
 		adatypes.Central.Log.Debugf("%s took %s", name, elapsed)
 		return
+	}
+	acbx := adabas.Acbx
+	if adabas.statistics != nil && name == "Call adabas" {
+		adabas.statistics.calls++
+		if acbx.Acbxrsp == 0 {
+			adabas.statistics.success++
+		}
+		if s, ok := adabas.statistics.statMap[string(acbx.Acbxcmd[:])]; ok {
+			s.timeNeeded = s.timeNeeded + elapsed
+			s.calls++
+			adatypes.Central.Log.Debugf("%s: Call statistics %s took %d", name, s.code, s.calls)
+		} else {
+			sNew := &CallStatistic{timeNeeded: elapsed, calls: 1, code: string(acbx.Acbxcmd[:])}
+			adabas.statistics.statMap[sNew.code] = sNew
+			adatypes.Central.Log.Debugf("%s: Call statistics %s took %d", name, sNew.code, sNew.calls)
+		}
 	}
 	adatypes.Central.Log.Debugf("%s took %s, %s file=%d rsp=%d subrsp=%d add2=%#v", name, elapsed,
 		string(acbx.Acbxcmd[:]), acbx.Acbxfnr, acbx.Acbxrsp, acbx.Acbxerrc, []byte(acbx.Acbxadd2[:]))

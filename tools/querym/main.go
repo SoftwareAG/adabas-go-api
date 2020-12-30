@@ -306,8 +306,8 @@ func main() {
 		}
 	}
 	if showMap {
-		ada, _ := adabas.NewAdabas(1)
-		m, _, merr := adabas.SearchMapRepository(ada, args[0])
+		id := adabas.NewAdabasID()
+		m, _, merr := adabas.SearchMapRepository(id, args[0])
 		if merr != nil {
 			fmt.Println("Searched map not found", merr)
 			return

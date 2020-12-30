@@ -163,6 +163,7 @@ type Status struct {
 	open             bool
 	openTransactions uint32
 	platform         *adatypes.Platform
+	adabas           *Adabas
 }
 
 // ID Adabas Id
@@ -237,6 +238,23 @@ func (adaid *ID) changeOpenState(url string, open bool) {
 	}
 }
 
+func (adaid *ID) getAdabas(url *URL) *Adabas {
+	s := adaid.status(url.String())
+	if s.adabas == nil {
+		NewAdabas(url, adaid)
+	}
+	return s.adabas
+}
+
+func (adaid *ID) setAdabas(a *Adabas) {
+	s := adaid.status(a.URL.String())
+	if s.adabas == nil {
+		s.adabas = a
+	} else {
+		a.transactions = s.adabas.transactions
+	}
+}
+
 func (adaid *ID) isOpen(url string) bool {
 	s := adaid.status(url)
 	if s == nil {
@@ -269,4 +287,11 @@ func (adaid *ID) clearTransactions(url string) {
 		return
 	}
 	s.openTransactions = 0
+}
+
+// Close close all open adabas instance for this ID
+func (adaid *ID) Close() {
+	for _, s := range adaid.connectionMap {
+		s.adabas.Close()
+	}
 }

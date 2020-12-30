@@ -179,7 +179,7 @@ func TestStoreFailMapFieldsCheck(t *testing.T) {
 	AddGlobalMapRepository(ada.URL, 250)
 	defer DelGlobalMapRepository(ada.URL, 250)
 	adatypes.Central.Log.Debugf("Search map in repository")
-	adabasMap, _, serr := SearchMapRepository(ada, massLoadEmployees)
+	adabasMap, _, serr := SearchMapRepository(ada.ID, massLoadEmployees)
 	if !assert.NoError(t, serr) {
 		return
 	}
@@ -227,7 +227,7 @@ func TestStoreMapFields(t *testing.T) {
 		return
 	}
 	fmt.Println("Store map request")
-	adabasMap, _, serr := SearchMapRepository(ada, massLoadSystransStore)
+	adabasMap, _, serr := SearchMapRepository(ada.ID, massLoadSystransStore)
 	if !assert.NoError(t, serr) {
 		return
 	}
@@ -299,7 +299,7 @@ func clearAdabasFile(t *testing.T, target string, fnr Fnr) error {
 
 func clearMap(t *testing.T, adabas *Adabas, mapName string) error {
 	fmt.Println("Clear map", mapName)
-	adabasMap, _, err := SearchMapRepository(adabas, mapName)
+	adabasMap, _, err := SearchMapRepository(adabas.ID, mapName)
 	if !assert.NoError(t, err) {
 		return err
 	}
@@ -362,7 +362,7 @@ func TestStoreMapFieldsPeriods(t *testing.T) {
 		return
 	}
 	adatypes.Central.Log.Debugf("Search map after clear map")
-	adabasMap, _, serr := SearchMapRepository(ada, massLoadSystransStore)
+	adabasMap, _, serr := SearchMapRepository(ada.ID, massLoadSystransStore)
 	if !assert.NoError(t, serr) {
 		return
 	}
@@ -425,7 +425,7 @@ func TestStoreUpdateMapField(t *testing.T) {
 		return
 	}
 	adatypes.Central.Log.Debugf("Search map after clear map")
-	adabasMap, _, serr := SearchMapRepository(ada, massLoadSystransStore)
+	adabasMap, _, serr := SearchMapRepository(ada.ID, massLoadSystransStore)
 	if !assert.NoError(t, serr) {
 		return
 	}
@@ -547,7 +547,7 @@ func TestStoreWithMapLobFile(t *testing.T) {
 	defer DelGlobalMapRepository(ada, 4)
 	DumpGlobalMapRepositories()
 
-	adabasMap, _, serr := SearchMapRepository(ada, "LOBEXAMPLE")
+	adabasMap, _, serr := SearchMapRepository(ada.ID, "LOBEXAMPLE")
 	if !assert.NoError(t, serr) {
 		return
 	}
@@ -805,7 +805,7 @@ func TestStoreEndTransaction(t *testing.T) {
 		return
 	}
 	adatypes.Central.Log.Debugf("Search map after clear map")
-	adabasMap, _, serr := SearchMapRepository(ada, massLoadSystransStore)
+	adabasMap, _, serr := SearchMapRepository(ada.ID, massLoadSystransStore)
 	if !assert.NoError(t, serr) {
 		return
 	}
@@ -872,7 +872,7 @@ func TestStoreCloseWithBackout(t *testing.T) {
 		return
 	}
 	adatypes.Central.Log.Debugf("Search map after clear map")
-	adabasMap, _, serr := SearchMapRepository(ada, massLoadSystransStore)
+	adabasMap, _, serr := SearchMapRepository(ada.ID, massLoadSystransStore)
 	if !assert.NoError(t, serr) {
 		return
 	}
@@ -939,7 +939,7 @@ func TestStoreBackout(t *testing.T) {
 		return
 	}
 	adatypes.Central.Log.Debugf("Search map after clear map")
-	adabasMap, _, serr := SearchMapRepository(ada, massLoadSystransStore)
+	adabasMap, _, serr := SearchMapRepository(ada.ID, massLoadSystransStore)
 	if !assert.NoError(t, serr) {
 		return
 	}

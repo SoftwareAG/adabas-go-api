@@ -140,7 +140,7 @@ func loadFile(fileName string, ada *adabas.Adabas) error {
 	thumbnail := buf.Bytes()
 	fmt.Println("Thumbnail data size", len(thumbnail))
 
-	adabasMap, _, serr := adabas.SearchMapRepository(ada, "LOBEXAMPLE")
+	adabasMap, _, serr := adabas.SearchMapRepository(ada.ID, "LOBEXAMPLE")
 	if serr != nil {
 		fmt.Println("Search map repository", serr)
 		return serr

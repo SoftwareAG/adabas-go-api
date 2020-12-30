@@ -98,7 +98,7 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 			var request *StoreRequest
 			ada := param[1].(*Adabas)
 			if len(param) == 2 {
-				adabasMap, _, err := SearchMapRepository(ada, mapName)
+				adabasMap, _, err := SearchMapRepository(ada.ID, mapName)
 				if err != nil {
 					return nil, err
 				}
@@ -111,7 +111,7 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 				var adabasMap *Map
 				var err error
 				if rep == nil {
-					adabasMap, _, err = SearchMapRepository(ada, mapName)
+					adabasMap, _, err = SearchMapRepository(ada.ID, mapName)
 					if err != nil {
 						return nil, err
 					}

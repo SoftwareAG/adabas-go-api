@@ -97,10 +97,11 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 		case strings.HasPrefix(p, "target="):
 			target := strings.Split(parts[1], "=")
 			adatypes.Central.Log.Debugf("Connection to target : %s", target[1])
-			adabasToData, err = NewAdabas(target[1], adabasID)
+			url, err := NewURL(target[1])
 			if err != nil {
 				return nil, err
 			}
+			adabasToData = adabasID.getAdabas(url)
 		case strings.HasPrefix(p, "map"):
 			if strings.Contains(p, "=") {
 				maps := strings.Split(parts[1], "=")
@@ -128,10 +129,11 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 				}
 				adabasMap.Data.Fnr = Fnr(fnr)
 				adatypes.Central.Log.Debugf("inmap %s,%d", url, fnr)
-				adabasToData, err = NewAdabas(url, adabasID)
-				if err != nil {
-					return nil, err
-				}
+				adabasToData = adabasID.getAdabas(url)
+				// NewAdabas(url, adabasID)
+				// if err != nil {
+				// 	return nil, err
+				// }
 			}
 		case strings.HasPrefix(p, "config="):
 			e := strings.Index(p, "]")
@@ -167,16 +169,18 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 			if fnr < 0 || fnr > 32000 {
 				return nil, adatypes.NewGenericError(116, fnr)
 			}
-
-			adabasToMap, err = NewAdabas(r[0], adabasID)
+			url, err := NewURL(r[0])
+			//NewAdabas(r[0], adabasID)
 			if err != nil {
 				return nil, err
 			}
+			adabasToMap = adabasID.getAdabas(url)
 			adatypes.Central.Log.Debugf("Created adabas reference")
 			repository = NewMapRepository(adabasToMap.URL, Fnr(fnr))
 			adatypes.Central.Log.Debugf("Created repository")
 		}
 	} else {
+		// TODO check id
 		if adabasToData == nil {
 			adabasToData, _ = NewAdabas(1, adabasID)
 		}
@@ -201,11 +205,7 @@ func (connection *Connection) searchRepository(adabasID *ID, repository *Reposit
 	mapName string) (err error) {
 	if repository == nil {
 		adatypes.Central.Log.Debugf("Search in global repositories")
-		connection.adabasToMap, err = NewAdabas("1", adabasID)
-		if err != nil {
-			return err
-		}
-		connection.adabasMap, _, err = SearchMapRepository(connection.adabasToMap, mapName)
+		connection.adabasMap, _, err = SearchMapRepository(adabasID, mapName)
 		if err != nil {
 			adatypes.Central.Log.Debugf("Search in global repositories fail: %v", err)
 			return err
@@ -215,7 +215,8 @@ func (connection *Connection) searchRepository(adabasID *ID, repository *Reposit
 		}
 	} else {
 		adatypes.Central.Log.Debugf("Search in given repository %v: %s", repository, repository.DatabaseURL.URL.String())
-		connection.adabasToMap, err = NewAdabas(repository.DatabaseURL.URL.String(), adabasID)
+		connection.adabasToMap = adabasID.getAdabas(&repository.DatabaseURL.URL)
+		// NewAdabas(repository.DatabaseURL.URL.String(), adabasID)
 		if err != nil {
 			adatypes.Central.Log.Debugf("New Adabas to map ID error: %v", err)
 			return err
@@ -225,15 +226,6 @@ func (connection *Connection) searchRepository(adabasID *ID, repository *Reposit
 			adatypes.Central.Log.Debugf("Search map error: %v", err)
 			return err
 		}
-		// 	connection.adabasMap = NewAdabasMap(mapName, &repository.DatabaseURL)
-		// 	if connection.adabasMap == nil {
-		// 		return adatypes.NewGenericError(85, mapName)
-		// 	}
-		// 	connection.adabasToMap, err = NewAdabas(connection.adabasMap.URL(), adabasID)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// }
 	}
 	adatypes.Central.Log.Debugf("Found map %s\n", connection.adabasMap.Name)
 	if connection.adabasMap.URL().String() == connection.adabasMap.Data.URL.String() {
@@ -241,11 +233,12 @@ func (connection *Connection) searchRepository(adabasID *ID, repository *Reposit
 		connection.adabasToData = connection.adabasToMap
 	} else {
 		adatypes.Central.Log.Debugf("Create new Adabas URL %v!=%v", connection.adabasMap.URL().String(), connection.adabasMap.Data.URL.String())
-		connection.adabasToMap, err = NewAdabas(&connection.adabasMap.Data.URL, adabasID)
-		if err != nil {
-			adatypes.Central.Log.Debugf("Error new ADabas URL %v", err)
-			return err
-		}
+		connection.adabasToMap = adabasID.getAdabas(&connection.adabasMap.Data.URL)
+		// NewAdabas(&connection.adabasMap.Data.URL, adabasID)
+		// if err != nil {
+		// 	adatypes.Central.Log.Debugf("Error new ADabas URL %v", err)
+		// 	return err
+		// }
 	}
 	adatypes.Central.Log.Debugf("Final error: %v", err)
 	return
@@ -324,6 +317,24 @@ func (connection *Connection) Close() {
 		connection.adabasToMap.BackoutTransaction()
 		connection.adabasToMap.Close()
 	}
+}
+
+// BackoutTransaction all current transaction will be backout and reset to before
+// the transaction in the Adabas database.
+func (connection *Connection) BackoutTransaction() error {
+	if connection.adabasToData != nil {
+		err := connection.adabasToData.BackoutTransaction()
+		if err != nil {
+			return err
+		}
+	}
+	if connection.adabasToMap != nil {
+		err := connection.adabasToMap.BackoutTransaction()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // EndTransaction all current transaction will be finally stored in the
@@ -539,10 +550,11 @@ func (connection *Connection) CreateMapDeleteRequest(mapName string) (request *D
 		err = adatypes.NewGenericError(8, mapName)
 		return
 	}
-	connection.adabasToData, err = NewAdabas(connection.adabasMap.URL(), connection.ID)
-	if err != nil {
-		return
-	}
+	connection.adabasToData = connection.ID.getAdabas(connection.adabasMap.URL())
+	// NewAdabas(connection.adabasMap.URL(), connection.ID)
+	// if err != nil {
+	// 	return
+	// }
 	connection.fnr = connection.adabasMap.Data.Fnr
 	adatypes.Central.Log.Debugf("Connection FNR=%d, Map referenced : %#v", connection.fnr, connection.adabasMap)
 	request, err = NewMapDeleteRequest(connection.adabasToData, connection.adabasMap)

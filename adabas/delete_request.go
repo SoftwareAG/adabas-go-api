@@ -30,8 +30,8 @@ type DeleteRequest struct {
 	commonRequest
 }
 
-// NewDeleteRequest create a new store Request instance
-func NewDeleteRequest(url string, fnr Fnr) (*DeleteRequest, error) {
+// NewDeleteRequestDeprecated create a new store Request instance
+func NewDeleteRequestDeprecated(url string, fnr Fnr) (*DeleteRequest, error) {
 	var adabas *Adabas
 	if dbid, err := strconv.Atoi(url); err == nil {
 		if (dbid < 0) || dbid > 65536 {
@@ -81,7 +81,7 @@ func NewMapDeleteRequest(adabas *Adabas, adabasMap *Map) (request *DeleteRequest
 // NewMapNameDeleteRequest create a new Request instance
 func NewMapNameDeleteRequest(adabas *Adabas, mapName string) (request *DeleteRequest, err error) {
 	var adabasMap *Map
-	adabasMap, _, err = SearchMapRepository(adabas, mapName)
+	adabasMap, _, err = SearchMapRepository(adabas.ID, mapName)
 	if err != nil {
 		return
 	}

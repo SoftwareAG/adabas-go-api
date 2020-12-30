@@ -212,6 +212,32 @@ func TestAdabasFdt(t *testing.T) {
 	fmt.Println("test done")
 }
 
+func TestAdabasIDSpecificOpen(t *testing.T) {
+	err := initLogWithFile("adabas.log")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	id := NewAdabasID()
+	adabas, err := NewAdabas("1", id)
+	assert.NotNil(t, adabas)
+	assert.NoError(t, err)
+	adabas1 := adabas
+
+	adabas2 := id.getAdabas(NewURLWithDbid(1))
+	assert.Equal(t, adabas, adabas2)
+	adabas2 = id.getAdabas(NewURLWithDbid(1))
+	assert.Equal(t, adabas, adabas2)
+	adabas2 = id.getAdabas(NewURLWithDbid(2))
+	assert.NotEqual(t, adabas, adabas2)
+	assert.NotEqual(t, adabas.status, adabas2.status)
+	adabas, err = NewAdabas("1", id)
+	assert.NotNil(t, adabas)
+	assert.NoError(t, err)
+	assert.Equal(t, adabas1, adabas)
+
+}
+
 func ExampleAdabas_readFileDefinitionFile11() {
 	err := initLogWithFile("adabas.log")
 	if err != nil {
@@ -669,9 +695,12 @@ func TestAdabasReadIsn(t *testing.T) {
 	}
 	initTestLogWithFile(t, "adabas.log")
 
+	statistics = true
+
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adabas, _ := NewAdabas(adabasModDBID)
+	assert.NotNil(t, adabas.statistics)
 	err := adabas.Open()
 	if !assert.NoError(t, err) {
 		return
@@ -686,6 +715,23 @@ func TestAdabasReadIsn(t *testing.T) {
 	if !assert.NoError(t, rerr) {
 		return
 	}
+	if assert.NotNil(t, adabas.statistics) {
+		fmt.Println("Number of calls:", adabas.statistics.calls)
+		for o, s := range adabas.statistics.statMap {
+			fmt.Printf(">%s< -> %p\n", o, s)
+			fmt.Println(o, s.code, s.timeNeeded)
+		}
+		s := adabas.statistics.statMap["OP"]
+		if assert.NotNil(t, s) {
+			fmt.Println("OP", s.code, s.timeNeeded, s.calls)
+			assert.Equal(t, 1, s.calls)
+		}
+		assert.Equal(t, uint64(0), adabas.statistics.remote)
+		assert.Equal(t, uint64(0), adabas.statistics.remoteSend)
+		assert.Equal(t, uint64(0), adabas.statistics.remoteReceive)
+		assert.Equal(t, uint64(0), adabas.statistics.remoteClosed)
+	}
+	statistics = false
 }
 
 func TestAdabasSearchLogical(t *testing.T) {

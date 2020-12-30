@@ -128,6 +128,7 @@ type AdaTCP struct {
 	databaseID          uint32
 	pair                []string
 	id                  adaTCPID
+	stats               *Statistics
 }
 
 const adatcpDataHeaderEyecatcher = "DATA"
@@ -219,6 +220,9 @@ func (connection *AdaTCP) Connect() (err error) {
 		if err != nil {
 			adatypes.Central.Log.Debugf("Connect error : %v", err)
 			return
+		}
+		if connection.stats != nil {
+			connection.stats.remote++
 		}
 		adatypes.Central.Log.Debugf("Connect dial passed ...")
 		connection.connection = tcpConn
@@ -409,6 +413,9 @@ func (connection *AdaTCP) Disconnect() (err error) {
 
 	err = connection.connection.Close()
 	connection.connection = nil
+	if connection.stats != nil {
+		connection.stats.remoteClosed++
+	}
 
 	return
 }
@@ -445,7 +452,7 @@ func (connection *AdaTCP) SendData(buffer bytes.Buffer, nrAbdBuffers uint32) (er
 		adatypes.Central.Log.Infof("Send data TCP data error: %v", err)
 		return
 	}
-
+	connection.stats.remoteSend++
 	adatypes.Central.Log.Debugf("Send data completed buffer send=%d really send=%d", buffer.Len(), n)
 	return
 }
@@ -540,6 +547,7 @@ func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32
 	if adatypes.Central.IsDebugLevel() {
 		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV DATA BUFFER:", buffer.Bytes(), buffer.Len(), buffer.Len(), 8, false))
 	}
+	connection.stats.remoteReceive++
 
 	return
 }
