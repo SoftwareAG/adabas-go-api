@@ -196,6 +196,7 @@ func TestConnectionRemoteMapStat(t *testing.T) {
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 
 	adatypes.InitDefinitionCache()
+	defer adatypes.FinitDefinitionCache()
 
 	statistics = true
 	connection, cerr := NewConnection("acj;map;config=[177(adatcp://" + adabasTCPLocation() + "),4];auth=NONE,user=TCRemMap")
