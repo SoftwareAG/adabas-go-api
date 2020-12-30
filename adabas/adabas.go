@@ -162,14 +162,16 @@ func newStatistics() *Statistics {
 
 // DumpStatistics dump statistics of service
 func (adabas *Adabas) DumpStatistics() {
-	adatypes.Central.Log.Infof("Adabas statistics:")
-	for o, s := range adabas.statistics.statMap {
-		adatypes.Central.Log.Infof("%s[%s] = %v (%d)", s.code, o, s.timeNeeded, s.calls)
+	if adabas.statistics != nil {
+		adatypes.Central.Log.Infof("Adabas statistics:")
+		for o, s := range adabas.statistics.statMap {
+			adatypes.Central.Log.Infof("%s[%s] = %v (%d)", s.code, o, s.timeNeeded, s.calls)
+		}
+		adatypes.Central.Log.Infof("Remote opened  : %d", adabas.statistics.remote)
+		adatypes.Central.Log.Infof("Remote closed  : %d", adabas.statistics.remoteClosed)
+		adatypes.Central.Log.Infof("Remote send    : %d", adabas.statistics.remoteSend)
+		adatypes.Central.Log.Infof("Remote received: %d", adabas.statistics.remoteReceive)
 	}
-	adatypes.Central.Log.Infof("Remote opened  : %d", adabas.statistics.remote)
-	adatypes.Central.Log.Infof("Remote closed  : %d", adabas.statistics.remoteClosed)
-	adatypes.Central.Log.Infof("Remote send    : %d", adabas.statistics.remoteSend)
-	adatypes.Central.Log.Infof("Remote received: %d", adabas.statistics.remoteReceive)
 }
 
 // Open opens a session to the database

@@ -228,12 +228,15 @@ func (connection *Connection) searchRepository(adabasID *ID, repository *Reposit
 		}
 	}
 	adatypes.Central.Log.Debugf("Found map %s\n", connection.adabasMap.Name)
+	if connection.adabasMap.URL().String() != connection.adabasToMap.URL.String() {
+		connection.adabasToMap = connection.ID.getAdabas(connection.adabasMap.URL())
+	}
 	if connection.adabasMap.URL().String() == connection.adabasMap.Data.URL.String() {
-		adatypes.Central.Log.Debugf("Different URL %v", connection.adabasMap.URL().String())
+		adatypes.Central.Log.Debugf("Same URL %v -> %v", connection.adabasMap.URL().String(), connection.adabasToMap.URL)
 		connection.adabasToData = connection.adabasToMap
 	} else {
 		adatypes.Central.Log.Debugf("Create new Adabas URL %v!=%v", connection.adabasMap.URL().String(), connection.adabasMap.Data.URL.String())
-		connection.adabasToMap = adabasID.getAdabas(&connection.adabasMap.Data.URL)
+		connection.adabasToData = adabasID.getAdabas(&connection.adabasMap.Data.URL)
 		// NewAdabas(&connection.adabasMap.Data.URL, adabasID)
 		// if err != nil {
 		// 	adatypes.Central.Log.Debugf("Error new ADabas URL %v", err)
