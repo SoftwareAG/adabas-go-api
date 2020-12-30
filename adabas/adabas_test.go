@@ -724,7 +724,7 @@ func TestAdabasReadIsn(t *testing.T) {
 		s := adabas.statistics.statMap["OP"]
 		if assert.NotNil(t, s) {
 			fmt.Println("OP", s.code, s.timeNeeded, s.calls)
-			assert.Equal(t, 1, s.calls)
+			assert.Equal(t, uint64(1), s.calls)
 		}
 		assert.Equal(t, uint64(0), adabas.statistics.remote)
 		assert.Equal(t, uint64(0), adabas.statistics.remoteSend)
