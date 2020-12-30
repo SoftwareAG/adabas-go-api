@@ -452,7 +452,9 @@ func (connection *AdaTCP) SendData(buffer bytes.Buffer, nrAbdBuffers uint32) (er
 		adatypes.Central.Log.Infof("Send data TCP data error: %v", err)
 		return
 	}
-	connection.stats.remoteSend++
+	if connection.stats != nil {
+		connection.stats.remoteSend++
+	}
 	adatypes.Central.Log.Debugf("Send data completed buffer send=%d really send=%d", buffer.Len(), n)
 	return
 }
@@ -547,7 +549,9 @@ func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32
 	if adatypes.Central.IsDebugLevel() {
 		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV DATA BUFFER:", buffer.Bytes(), buffer.Len(), buffer.Len(), 8, false))
 	}
-	connection.stats.remoteReceive++
+	if connection.stats != nil {
+		connection.stats.remoteReceive++
+	}
 
 	return
 }
