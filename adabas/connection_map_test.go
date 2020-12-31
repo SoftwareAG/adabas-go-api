@@ -361,7 +361,10 @@ func checkVehicleMap(mapName string, jsonImport string) error {
 		fmt.Println("Number of maps", len(maps))
 		for _, m := range maps {
 			m.Repository = databaseURL
-			fmt.Println("Load map ...", m.Name)
+			dataURL := &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: m.Data.Fnr}
+			m.Data = dataURL
+			fmt.Println("Load map ...", m.String(), m.Data.URL.String())
+
 			err = m.Store()
 			if err != nil {
 				fmt.Println("Error loading map ...", err)

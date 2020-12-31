@@ -29,11 +29,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func ExampleConnection_readMainframe() {
+func TestConnection_readMainframe(t *testing.T) {
 	initLogWithFile("mainframe.log")
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
-		fmt.Println("Mainframe database not defined")
+		t.Skip("Mainframe database not defined, skipping ...")
 		return
 	}
 	connection, cerr := NewConnection("acj;target=" + network)
@@ -55,49 +55,30 @@ func ExampleConnection_readMainframe() {
 	fmt.Println("Read logical data:")
 	var result *Response
 	result, err = request.ReadLogicalWith("AA=[11100301:11100303]")
-	if err != nil {
+	if !assert.NoError(t, err) {
 		fmt.Println("Error reading", err)
 		return
 	}
+	assert.NotNil(t, result)
 	fmt.Println("Result data:")
 	result.DumpValues()
-	// Output: Connection :  Adabas url=54712 fnr=0
-	// Limit query data:
-	// Read logical data:
-	// Result data:
-	// Dump all result values
-	// Record Isn: 0251
-	// Record Quantity: 0003
-	//   AA = > 11100301 <
-	//   AB = [ 1 ]
-	//    AC = > HANS                 <
-	//    AE = > BERGMANN             <
-	//    AD = > WILHELM              <
-	// Record Isn: 0383
-	// Record Quantity: 0003
-	//   AA = > 11100302 <
-	//   AB = [ 1 ]
-	//    AC = > ROSWITHA             <
-	//    AE = > HAIBACH              <
-	//    AD = > ELLEN                <
-
+	validateResult(t, "readMainframe", result)
 }
-
-func ExampleConnection_readBorderMainframe() {
+func TestConnection_readBorderMainframe(t *testing.T) {
 	initLogWithFile("mainframe.log")
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
-		fmt.Println("Mainframe database not defined")
+		t.Skip("Mainframe database not defined, skipping ...")
 		return
 	}
 	connection, cerr := NewConnection("acj;target=" + network)
-	if cerr != nil {
+	if !assert.NoError(t, cerr) {
 		fmt.Println("Connection to database error:", cerr)
 		return
 	}
 	defer connection.Close()
 	request, err := connection.CreateFileReadRequest(1)
-	if err != nil {
+	if !assert.NoError(t, err) {
 		fmt.Println("Error creating read request : ", err)
 		return
 	}
@@ -109,96 +90,68 @@ func ExampleConnection_readBorderMainframe() {
 	fmt.Println("Read logical data:")
 	var result *Response
 	result, err = request.ReadLogicalWith("AA=(11100301:11100303)")
-	if err != nil {
+	if !assert.NoError(t, err) {
 		fmt.Println("Error reading", err)
 		return
 	}
 	fmt.Println("Result data:")
 	result.DumpValues()
-	// Output: Connection :  Adabas url=54712 fnr=0
-	// Limit query data:
-	// Read logical data:
-	// Result data:
-	// Dump all result values
-	// Record Isn: 0383
-	// Record Quantity: 0001
-	//   AA = > 11100302 <
-	//   AB = [ 1 ]
-	//    AC = > ROSWITHA             <
-	//    AE = > HAIBACH              <
-	//    AD = > ELLEN                <
-
+	validateResult(t, "readBorderMainframe", result)
 }
 
-func ExampleConnection_readNoMinimumMainframe() {
+func TestConnection_readNoMinimumMainframe(t *testing.T) {
 	initLogWithFile("mainframe.log")
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
-		fmt.Println("Mainframe database not defined")
+		t.Skip("Mainframe database not defined, skipping ...")
 		return
 	}
 	connection, cerr := NewConnection("acj;target=" + network)
-	if cerr != nil {
+	if assert.NoError(t, cerr) {
 		fmt.Println("Connection to database error:", cerr)
 		return
 	}
 	defer connection.Close()
 	request, err := connection.CreateFileReadRequest(1)
-	if err != nil {
+	if assert.NoError(t, err) {
 		fmt.Println("Error creating read request : ", err)
 		return
 	}
+	assert.NotNil(t, connection)
+	assert.NotNil(t, request)
 	fmt.Println("Connection : ", connection)
 
 	fmt.Println("Limit query data:")
-	request.QueryFields("AA,AB")
+	err = request.QueryFields("AA,AB")
+	if !assert.NoError(t, err) {
+		return
+	}
 	request.Limit = 2
 	fmt.Println("Read logical data:")
 	var result *Response
 	result, err = request.ReadLogicalWith("AA=(11100301:11100303]")
-	if err != nil {
+	if !assert.NoError(t, err) {
 		fmt.Println("Error reading", err)
 		return
 	}
-	fmt.Println("Result data:")
-	result.DumpValues()
-	// Output: Connection :  Adabas url=54712 fnr=0
-	// Limit query data:
-	// Read logical data:
-	// Result data:
-	// Dump all result values
-	// Record Isn: 0383
-	// Record Quantity: 0002
-	//   AA = > 11100302 <
-	//   AB = [ 1 ]
-	//    AC = > ROSWITHA             <
-	//    AE = > HAIBACH              <
-	//    AD = > ELLEN                <
-	// Record Isn: 0252
-	// Record Quantity: 0002
-	//   AA = > 11100303 <
-	//   AB = [ 1 ]
-	//    AC = > KRISTINA             <
-	//    AE = > FALTER               <
-	//    AD = > MARIA                <
-
+	validateResult(t, "readNoMinimumMainframe", result)
 }
 
-func ExampleConnection_readNoMaximumMainframe() {
+func TestConnection_readNoMaximumMainframe(t *testing.T) {
 	initLogWithFile("mainframe.log")
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
-		fmt.Println("Mainframe database not defined")
+		t.Skip("Mainframe database not defined, skipping ...")
 		return
 	}
 	connection, cerr := NewConnection("acj;target=" + network)
-	if cerr != nil {
+	if !assert.NoError(t, cerr) {
 		fmt.Println("Connection to database error:", cerr)
 		return
 	}
 	defer connection.Close()
 	request, err := connection.CreateFileReadRequest(1)
-	if err != nil {
+	if !assert.NoError(t, err) {
 		fmt.Println("Error creating read request : ", err)
 		return
 	}
@@ -206,7 +159,7 @@ func ExampleConnection_readNoMaximumMainframe() {
 
 	fmt.Println("Limit query data:")
 	err = request.QueryFields("AA,AB")
-	if err != nil {
+	if !assert.NoError(t, err) {
 		fmt.Println("Error query fields : ", err)
 		return
 	}
@@ -214,10 +167,11 @@ func ExampleConnection_readNoMaximumMainframe() {
 	fmt.Println("Read logical data:")
 	var result *Response
 	result, err = request.ReadLogicalWith("AA=[1100301:11100303)")
-	if err != nil {
+	if !assert.NoError(t, err) {
 		fmt.Println("Error reading", err)
 		return
 	}
+	assert.NotNil(t, result)
 	if result == nil {
 		fmt.Println("Result empty")
 		return
@@ -226,100 +180,47 @@ func ExampleConnection_readNoMaximumMainframe() {
 		fmt.Println("Values empty")
 		return
 	}
-	fmt.Println("Result data:")
-	result.DumpValues()
-	// Output: Connection :  Adabas url=54712 fnr=0
-	// Limit query data:
-	// Read logical data:
-	// Result data:
-	// Dump all result values
-	// Record Isn: 0204
-	// Record Quantity: 0017
-	//   AA = > 11100102 <
-	//   AB = [ 1 ]
-	//    AC = > EDGAR                <
-	//    AE = > SCHINDLER            <
-	//    AD = > PETER                <
-	// Record Isn: 0205
-	// Record Quantity: 0017
-	//   AA = > 11100105 <
-	//   AB = [ 1 ]
-	//    AC = > CHRISTIAN            <
-	//    AE = > SCHIRM               <
-	//    AD = >                      <
+	validateResult(t, "readNoMaximumMainframe", result)
 
 }
 
-func ExampleConnection_periodGroupMfPart() {
+func TestConnection_periodGroupMfPart(t *testing.T) {
 	initLogWithFile("connection.log")
 
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
-		fmt.Println("Mainframe database not defined")
+		t.Skip("Mainframe database not defined, skipping ...")
 		return
 	}
 	connection, cerr := NewConnection("acj;map;config=[" + network + ",4]")
-	if cerr != nil {
+	if !assert.NoError(t, cerr) {
 		fmt.Println("Error new connection", cerr)
 		return
 	}
 	defer connection.Close()
 	openErr := connection.Open()
-	if openErr != nil {
-		fmt.Println("Error open connection", cerr)
+	if !assert.NoError(t, openErr) {
+		fmt.Println("Error open connection", openErr)
 		return
 	}
 
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
-	if err != nil {
+	if !assert.NoError(t, err) {
 		fmt.Println("Error create request", err)
 		return
 	}
-	request.QueryFields("personnnel-id,income")
+	err = request.QueryFields("personnnel-id,income")
+	if !assert.NoError(t, err) {
+		return
+	}
 	request.Limit = 0
 	var result *Response
 	result, err = request.ReadLogicalWith("personnnel-id=[11100303:11100304]")
-	if err != nil {
+	if !assert.NoError(t, err) {
 		fmt.Println("Error create request", err)
 		return
 	}
-	err = result.DumpValues()
-	if err != nil {
-		fmt.Println("Error dump values", err)
-	}
-
-	// Output: Dump all result values
-	// Record Isn: 0252
-	// Record Quantity: 0002
-	//   personnnel-id = > 11100303 <
-	//   income = [ 3 ]
-	//    curr-code[01] = > DM  <
-	//    salary[01] = > 42600 <
-	//    bonus[01] = [ 2 ]
-	//     bonus[01,01] = > 3350 <
-	//     bonus[01,02] = > 3000 <
-	//    curr-code[02] = > DM  <
-	//    salary[02] = > 41000 <
-	//    bonus[02] = [ 1 ]
-	//     bonus[02,01] = > 3000 <
-	//    curr-code[03] = > DM  <
-	//    salary[03] = > 39600 <
-	//    bonus[03] = [ 1 ]
-	//     bonus[03,01] = > 2500 <
-	// Record Isn: 0253
-	// Record Quantity: 0002
-	//   personnnel-id = > 11100304 <
-	//   income = [ 2 ]
-	//    curr-code[01] = > DM  <
-	//    salary[01] = > 49200 <
-	//    bonus[01] = [ 2 ]
-	//     bonus[01,01] = > 4400 <
-	//     bonus[01,02] = > 2000 <
-	//    curr-code[02] = > DM  <
-	//    salary[02] = > 47000 <
-	//    bonus[02] = [ 1 ]
-	//     bonus[02,01] = > 3800 <
-
+	validateResult(t, "periodGroupMfPart", result)
 }
 
 func TestConnectionPEMUMfMap(t *testing.T) {
@@ -335,7 +236,7 @@ func TestConnectionPEMUMfMap(t *testing.T) {
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
-		fmt.Println("Mainframe database not defined")
+		t.Skip("Mainframe database not defined, skipping ...")
 		return
 	}
 	connection, cerr := NewConnection("acj;map;config=[" + network + ",4]")
@@ -380,7 +281,7 @@ func TestConnectionPEShiftMfMap(t *testing.T) {
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
-		fmt.Println("Mainframe database not defined")
+		t.Skip("Mainframe database not defined, skipping ...")
 		return
 	}
 	connection, cerr := NewConnection("acj;map;config=[" + network + ",4]")
@@ -434,7 +335,7 @@ func TestConnectionPEShiftMfMapShort(t *testing.T) {
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
-		fmt.Println("Mainframe database not defined")
+		t.Skip("Mainframe database not defined, skipping ...")
 		return
 	}
 	connection, cerr := NewConnection("acj;map;config=[" + network + ",4]")
@@ -488,7 +389,7 @@ func TestConnectionAllMfMap(t *testing.T) {
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	network := os.Getenv("ADAMFDBID")
 	if network == "" {
-		fmt.Println("Mainframe database not defined")
+		t.Skip("Mainframe database not defined, skipping ...")
 		return
 	}
 	connection, cerr := NewConnection("acj;map;config=[" + network + ",4]")
