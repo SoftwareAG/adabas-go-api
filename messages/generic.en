@@ -136,4 +136,7 @@ ADG0000135=Error length {0} of value and partial definition ({1}) don't match
 ADG0000136=Stream query need search criterium
 ADG0000137=Stream query returns multiple records
 ADG0000138=Stream query returns no record
+ADG0000139=Data structure representations is used, use NextData() API
+ADG0000140=Record representations is used, use NextRecord() API
+ADG0000141=Record result set is empty
 ADG0000150=Cannot scan value for type {0}

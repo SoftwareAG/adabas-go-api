@@ -31,6 +31,7 @@ type Cursoring struct {
 	offset        uint32
 	search        string
 	descriptors   string
+	empty         bool
 	result        *Response
 	request       *ReadRequest
 	adabasRequest *adatypes.Request
@@ -58,6 +59,7 @@ func (request *ReadRequest) ReadLogicalWithCursoring(search string) (cursor *Cur
 	request.cursoring.search = search
 	request.cursoring.request = request
 	request.queryFunction = request.readLogicalWith
+	request.cursoring.empty = result.NrRecords() == 0
 	return request.cursoring, nil
 }
 
@@ -83,6 +85,7 @@ func (request *ReadRequest) SearchAndOrderWithCursoring(search, descriptors stri
 	request.cursoring.descriptors = descriptors
 	request.cursoring.request = request
 	request.queryFunction = request.SearchAndOrder
+	request.cursoring.empty = result.NrRecords() == 0
 	return request.cursoring, nil
 }
 
@@ -108,6 +111,7 @@ func (request *ReadRequest) HistogramByCursoring(descriptor string) (cursor *Cur
 	request.cursoring.descriptors = descriptor
 	request.cursoring.request = request
 	request.queryFunction = request.histogramBy
+	request.cursoring.empty = result.NrRecords() == 0
 	return request.cursoring, nil
 }
 
@@ -133,6 +137,7 @@ func (request *ReadRequest) HistogramWithCursoring(search string) (cursor *Curso
 	request.cursoring.search = search
 	request.cursoring.request = request
 	request.queryFunction = request.histogramWith
+	request.cursoring.empty = result.NrRecords() == 0
 	return request.cursoring, nil
 }
 
@@ -141,8 +146,11 @@ func (request *ReadRequest) HistogramWithCursoring(search string) (cursor *Curso
 // This method will call Adabas if no entry is available and reads new entries
 // using Multifetch or partial LOB.
 func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
-	adatypes.Central.Log.Debugf("Check next record: %v offset=%d values=%d", hasNext, cursor.offset+1, len(cursor.result.Values))
-	if cursor.offset+1 > uint32(len(cursor.result.Values)) {
+	if cursor.empty {
+		return false
+	}
+	adatypes.Central.Log.Debugf("Check next record: %v offset=%d values=%d data=%d", hasNext, cursor.offset+1, len(cursor.result.Values), len(cursor.result.Data))
+	if cursor.offset+1 > uint32(cursor.result.NrRecords()) {
 		if cursor.adabasRequest == nil || (cursor.adabasRequest.Response != AdaNormal && cursor.adabasRequest.Option.StreamCursor == 0) {
 			if cursor.adabasRequest != nil {
 				adatypes.Central.Log.Debugf("Error adabas request empty of not normal response, may be EOF %#v\n", cursor.adabasRequest.Response)
@@ -157,7 +165,8 @@ func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 			adatypes.Central.Log.Debugf("Error query function %v %#v\n", cursor.err, cursor.result)
 			return false
 		}
-		hasNext = len(cursor.result.Values) > 0
+		adatypes.Central.Log.Debugf("Nr Records cursored %d\n", cursor.result.NrRecords())
+		hasNext = cursor.result.NrRecords() > 0
 		cursor.offset = 0
 	} else {
 		hasNext = true
@@ -170,12 +179,15 @@ func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 // the chunk is not in memory, the next chunk is read into memory. This method may be initiated,
 // if `HasNextRecord()` is called before.
 func (cursor *Cursoring) NextRecord() (record *Record, err error) {
+	if cursor.empty {
+		return nil, adatypes.NewGenericError(141)
+	}
 	if cursor.err != nil {
 		adatypes.Central.Log.Debugf("Error next record: %v", err)
 		return nil, cursor.err
 	}
 	adatypes.Central.Log.Debugf("Get next record offset=%d/%d\n", cursor.offset, len(cursor.result.Values))
-	if cursor.offset+1 > uint32(len(cursor.result.Values)) {
+	if cursor.offset+1 > uint32(cursor.result.NrRecords()) {
 		if !cursor.HasNextRecord() {
 			return nil, nil
 		}
@@ -183,5 +195,33 @@ func (cursor *Cursoring) NextRecord() (record *Record, err error) {
 	cursor.offset++
 	adatypes.Central.Log.Debugf("ISN=%d ISN quantity=%d\n", cursor.result.Values[cursor.offset-1].Isn,
 		cursor.result.Values[cursor.offset-1].Quantity)
+	if len(cursor.result.Data) > 0 {
+		return nil, adatypes.NewGenericError(139)
+	}
 	return cursor.result.Values[cursor.offset-1], nil
+}
+
+// NextData cursoring to next structure representation of the data record, if current chunk contains a
+// record, no call is send. If
+// the chunk is not in memory, the next chunk is read into memory. This method may be initiated,
+// if `HasNextRecord()` is called before.
+func (cursor *Cursoring) NextData() (record interface{}, err error) {
+	if cursor.empty {
+		return nil, adatypes.NewGenericError(141)
+	}
+	if cursor.err != nil {
+		adatypes.Central.Log.Debugf("Error next data record: %v", err)
+		return nil, cursor.err
+	}
+	adatypes.Central.Log.Debugf("Get next data record offset=%d/%d\n", cursor.offset, len(cursor.result.Values))
+	if cursor.offset+1 > uint32(cursor.result.NrRecords()) {
+		if !cursor.HasNextRecord() {
+			return nil, nil
+		}
+	}
+	cursor.offset++
+	if len(cursor.result.Values) > 0 {
+		return nil, adatypes.NewGenericError(139)
+	}
+	return cursor.result.Data[cursor.offset-1], nil
 }

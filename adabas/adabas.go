@@ -710,7 +710,7 @@ func (adabas *Adabas) SearchLogicalWith(fileNr Fnr, adabasRequest *adatypes.Requ
 	adabas.Acbx.Acbxfnr = fileNr
 	// Call Adabas
 	err = adabas.CallAdabas()
-	adatypes.Central.Log.Debugf("Received search response ret=%v", err)
+	adatypes.Central.Log.Debugf("Received search response ret=%v ISN quantity=%d", err, adabas.Acbx.Acbxisq)
 	if err != nil {
 		return
 	}

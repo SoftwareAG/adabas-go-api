@@ -1719,5 +1719,8 @@ var staticMessages = []struct {
 	{"ADG0000136", "en", "Stream query need search criterium"},
 	{"ADG0000137", "en", "Stream query returns multiple records"},
 	{"ADG0000138", "en", "Stream query returns no record"},
+	{"ADG0000139", "en", "Data structure representations is used, use NextData() API"},
+	{"ADG0000140", "en", "Record representations is used, use NextRecord() API"},
+	{"ADG0000141", "en", "Record result set is empty"},
 	{"ADG0000150", "en", "Cannot scan value for type {0}"},
 }

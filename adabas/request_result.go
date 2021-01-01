@@ -63,7 +63,12 @@ type Response struct {
 
 // NrRecords provides the number of records in the result
 func (Response *Response) NrRecords() int {
-	return len(Response.Values)
+	v := len(Response.Values)
+	d := len(Response.Data)
+	if v > 0 {
+		return v
+	}
+	return d
 }
 
 // prepareRecordDump prepare the record dump
