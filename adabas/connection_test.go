@@ -2471,16 +2471,17 @@ func TestConnectionSimpleSearchNoDesc(t *testing.T) {
 	readRequest.QueryFields("AE,AD")
 	readRequest.Limit = 0
 	assert.False(t, readRequest.HoldRecords.IsHold())
-	result, rErr := readRequest.ReadLogicalWith(`AD=''`)
-	if !assert.NoError(t, rErr) {
-		return
-	}
+	// Fields with NU option are not in descriptor and can be searched for
+	// result, rErr := readRequest.ReadLogicalWith(`AD=''`)
+	// if !assert.NoError(t, rErr) {
+	// 	return
+	// }
 
 	// result.DumpData()
 	// result.DumpValues()
-	assert.Equal(t, 368, result.NrRecords())
+	//assert.Equal(t, 368, result.NrRecords())
 
-	result, rErr = readRequest.ReadLogicalWith(`AD!=`)
+	result, rErr := readRequest.ReadLogicalWith(`AD!=`)
 	if !assert.NoError(t, rErr) {
 		return
 	}

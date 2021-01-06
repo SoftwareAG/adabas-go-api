@@ -107,7 +107,7 @@ func TestConnectionSecureAdaTcp_pwd(t *testing.T) {
 	initTestLogWithFile(t, "connection_secure.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
-	connection, err := NewConnection("acj;target=25(adatcp://localhost:64025);auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
+	connection, err := NewConnection("acj;target=25(adatcp://localhost:60025);auth=DESC,user=TCMapPoin,id=4,host=UNKNOWN")
 	if !assert.NoError(t, err) {
 		return
 	}

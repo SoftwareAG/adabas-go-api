@@ -218,12 +218,14 @@ func (adabasBuffer *Buffer) String() string {
 func SearchAdabasBuffer(tree *adatypes.SearchTree) *Buffer {
 	adabasBuffer := NewBuffer(AbdAQSb)
 	sb := tree.SearchBuffer()
-	adatypes.Central.Log.Debugf("Search buffer created: %s", sb)
 	adabasBuffer.buffer = []byte(sb)
 	adabasBuffer.abd.Abdsize = uint64(len(sb))
 	adabasBuffer.abd.Abdsend = adabasBuffer.abd.Abdsize
-	adatypes.Central.Log.Debugf("Send search buffer of size %d -> send=%d", adabasBuffer.abd.Abdsize,
-		adabasBuffer.abd.Abdsend)
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Search buffer created: %s", sb)
+		adatypes.Central.Log.Debugf("Send search buffer of size %d -> send=%d", adabasBuffer.abd.Abdsize,
+			adabasBuffer.abd.Abdsend)
+	}
 	return adabasBuffer
 }
 
