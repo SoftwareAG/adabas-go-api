@@ -713,3 +713,4 @@ ADAGEFD013=Reserved field not zero
 ADAGEFD014=ADABD length incorrect
 ADAGEFE000=CT limit exceeded, or attached buffer overflow
 ADAGEFF000=Insufficient space in attached buffer
+ADAGEFFFFF=Unknown response and subcode

@@ -22,6 +22,7 @@ package adabas
 import (
 	"fmt"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -126,12 +127,18 @@ func TestConnectionSecureAdaTcp_pwd(t *testing.T) {
 	}
 	request.Limit = 0
 	fmt.Println("Read logigcal data:")
-	var result *Response
-	result, err = request.ReadLogicalWith("AA=[11100315:11100316]")
-	if !assert.NoError(t, err) {
+	_, err = request.ReadLogicalWith("AA=[11100315:11100316]")
+	if !assert.Error(t, err) {
 		fmt.Println("Error read logical data", err)
 		return
 	}
-	result.DumpValues()
-	// Output: XX
+	// TODO Remote ADATCP secure access not possible at the moment
+	switch e := err.(type) {
+	case *Error:
+		assert.Equal(t, "ADAGEC801F", e.Code)
+		assert.True(t, strings.HasPrefix(e.Message, "Security violation: Authentication error (rsp=200,subrsp=31,dbid="))
+		assert.Equal(t, "", e.Translate("DE"))
+	default:
+		assert.Fail(t, "Should not be other error then adatypes.Error!!!!!")
+	}
 }

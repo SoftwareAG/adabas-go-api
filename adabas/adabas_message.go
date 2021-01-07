@@ -53,6 +53,7 @@ func (adabas *Adabas) getAdabasMessage() []string {
 type Error struct {
 	When    time.Time
 	Acbx    Acbx
+	URL     URL
 	Code    string
 	Message string
 }
@@ -60,18 +61,26 @@ type Error struct {
 // NewError Create new Adabas errror
 func NewError(adbas *Adabas) *Error {
 	msgCode := fmt.Sprintf("%s%02X%03X", messagePrefix, adbas.Acbx.Acbxrsp, adbas.Acbx.Acbxerrc)
-	msg := adatypes.Translate(adatypes.Language(), msgCode)
-	if msg == "" && adbas.Acbx.Acbxerrc > 0 {
-		msgCode = fmt.Sprintf("%s%02X%03X", messagePrefix, adbas.Acbx.Acbxrsp, 0)
-		msg = adatypes.Translate(adatypes.Language(), msgCode)
-	}
-	if msg == "" {
-		msg = fmt.Sprintf("Unknown error response %d subcode %d (%s)", adbas.Acbx.Acbxrsp, adbas.Acbx.Acbxerrc, msgCode)
-	}
-	msg = fmt.Sprintf("%s (rsp=%d,subrsp=%d,dbid=%s,file=%d)", msg, adbas.Acbx.Acbxrsp,
-		adbas.Acbx.Acbxerrc, adbas.URL.String(), adbas.Acbx.Acbxfnr)
-	adatypes.Central.Log.Debugf("Adabas error message created:[%s] %s", msgCode, msg)
-	return &Error{When: time.Now(), Code: msgCode, Message: msg, Acbx: *adbas.Acbx}
+	e := &Error{When: time.Now(), URL: *adbas.URL, Code: msgCode, Acbx: *adbas.Acbx}
+	// msg := adatypes.Translate(adatypes.Language(), msgCode)
+	// if msg == "" && adbas.Acbx.Acbxerrc > 0 {
+	// 	msgCode = fmt.Sprintf("%s%02X%03X", messagePrefix, adbas.Acbx.Acbxrsp, 0)
+	// 	msg = adatypes.Translate(adatypes.Language(), msgCode)
+	// }
+	// suffix := acbxSuffix(adbas.URL, adbas.Acbx)
+	// if msg == "" {
+	// 	msg = fmt.Sprintf("Unknown error response %d subcode %d&s", adbas.Acbx.Acbxrsp, adbas.Acbx.Acbxerrc, suffix)
+	// }
+	// msg = fmt.Sprintf("%s%s", msg, suffix)
+	// adatypes.Central.Log.Debugf("Adabas error message created:[%s] %s", msgCode, msg)
+	e.Message = e.Translate(adatypes.Language())
+	return e
+}
+
+func acbxSuffix(URL *URL, acbx *Acbx) string {
+	return fmt.Sprintf(" (rsp=%d,subrsp=%d,dbid=%s,file=%d)", acbx.Acbxrsp,
+		acbx.Acbxerrc, URL.String(), acbx.Acbxfnr)
+
 }
 
 // Response return the response code of adabas call
@@ -92,4 +101,19 @@ func (e Error) Addition2() [4]byte {
 // Error error main interface function, providing message error code and message
 func (e Error) Error() string {
 	return fmt.Sprintf("%v: %v", e.Code, e.Message)
+}
+
+// Translate translate to language
+func (e Error) Translate(lang string) string {
+	msg := adatypes.Translate(lang, e.Code)
+	if msg == "" && e.Acbx.Acbxerrc > 0 {
+		msg = adatypes.Translate(lang, e.Code)
+	}
+	suffix := acbxSuffix(&e.URL, &e.Acbx)
+	if msg == "" {
+		msg = fmt.Sprintf("%s%s", adatypes.Translate(lang, "ADAGEFFFFF"), suffix)
+	} else {
+		msg = fmt.Sprintf("%s%s", msg, suffix)
+	}
+	return msg
 }

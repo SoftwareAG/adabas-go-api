@@ -699,3 +699,4 @@ ADAGEFD013=Reserviertes Feld nicht null
 ADAGEFD014=ADABD Länge nicht korrekt
 ADAGEFE000=CT Limit erreicht, oder Attached Buffer Überlauf
 ADAGEFF000=Bereich im Attached Buffer nicht ausreichend
+ADAGEFFFFF=Unbekannter Response und Subcode Wert

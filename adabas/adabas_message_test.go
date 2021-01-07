@@ -69,8 +69,28 @@ func TestAdabasMessageError(t *testing.T) {
 	assert.Equal(t, "ADAGE11001: The program tried to access system file 1 or 2, and no OP command was issued. (rsp=17,subrsp=1,dbid=21,file=0)", NewError(ada).Error())
 	ada.Acbx.Acbxrsp = 120
 	ada.Acbx.Acbxerrc = 0
-	assert.Equal(t, "ADAGE78000: Unknown error response 120 subcode 0 (ADAGE78000) (rsp=120,subrsp=0,dbid=21,file=0)", NewError(ada).Error())
+	assert.Equal(t, "ADAGE78000: Unknown response and subcode (rsp=120,subrsp=0,dbid=21,file=0)", NewError(ada).Error())
 	m := []string{"ADAGE78000", "Unknown error response 120 subcode 0 (ADAGE78000) (rsp=120,subrsp=0,dbid=21,file=0)"}
 	assert.Equal(t, m, ada.getAdabasMessage())
+
+}
+
+func TestAdabasMessageTranslate(t *testing.T) {
+	initTestLogWithFile(t, "messages.log")
+
+	ada, err := NewAdabas(21)
+	assert.NoError(t, err)
+
+	// Return: Hello, i18n
+	assert.Equal(t, "Adabas ist nicht aktive oder erreichbar (rsp=148,subrsp=0,dbid=21,file=0)", NewError(ada).Translate("de"))
+	ada.Acbx.Acbxrsp = AdaNormal
+	assert.Equal(t, "Erfolgreich beendet (rsp=0,subrsp=0,dbid=21,file=0)", NewError(ada).Translate("de"))
+	ada.Acbx.Acbxrsp = AdaInvalidFileNumber
+	assert.Equal(t, "Falscher oder nicht authorizierte File-Nummer (rsp=17,subrsp=0,dbid=21,file=0)", NewError(ada).Translate("de"))
+	ada.Acbx.Acbxerrc = AdaISNNotSorted
+	assert.Equal(t, "The program tried to access system file 1 or 2, and no OP command was issued. (rsp=17,subrsp=1,dbid=21,file=0)", NewError(ada).Translate("de"))
+	ada.Acbx.Acbxrsp = 120
+	ada.Acbx.Acbxerrc = 0
+	assert.Equal(t, "Unbekannter Response und Subcode Wert (rsp=120,subrsp=0,dbid=21,file=0)", NewError(ada).Translate("de"))
 
 }
