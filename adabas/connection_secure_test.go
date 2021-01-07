@@ -135,9 +135,9 @@ func TestConnectionSecureAdaTcp_pwd(t *testing.T) {
 	// TODO Remote ADATCP secure access not possible at the moment
 	switch e := err.(type) {
 	case *Error:
-		assert.Equal(t, "ADAGEC801F", e.Code)
-		assert.True(t, strings.HasPrefix(e.Message, "Security violation: Authentication error (rsp=200,subrsp=31,dbid="))
-		assert.True(t, strings.HasPrefix(e.Translate("DE"), "Security violation: Authentication error"))
+		assert.Equal(t, "ADAGEC801F", e.Code, "Wrong:"+e.Code)
+		assert.True(t, strings.HasPrefix(e.Message, "Security violation: Authentication error (rsp=200,subrsp=31,dbid="), "Wrong:"+e.Error())
+		assert.True(t, strings.HasPrefix(e.Translate("DE"), "Security violation: Authentication error"), "Wrong:"+e.Error())
 	default:
 		assert.Fail(t, "Should not be other error then adatypes.Error!!!!!")
 	}
