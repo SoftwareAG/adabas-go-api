@@ -121,17 +121,17 @@ func TestConnectionSecureAdaTcp_pwd(t *testing.T) {
 	}
 	err = request.QueryFields("AA,AE")
 
-	if !assert.NoError(t, err) {
-		fmt.Println("Error query fields for request", err)
-		return
-	}
-	request.Limit = 0
-	fmt.Println("Read logigcal data:")
-	_, err = request.ReadLogicalWith("AA=[11100315:11100316]")
 	if !assert.Error(t, err) {
-		fmt.Println("Error read logical data", err)
+		fmt.Println("No error query fields for request")
 		return
 	}
+	// request.Limit = 0
+	// fmt.Println("Read logigcal data:")
+	// _, err = request.ReadLogicalWith("AA=[11100315:11100316]")
+	// if !assert.Error(t, err) {
+	// 	fmt.Println("Error read logical data", err)
+	// 	return
+	// }
 	// TODO Remote ADATCP secure access not possible at the moment
 	switch e := err.(type) {
 	case *Error:
