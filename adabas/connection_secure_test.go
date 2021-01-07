@@ -137,7 +137,7 @@ func TestConnectionSecureAdaTcp_pwd(t *testing.T) {
 	case *Error:
 		assert.Equal(t, "ADAGEC801F", e.Code)
 		assert.True(t, strings.HasPrefix(e.Message, "Security violation: Authentication error (rsp=200,subrsp=31,dbid="))
-		assert.Equal(t, "", e.Translate("DE"))
+		assert.True(t, strings.HasPrefix(e.Translate("DE"), "Security violation: Authentication error"))
 	default:
 		assert.Fail(t, "Should not be other error then adatypes.Error!!!!!")
 	}
