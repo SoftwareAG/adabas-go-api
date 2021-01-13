@@ -31,8 +31,7 @@ jobs:
         fi
 
     - name: Build
-       run: make
-#      run: go build -v .
+      run: make all
 
     - name: Test
       run: go test -v .
