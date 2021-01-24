@@ -512,7 +512,7 @@ func (connection *Connection) CreateMapStoreRequest(mapReference interface{}) (r
 				}
 				request, err = NewStoreRequest(connection.adabasToData, connection.adabasMap)
 			} else {
-				adatypes.Central.Log.Debugf("No repository used: %s", connection.adabasMap.Name)
+				adatypes.Central.Log.Debugf("No repository used: %#v", connection.adabasToMap)
 				request, err = NewStoreRequest(mapReference, connection.adabasToMap)
 			}
 		} else {
