@@ -261,7 +261,7 @@ func (adaid *ID) isOpen(url string) bool {
 		return false
 	}
 	open := s.open
-	adatypes.Central.Log.Debugf("Register open=%v to url=%s", open, url)
+	adatypes.Central.Log.Debugf("Check is open=%v to url=%s", open, url)
 	return open
 }
 

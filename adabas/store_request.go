@@ -103,6 +103,7 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 					return nil, err
 				}
 				dataRepository := &Repository{DatabaseURL: *adabasMap.Data}
+				ada.SetURL(&adabasMap.Data.URL)
 				request = &StoreRequest{commonRequest: commonRequest{MapName: mapName,
 					adabas:    ada,
 					adabasMap: adabasMap, repository: dataRepository}}
@@ -122,10 +123,13 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 					}
 				}
 				dataRepository := &Repository{DatabaseURL: *adabasMap.Data}
+				ada.SetURL(&adabasMap.Data.URL)
 				request = &StoreRequest{commonRequest: commonRequest{MapName: mapName,
 					adabas:    ada,
 					adabasMap: adabasMap, repository: dataRepository}}
 			}
+			adatypes.Central.Log.Debugf("Data reference %s", request.adabas.URL.String())
+			adatypes.Central.Log.Debugf("Map reference %s", request.adabasMap.Repository.URL.String())
 			request.createDynamic(param[0])
 			return request, nil
 		}
