@@ -45,6 +45,11 @@ func (adabas *Adabas) getAdabasMessage() []string {
 	}
 	msg = fmt.Sprintf("%s (rsp=%d,subrsp=%d,dbid=%s,file=%d)", msg, adabas.Acbx.Acbxrsp,
 		adabas.Acbx.Acbxerrc, adabas.URL.String(), adabas.Acbx.Acbxfnr)
+	if adabas.Acbx.Acbxrsp > 3 {
+		adatypes.Central.Log.Infof("Error message %s", msg)
+		adatypes.Central.Log.Infof("Add1: %v", adabas.Acbx.Acbxadd1)
+		adatypes.Central.Log.Infof("Add2: %v", adabas.Acbx.Acbxadd2)
+	}
 	message[1] = msg
 	return message
 }

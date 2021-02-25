@@ -649,7 +649,7 @@ func (adabas *Adabas) ReadLogicalWith(fileNr Fnr, adabasRequest *adatypes.Reques
 		return
 	}
 	add1.WriteString("        ")
-	copy(adabas.Acbx.Acbxadd1[:], add1.Bytes()[0:7])
+	copy(adabas.Acbx.Acbxadd1[:], add1.Bytes()[0:8])
 
 	adabas.Acbx.Acbxfnr = fileNr
 
@@ -705,7 +705,7 @@ func (adabas *Adabas) SearchLogicalWith(fileNr Fnr, adabasRequest *adatypes.Requ
 		add1.WriteString("ISN")
 	}
 	add1.WriteString("        ")
-	copy(adabas.Acbx.Acbxadd1[:], add1.Bytes()[0:7])
+	copy(adabas.Acbx.Acbxadd1[:], add1.Bytes()[0:8])
 
 	adabas.Acbx.Acbxfnr = fileNr
 	// Call Adabas
@@ -868,7 +868,7 @@ func (adabas *Adabas) SendSecondCall(adabasRequest *adatypes.Request, x interfac
 			adatypes.Central.Log.Debugf("Parse buffer of second call  with error: ", err)
 			return
 		}
-		adatypes.Central.Log.Debugf("Parse buffer of second callt ended, reset to old adabas request")
+		adatypes.Central.Log.Debugf("Parse buffer of second call ended, reset to old adabas request")
 		*adabas.Acbx = acbx
 		adabas.AdabasBuffers = abd
 		adatypes.Central.Log.Debugf("Second call done")
@@ -906,7 +906,7 @@ func (adabas *Adabas) Histogram(fileNr Fnr, adabasRequest *adatypes.Request, x i
 		add1.WriteString(d)
 	}
 	add1.WriteString("        ")
-	copy(adabas.Acbx.Acbxadd1[:], add1.Bytes()[0:7])
+	copy(adabas.Acbx.Acbxadd1[:], add1.Bytes()[0:8])
 
 	adabas.Acbx.Acbxfnr = fileNr
 
@@ -1213,7 +1213,7 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 		for index, abd := range adabas.AdabasBuffers {
 			if adatypes.Central.IsDebugLevel() {
 				adatypes.Central.Log.Debugf("Parse %d.ABD got %c rest len=%d\n", index, abd.abd.Abdid, buffer.Len())
-				adatypes.LogMultiLineString(adatypes.FormatBytes("Rest ABD:", buffer.Bytes(), buffer.Len(), buffer.Len(), 8, false))
+				adatypes.LogMultiLineString(adatypes.FormatBytes("Rest ABD:", buffer.Bytes(), buffer.Len(), 8, 16, false))
 			}
 			err = binary.Read(buffer, Endian(), &abd.abd)
 			if err != nil {

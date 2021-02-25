@@ -35,11 +35,11 @@ func TestURL(t *testing.T) {
 	assert.Equal(t, "host:1234", URL.URL())
 	URL, err = NewURL("124(adatcp://host:xx)")
 	assert.Error(t, err)
-	assert.Equal(t, "ADG0000070: '124(adatcp://host:xx)' is no valid database id", err.Error())
+	assert.Equal(t, "ADG0000072: 'xx' is no valid port number", err.Error())
 	assert.Nil(t, URL)
 	URL, err = NewURL("444(tcpip://host:xx)")
 	assert.Error(t, err)
-	assert.Equal(t, "ADG0000070: '444(tcpip://host:xx)' is no valid database id", err.Error())
+	assert.Equal(t, "ADG0000072: 'xx' is no valid port number", err.Error())
 	assert.Nil(t, URL)
 	URL, err = NewURL("222(tcpip://host:1234)")
 	assert.Error(t, err)
@@ -55,6 +55,16 @@ func TestURL(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "ADG0000070: 'a(xxx://abc:)' is no valid database id", err.Error())
 	_, err = NewURL("123(xxx://abc:a)")
+	assert.Error(t, err)
+	assert.Equal(t, "ADG0000072: 'a' is no valid port number", err.Error())
+	URL, err = NewURL("adatcp://host:123")
+	assert.NoError(t, err)
+	if assert.NotNil(t, URL) {
+		return
+	}
+	assert.Equal(t, "host", URL.Host)
+	assert.Equal(t, "host:123", URL.URL())
+	_, err = NewURL("adatcp://host:0")
 	assert.Error(t, err)
 	assert.Equal(t, "ADG0000070: '123(xxx://abc:a)' is no valid database id", err.Error())
 
