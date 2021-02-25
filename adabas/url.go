@@ -63,25 +63,45 @@ func NewURL(url string) (*URL, error) {
 // examineURL examine and validate string representation of URL
 func (URL *URL) examineURL(url string) error {
 	adatypes.Central.Log.Debugf("New Adabas URL %s", url)
-	re := regexp.MustCompile(`([0-9]+)\((\w*):\/\/([^:]*?):([0-9]*)\)`)
+	re := regexp.MustCompile(`([0-9]+)\((\w*):\/\/([^:]*?):(.*)\)`)
 	match := re.FindStringSubmatch(url)
 	if len(match) == 0 {
-		dbid, err := strconv.Atoi(url)
+		re := regexp.MustCompile(`^adatcp:\/\/([^:]*?):([0-9]*)`)
+		match := re.FindStringSubmatch(url)
+		if len(match) == 0 {
+			dbid, err := strconv.Atoi(url)
+			if err != nil {
+				adatypes.Central.Log.Debugf("No numeric: %v", err)
+				err = adatypes.NewGenericError(70, url)
+				return err
+			}
+			if (dbid < 0) || dbid > 65536 {
+				return adatypes.NewGenericError(70, url)
+			}
+			URL.Dbid = Dbid(dbid)
+			return nil
+		}
+		if len(match) != 3 {
+			return adatypes.NewGenericError(71)
+		}
+		port, err := strconv.Atoi(match[2])
 		if err != nil {
-			adatypes.Central.Log.Debugf("No numeric: %v", err)
-			err = adatypes.NewGenericError(70, url)
+			adatypes.Central.Log.Debugf("Port not numeric: %v", err)
+			err = adatypes.NewGenericError(72, match[2])
 			return err
 		}
-		if (dbid < 0) || dbid > 65536 {
-			return adatypes.NewGenericError(70, url)
+		URL.Dbid = Dbid(1)
+		URL.Host = match[1]
+		URL.Port = uint32(port)
+		if URL.Port > 0 {
+			URL.Driver = "adatcp"
+			return nil
 		}
-		URL.Dbid = Dbid(dbid)
-		return nil
+		err = adatypes.NewGenericError(70, url)
 	}
 	if len(match) < 4 {
 		return adatypes.NewGenericError(71)
 	}
-
 	dbid, err := strconv.Atoi(match[1])
 	if err != nil {
 		adatypes.Central.Log.Debugf("Dbid not numeric: %v", err)
