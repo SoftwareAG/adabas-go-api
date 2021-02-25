@@ -446,6 +446,8 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 			if option.NeedSecondCall = ReadSecond; option.StoreCall {
 				option.NeedSecondCall = StoreSecond
 			}
+			value.Type().AddFlag(FlagOptionSecondCall)
+
 			Central.Log.Debugf("LOB: need second call %d", option.NeedSecondCall)
 		default:
 		}

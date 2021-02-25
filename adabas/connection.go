@@ -540,28 +540,64 @@ func (connection *Connection) CreateDeleteRequest(fnr Fnr) (*DeleteRequest, erro
 	return NewDeleteRequestAdabas(connection.adabasToData, fnr), nil
 }
 
+func evaluateInterface(mapReference interface{}) string {
+	ti := reflect.TypeOf(mapReference)
+	adatypes.Central.Log.Debugf("It's a struct %s", ti.Name())
+	if ti.Kind() == reflect.Ptr {
+		ti = ti.Elem()
+	}
+	return ti.Name()
+}
+
 // CreateMapDeleteRequest this method creates a delete request using a given Adabas Map name
-func (connection *Connection) CreateMapDeleteRequest(mapName string) (request *DeleteRequest, err error) {
-	err = connection.prepareMapUsage(mapName)
-	if err != nil {
-		return
+func (connection *Connection) CreateMapDeleteRequest(mapReference interface{}) (request *DeleteRequest, err error) {
+	t := reflect.TypeOf(mapReference)
+	switch t.Kind() {
+	case reflect.Ptr, reflect.Struct:
+		if connection.repository == nil {
+			if connection.adabasMap != nil && connection.adabasMap.Name == inmapMapName {
+				adatypes.Central.Log.Debugf("InMap used: %s", connection.adabasMap.Name)
+				err = connection.adabasMap.defineByInterface(mapReference)
+				if err != nil {
+					return nil, err
+				}
+				request, err = NewMapDeleteRequest(connection.adabasToData, connection.adabasMap)
+			} else {
+				adatypes.Central.Log.Debugf("No repository used: %#v", connection.adabasToMap)
+				request, err = NewMapNameDeleteRequest(connection.adabasToMap, evaluateInterface(mapReference))
+			}
+		} else {
+			adatypes.Central.Log.Debugf("With repository used: %#v", connection.adabasMap)
+			request, err = NewMapNameDeleteRequestRepo(evaluateInterface(mapReference), connection.adabasToMap, connection.repository)
+			if err != nil {
+				return
+			}
+		}
+		connection.fnr = request.adabasMap.Data.Fnr
+		connection.adabasMap = request.adabasMap
+	case reflect.String:
+		mapName := mapReference.(string)
+		err = connection.prepareMapUsage(mapName)
+		if err != nil {
+			return
+		}
+		// if connection.repository == nil {
+		// 	err = adatypes.NewGenericError(9)
+		// 	return
+		// }
+		// connection.repository.SearchMapInRepository(connection.adabasToMap, mapName)
+		if connection.adabasMap == nil {
+			err = adatypes.NewGenericError(8, mapName)
+			return
+		}
+		connection.adabasToData = connection.ID.getAdabas(connection.adabasMap.URL())
+		// NewAdabas(connection.adabasMap.URL(), connection.ID)
+		// if err != nil {
+		// 	return
+		// }
+		connection.fnr = connection.adabasMap.Data.Fnr
+		adatypes.Central.Log.Debugf("Connection FNR=%d, Map referenced : %#v", connection.fnr, connection.adabasMap)
+		request, err = NewMapDeleteRequest(connection.adabasToData, connection.adabasMap)
 	}
-	// if connection.repository == nil {
-	// 	err = adatypes.NewGenericError(9)
-	// 	return
-	// }
-	// connection.repository.SearchMapInRepository(connection.adabasToMap, mapName)
-	if connection.adabasMap == nil {
-		err = adatypes.NewGenericError(8, mapName)
-		return
-	}
-	connection.adabasToData = connection.ID.getAdabas(connection.adabasMap.URL())
-	// NewAdabas(connection.adabasMap.URL(), connection.ID)
-	// if err != nil {
-	// 	return
-	// }
-	connection.fnr = connection.adabasMap.Data.Fnr
-	adatypes.Central.Log.Debugf("Connection FNR=%d, Map referenced : %#v", connection.fnr, connection.adabasMap)
-	request, err = NewMapDeleteRequest(connection.adabasToData, connection.adabasMap)
 	return
 }

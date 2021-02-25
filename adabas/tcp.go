@@ -273,7 +273,7 @@ func (connection *AdaTCP) Connect() (err error) {
 
 	send := buffer.Bytes()
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatBytes("PAYLOAD:", send, len(send), len(send), 8, true))
+		adatypes.LogMultiLineString(adatypes.FormatBytes("PAYLOAD:", send, len(send), 8, 16, true))
 	}
 	_, err = connection.connection.Write(send)
 	if err != nil {
@@ -293,7 +293,7 @@ func (connection *AdaTCP) Connect() (err error) {
 	}
 
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV PAYLOAD:", rcvBuffer, len(rcvBuffer), len(rcvBuffer), 8, true))
+		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV PAYLOAD:", rcvBuffer, len(rcvBuffer), 8, 16, true))
 	}
 
 	buf := bytes.NewBuffer(rcvBuffer)
@@ -443,7 +443,7 @@ func (connection *AdaTCP) SendData(buffer bytes.Buffer, nrAbdBuffers uint32) (er
 	headerBuffer.Write(buffer.Bytes())
 	send := headerBuffer.Bytes()
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatBytes("SND:", send, len(send), len(send), 8, true))
+		adatypes.LogMultiLineString(adatypes.FormatBytes("SND:", send, len(send), 8, 16, true))
 	}
 	var n int
 	adatypes.Central.Log.Debugf("Write TCP data of length=%d capacity=%d netto bytes send=%d", headerBuffer.Len(), headerBuffer.Cap(), len(send))
@@ -486,7 +486,7 @@ func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32
 	}
 	if adatypes.Central.IsDebugLevel() {
 		adatypes.Central.Log.Debugf("Receive got header .... size=%d/%d", n, len(rcvHeaderBuffer))
-		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV Header BUFFER:", rcvHeaderBuffer, len(rcvHeaderBuffer), len(rcvHeaderBuffer), 8, true))
+		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV Header BUFFER:", rcvHeaderBuffer, len(rcvHeaderBuffer), 8, 16, true))
 	}
 	if n < hl {
 		return 0, adatypes.NewGenericError(92)
@@ -547,7 +547,7 @@ func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer) (nrAbdBuffers uint32
 		adatypes.Central.Log.Debugf("Current size of buffer=%d", buffer.Len())
 	}
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV DATA BUFFER:", buffer.Bytes(), buffer.Len(), buffer.Len(), 8, false))
+		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV DATA BUFFER:", buffer.Bytes(), buffer.Len(), 8, 16, false))
 	}
 	if connection.stats != nil {
 		connection.stats.remoteReceive++
