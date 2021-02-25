@@ -19,27 +19,30 @@
 
 ## Introduction
 
-This package is designed for using Adabas databases from Go. You can find a detailed overview about the design and technical implementation [here](.//doc//Overview.md).
+This package is designed for using Adabas databases from Go. It's an data interface to Adabas. You can find a detailed overview about the design and technical implementation [here](.//doc//Overview.md).
 
 For details have a look at the API documentation. It can be referenced here: <https://godoc.org/github.com/SoftwareAG/adabas-go-api/adabas>
 
 ## Features
 
-In general, users of the Adabas API for Go do not need to know a basic level of Adabas APIs such as Adabas control blocks or Adabas buffer layouts.
-The Adabas API for Go provides a more user friendly use of Adabas files and fields.
+In general, users of the Adabas API for Go do **not** need to know a basic level of Adabas APIs such as Adabas control blocks or Adabas buffer layouts.
+The Adabas API for Go provides a more user friendly and optimized use of Adabas files and fields.
 It is similar to the `Adabas Client for Java` product delivered by Software AG.
 
 This is a list of features which the Adabas API for Go supports:
 
-- Read, [Search](.//doc//QUERY.md), Insert, Delete and Update of Adabas records
+- Read,  Insert, Delete and Update of Adabas records
+- [Search](.//doc//QUERY.md) are limited to the Adabas standard search capabilities (see [Search](.//doc//QUERY.md) documentation)
 - Work with field descriptors and special descriptors like sub-/super-descriptors
-- Work with the Adabas TCP/IP layer on Linux, Unix and Windows
-- Work with Adabas Mainframe using the Entire Network infrastructure
+- Work with the Adabas TCP/IP (ADATCP) layer on Linux, Unix and Windows
+- Work with interface to Adabas Client library (ADALNK)
+- Work with Adabas Mainframe using the Entire Network infrastructure (ADALNK)
 - Support Unicode access of Adabas Unicode fields
 - Work with Adabas Maps, a short name to long name definition
 - Work with Adabas period groups and multiple fields
 - Work with large object reads and writes
 - Work with partial large object reads and writes
+- Is optimized for network access using ADATCP by using Multifetch feature
 - Provide Go structure usage by reflecting structure fields to Adabas Map definitions
 
 ## Usage
@@ -50,12 +53,13 @@ Inside the code the Adabas API for Go can be used importing the Go API. Beside t
 go get -u github.com/softwareag/adabas-go-api/adabas
 ```
 
-You can compile it with the new Adabas TCP/IP interface on Linux, Unix and Windows. In this case no additional native library is needed.
-Alternatively the Adabas local access with Adabas client native libraries can be used. The `AdabasClient` installation is a prerequisite in this case.
+You can compile it with the new Adabas TCP/IP interface on Linux, Unix and Windows. In this case no additional native library is needed. This is the default behavior.
+
+Alternatively the Adabas native local access with Adabas client native libraries (ADALNK) can be used. The `AdabasClient` installation is a prerequisite in this case.
 
 ### Enable native library access
 
-By default only the Adabas TCP/IP interface is enabled. To enable Adabas Client native link support you need to provide the Go build tag `adalnk` and the CGO compile flags defining build flags for the Adabas Client library. If the Adabas environment is sourced, you can define CGO compile flags as follows:
+The default is the Adabas TCP/IP interface enabled in the Go API. It is possible to enable Adabas Client native interface support using the Adabas Client library. You need to provide the Go build tag `adalnk` and the CGO compile flags defining build flags for the Adabas Client library. If the Adabas environment is sourced, you can define CGO compile flags as follows:
 
 On Unix:
 
@@ -80,15 +84,15 @@ go build -tags adalnk application.go
 ## First step
 
 A detailed description how to do the first steps using the Adabas Docker community edition is provided [here](.//doc//FirstSteps.md).
-Independent of the used environment of Docker (like Kubernetes or others), it describes how to call Adabas.
+Independent of the used environment of Docker (like Kubernetes or others), it describes how to call Adabas in a Microservice environment.
 
 ## Adabas API for Go example
 
 ### Standard usage
 
-The logical view of the data can be defined using Adabas maps. A detailed description of Adabas maps is available [here](.//doc//AdabasMap.md).
+The logical view of the data can be defined using Adabas Maps. The Adabas Maps are introduced in the Adabas Client for Java product delivered by Software AG. A detailed description of Adabas maps is available [here](.//doc//AdabasMap.md).
 
-The creation of Adabas maps is done by the infrastructure of the Java API for Adabas (Adabas Client for Java). The Adabas Data Designer rich client or Eclipse plugin provides the management of Adabas map definitions. A programmatical approach to create Adabas maps is part of the Adabas API for Go.
+The creation of Adabas maps is done by the infrastructure of the Adabas Client for Java. The product contains a Adabas Data Designer rich client or Eclipse plugin. The tools provide the management of Adabas map definitions. A programmatical approach to create Adabas maps is part of the Adabas API for Go.
 
 In the first example a logical read on the database file uses Adabas maps:
 
@@ -129,6 +133,8 @@ See detailed documentation [here](.//doc//AdabasMap.md).
 
 ### Classic database usage
 
+It is possible to use classical Adabas database parameters to read data. The approach does not contain format enhancements like Natural DDM's or the Adabas Map approach. It is a raw access to the database.
+
 A quick example to read data from a database file 11 of the Adabas database with database ID 23 is here:
 
 ```go
@@ -168,7 +174,7 @@ FirstName string `adabas:"FirstName"`
 }
 ```
 
-The struct can be used to read or store data directly. The store of the whole structure will be done.
+The struct can be used to read or store data of the field `Name` and `FirstName` directly. The fields `Birth` is wrote too.
 
 To store the struct record, do this:
 
