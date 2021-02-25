@@ -59,13 +59,52 @@ func TestURL(t *testing.T) {
 	assert.Equal(t, "ADG0000072: 'a' is no valid port number", err.Error())
 	URL, err = NewURL("adatcp://host:123")
 	assert.NoError(t, err)
-	if assert.NotNil(t, URL) {
+	if !assert.NotNil(t, URL) {
 		return
 	}
 	assert.Equal(t, "host", URL.Host)
 	assert.Equal(t, "host:123", URL.URL())
-	_, err = NewURL("adatcp://host:0")
+
+}
+
+func TestURLDirect(t *testing.T) {
+	URL, err := NewURL("adatcp://host:1230")
+	assert.NoError(t, err)
+	if !assert.NotNil(t, URL) {
+		return
+	}
+	URL, err = NewURL("adatcp://host:0")
 	assert.Error(t, err)
-	assert.Equal(t, "ADG0000070: '123(xxx://abc:a)' is no valid database id", err.Error())
+	assert.Equal(t, "ADG0000071: Invalid URL given, need to be like <dbid>(<protocol>://<host>:<port>)", err.Error())
+	if !assert.Nil(t, URL) {
+		return
+	}
+	URL, err = NewURL("tcpip://host:0")
+	assert.Error(t, err)
+	assert.Equal(t, "ADG0000070: 'tcpip://host:0' is no valid database id", err.Error())
+	if !assert.Nil(t, URL) {
+		return
+	}
+	URL, err = NewURL("201(tcpip://wcphost:30011)")
+	assert.Error(t, err)
+	assert.Equal(t, "ADG0000115: Entire Network target drivers cannot be connect directly, configure Adabas client.", err.Error())
+	if !assert.Nil(t, URL) {
+		return
+	}
+	URL, err = NewURL("adatcp://abchost:1230")
+	assert.NoError(t, err)
+	if !assert.NotNil(t, URL) {
+		return
+	}
+	assert.Equal(t, "1(adatcp://abchost:1230)", URL.String())
+	assert.Equal(t, "abchost", URL.Host)
+	assert.Equal(t, uint32(1230), URL.Port)
+	assert.Equal(t, Dbid(1), URL.Dbid)
+	URL, err = NewURL("adatcp://host:0")
+	assert.Error(t, err)
+	if !assert.Nil(t, URL) {
+		return
+	}
+	assert.Equal(t, "ADG0000071: Invalid URL given, need to be like <dbid>(<protocol>://<host>:<port>)", err.Error())
 
 }
