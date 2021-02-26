@@ -106,5 +106,10 @@ func TestURLDirect(t *testing.T) {
 		return
 	}
 	assert.Equal(t, "ADG0000071: Invalid URL given, need to be like <dbid>(<protocol>://<host>:<port>)", err.Error())
-
+	URL, err = NewURL("201(tcpip://localhost:50001)")
+	assert.Error(t, err)
+	if !assert.Nil(t, URL) {
+		return
+	}
+	assert.Equal(t, "ADG0000115: Entire Network target drivers cannot be connect directly, configure Adabas client.", err.Error())
 }
