@@ -75,7 +75,7 @@ func TestURLDirect(t *testing.T) {
 	}
 	URL, err = NewURL("adatcp://host:0")
 	assert.Error(t, err)
-	assert.Equal(t, "ADG0000071: Invalid URL given, need to be like <dbid>(<protocol>://<host>:<port>)", err.Error())
+	assert.Equal(t, "ADG0000072: '0' is no valid port number", err.Error())
 	if !assert.Nil(t, URL) {
 		return
 	}
@@ -105,7 +105,7 @@ func TestURLDirect(t *testing.T) {
 	if !assert.Nil(t, URL) {
 		return
 	}
-	assert.Equal(t, "ADG0000071: Invalid URL given, need to be like <dbid>(<protocol>://<host>:<port>)", err.Error())
+	assert.Equal(t, "ADG0000072: '0' is no valid port number", err.Error())
 	URL, err = NewURL("201(tcpip://localhost:50001)")
 	assert.Error(t, err)
 	if !assert.Nil(t, URL) {
