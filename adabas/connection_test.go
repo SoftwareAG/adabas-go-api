@@ -1713,7 +1713,7 @@ func TestConnectionNotConnected(t *testing.T) {
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
 	url := "111(adatcp://xxx:60001)"
 	fmt.Println("Connect to ", url)
-	connection, cerr := NewConnection("acj;target=" + url + ")")
+	connection, cerr := NewConnection("acj;target=" + url)
 	if !assert.NoError(t, cerr) {
 		return
 	}
