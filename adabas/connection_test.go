@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -403,7 +403,9 @@ func TestConnectionMultifetch(t *testing.T) {
 	result, err = readRequest.ReadPhysicalSequence()
 	assert.NoError(t, err)
 	// result.DumpValues()
-	assert.Equal(t, 1107, len(result.Values))
+	if assert.NotNil(t, result) {
+		assert.Equal(t, 1107, len(result.Values))
+	}
 }
 
 func TestConnectionNoMultifetch(t *testing.T) {
@@ -433,8 +435,9 @@ func TestConnectionNoMultifetch(t *testing.T) {
 	fmt.Println("Result data:")
 	var result *Response
 	result, err = readRequest.ReadPhysicalSequence()
-	assert.NoError(t, err)
-	assert.Equal(t, 1107, len(result.Values))
+	if assert.NoError(t, err) {
+		assert.Equal(t, 1107, len(result.Values))
+	}
 }
 
 func TestConnectionPeriodAndMultipleField(t *testing.T) {
