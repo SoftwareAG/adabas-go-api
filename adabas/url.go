@@ -92,6 +92,11 @@ func (URL *URL) examineURL(url string) error {
 		}
 		URL.Dbid = Dbid(1)
 		URL.Host = match[1]
+		if port < 1 || port > 65535 {
+			adatypes.Central.Log.Debugf("Port out of range: %v", err)
+			err = adatypes.NewGenericError(72, port)
+			return err
+		}
 		URL.Port = uint32(port)
 		if URL.Port > 0 {
 			URL.Driver = "adatcp"
