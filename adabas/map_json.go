@@ -22,7 +22,7 @@ package adabas
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -36,7 +36,7 @@ type MapFile struct {
 // ParseJSONFileForFields Parse JSON map export file
 func ParseJSONFileForFields(file *os.File) (mapList []*Map, err error) {
 
-	byteValue, _ := ioutil.ReadAll(file)
+	byteValue, _ := io.ReadAll(file)
 
 	var mapFile MapFile
 	err = json.Unmarshal([]byte(byteValue), &mapFile)

@@ -22,7 +22,7 @@ package adatypes
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -206,6 +206,6 @@ func TestUnicodeConverter(t *testing.T) {
 func convrtToUTF8(strBytes []byte, origEncoding string) string {
 	byteReader := bytes.NewReader(strBytes)
 	reader, _ := charset.NewReaderLabel(origEncoding, byteReader)
-	strBytes, _ = ioutil.ReadAll(reader)
+	strBytes, _ = io.ReadAll(reader)
 	return string(strBytes)
 }

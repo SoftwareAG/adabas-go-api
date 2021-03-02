@@ -24,7 +24,6 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -1899,7 +1898,7 @@ func validateResult(t *testing.T, search string, result *Response) error {
 	}
 	if doWrite == "" {
 		fmt.Println("Check reference to", destinationFile)
-		referenceJSON, err := ioutil.ReadFile(destinationFile)
+		referenceJSON, err := io.ReadFile(destinationFile)
 		if !assert.NoError(t, err) {
 			return err
 		}
@@ -1908,7 +1907,7 @@ func validateResult(t *testing.T, search string, result *Response) error {
 	} else {
 		fmt.Println("Write reference check to", destinationFile)
 		os.Remove(destinationFile)
-		err = ioutil.WriteFile(destinationFile, resultJSON, 0644)
+		err = io.WriteFile(destinationFile, resultJSON, 0644)
 		if !assert.NoError(t, err) {
 			return err
 		}
