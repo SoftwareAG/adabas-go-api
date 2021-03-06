@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -229,21 +230,29 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 }
 
 func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *BufferOption, occNumber int) (res TraverseResult, err error) {
-	Central.Log.Debugf("Parse period group/structure %s offset=%d/%X need second=%v", value.Type().Name(),
-		helper.offset, helper.offset, option.NeedSecondCall)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Parse period group/structure %s offset=%d/%X need second=%v", value.Type().Name(),
+			helper.offset, helper.offset, option.NeedSecondCall)
+	}
 	/* Evaluate the fields which need to be parsed in the period group */
 	tm := TraverserValuesMethods{EnterFunction: evaluateFieldNames}
 	efns := &evaluateFieldNameStructure{namesMap: make(map[string]bool), second: option.SecondCall}
 	res, err = value.Traverse(tm, efns)
-	Central.Log.Debugf("Got %d names got need second=%v was need second=%v", len(efns.names), efns.needSecond, option.NeedSecondCall)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Got %d names got need second=%v was need second=%v", len(efns.names), efns.needSecond, option.NeedSecondCall)
+	}
 	if option.NeedSecondCall == NoneSecond {
 		option.NeedSecondCall = efns.needSecond
 	}
 	for _, n := range efns.names {
-		Central.Log.Debugf("Parse start of name : %s offset=%d/%X need second=%v", n, helper.offset,
-			helper.offset, option.NeedSecondCall)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Parse start of name : %s offset=%d/%X need second=%v", n, helper.offset,
+				helper.offset, option.NeedSecondCall)
+		}
 		for i := 0; i < occNumber; i++ {
-			Central.Log.Debugf("Get occurrence : %d -> %d", (i + 1), value.NrElements())
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Get occurrence : %d -> %d", (i + 1), value.NrElements())
+			}
 			v := value.Get(n, i+1)
 			if v == nil {
 				// debug.PrintStack()
@@ -253,11 +262,15 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 			if v.Type().IsStructure() {
 				st := v.Type().(*StructureType)
 				if st.Type() == FieldTypeMultiplefield && st.HasFlagSet(FlagOptionPE) && !st.PeriodicRange().IsSingleIndex() {
-					Central.Log.Debugf("Skip %s PE=%d", st.Name(), v.PeriodIndex())
+					if Central.IsDebugLevel() {
+						Central.Log.Debugf("Skip %s PE=%d", st.Name(), v.PeriodIndex())
+					}
 					if option.NeedSecondCall = ReadSecond; option.StoreCall {
 						option.NeedSecondCall = StoreSecond
 					}
-					Central.Log.Debugf("Parse PG: need second call %d", option.NeedSecondCall)
+					if Central.IsDebugLevel() {
+						Central.Log.Debugf("Parse PG: need second call %d", option.NeedSecondCall)
+					}
 				} else {
 					nrMu := uint32(1)
 					if !st.MultipleRange().IsSingleIndex() {
@@ -266,8 +279,10 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 							return
 						}
 					}
-					Central.Log.Debugf("Got Nr of Multiple Fields = %d creating them ... for %d (%s/%s)",
-						nrMu, v.PeriodIndex(), st.PeriodicRange().FormatBuffer(), st.MultipleRange().FormatBuffer())
+					if Central.IsDebugLevel() {
+						Central.Log.Debugf("Got Nr of Multiple Fields = %d creating them ... for %d (%s/%s)",
+							nrMu, v.PeriodIndex(), st.PeriodicRange().FormatBuffer(), st.MultipleRange().FormatBuffer())
+					}
 					/* Initialize MU elements dependent on the counter result */
 					for muIndex := uint32(0); muIndex < nrMu; muIndex++ {
 						muStructureType := v.Type().(*StructureType)
@@ -289,12 +304,16 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 								return
 							}
 						} else {
-							Central.Log.Debugf("MU index %d,%d -> %d", sv.PeriodIndex(), sv.MultipleIndex(), i)
-							Central.Log.Debugf("Due to Period and MU field, need second call call (PE/MU) for %s", value.Type().Name())
+							if Central.IsDebugLevel() {
+								Central.Log.Debugf("MU index %d,%d -> %d", sv.PeriodIndex(), sv.MultipleIndex(), i)
+								Central.Log.Debugf("Due to Period and MU field, need second call call (PE/MU) for %s", value.Type().Name())
+							}
 							if option.NeedSecondCall = ReadSecond; option.StoreCall {
 								option.NeedSecondCall = StoreSecond
 							}
-							Central.Log.Debugf("Parse PG2: need second call %d", option.NeedSecondCall)
+							if Central.IsDebugLevel() {
+								Central.Log.Debugf("Parse PG2: need second call %d", option.NeedSecondCall)
+							}
 						}
 					}
 				}
@@ -502,8 +521,10 @@ func (value *StructureValue) shiftEmptyMfBuffer(helper *BufferHelper) (err error
 	t := TraverserMethods{EnterFunction: countPEsize}
 	adaType := value.Type().(*StructureType)
 	adaType.Traverse(t, 1, &size)
-	Central.Log.Debugf("Skip parsing %s/%s type=%s, shift PE empty part %d bytes remaining=%d",
-		value.Type().Name(), value.Type().ShortName(), value.Type().Type().name(), size, helper.Remaining())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Skip parsing %s/%s type=%s, shift PE empty part %d bytes remaining=%d",
+			value.Type().Name(), value.Type().ShortName(), value.Type().Type().name(), size, helper.Remaining())
+	}
 	_, err = helper.ReceiveBytes(size)
 	return
 }
@@ -534,12 +555,16 @@ func (value *StructureValue) search(fieldName string) IAdaValue {
 
 // Traverse Traverse through the definition tree calling a callback method for each node
 func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (ret TraverseResult, err error) {
-	Central.Log.Debugf("Traverse level %d structure: %s", value.Type().Level(), value.Type().Name())
-	Central.Log.Debugf("Nr sub elements=%d", value.NrElements())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Traverse level %d structure: %s", value.Type().Level(), value.Type().Name())
+		Central.Log.Debugf("Nr sub elements=%d", value.NrElements())
+	}
 	if value.Elements != nil { // && len(value.Elements[0].Values) > 0 {
 		nr := len(value.Elements)
 		for e, val := range value.Elements {
-			Central.Log.Debugf("%d: Nr sub values=%d", e, len(val.Values))
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("%d: Nr sub values=%d", e, len(val.Values))
+			}
 			if t.ElementFunction != nil {
 				ret, err = t.ElementFunction(value, e, nr, x)
 				if err != nil || ret == EndTraverser {
@@ -547,11 +572,13 @@ func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (
 				}
 			}
 			for i, v := range val.Values {
-				Central.Log.Debugf("Traverse node %d.element and %d.value at %s[%d,%d] for %s[%d,%d]", e, i, v.Type().Name(),
-					v.PeriodIndex(), v.MultipleIndex(), value.Type().Name(), value.PeriodIndex(), value.MultipleIndex())
-				if value.PeriodIndex() != v.PeriodIndex() {
-					if value.Type().Type() != FieldTypePeriodGroup {
-						Central.Log.Debugf("!!!!----> Error index parent not correct for %s of %s", v.Type().Name(), value.Type().Name())
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("Traverse node %d.element and %d.value at %s[%d,%d] for %s[%d,%d]", e, i, v.Type().Name(),
+						v.PeriodIndex(), v.MultipleIndex(), value.Type().Name(), value.PeriodIndex(), value.MultipleIndex())
+					if value.PeriodIndex() != v.PeriodIndex() {
+						if value.Type().Type() != FieldTypePeriodGroup {
+							Central.Log.Debugf("!!!!----> Error index parent not correct for %s of %s", v.Type().Name(), value.Type().Name())
+						}
 					}
 				}
 				if t.EnterFunction != nil {
@@ -566,11 +593,15 @@ func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (
 					LogMultiLineString(FormatByteBuffer("DATA: ", v.Bytes()))
 				}
 				if ret == SkipStructure {
-					Central.Log.Debugf("Skip structure tree ... ")
+					if Central.IsDebugLevel() {
+						Central.Log.Debugf("Skip structure tree ... ")
+					}
 					return Continue, nil
 				}
 				if v.Type().IsStructure() && ret != SkipTree {
-					Central.Log.Debugf("Traverse tree %s", v.Type().Name())
+					if Central.IsDebugLevel() {
+						Central.Log.Debugf("Traverse tree %s", v.Type().Name())
+					}
 					ret, err = v.(*StructureValue).Traverse(t, x)
 					if err != nil || ret == EndTraverser {
 						return
@@ -582,7 +613,9 @@ func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (
 						return
 					}
 				}
-				Central.Log.Debugf("Traverse index=%d/%d pfield=%s-field=%s", i, nr, value.Type().Name(), v.Type().Name())
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("Traverse index=%d/%d pfield=%s-field=%s", i, nr, value.Type().Name(), v.Type().Name())
+				}
 			}
 		}
 	}
@@ -666,7 +699,9 @@ func (value *StructureValue) SetValue(v interface{}) error {
 				value.addValue(sv, uint32(i+1))
 			}
 		case FieldTypePeriodGroup:
-			Central.Log.Debugf("Check preiod group slice possible")
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Check preiod group slice possible")
+			}
 			vi := reflect.ValueOf(v)
 			ti := reflect.TypeOf(v)
 			if ti.Kind() == reflect.Ptr {
@@ -709,7 +744,9 @@ func (value *StructureValue) SetValue(v interface{}) error {
 					}
 				}
 			}
-			Central.Log.Debugf("PE entries %d", value.NrElements())
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("PE entries %d", value.NrElements())
+			}
 		default:
 		}
 	case reflect.Ptr, reflect.Struct:
@@ -725,9 +762,13 @@ func (value *StructureValue) SetValue(v interface{}) error {
 func extractAdabasTagShortName(ti reflect.Type, searchName string) string {
 	for fi := 0; fi < ti.NumField(); fi++ {
 		s := ti.FieldByIndex([]int{fi})
-		Central.Log.Debugf("%d Tag =  %s -> %s", fi, s.Tag, s.Name)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("%d Tag =  %s -> %s", fi, s.Tag, s.Name)
+		}
 		if x, ok := s.Tag.Lookup("adabas"); ok {
-			Central.Log.Debugf("Adabas tag: %s", x)
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Adabas tag: %s", x)
+			}
 			p := strings.Split(x, ":")
 			if len(p) > 2 && p[2] == searchName {
 				return s.Name
@@ -740,34 +781,48 @@ func extractAdabasTagShortName(ti reflect.Type, searchName string) string {
 func (value *StructureValue) formatBufferSecondCall(buffer *bytes.Buffer, option *BufferOption) uint32 {
 	structureType := value.Type().(*StructureType)
 	if structureType.Type() == FieldTypeMultiplefield && structureType.HasFlagSet(FlagOptionPE) {
-		Central.Log.Debugf("Generate FB for second call [%d,%d]", value.peIndex, value.muIndex)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Generate FB for second call [%d,%d]", value.peIndex, value.muIndex)
+		}
 		if buffer.Len() > 0 {
 			buffer.WriteString(",")
 		}
 
 		x := value.peIndex
 		r := structureType.muRange.FormatBuffer()
-		buffer.WriteString(fmt.Sprintf("%s%dC,4,B,%s%d(%s),%d",
-			value.Type().ShortName(), x, value.Type().ShortName(), x, r, structureType.SubTypes[0].Length()))
+		buffer.WriteString(value.Type().ShortName())
+		buffer.WriteString(strconv.FormatInt(int64(x), 10))
+		buffer.WriteString("C,4,B," + value.Type().ShortName())
+		buffer.WriteString(strconv.FormatInt(int64(x), 10))
+		buffer.WriteString("(" + r + "),")
+		buffer.WriteString(strconv.FormatInt(int64(structureType.SubTypes[0].Length()), 10))
+		// buffer.WriteString(fmt.Sprintf("%s%dC,4,B,%s%d(%s),%d",
+		// 	value.Type().ShortName(), x, value.Type().ShortName(), x, r, structureType.SubTypes[0].Length()))
 
 		Central.Log.Debugf("FB of second call %s", buffer.String())
 		return 4 + structureType.SubTypes[0].Length()
 	}
-	Central.Log.Debugf("Skip because second call")
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Skip because second call")
+	}
 	return 0
 
 }
 
 // FormatBuffer provide the format buffer of this structure
 func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
-	Central.Log.Debugf("Write FormatBuffer for structure of %s store=%v", value.Type().Name(), option.StoreCall)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Write FormatBuffer for structure of %s store=%v", value.Type().Name(), option.StoreCall)
+	}
 	if option.SecondCall > 0 {
 		return value.formatBufferSecondCall(buffer, option)
 	}
 	structureType := value.Type().(*StructureType)
 	recordBufferLength := uint32(0)
 	if structureType.NrFields() > 0 {
-		Central.Log.Debugf("Structure FormatBuffer %s type=%d nrFields=%d", value.Type().Name(), value.Type().Type(), structureType.NrFields())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Structure FormatBuffer %s type=%d nrFields=%d", value.Type().Name(), value.Type().Type(), structureType.NrFields())
+		}
 		switch value.Type().Type() {
 		case FieldTypeMultiplefield:
 			// if structureType.HasFlagSet(FlagOptionSingleIndex) {
@@ -782,13 +837,18 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 				if value.Type().HasFlagSet(FlagOptionPE) {
 					buffer.WriteString(value.Type().ShortName() + p + "(C),4")
 				} else {
-					buffer.WriteString(value.Type().ShortName() + "C,4,B")
+					buffer.WriteString(value.Type().ShortName() + "C,4,B,")
 					muType := structureType.SubTypes[0]
-					buffer.WriteString(fmt.Sprintf(",%s%s,%d,%s",
-						value.Type().ShortName(), p, muType.Length(), muType.Type().FormatCharacter()))
+					buffer.WriteString(value.Type().ShortName())
+					buffer.WriteString(p + ",")
+					buffer.WriteString(strconv.FormatInt(int64(muType.Length()), 10))
+					buffer.WriteString("," + muType.Type().FormatCharacter())
+					// buffer.WriteString(fmt.Sprintf("%s%s,%d,%s",
+					// 	value.Type().ShortName(), p, muType.Length(), muType.Type().FormatCharacter()))
 				}
-
-				Central.Log.Debugf("Current MU field %s, search in %d nodes", value.Type().Name(), len(value.Elements))
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("Current MU field %s, search in %d nodes", value.Type().Name(), len(value.Elements))
+				}
 				recordBufferLength += option.multipleSize
 			}
 		case FieldTypePeriodGroup:
@@ -854,7 +914,8 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 			Central.Log.Debugf("Elements already part of map %d", curIndex)
 		}
 	}
-	s := fmt.Sprintf("%s-%d-%d", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
+	s := convertMapIndex(subValue)
+	//	s := fmt.Sprintf("%s-%d-%d", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Search for %s", s)
 	}
@@ -870,8 +931,9 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 	} else {
 		// Check elements list already available
 		if value.Elements == nil {
-			Central.Log.Debugf("Create new list for %s and append", value.Type().Name())
-
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Create new list for %s and append", value.Type().Name())
+			}
 			// If MU field and index not already initialized, define index
 			if value.Type().Type() == FieldTypeMultiplefield && subValue.MultipleIndex() == 0 {
 				subValue.setMultipleIndex(1)
@@ -895,13 +957,24 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 			Central.Log.Debugf("Add sub value new %s[%d:%d] %T previous %s",
 				subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex(), subValue, s)
 		}
-		element.valueMap[fmt.Sprintf("%s-%d-%d", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())] = subValue
+		element.valueMap[convertMapIndex(subValue)] = subValue
+		//element.valueMap[fmt.Sprintf("%s-%d-%d", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())] = subValue
 	}
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Final list for %s[%d,%d] = %d elements for %s[%d,%d]", value.Type().Name(), value.PeriodIndex(),
 			value.MultipleIndex(), len(value.Elements), subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
 	}
 	return nil
+}
+
+func convertMapIndex(subValue IAdaValue) string {
+	buf := make([]byte, 0, 30)
+	buf = append(buf, subValue.Type().Name()...)
+	buf = append(buf, '-')
+	buf = strconv.AppendUint(buf, uint64(subValue.PeriodIndex()), 10)
+	buf = append(buf, '-')
+	buf = strconv.AppendUint(buf, uint64(subValue.MultipleIndex()), 10)
+	return string(buf)
 }
 
 // Int32 not used

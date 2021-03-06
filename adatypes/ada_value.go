@@ -236,38 +236,38 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 		val = v
 	case int64:
 		if v < 0 {
-			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
+			return 0, NewGenericError(101, fmt.Sprintf("unsigned int64 (%T,%d)", x, v))
 		}
 		val = uint64(v)
 	case int:
 		if v < 0 {
-			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
+			return 0, NewGenericError(101, fmt.Sprintf("unsigned int64 (%T,%d)", x, v))
 		}
 		val = uint64(v)
 	case uint32:
 		val = uint64(x.(uint32))
 	case int32:
 		if v < 0 {
-			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
+			return 0, NewGenericError(101, fmt.Sprintf("unsigned int64 (%T,%d)", x, v))
 		}
 		val = uint64(v)
 	case uint16:
 		val = uint64(v)
 	case int16:
 		if v < 0 {
-			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
+			return 0, NewGenericError(101, fmt.Sprintf("unsigned int64 (%T,%d)", x, v))
 		}
 		val = uint64(v)
 	case uint8:
 		val = uint64(v)
 	case int8:
 		if v < 0 {
-			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
+			return 0, NewGenericError(101, fmt.Sprintf("unsigned int64 (%T,%d)", x, v))
 		}
 		val = uint64(v)
 	case float64:
 		if v < 0 {
-			return 0, NewGenericError(101, fmt.Sprintf("%T", x))
+			return 0, NewGenericError(101, fmt.Sprintf("unsigned int64 (%T,%f)", x, v))
 		}
 		val = uint64(v)
 	case json.Number:
@@ -312,7 +312,9 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 			return res, nil
 		default:
 		}
-		Central.Log.Debugf("Error converting to byte slice: %v", x)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Error converting to byte slice: %v", x)
+		}
 		return 0, NewGenericError(104, len(v), adavalue.Type().Name())
 	default:
 		return 0, NewGenericError(103, fmt.Sprintf("%T", x), adavalue.Type().Name())
@@ -322,7 +324,9 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 
 // common format buffer generation
 func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
-	Central.Log.Debugf("Convert common int64 value %s %v %s %T", adavalue.Type().Name(), x, reflect.TypeOf(x).Name(), x)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Convert common int64 value %s %v %s %T", adavalue.Type().Name(), x, reflect.TypeOf(x).Name(), x)
+	}
 	var val int64
 	multiplier := math.Pow10(int(adavalue.Type().Fractional()))
 	switch v := x.(type) {

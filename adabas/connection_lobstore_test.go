@@ -23,7 +23,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
-	"io/io"
+	"io/ioutil"
 	"os"
 	"testing"
 
@@ -68,7 +68,7 @@ func TestConnectionStorePartial(t *testing.T) {
 		p = "."
 	}
 	name := p + string(os.PathSeparator) + "img" + string(os.PathSeparator) + "106-0687_IMG.JPG"
-	x, ferr := io.ReadFile(name)
+	x, ferr := ioutil.ReadFile(name)
 	if assert.NoError(t, ferr) {
 		err = record.SetValue("RA", x)
 		assert.NoError(t, err)
@@ -223,7 +223,7 @@ func TestConnectionStorePartialStream(t *testing.T) {
 		p = "."
 	}
 	name := p + string(os.PathSeparator) + "img" + string(os.PathSeparator) + "106-0687_IMG.JPG"
-	x, ferr := io.ReadFile(name)
+	x, ferr := ioutil.ReadFile(name)
 	if !assert.NoError(t, ferr) {
 		return
 	}

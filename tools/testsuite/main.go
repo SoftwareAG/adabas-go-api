@@ -29,14 +29,13 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"runtime"
-	"runtime/pprof"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/SoftwareAG/adabas-go-api/adabas"
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
+	"github.com/pkg/profile"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -260,8 +259,8 @@ func main() {
 	var file int
 	var name string
 	var credential string
-	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
-	var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
+	var cpuprofile = flag.Bool("cpuprofile", false, "write cpu profile")
+	var memprofile = flag.Bool("memprofile", false, "write memory profile")
 
 	//flag.StringVar(&gopherType, "gopher_type", defaultGopher, usage)
 	flag.IntVar(&countValue, "c", 1, "Number of loops")
@@ -279,17 +278,13 @@ func main() {
 		return
 	}
 
-	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
-		if err != nil {
-			panic("could not create CPU profile: " + err.Error())
-		}
-		if err := pprof.StartCPUProfile(f); err != nil {
-			panic("could not start CPU profile: " + err.Error())
-		}
-		defer pprof.StopCPUProfile()
+	if *cpuprofile {
+		defer profile.Start().Stop()
 	}
-	defer writeMemProfile(*memprofile)
+	if *memprofile {
+		defer profile.Start(profile.MemProfile).Stop()
+		//defer writeMemProfile(*memprofile)
+	}
 
 	names := strings.Split(name, ",")
 
@@ -303,22 +298,6 @@ func main() {
 
 	}
 	wg.Wait()
-
-}
-
-func writeMemProfile(file string) {
-	if file != "" {
-		f, err := os.Create(file)
-		if err != nil {
-			panic("could not create memory profile: " + err.Error())
-		}
-		runtime.GC() // get up-to-date statistics
-		if err := pprof.WriteHeapProfile(f); err != nil {
-			panic("could not write memory profile: " + err.Error())
-		}
-		defer f.Close()
-		fmt.Println("Memory profile written")
-	}
 
 }
 
