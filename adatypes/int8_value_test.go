@@ -496,7 +496,7 @@ func ExampleIAdaType_uint8SetValue() {
 
 	// Output: 	Unsigned Integer default value : 0
 	// Integer 1000 value : 1000 uint64
-	// ADG0000101: Cannot convert negative value to unsigned of type int64
+	// ADG0000101: Cannot convert negative value to unsigned of type unsigned int64 (int64,-9223372036854775808)
 	// Integer maximal value : 9223372036854775807 uint64
 	// Integer 10 (8bit) value : 10 uint64
 	// Integer 100 (16bit) value : 100 uint64

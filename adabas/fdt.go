@@ -25,17 +25,10 @@ import (
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
-//var fdtFieldEntry []adatypes.IAdaType
-//var fdtHyperFieldEntry []adatypes.IAdaType
-//var fdt []adatypes.IAdaType
-//var fdtGeneralLayout []adatypes.IAdaType
-
-//var fdtDefinition *adatypes.Definition
-
-//var fdtCondition map[byte][]byte
-
+// Adabas field name length maximum
 const fieldNameLength = 2
 
+// Field identifier used in the FDT call
 type fieldIdentifier uint
 
 const (
@@ -54,6 +47,7 @@ func (fdt fieldIdentifier) code() byte {
 	return byte(fieldIdentifiers[fdt])
 }
 
+// Adabas FDT call fdt options used for getting field information
 type option byte
 
 const (
@@ -93,14 +87,19 @@ func (cc option) iv() int {
 	return int(cc)
 }
 
+// FDT field entry structures
 var fdtFieldEntry = []adatypes.IAdaType{
 	adatypes.NewTypeWithLength(adatypes.FieldTypeString, "fieldName", 2),
 	adatypes.NewType(adatypes.FieldTypeUInt2, "fieldFrom"),
 	adatypes.NewType(adatypes.FieldTypeUInt2, "fieldTo"),
 }
+
+// FDT hyper field entry structures
 var fdtHyperFieldEntry = []adatypes.IAdaType{
 	adatypes.NewTypeWithLength(adatypes.FieldTypeString, "fieldName", 2),
 }
+
+// FDT main field structures
 var fdt = []adatypes.IAdaType{
 	adatypes.NewType(adatypes.FieldTypeCharacter, "FieldIdentifier"),                   // 0
 	adatypes.NewType(adatypes.FieldTypeLength, "FieldDefLength"),                       // 1
@@ -141,6 +140,8 @@ var fdt = []adatypes.IAdaType{
 	adatypes.NewType(adatypes.FieldTypeUByte, "refUpdateAction"), // 35
 	adatypes.NewType(adatypes.FieldTypeUByte, "refDeleteAction"),
 }
+
+// FDT condition matrix defining various parts of the field types needed
 var fdtCondition = map[byte][]byte{
 	fieldIdentifierField.code(): {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11},
 	fieldIdentifierSuper.code(): {1, 2, 3, 4, 12, 13, 14},
@@ -151,6 +152,8 @@ var fdtCondition = map[byte][]byte{
 	fieldIdentifierHyperexit.code():   {1, 2, 3, 4, 26, 27, 28, 29, 30},
 	fieldIdentifierReferential.code(): {1, 2, 31, 32, 33, 34, 35, 36},
 }
+
+// FDT general main level layout for the Adabas LA call
 var fdtGeneralLayout = []adatypes.IAdaType{
 	adatypes.NewType(adatypes.FieldTypeUInt4, "fdtLength"),
 	adatypes.NewType(adatypes.FieldTypeByte, "fdtStrLevel"),
@@ -160,17 +163,20 @@ var fdtGeneralLayout = []adatypes.IAdaType{
 	adatypes.NewStructureCondition(adatypes.FieldTypeStructure, "fdt", fdt, adatypes.NewFieldCondition(1, 0, fdtCondition)),
 }
 
+// Create used definition to read FDT
 func createFdtDefintion() *adatypes.Definition {
 	return adatypes.NewDefinitionWithTypes(fdtGeneralLayout)
 }
 
+// Traverser to count fields
 func traverserFieldDefinitionCreator(adaValue adatypes.IAdaValue, level int, x interface{}) bool {
 	number := x.(*int)
 	(*number)++
 	return true
 }
 
-// Create field definition table
+// Create field definition table definition useds to parse Adabas LA call
+// getting the Adabas file definition out of the FDT
 func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatypes.Definition, err error) {
 	definition = adatypes.NewDefinition()
 	fdtSearch := fdtDef.Search("fdt")
