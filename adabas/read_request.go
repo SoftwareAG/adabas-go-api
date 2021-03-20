@@ -130,7 +130,7 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 			adatypes.Central.Log.Debugf("Create dynamic %v", request.dynamic)
 			return
 		}
-		adatypes.Central.Log.Debugf("Unknown: %v %T", reflect.TypeOf(param[0]).Kind(), param[0])
+		adatypes.Central.Log.Errorf("Unknown request parameter: %v %T", reflect.TypeOf(param[0]).Kind(), param[0])
 	}
 	return nil, adatypes.NewGenericError(73)
 }

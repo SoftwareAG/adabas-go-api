@@ -176,7 +176,7 @@ func (connection *Connection) ReflectStore(entries interface{}, mapName string) 
 			}
 		}
 	default:
-		adatypes.Central.Log.Debugf("Unkown type %v", reflect.TypeOf(entries).Kind())
+		adatypes.Central.Log.Errorf("Unknown reflect store type %v", reflect.TypeOf(entries).Kind())
 	}
 	return nil
 

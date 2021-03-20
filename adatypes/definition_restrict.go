@@ -531,7 +531,7 @@ func SetValueData(s reflect.Value, v IAdaValue) error {
 	case *string:
 		s.Elem().SetString(v.String())
 	default:
-		Central.Log.Debugf("Unknown conversion %s/%s", s.Type().String(), v.Type().Name())
+		Central.Log.Errorf("Unknown conversion %s/%s", s.Type().String(), v.Type().Name())
 		return NewGenericError(80, s.Type(), v.Type().Name())
 	}
 	return nil

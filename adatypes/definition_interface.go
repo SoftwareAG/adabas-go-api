@@ -120,7 +120,7 @@ func evaluateField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (res
 				f.Set(nv)
 				return Continue, nil
 			default:
-				Central.Log.Debugf("Unknown interface type %T", f.Interface())
+				Central.Log.Errorf("Unknown interface type %T", f.Interface())
 			}
 		}
 		Central.Log.Debugf("Found slice on %s %d,%d", adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex())
@@ -132,7 +132,7 @@ func evaluateField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (res
 			nv := reflect.ValueOf(adaValue.Bytes())
 			f.Set(nv)
 		default:
-			Central.Log.Debugf("Unknown sub type %s", st.Kind())
+			Central.Log.Errorf("Unknown sub type %s", st.Kind())
 		}
 	case reflect.Ptr:
 		if f.Elem().IsValid() {
@@ -154,13 +154,25 @@ func evaluateField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (res
 	default:
 		if f.IsValid() {
 			switch f.Kind() {
-			case reflect.Int64, reflect.Int32:
+			case reflect.Int64, reflect.Int32, reflect.Int:
+				i, err := adaValue.Int64()
+				if err != nil {
+					return EndTraverser, err
+				}
+				f.SetInt(i)
+			case reflect.Int8, reflect.Int16:
 				i, err := adaValue.Int64()
 				if err != nil {
 					return EndTraverser, err
 				}
 				f.SetInt(i)
 			case reflect.Uint64, reflect.Uint32:
+				i, err := adaValue.UInt64()
+				if err != nil {
+					return EndTraverser, err
+				}
+				f.SetUint(i)
+			case reflect.Uint8, reflect.Uint16:
 				i, err := adaValue.UInt64()
 				if err != nil {
 					return EndTraverser, err
@@ -182,7 +194,7 @@ func evaluateField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (res
 			case reflect.String:
 				f.SetString(adaValue.String())
 			default:
-				Central.Log.Infof("Unkown kind: %v", f.Kind())
+				Central.Log.Errorf("Unknown kind: %v for %s", f.Kind(), adaValue.Type().Name())
 			}
 			Central.Log.Debugf("%s=%v->%v", adaValue.Type().Name(), v, f)
 		} else {
