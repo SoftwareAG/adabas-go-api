@@ -66,7 +66,7 @@ func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string)
 				case "":
 					// this is if the inmap repository-less map is used
 				default:
-					Central.Log.Debugf("Unknown control tag >%s<", s[1])
+					Central.Log.Errorf("Unknown control tag >%s<", s[1])
 					continue
 				}
 			}

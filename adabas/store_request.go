@@ -133,7 +133,7 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 			request.createDynamic(param[0])
 			return request, nil
 		}
-		adatypes.Central.Log.Debugf("Unknown kind: %s", reflect.TypeOf(param[0]).Kind())
+		adatypes.Central.Log.Errorf("Unknown kind: %s", reflect.TypeOf(param[0]).Kind())
 	}
 
 	return nil, adatypes.NewGenericError(79)
@@ -655,7 +655,7 @@ func (request *StoreRequest) modifyData(data interface{}, store, etData bool) er
 			return err
 		}
 	default:
-		adatypes.Central.Log.Debugf("Unkown type %v", reflect.TypeOf(data).Kind())
+		adatypes.Central.Log.Errorf("Unknown Store type %v", reflect.TypeOf(data).Kind())
 		return adatypes.NewGenericError(0)
 	}
 	return nil
