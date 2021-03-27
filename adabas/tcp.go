@@ -69,7 +69,8 @@ type AdaTCPHeader struct {
 	BufferType     BufferType
 	Identification adaUUID
 	ErrorCode      uint32
-	Reserved       uint32
+	DatabaseType   byte
+	Reserved       [3]byte
 }
 
 // AdaTCPHeaderLength length of AdaTCPHeader structure
@@ -129,6 +130,7 @@ type AdaTCP struct {
 	pair                []string
 	id                  adaTCPID
 	stats               *Statistics
+	databaseType        byte
 }
 
 const adatcpDataHeaderEyecatcher = "DATA"
@@ -320,6 +322,7 @@ func (connection *AdaTCP) Connect() (err error) {
 	connection.databaseVersion = payload.DatabaseVersion
 	connection.databaseName = payload.DatabaseName
 	connection.databaseID = payload.DatabaseID
+	connection.databaseType = header.DatabaseType
 
 	return
 }
@@ -356,8 +359,6 @@ func (connection *AdaTCP) createSSLConnection(url string) (err error) {
 			//			adatypes.Central.Log.Debugf("%s %v -> %v", v.Issuer.CommonName, x, pkerr)
 		}
 		adatypes.Central.Log.Debugf("client: handshake: %v", state.HandshakeComplete)
-		adatypes.Central.Log.Debugf("client: mutual: %v", state.NegotiatedProtocolIsMutual)
-
 		adatypes.Central.Log.Debugf("Connect dial passed ...")
 
 	}

@@ -1654,7 +1654,6 @@ func checkChecksum(t *testing.T, record *Record, field, expectMd5 string, expect
 	assert.Equal(t, expectLen, len(raw))
 	md5sum := fmt.Sprintf("%X", md5.Sum(raw))
 	assert.Equal(t, expectMd5, md5sum)
-	return
 }
 
 func TestConnectionReadOnlyPEFields9(t *testing.T) {

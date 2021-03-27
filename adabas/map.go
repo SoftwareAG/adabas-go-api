@@ -402,7 +402,7 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 						return ferr
 					}
 					if fs < 0 && fs > math.MaxUint32 {
-						return fmt.Errorf("Fractional %d out of range", fs)
+						return fmt.Errorf("fractional %d out of range", fs)
 					}
 					adaType.SetFractional(uint32(fs))
 				case "charset":
@@ -418,7 +418,7 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 						return ferr
 					}
 					if fs < 0 && fs > math.MaxUint32 {
-						return fmt.Errorf("Length %d out of range", fs)
+						return fmt.Errorf("length %d out of range", fs)
 					}
 					adaType.SetFormatLength(uint32(fs))
 				default:

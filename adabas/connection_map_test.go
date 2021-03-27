@@ -937,7 +937,7 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 	}
 
 	err = deleteRequest.Delete(adatypes.Isn(lastIsn))
-	assert.NoError(t, derr)
+	assert.NoError(t, err)
 	connection.Close()
 }
 

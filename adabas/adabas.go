@@ -43,7 +43,7 @@ const MaxDatabasesID = 65536
 const adaEmptOpt = ' '
 const adaFdtXOpt = 'X'
 
-type adabasOption uint32
+//type adabasOption uint32
 
 // Transaction flags to synchronize and manage different requests
 type transactions struct {
@@ -88,9 +88,9 @@ func init() {
 	}
 }
 
-func (option adabasOption) Bit() uint32 {
-	return (1 << option)
-}
+// func (option adabasOption) Bit() uint32 {
+// 	return (1 << option)
+// }
 
 // NewClonedAdabas create a cloned Adabas struct instance
 func NewClonedAdabas(clone *Adabas) *Adabas {

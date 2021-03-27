@@ -93,7 +93,7 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 			adatypes.Central.Log.Debugf("It's a struct %s", ti.Name())
 			mapName := ti.Name()
 			if len(param) < 2 {
-				return nil, errors.New("Not enough parameters for NewStoreRequest")
+				return nil, errors.New("not enough parameters for NewStoreRequest")
 			}
 			var request *StoreRequest
 			ada := param[1].(*Adabas)
@@ -183,21 +183,18 @@ func NewAdabasMapNameStoreRequest(adabas *Adabas, adabasMap *Map) (request *Stor
 
 // evaluateFnr evalute Adabas file number
 func evaluateFnr(p interface{}) (Fnr, error) {
-	switch p.(type) {
+	switch i := p.(type) {
 	case int:
-		i := p.(int)
 		return Fnr(i), nil
 	case int32:
-		i := p.(int32)
 		return Fnr(i), nil
 	case int64:
-		i := p.(int64)
 		return Fnr(i), nil
 	case Fnr:
 		return p.(Fnr), nil
 	default:
 	}
-	return 0, fmt.Errorf("Cannot evaluate Fnr")
+	return 0, fmt.Errorf("cannot evaluate Fnr")
 }
 
 // Open Open the Adabas session

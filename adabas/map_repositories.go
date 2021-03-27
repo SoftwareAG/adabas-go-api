@@ -75,12 +75,11 @@ func init() {
 
 func evaluateURL(i interface{}) *URL {
 	var url *URL
-	switch i.(type) {
+	switch a := i.(type) {
 	case *Adabas:
-		a := i.(*Adabas)
 		url = a.URL
 	case *URL:
-		url = i.(*URL)
+		url = a
 	default:
 		return nil
 	}

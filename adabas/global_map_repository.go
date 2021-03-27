@@ -98,11 +98,10 @@ func AddGlobalMapRepositoryReference(reference string) error {
 // defined global.
 func AddGlobalMapRepository(i interface{}, fnr Fnr) {
 	var url *URL
-	switch i.(type) {
+	switch a := i.(type) {
 	case *URL:
-		url = i.(*URL)
+		url = a
 	case *Adabas:
-		a := i.(*Adabas)
 		url = a.URL
 	default:
 		fmt.Println("Error adding global repository with", i)
@@ -304,7 +303,7 @@ func extractReference(reference string) (url *URL, fnr Fnr, err error) {
 		err = ferr
 		return
 	}
-	if f < 0 || f > math.MaxUint32 {
+	if f > math.MaxUint32 {
 		return
 	}
 	fnr = Fnr(f)
