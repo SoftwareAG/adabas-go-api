@@ -20,8 +20,6 @@
 package adabas
 
 import (
-	"fmt"
-
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
@@ -131,7 +129,7 @@ func (request *ReadRequest) ReadFieldStream(search string) (result *Response, er
 		request.cursoring.adabasRequest.Option.StreamCursor++
 	} else {
 		if uint32(request.cursoring.adabasRequest.Option.StreamCursor)*request.BlockSize > request.cursoring.FieldLength {
-			return nil, fmt.Errorf("end reached")
+			return nil, adatypes.NewGenericError(168)
 		}
 		request.cursoring.adabasRequest.Definition.Values = request.cursoring.result.Values[0].Value
 		adatypes.Central.Log.Debugf("Next read with ...streaming ISN=%d avail.=%v", request.cursoring.adabasRequest.Isn, (request.cursoring.adabasRequest.Definition.Values != nil))

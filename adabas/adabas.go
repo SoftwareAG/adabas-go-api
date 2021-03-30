@@ -344,7 +344,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 	}
 	buffer.Reset()
 	var nrAbdBuffers uint32
-	nrAbdBuffers, err = tcpConn.ReceiveData(&buffer)
+	nrAbdBuffers, err = tcpConn.ReceiveData(&buffer, adabasReply)
 	if err != nil {
 		adatypes.Central.Log.Infof("Receive Adabas call error: %v", err)
 		return

@@ -21,7 +21,6 @@ package adabas
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -194,7 +193,7 @@ func evaluateFnr(p interface{}) (Fnr, error) {
 		return p.(Fnr), nil
 	default:
 	}
-	return 0, fmt.Errorf("cannot evaluate Fnr")
+	return 0, adatypes.NewGenericError(167)
 }
 
 // Open Open the Adabas session

@@ -256,7 +256,7 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 			v := value.Get(n, i+1)
 			if v == nil {
 				// debug.PrintStack()
-				return EndTraverser, fmt.Errorf("Occurrence index error")
+				return EndTraverser, NewGenericError(171)
 			}
 			//v.setPeriodIndex(uint32(i + 1))
 			if v.Type().IsStructure() {
