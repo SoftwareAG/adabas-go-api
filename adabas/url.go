@@ -66,7 +66,7 @@ func (URL *URL) examineURL(url string) error {
 	re := regexp.MustCompile(`([0-9]+)\((\w*):\/\/([^:]*?):(.*)\)`)
 	match := re.FindStringSubmatch(url)
 	if len(match) == 0 {
-		re := regexp.MustCompile(`^adatcp:\/\/([^:]*?):([0-9]*)`)
+		re := regexp.MustCompile(`^(adatcp[s]?):\/\/([^:]*?):([0-9]*)`)
 		match := re.FindStringSubmatch(url)
 		if len(match) == 0 {
 			dbid, err := strconv.Atoi(url)
@@ -81,17 +81,17 @@ func (URL *URL) examineURL(url string) error {
 			URL.Dbid = Dbid(dbid)
 			return nil
 		}
-		if len(match) != 3 {
+		if len(match) != 4 {
 			return adatypes.NewGenericError(71)
 		}
-		port, err := strconv.Atoi(match[2])
+		port, err := strconv.Atoi(match[3])
 		if err != nil {
 			adatypes.Central.Log.Debugf("Port not numeric: %v", err)
 			err = adatypes.NewGenericError(72, match[2])
 			return err
 		}
 		URL.Dbid = Dbid(1)
-		URL.Host = match[1]
+		URL.Host = match[2]
 		if port < 1 || port > 65535 {
 			adatypes.Central.Log.Debugf("Port out of range: %v", err)
 			err = adatypes.NewGenericError(72, port)
@@ -99,7 +99,7 @@ func (URL *URL) examineURL(url string) error {
 		}
 		URL.Port = uint32(port)
 		if URL.Port > 0 {
-			URL.Driver = "adatcp"
+			URL.Driver = match[1]
 			return nil
 		}
 		err = adatypes.NewGenericError(70, url)
@@ -133,6 +133,7 @@ func (URL *URL) examineURL(url string) error {
 		URL.Driver = strings.ToLower(match[2])
 		switch URL.Driver {
 		case "adatcp":
+		case "adatcps":
 		case "tcpip":
 			err = adatypes.NewGenericError(115)
 			return err
