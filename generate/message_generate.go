@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -44,7 +44,7 @@ type mesg struct {
 var locales map[string]map[string]mesg
 
 var headerTemplate = `/*
-* Copyright © 2019-2020 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2019-2021 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -116,6 +116,8 @@ func parseTemplates() (*template.Template, error) {
 	return tmplHead, nil
 }
 
+// Main program to generate source containing a list of all
+// error messages. Input files are all *.en or *.${LANG} files.
 func main() {
 	fmt.Println("Generate message code")
 
