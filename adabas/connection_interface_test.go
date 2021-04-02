@@ -87,7 +87,7 @@ func TestParallelStruct(t *testing.T) {
 }
 
 func callFullName(t *testing.T, waitGroup *sync.WaitGroup) {
-	connection, cerr := NewConnection("acj;inmap=23(adatcp://localhost:64023),11")
+	connection, cerr := NewConnection("acj;inmap=23(adatcp://localhost:60023),11")
 	if !assert.NoError(t, cerr) {
 		waitGroup.Done()
 		return
@@ -122,7 +122,7 @@ func callFullName(t *testing.T, waitGroup *sync.WaitGroup) {
 }
 
 func callEmployees(t *testing.T, waitGroup *sync.WaitGroup) {
-	connection, cerr := NewConnection("acj;inmap=23(adatcp://localhost:64023),11")
+	connection, cerr := NewConnection("acj;inmap=23(adatcp://localhost:60023),11")
 	if !assert.NoError(t, cerr) {
 		waitGroup.Done()
 		return
