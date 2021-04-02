@@ -323,11 +323,14 @@ func (value *int64Value) Int16() (int16, error) {
 }
 func (value *int64Value) UInt16() (uint16, error) {
 	if value.value < 0 || value.value > int64(math.MaxUint32) {
-		return 0, NewGenericError(105, value.Type().Name(), "unsigned 32-bit integer")
+		return 0, NewGenericError(105, value.Type().Name(), "unsigned 16-bit integer")
 	}
 	return uint16(value.value), nil
 }
 func (value *int64Value) Int32() (int32, error) {
+	if value.value < math.MinInt32 || value.value > math.MaxInt32 {
+		return 0, NewGenericError(105, value.Type().Name(), "unsigned 16-bit integer")
+	}
 	return int32(value.value), nil
 }
 func (value *int64Value) UInt32() (uint32, error) {
