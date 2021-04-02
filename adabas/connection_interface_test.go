@@ -22,6 +22,7 @@ package adabas
 import (
 	"fmt"
 	"runtime"
+	"sync"
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -61,4 +62,96 @@ func TestInterfaceMap(t *testing.T) {
 		e := v.(*EmployeeMap)
 		fmt.Printf("%s %s %T\n", e.Name, e.ID, v)
 	}
+}
+
+func TestParallelStruct(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "inmap.log")
+
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(10)
+	for i := 0; i < 5; i++ {
+		go callFullName(t, &waitGroup)
+	}
+	for i := 0; i < 5; i++ {
+		go callEmployees(t, &waitGroup)
+	}
+	waitGroup.Wait()
+}
+
+func callFullName(t *testing.T, waitGroup *sync.WaitGroup) {
+	connection, cerr := NewConnection("acj;inmap=23,11")
+	if !assert.NoError(t, cerr) {
+		waitGroup.Done()
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest(&FullNameInMap{})
+	if !assert.NoError(t, err) {
+		waitGroup.Done()
+		return
+	}
+	request.Limit = 0
+	err = request.QueryFields("*")
+	if !assert.NoError(t, err) {
+		waitGroup.Done()
+		return
+	}
+	response, rerr := request.SearchAndOrder("AE=SMITH", "AE")
+	if !assert.NoError(t, rerr) {
+		waitGroup.Done()
+		return
+	}
+	assert.Len(t, response.Data, 19)
+	for _, v := range response.Data {
+		if !assert.IsType(t, &FullNameInMap{}, v) {
+			return
+		}
+		// e := v.(*FullNameInMap)
+		// fmt.Printf("%s %T\n", e.Name, v)
+	}
+	waitGroup.Done()
+}
+
+func callEmployees(t *testing.T, waitGroup *sync.WaitGroup) {
+	connection, cerr := NewConnection("acj;inmap=23,11")
+	if !assert.NoError(t, cerr) {
+		waitGroup.Done()
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest(&EmployeesInMap{})
+	if !assert.NoError(t, err) {
+		waitGroup.Done()
+		return
+	}
+	request.Limit = 0
+	err = request.QueryFields("*")
+	if !assert.NoError(t, err) {
+		waitGroup.Done()
+		return
+	}
+	response, rerr := request.SearchAndOrder("AA=[1:5]", "AE")
+	if !assert.NoError(t, rerr) {
+		waitGroup.Done()
+		return
+	}
+	assert.Len(t, response.Data, 19)
+	for _, v := range response.Data {
+		if !assert.IsType(t, &EmployeesInMap{}, v) {
+			return
+		}
+		// e := v.(*EmployeesInMap)
+		// fmt.Printf("%s %s %T\n", e.FullName.FirstName, e.ID, v)
+	}
+	waitGroup.Done()
 }
