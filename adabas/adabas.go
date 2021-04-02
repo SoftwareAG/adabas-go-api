@@ -26,6 +26,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -43,7 +44,7 @@ const MaxDatabasesID = 65536
 const adaEmptOpt = ' '
 const adaFdtXOpt = 'X'
 
-type adabasOption uint32
+//type adabasOption uint32
 
 // Transaction flags to synchronize and manage different requests
 type transactions struct {
@@ -77,6 +78,7 @@ type Adabas struct {
 	AdabasBuffers []*Buffer
 	transactions  *transactions
 	statistics    *Statistics
+	lock          *sync.Mutex
 }
 
 var statistics = false
@@ -88,9 +90,9 @@ func init() {
 	}
 }
 
-func (option adabasOption) Bit() uint32 {
-	return (1 << option)
-}
+// func (option adabasOption) Bit() uint32 {
+// 	return (1 << option)
+// }
 
 // NewClonedAdabas create a cloned Adabas struct instance
 func NewClonedAdabas(clone *Adabas) *Adabas {
@@ -103,6 +105,7 @@ func NewClonedAdabas(clone *Adabas) *Adabas {
 		URL:          clone.URL,
 		transactions: clone.transactions,
 		statistics:   clone.statistics,
+		lock:         &sync.Mutex{},
 	}
 }
 
@@ -147,6 +150,7 @@ func NewAdabas(p ...interface{}) (ada *Adabas, err error) {
 		Acbx:         acbx,
 		transactions: &transactions{},
 		statistics:   newStatistics(),
+		lock:         &sync.Mutex{},
 	}
 	adaID.setAdabas(ada)
 	return ada, nil
@@ -193,6 +197,8 @@ func (adabas *Adabas) OpenUser(user string) (err error) {
 		adatypes.Central.Log.Debugf("Database %s already opened by ID %#v", url, adabas.ID)
 		return
 	}
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adatypes.Central.Log.Debugf("Open database %d %s", adabas.Acbx.Acbxdbid, adabas.ID.String())
 	adabas.AdabasBuffers = append(adabas.AdabasBuffers, NewBuffer(AbdAQFb))
 	adabas.AdabasBuffers = append(adabas.AdabasBuffers, NewBuffer(AbdAQRb))
@@ -242,6 +248,8 @@ func (adabas *Adabas) Close() {
 	if adabas.ID.transactions(adabas.URL.String()) > 0 {
 		adabas.BackoutTransaction()
 	}
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adabas.AdabasBuffers = nil
 	adabas.Acbx.Acbxcmd = cl.code()
 	ret := adabas.CallAdabas()
@@ -251,6 +259,8 @@ func (adabas *Adabas) Close() {
 
 // ReleaseCmdID Release any command id resource in the database of the session are released
 func (adabas *Adabas) ReleaseCmdID() (err error) {
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adabas.AdabasBuffers = nil
 	adabas.Acbx.Acbxcmd = rc.code()
 	adabas.Acbx.resetCop()
@@ -260,6 +270,8 @@ func (adabas *Adabas) ReleaseCmdID() (err error) {
 
 // ReleaseHold Any hold record resource in the database of the session are released
 func (adabas *Adabas) ReleaseHold(fileNr Fnr) (err error) {
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adabas.AdabasBuffers = nil
 	adabas.Acbx.Acbxcmd = ri.code()
 	adabas.Acbx.Acbxfnr = fileNr
@@ -344,7 +356,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 	}
 	buffer.Reset()
 	var nrAbdBuffers uint32
-	nrAbdBuffers, err = tcpConn.ReceiveData(&buffer)
+	nrAbdBuffers, err = tcpConn.ReceiveData(&buffer, adabasReply)
 	if err != nil {
 		adatypes.Central.Log.Infof("Receive Adabas call error: %v", err)
 		return
@@ -381,6 +393,8 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 	if err != nil {
 		return
 	}
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adatypes.Central.Log.Debugf("Read file definition with %v", lf.code())
 	adabas.Acbx.Acbxcmd = lf.code()
 	adabas.Acbx.resetCop()
@@ -481,6 +495,8 @@ func (adabas *Adabas) ReadPhysical(fileNr Fnr, adabasRequest *adatypes.Request, 
 	if err != nil {
 		return
 	}
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adatypes.Central.Log.Debugf("Physical read file ... %s", l2.command())
 	if adabasRequest.HoldRecords.IsHold() {
 		adabas.Acbx.Acbxcmd = l5.code()
@@ -532,10 +548,6 @@ func (adabas *Adabas) ReadPhysical(fileNr Fnr, adabasRequest *adatypes.Request, 
 
 // read a specific ISN out of Adabas file
 func (adabas *Adabas) readISN(fileNr Fnr, adabasRequest *adatypes.Request, x interface{}) (err error) {
-	err = adabas.Open()
-	if err != nil {
-		return
-	}
 	if adabasRequest.HoldRecords.IsHold() {
 		adatypes.Central.Log.Debugf("Read ISN %d ... %s dbid=%d fnr=%d", adabasRequest.Isn, l4.command(), adabas.Acbx.Acbxdbid, fileNr)
 		adabas.Acbx.Acbxcmd = l4.code()
@@ -570,6 +582,8 @@ func (adabas *Adabas) ReadISNOrder(fileNr Fnr, adabasRequest *adatypes.Request, 
 	if err != nil {
 		return
 	}
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	if adabasRequest.HoldRecords.IsHold() {
 		adatypes.Central.Log.Debugf("Read ISN order ... %s dbid=%d multifetch=%d", l4.command(), adabas.Acbx.Acbxdbid, adabasRequest.Multifetch)
 		adabas.Acbx.Acbxcmd = l4.code()
@@ -610,6 +624,8 @@ func (adabas *Adabas) ReadLogicalWith(fileNr Fnr, adabasRequest *adatypes.Reques
 	if err != nil {
 		return
 	}
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adatypes.Central.Log.Debugf("Read logical ... %s dbid=%d multifetch=%d", l3.command(), adabas.Acbx.Acbxdbid, adabasRequest.Multifetch)
 	if adabasRequest.HoldRecords.IsHold() {
 		adabas.Acbx.Acbxcmd = l6.code()
@@ -659,6 +675,8 @@ func (adabas *Adabas) ReadLogicalWith(fileNr Fnr, adabasRequest *adatypes.Reques
 
 // ReadStream Read partial lob stream
 func (adabas *Adabas) ReadStream(adabasRequest *adatypes.Request, offset uint64, x interface{}) (err error) {
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adabas.Acbx.Acbxcmd = l1.code()
 	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxcop[1] = 'L'
@@ -680,6 +698,8 @@ func (adabas *Adabas) SearchLogicalWith(fileNr Fnr, adabasRequest *adatypes.Requ
 	if err != nil {
 		return
 	}
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adatypes.Central.Log.Debugf("Search logical ... %s dbid=%d hold=%v", s2.command(), adabas.Acbx.Acbxdbid, adabasRequest.HoldRecords.IsHold())
 	adabas.Acbx.Acbxcmd = s2.code()
 	adabas.Acbx.resetCop()
@@ -885,6 +905,8 @@ func (adabas *Adabas) Histogram(fileNr Fnr, adabasRequest *adatypes.Request, x i
 	if err != nil {
 		return
 	}
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adatypes.Central.Log.Debugf("Descriptor read file %s", l9.command())
 	adabas.Acbx.Acbxcmd = l9.code()
 	adabas.Acbx.Acbxisn = 0
@@ -920,6 +942,8 @@ func (adabas *Adabas) Store(fileNr Fnr, adabasRequest *adatypes.Request) (err er
 	if err != nil {
 		return
 	}
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adatypes.Central.Log.Debugf("Call store, pending transactions=%d adabas=%p",
 		adabas.ID.transactions(adabas.URL.String()), adabas)
 	if adabasRequest.Isn != 0 {
@@ -971,6 +995,8 @@ func (adabas *Adabas) Update(fileNr Fnr, adabasRequest *adatypes.Request) (err e
 	if err != nil {
 		return
 	}
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adatypes.Central.Log.Debugf("Call update, pending transactions=%d adabas=%p",
 		adabas.ID.transactions(adabas.URL.String()), adabas)
 	adatypes.Central.Log.Debugf("Update data ... %s", a1.command())
@@ -1042,6 +1068,12 @@ func (adabas *Adabas) SetDbid(dbid Dbid) {
 
 // DeleteIsn delete a single isn
 func (adabas *Adabas) DeleteIsn(fileNr Fnr, isn adatypes.Isn) (err error) {
+	err = adabas.Open()
+	if err != nil {
+		return
+	}
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adatypes.Central.Log.Debugf("Delete ISN transactions=%d adabas=%p", adabas.ID.transactions(adabas.URL.String()),
 		adabas)
 	adatypes.Central.Log.Debugf("Delete Isn ...%s on dbid %d and file %d", e1.command(), adabas.Acbx.Acbxdbid, fileNr)
@@ -1069,6 +1101,13 @@ func (adabas *Adabas) DeleteIsn(fileNr Fnr, isn adatypes.Isn) (err error) {
 
 // BackoutTransaction backout transaction initiated
 func (adabas *Adabas) BackoutTransaction() (err error) {
+	url := adabas.URL.String()
+	if !adabas.ID.isOpen(url) {
+		adatypes.Central.Log.Debugf("Database %s already opened by ID %#v", url, adabas.ID)
+		return
+	}
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adatypes.Central.Log.Debugf("Open flag %p bt", adabas)
 	if adabas.ID.transactions(adabas.URL.String()) == 0 {
 		return
@@ -1100,6 +1139,8 @@ func (adabas *Adabas) EndTransaction() (err error) {
 		adatypes.Central.Log.Debugf("End of transaction ... not pending transactions")
 		return
 	}
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
 	adatypes.Central.Log.Debugf("End of transaction ... %s", et.command())
 	adabas.Acbx.Acbxcmd = et.code()
 	adabas.AdabasBuffers = nil

@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -75,12 +75,11 @@ func init() {
 
 func evaluateURL(i interface{}) *URL {
 	var url *URL
-	switch i.(type) {
+	switch a := i.(type) {
 	case *Adabas:
-		a := i.(*Adabas)
 		url = a.URL
 	case *URL:
-		url = i.(*URL)
+		url = a
 	default:
 		return nil
 	}

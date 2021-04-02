@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestURL(t *testing.T) {
+func TestURLGeneral(t *testing.T) {
 	dbidURL := NewURLWithDbid(123)
 	assert.Equal(t, "123", dbidURL.String())
 	assert.Equal(t, ":0", dbidURL.URL())
@@ -33,6 +33,7 @@ func TestURL(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "124(adatcp://host:1234)", URL.String())
 	assert.Equal(t, "host:1234", URL.URL())
+	assert.Equal(t, "adatcp", URL.Driver)
 	URL, err = NewURL("124(adatcp://host:xx)")
 	assert.Error(t, err)
 	assert.Equal(t, "ADG0000072: 'xx' is no valid port number", err.Error())
@@ -112,4 +113,31 @@ func TestURLDirect(t *testing.T) {
 		return
 	}
 	assert.Equal(t, "ADG0000115: Entire Network target drivers cannot be connect directly, configure Adabas client.", err.Error())
+}
+
+func TestURLSecured(t *testing.T) {
+	URL, err := NewURL("124(adatcps://host:1234)")
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "124(adatcps://host:1234)", URL.String())
+	assert.Equal(t, "host:1234", URL.URL())
+	assert.Equal(t, "adatcps", URL.Driver)
+	URL, err = NewURL("124(adatcps://host:xx)")
+	assert.Error(t, err)
+	assert.Equal(t, "ADG0000072: 'xx' is no valid port number", err.Error())
+	assert.Nil(t, URL)
+	URL, err = NewURL("333(adatcps://host:123)")
+	assert.NoError(t, err)
+	assert.Equal(t, "333(adatcps://host:123)", URL.String())
+	assert.Equal(t, "host:123", URL.URL())
+	URL, err = NewURL("adatcps://host:123")
+	assert.NoError(t, err)
+	if !assert.NotNil(t, URL) {
+		return
+	}
+	assert.Equal(t, "host", URL.Host)
+	assert.Equal(t, "host:123", URL.URL())
+	assert.Equal(t, "adatcps", URL.Driver)
+
 }

@@ -70,6 +70,20 @@ func (value *phoneticValue) parseBuffer(helper *BufferHelper, option *BufferOpti
 	return
 }
 
+func (value *phoneticValue) Int8() (int8, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "signed 8-bit integer")
+}
+
+func (value *phoneticValue) UInt8() (uint8, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 8-bit integer")
+}
+func (value *phoneticValue) Int16() (int16, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "signed 16-bit integer")
+}
+
+func (value *phoneticValue) UInt16() (uint16, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 16-bit integer")
+}
 func (value *phoneticValue) Int32() (int32, error) {
 	return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -62,7 +62,7 @@ type ReadRequest struct {
 // use read requests to Adabas.
 func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 	if len(param) == 0 {
-		return nil, errors.New("Not enough parameters for NewReadRequest")
+		return nil, errors.New("not enough parameters for NewReadRequest")
 	}
 	switch param[0].(type) {
 	case *StoreRequest:
@@ -94,7 +94,7 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 	case string:
 		mapName := param[0].(string)
 		if len(param) < 2 {
-			return nil, errors.New("Not enough parameters for NewReadRequest")
+			return nil, errors.New("not enough parameters for NewReadRequest")
 		}
 		ada := param[1].(*Adabas)
 		if len(param) == 2 {
@@ -112,7 +112,7 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 			adatypes.Central.Log.Debugf("It's a struct %s", ti.Name())
 			mapName := ti.Name()
 			if len(param) < 2 {
-				return nil, errors.New("Not enough parameters for NewReadRequest")
+				return nil, errors.New("not enough parameters for NewReadRequest")
 			}
 			ada := param[1].(*Adabas)
 			if len(param) == 2 {

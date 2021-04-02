@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -639,7 +639,7 @@ func (searchInfo *SearchInfo) extractComparator(search string, node ISearchNode,
 		if len(field) > (len(search) - len(value)) {
 			Central.Log.Debugf("FL %d sl=%d vl=%d", len(field),
 				len(search), len(value))
-			err = fmt.Errorf("Search string error")
+			err = NewGenericError(170)
 			return
 		}
 		comparer := search[len(field) : len(search)-len(value)]

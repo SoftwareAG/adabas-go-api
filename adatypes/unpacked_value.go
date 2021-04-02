@@ -188,6 +188,32 @@ func (value *unpackedValue) parseBuffer(helper *BufferHelper, option *BufferOpti
 	return
 }
 
+func (value *unpackedValue) Int8() (int8, error) {
+	if value.Type().Fractional() > 0 {
+		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
+	}
+	return int8(value.unpackedToLong(false)), nil
+}
+
+func (value *unpackedValue) UInt8() (uint8, error) {
+	if value.Type().Fractional() > 0 {
+		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
+	}
+	return uint8(value.unpackedToLong(false)), nil
+}
+func (value *unpackedValue) Int16() (int16, error) {
+	if value.Type().Fractional() > 0 {
+		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
+	}
+	return int16(value.unpackedToLong(false)), nil
+}
+
+func (value *unpackedValue) UInt16() (uint16, error) {
+	if value.Type().Fractional() > 0 {
+		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
+	}
+	return uint16(value.unpackedToLong(false)), nil
+}
 func (value *unpackedValue) Int32() (int32, error) {
 	if value.Type().Fractional() > 0 {
 		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())

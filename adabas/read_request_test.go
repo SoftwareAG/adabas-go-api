@@ -431,6 +431,10 @@ func BenchmarkReadRequest_Small(b *testing.B) {
 
 	var result *Response
 	result, err = request.ReadLogicalBy("AA")
+	if !assert.NoError(b, err) {
+		fmt.Println(err)
+		return
+	}
 	//fmt.Println("Dump result received ...")
 	if result != nil {
 		assert.Equal(b, 1107, result.NrRecords())

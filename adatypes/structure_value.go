@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -256,7 +256,7 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 			v := value.Get(n, i+1)
 			if v == nil {
 				// debug.PrintStack()
-				return EndTraverser, fmt.Errorf("Occurrence index error")
+				return EndTraverser, NewGenericError(171)
 			}
 			//v.setPeriodIndex(uint32(i + 1))
 			if v.Type().IsStructure() {
@@ -975,6 +975,26 @@ func convertMapIndex(subValue IAdaValue) string {
 	buf = append(buf, '-')
 	buf = strconv.AppendUint(buf, uint64(subValue.MultipleIndex()), 10)
 	return string(buf)
+}
+
+// Int8 not used
+func (value *StructureValue) Int8() (int8, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "signed 8-bit integer")
+}
+
+// UInt8 not used
+func (value *StructureValue) UInt8() (uint8, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 8-bit integer")
+}
+
+// Int16 not used
+func (value *StructureValue) Int16() (int16, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "signed 16-bit integer")
+}
+
+// UInt16 not used
+func (value *StructureValue) UInt16() (uint16, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 16-bit integer")
 }
 
 // Int32 not used

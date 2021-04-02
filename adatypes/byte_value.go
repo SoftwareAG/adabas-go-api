@@ -111,6 +111,20 @@ func (value *byteValue) parseBuffer(helper *BufferHelper, option *BufferOption) 
 	return
 }
 
+func (value *byteValue) Int8() (int8, error) {
+	return int8(value.value), nil
+}
+
+func (value *byteValue) UInt8() (uint8, error) {
+	return uint8(value.value), nil
+}
+func (value *byteValue) Int16() (int16, error) {
+	return int16(value.value), nil
+}
+
+func (value *byteValue) UInt16() (uint16, error) {
+	return uint16(value.value), nil
+}
 func (value *byteValue) Int32() (int32, error) {
 	return int32(value.value), nil
 }
@@ -214,6 +228,20 @@ func (value *ubyteValue) parseBuffer(helper *BufferHelper, option *BufferOption)
 	return
 }
 
+func (value *ubyteValue) Int8() (int8, error) {
+	return int8(value.value), nil
+}
+
+func (value *ubyteValue) UInt8() (uint8, error) {
+	return uint8(value.value), nil
+}
+func (value *ubyteValue) Int16() (int16, error) {
+	return int16(value.value), nil
+}
+
+func (value *ubyteValue) UInt16() (uint16, error) {
+	return uint16(value.value), nil
+}
 func (value *ubyteValue) Int32() (int32, error) {
 	return int32(value.value), nil
 }

@@ -115,6 +115,26 @@ func (value *RedefinitionValue) parseBuffer(helper *BufferHelper, option *Buffer
 	return SkipTree, err
 }
 
+// Int8 integer representation
+func (value *RedefinitionValue) Int8() (int8, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "signed 8-bit integer")
+}
+
+// UInt8 unsigned integer representation
+func (value *RedefinitionValue) UInt8() (uint8, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 8-bit integer")
+}
+
+// Int16 integer representation
+func (value *RedefinitionValue) Int16() (int16, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "signed 16-bit integer")
+}
+
+// UInt16 unsigned integer representation
+func (value *RedefinitionValue) UInt16() (uint16, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 16-bit integer")
+}
+
 // Int32 integer representation
 func (value *RedefinitionValue) Int32() (int32, error) {
 	return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")

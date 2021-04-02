@@ -142,11 +142,11 @@ func TestDeleteRequestByMapNameCommonRepo(t *testing.T) {
 	}
 	fmt.Println("Values: ", len(result.Values), result.NrRecords())
 	err = deleteRequest.Delete(result.Values[0].Isn)
-	if !assert.NoError(t, rerr) {
+	if !assert.NoError(t, err) {
 		return
 	}
 	err = deleteRequest.EndTransaction()
-	if !assert.NoError(t, rerr) {
+	if !assert.NoError(t, err) {
 		return
 	}
 }
@@ -195,11 +195,11 @@ func TestDeleteRequestByMapNameRepository(t *testing.T) {
 	}
 	fmt.Println("Values: ", len(result.Values), result.NrRecords())
 	err = deleteRequest.Delete(result.Values[0].Isn)
-	if !assert.NoError(t, rerr) {
+	if !assert.NoError(t, err) {
 		return
 	}
 	err = deleteRequest.EndTransaction()
-	if !assert.NoError(t, rerr) {
+	if !assert.NoError(t, err) {
 		return
 	}
 }

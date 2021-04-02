@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -447,7 +447,7 @@ func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 			peName := "Period"
 			start := xml.StartElement{Name: xml.Name{Local: peName}}
 			if adaValue.Type().Name() != adaValue.Type().ShortName() {
-				peName = adaValue.Type().Name()
+				start.Name.Local = adaValue.Type().Name()
 			} else {
 				attrs := make([]xml.Attr, 0)
 				attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})

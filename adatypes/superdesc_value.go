@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -117,6 +117,20 @@ func (value *superDescValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 	return
 }
 
+func (value *superDescValue) Int8() (int8, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "signed 8-bit integer")
+}
+
+func (value *superDescValue) UInt8() (uint8, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 8-bit integer")
+}
+func (value *superDescValue) Int16() (int16, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "signed 16-bit integer")
+}
+
+func (value *superDescValue) UInt16() (uint16, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 16-bit integer")
+}
 func (value *superDescValue) Int32() (int32, error) {
 	return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
 }

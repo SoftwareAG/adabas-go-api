@@ -138,6 +138,26 @@ func (value *uint32Value) parseBuffer(helper *BufferHelper, option *BufferOption
 	return
 }
 
+func (value *uint32Value) Int8() (int8, error) {
+	if value.value > uint32(math.MaxInt32) {
+		return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
+	}
+	return int8(value.value), nil
+}
+
+func (value *uint32Value) UInt8() (uint8, error) {
+	return uint8(value.value), nil
+}
+func (value *uint32Value) Int16() (int16, error) {
+	if value.value > uint32(math.MaxInt32) {
+		return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
+	}
+	return int16(value.value), nil
+}
+
+func (value *uint32Value) UInt16() (uint16, error) {
+	return uint16(value.value), nil
+}
 func (value *uint32Value) Int32() (int32, error) {
 	if value.value > uint32(math.MaxInt32) {
 		return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
@@ -262,6 +282,26 @@ func (value *int32Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 	return
 }
 
+func (value *int32Value) Int8() (int8, error) {
+	return int8(value.value), nil
+}
+
+func (value *int32Value) UInt8() (uint8, error) {
+	if value.value < 0 {
+		return 0, NewGenericError(105, value.Type().Name(), "unsigned 32-bit integer")
+	}
+	return uint8(value.value), nil
+}
+func (value *int32Value) Int16() (int16, error) {
+	return int16(value.value), nil
+}
+
+func (value *int32Value) UInt16() (uint16, error) {
+	if value.value < 0 {
+		return 0, NewGenericError(105, value.Type().Name(), "unsigned 32-bit integer")
+	}
+	return uint16(value.value), nil
+}
 func (value *int32Value) Int32() (int32, error) {
 	return value.value, nil
 }

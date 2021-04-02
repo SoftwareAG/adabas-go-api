@@ -73,10 +73,21 @@ func (value *referentialValue) parseBuffer(helper *BufferHelper, option *BufferO
 	return
 }
 
+func (value *referentialValue) Int8() (int8, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "signed 8-bit integer")
+}
+func (value *referentialValue) UInt8() (uint8, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 8-bit integer")
+}
+func (value *referentialValue) Int16() (int16, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "signed 16-bit integer")
+}
+func (value *referentialValue) UInt16() (uint16, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 16-bit integer")
+}
 func (value *referentialValue) Int32() (int32, error) {
 	return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
 }
-
 func (value *referentialValue) UInt32() (uint32, error) {
 	return 0, NewGenericError(105, value.Type().Name(), "unsigned 32-bit integer")
 }

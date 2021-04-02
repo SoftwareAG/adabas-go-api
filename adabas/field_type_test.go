@@ -20,10 +20,8 @@
 package adabas
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -206,7 +204,7 @@ func TestFieldTypeRead(t *testing.T) {
 	//err = request.QueryFields("S1,U1,S2,U2,S4,U4,S8,U8,AF,BR,B1,F4,F8,A1")
 	//err = request.QueryFields("S1,U1,S2,U2,S4,U4,S8,U8,AF,BR,B1,F4,F8,A1,AS,A2,AB,AF,WU,WL,W4,WF,PA,PF,UP,UF,UE")
 	err = request.QueryFields("*")
-	if !assert.NoError(t, cerr) {
+	if !assert.NoError(t, err) {
 		return
 	}
 	request.Limit = 0
@@ -278,7 +276,7 @@ func TestFieldTypeReadBR(t *testing.T) {
 		return
 	}
 	err = request.QueryFields("BR")
-	if !assert.NoError(t, cerr) {
+	if !assert.NoError(t, err) {
 		return
 	}
 	request.Limit = 0
@@ -319,43 +317,43 @@ func jsonOutput(r *Record) error {
 	return nil
 }
 
-func dumpFieldTypeTestPrepare(x interface{}, b interface{}) (adatypes.TraverseResult, error) {
-	record := x.(*Record)
-	if record == nil {
-		return adatypes.EndTraverser, adatypes.NewGenericError(25)
-	}
-	fmt.Printf("Record found:\n")
-	return adatypes.Continue, nil
-}
+// func dumpFieldTypeTestPrepare(x interface{}, b interface{}) (adatypes.TraverseResult, error) {
+// 	record := x.(*Record)
+// 	if record == nil {
+// 		return adatypes.EndTraverser, adatypes.NewGenericError(25)
+// 	}
+// 	fmt.Printf("Record found:\n")
+// 	return adatypes.Continue, nil
+// }
 
-func dumpFieldTypeValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
-	y := strings.Repeat(" ", int(adaValue.Type().Level()))
+// func dumpFieldTypeValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
+// 	y := strings.Repeat(" ", int(adaValue.Type().Level()))
 
-	if x == nil {
-		brackets := ""
-		switch {
-		case adaValue.PeriodIndex() > 0 && adaValue.MultipleIndex() > 0:
-			brackets = fmt.Sprintf("[%02d,%02d]", adaValue.PeriodIndex(), adaValue.MultipleIndex())
-		case adaValue.PeriodIndex() > 0:
-			brackets = fmt.Sprintf("[%02d]", adaValue.PeriodIndex())
-		case adaValue.MultipleIndex() > 0:
-			brackets = fmt.Sprintf("[%02d]", adaValue.MultipleIndex())
-		default:
-		}
+// 	if x == nil {
+// 		brackets := ""
+// 		switch {
+// 		case adaValue.PeriodIndex() > 0 && adaValue.MultipleIndex() > 0:
+// 			brackets = fmt.Sprintf("[%02d,%02d]", adaValue.PeriodIndex(), adaValue.MultipleIndex())
+// 		case adaValue.PeriodIndex() > 0:
+// 			brackets = fmt.Sprintf("[%02d]", adaValue.PeriodIndex())
+// 		case adaValue.MultipleIndex() > 0:
+// 			brackets = fmt.Sprintf("[%02d]", adaValue.MultipleIndex())
+// 		default:
+// 		}
 
-		if adaValue.Type().IsStructure() {
-			structureValue := adaValue.(*adatypes.StructureValue)
-			fmt.Println(y+" "+adaValue.Type().Name()+brackets+" = [", structureValue.NrElements(), "]")
-		} else {
-			fmt.Printf("%s %s%s = > %s <\n", y, adaValue.Type().Name(), brackets, adaValue.String())
-		}
-	} else {
-		buffer := x.(*bytes.Buffer)
-		buffer.WriteString(fmt.Sprintln(y, adaValue.Type().Name(), "= >", adaValue.String(), "<"))
-	}
+// 		if adaValue.Type().IsStructure() {
+// 			structureValue := adaValue.(*adatypes.StructureValue)
+// 			fmt.Println(y+" "+adaValue.Type().Name()+brackets+" = [", structureValue.NrElements(), "]")
+// 		} else {
+// 			fmt.Printf("%s %s%s = > %s <\n", y, adaValue.Type().Name(), brackets, adaValue.String())
+// 		}
+// 	} else {
+// 		buffer := x.(*bytes.Buffer)
+// 		buffer.WriteString(fmt.Sprintln(y, adaValue.Type().Name(), "= >", adaValue.String(), "<"))
+// 	}
 
-	return adatypes.Continue, nil
-}
+// 	return adatypes.Continue, nil
+// }
 
 func TestConnection_fieldType(t *testing.T) {
 	err := initLogWithFile("field_type.log")

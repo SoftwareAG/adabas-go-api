@@ -140,6 +140,32 @@ func (value *uint64Value) parseBuffer(helper *BufferHelper, option *BufferOption
 	return
 }
 
+func (value *uint64Value) Int8() (int8, error) {
+	if value.value > uint64(math.MaxInt8) {
+		return 0, NewGenericError(105, value.Type().Name(), "signed 8-bit integer")
+	}
+	return int8(value.value), nil
+}
+
+func (value *uint64Value) UInt8() (uint8, error) {
+	if value.value > uint64(math.MaxUint8) {
+		return 0, NewGenericError(105, value.Type().Name(), "unsigned 32-bit integer")
+	}
+	return uint8(value.value), nil
+}
+func (value *uint64Value) Int16() (int16, error) {
+	if value.value > uint64(math.MaxInt16) {
+		return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
+	}
+	return int16(value.value), nil
+}
+
+func (value *uint64Value) UInt16() (uint16, error) {
+	if value.value > uint64(math.MaxUint16) {
+		return 0, NewGenericError(105, value.Type().Name(), "unsigned 16-bit integer")
+	}
+	return uint16(value.value), nil
+}
 func (value *uint64Value) Int32() (int32, error) {
 	if value.value > uint64(math.MaxInt32) {
 		return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
@@ -279,13 +305,34 @@ func (value *int64Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 	return
 }
 
-func (value *int64Value) Int32() (int32, error) {
-	if int64(math.MaxInt32) < value.value {
+func (value *int64Value) Int8() (int8, error) {
+	if int64(math.MaxInt8) < value.value {
 		return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
+	}
+	return int8(value.value), nil
+}
+
+func (value *int64Value) UInt8() (uint8, error) {
+	if value.value < 0 || value.value > int64(math.MaxUint32) {
+		return 0, NewGenericError(105, value.Type().Name(), "unsigned 32-bit integer")
+	}
+	return uint8(value.value), nil
+}
+func (value *int64Value) Int16() (int16, error) {
+	return int16(value.value), nil
+}
+func (value *int64Value) UInt16() (uint16, error) {
+	if value.value < 0 || value.value > int64(math.MaxUint32) {
+		return 0, NewGenericError(105, value.Type().Name(), "unsigned 16-bit integer")
+	}
+	return uint16(value.value), nil
+}
+func (value *int64Value) Int32() (int32, error) {
+	if value.value < math.MinInt32 || value.value > math.MaxInt32 {
+		return 0, NewGenericError(105, value.Type().Name(), "unsigned 16-bit integer")
 	}
 	return int32(value.value), nil
 }
-
 func (value *int64Value) UInt32() (uint32, error) {
 	if value.value < 0 || value.value > int64(math.MaxUint32) {
 		return 0, NewGenericError(105, value.Type().Name(), "unsigned 32-bit integer")

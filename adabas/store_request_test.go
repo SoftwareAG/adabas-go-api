@@ -514,15 +514,23 @@ func TestStoreWithMapLobFile(t *testing.T) {
 	}
 	p = p + "/../files/img/106-0687_IMG.JPG"
 	f, err := os.Open(p)
-	if err != nil {
+	if !assert.NoError(t, err) {
 		fmt.Println(err)
 		return
 	}
 	defer f.Close()
 	fi, err := f.Stat()
+	if !assert.NoError(t, err) {
+		fmt.Println(err)
+		return
+	}
 	data := make([]byte, fi.Size())
 	var n int
 	n, err = f.Read(data)
+	if !assert.NoError(t, err) {
+		fmt.Println(err)
+		return
+	}
 	fmt.Printf("Number of bytes read: %d/%d\n", n, len(data))
 	if !assert.Equal(t, lengthPicture, len(data)) {
 		return
@@ -609,7 +617,7 @@ func validateUsingAdabas(t *testing.T, isn adatypes.Isn) {
 	_, openErr := request.Open()
 	if assert.NoError(t, openErr) {
 		err := request.QueryFields("DC")
-		if !assert.NoError(t, openErr) {
+		if !assert.NoError(t, err) {
 			return
 		}
 		fmt.Println("Query fields defined, send read ...")
@@ -1002,9 +1010,15 @@ func TestUpdateWithMapLob(t *testing.T) {
 	}
 	defer f.Close()
 	fi, err := f.Stat()
+	if !assert.NoError(t, err) {
+		return
+	}
 	data := make([]byte, fi.Size())
 	var n int
 	n, err = f.Read(data)
+	if !assert.NoError(t, err) {
+		return
+	}
 	fmt.Printf("Number of bytes read: %d/%d\n", n, len(data))
 	if !assert.Equal(t, 1386643, len(data)) {
 		return

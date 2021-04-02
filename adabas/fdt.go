@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -169,11 +169,11 @@ func createFdtDefintion() *adatypes.Definition {
 }
 
 // Traverser to count fields
-func traverserFieldDefinitionCreator(adaValue adatypes.IAdaValue, level int, x interface{}) bool {
-	number := x.(*int)
-	(*number)++
-	return true
-}
+// func traverserFieldDefinitionCreator(adaValue adatypes.IAdaValue, level int, x interface{}) bool {
+// 	number := x.(*int)
+// 	(*number)++
+// 	return true
+// }
 
 // Create field definition table definition useds to parse Adabas LA call
 // getting the Adabas file definition out of the FDT

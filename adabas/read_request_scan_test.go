@@ -128,8 +128,7 @@ func TestRequestLogicalWithQueryFieldsScan2(t *testing.T) {
 	assert.NoError(t, err)
 	var id int
 	var x, y, z string
-	var m float32
-	m = 5.0
+	m := float32(5.0)
 	err = request.Scan(&id, &x, &y, &z, nil, &m)
 	assert.NoError(t, err)
 

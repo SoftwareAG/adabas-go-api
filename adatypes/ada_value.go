@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -89,6 +89,10 @@ type IAdaValue interface {
 	SetValue(interface{}) error
 	StoreBuffer(*BufferHelper, *BufferOption) error
 	// Int32 convert current Adabas value into integer value if possible, if not fill error
+	Int8() (int8, error)
+	UInt8() (uint8, error)
+	Int16() (int16, error)
+	UInt16() (uint16, error)
 	Int32() (int32, error)
 	UInt32() (uint32, error)
 	Int64() (int64, error)
@@ -492,6 +496,20 @@ func (value *fillerValue) parseBuffer(helper *BufferHelper, option *BufferOption
 	return
 }
 
+func (value *fillerValue) Int8() (int8, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "signed 8-bit integer")
+}
+
+func (value *fillerValue) UInt8() (uint8, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 8-bit integer")
+}
+func (value *fillerValue) Int16() (int16, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "signed 16-bit integer")
+}
+
+func (value *fillerValue) UInt16() (uint16, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 16-bit integer")
+}
 func (value *fillerValue) Int32() (int32, error) {
 	return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
 }

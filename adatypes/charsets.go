@@ -1,5 +1,5 @@
 /*
-* Copyright © 2020 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2020-2021 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -20,7 +20,6 @@
 package adatypes
 
 import (
-	"fmt"
 	"strings"
 
 	"golang.org/x/text/encoding"
@@ -397,7 +396,7 @@ func (converter *UnicodeConverter) Encode(source []byte) ([]byte, error) {
 		return nil, err
 	}
 	if x != len(source) {
-		return nil, fmt.Errorf("Less source encoded")
+		return nil, NewGenericError(169)
 	}
 
 	return dst[:nd], nil
@@ -411,7 +410,7 @@ func (converter *UnicodeConverter) Decode(source []byte) ([]byte, error) {
 		return nil, err
 	}
 	if x != len(source) {
-		return nil, fmt.Errorf("Less source decoded")
+		return nil, NewGenericError(169)
 	}
 
 	return dst[:nd], nil
