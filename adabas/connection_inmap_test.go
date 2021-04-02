@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
@@ -354,4 +355,41 @@ func TestInlineStorePEMU(t *testing.T) {
 		return
 	}
 	checkContent(t, "inmapstorepemu", "23", 16)
+}
+
+type Executions struct {
+	Isn        uint64    `adabas:":isn"`
+	ID         int64     `json:"Id" adabas:"::"`
+	User       string    `adabas:"::US"`
+	HashID     string    `adabas:"::JI"`
+	Scheduled  time.Time `adabas:"::SB"`
+	Ended      time.Time `adabas:"::SE"`
+	ExitCode   int       `adabas:"::EX"`
+	RecordType byte      `adabas:"::TY"`
+	Flags      byte      `adabas:"::JL"`
+	StartedBy  string    `adabas:"::NA"`
+	ChangeTime string    `adabas:"::ZB"`
+	LogFile    string    `json:"Log" adabas:"::"`
+	LogContent string    `json:"-" adabas:"::LO"`
+	JobDesc    string    `adabas:"::QJ"`
+}
+
+func TestInmapExecutions(t *testing.T) {
+	connection, cerr := NewConnection("acj;inmap=23,5")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	read, err := connection.CreateMapReadRequest(&Executions{})
+	if !assert.NoError(t, err) {
+		return
+	}
+	result, rErr := read.SearchAndOrder("QJ=Eef60560cf41eb28856eb61544ef04f2b", "QJ")
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	for _, j := range result.Data {
+		e := j.(*Executions)
+		fmt.Println(e.LogContent)
+	}
 }
