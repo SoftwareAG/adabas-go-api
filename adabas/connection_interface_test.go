@@ -64,7 +64,7 @@ func TestInterfaceMap(t *testing.T) {
 	}
 }
 
-func TestParallelStruct(t *testing.T) {
+func TestParallelStructIpc(t *testing.T) {
 
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
@@ -78,16 +78,38 @@ func TestParallelStruct(t *testing.T) {
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(10)
 	for i := 0; i < 5; i++ {
-		go callFullName(t, &waitGroup)
+		go callFullName(t, &waitGroup, "23")
 	}
 	for i := 0; i < 5; i++ {
-		go callEmployees(t, &waitGroup)
+		go callEmployees(t, &waitGroup, "23")
 	}
 	waitGroup.Wait()
 }
 
-func callFullName(t *testing.T, waitGroup *sync.WaitGroup) {
-	connection, cerr := NewConnection("acj;inmap=23(adatcp://localhost:60023),11")
+func TestParallelStructTcp(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "inmap.log")
+
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(10)
+	for i := 0; i < 5; i++ {
+		go callFullName(t, &waitGroup, "23(adatcp://localhost:60023)")
+	}
+	for i := 0; i < 5; i++ {
+		go callEmployees(t, &waitGroup, "23")
+	}
+	waitGroup.Wait()
+}
+
+func callFullName(t *testing.T, waitGroup *sync.WaitGroup, dest string) {
+	connection, cerr := NewConnection("acj;inmap=" + dest + ",11")
 	if !assert.NoError(t, cerr) {
 		waitGroup.Done()
 		return
@@ -121,8 +143,8 @@ func callFullName(t *testing.T, waitGroup *sync.WaitGroup) {
 	waitGroup.Done()
 }
 
-func callEmployees(t *testing.T, waitGroup *sync.WaitGroup) {
-	connection, cerr := NewConnection("acj;inmap=23(adatcp://localhost:60023),11")
+func callEmployees(t *testing.T, waitGroup *sync.WaitGroup, dest string) {
+	connection, cerr := NewConnection("acj;inmap=" + dest + ",11")
 	if !assert.NoError(t, cerr) {
 		waitGroup.Done()
 		return
