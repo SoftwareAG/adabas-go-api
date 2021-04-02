@@ -87,7 +87,7 @@ func TestParallelStruct(t *testing.T) {
 }
 
 func callFullName(t *testing.T, waitGroup *sync.WaitGroup) {
-	connection, cerr := NewConnection("acj;inmap=23,11")
+	connection, cerr := NewConnection("acj;inmap=23(adatcp://localhost:64023),11")
 	if !assert.NoError(t, cerr) {
 		waitGroup.Done()
 		return
@@ -122,7 +122,7 @@ func callFullName(t *testing.T, waitGroup *sync.WaitGroup) {
 }
 
 func callEmployees(t *testing.T, waitGroup *sync.WaitGroup) {
-	connection, cerr := NewConnection("acj;inmap=23,11")
+	connection, cerr := NewConnection("acj;inmap=23(adatcp://localhost:64023),11")
 	if !assert.NoError(t, cerr) {
 		waitGroup.Done()
 		return
@@ -140,12 +140,15 @@ func callEmployees(t *testing.T, waitGroup *sync.WaitGroup) {
 		waitGroup.Done()
 		return
 	}
-	response, rerr := request.SearchAndOrder("AA=[1:5]", "AE")
+	a:=[]int{200,507,757,807,1007}
+	for i:=0;i<5;i++ {
+		s:=fmt.Sprintf("AA=[1:%d]",i+2)
+	response, rerr := request.SearchAndOrder(s, "AE")
 	if !assert.NoError(t, rerr) {
 		waitGroup.Done()
 		return
 	}
-	assert.Len(t, response.Data, 19)
+	assert.Len(t, response.Data, a[i],s)
 	for _, v := range response.Data {
 		if !assert.IsType(t, &EmployeesInMap{}, v) {
 			return
@@ -153,5 +156,7 @@ func callEmployees(t *testing.T, waitGroup *sync.WaitGroup) {
 		// e := v.(*EmployeesInMap)
 		// fmt.Printf("%s %s %T\n", e.FullName.FirstName, e.ID, v)
 	}
-	waitGroup.Done()
+		
+}
+waitGroup.Done()
 }
