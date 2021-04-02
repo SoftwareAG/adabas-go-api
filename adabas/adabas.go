@@ -548,12 +548,6 @@ func (adabas *Adabas) ReadPhysical(fileNr Fnr, adabasRequest *adatypes.Request, 
 
 // read a specific ISN out of Adabas file
 func (adabas *Adabas) readISN(fileNr Fnr, adabasRequest *adatypes.Request, x interface{}) (err error) {
-	err = adabas.Open()
-	if err != nil {
-		return
-	}
-	adabas.lock.Lock()
-	defer adabas.lock.Unlock()
 	if adabasRequest.HoldRecords.IsHold() {
 		adatypes.Central.Log.Debugf("Read ISN %d ... %s dbid=%d fnr=%d", adabasRequest.Isn, l4.command(), adabas.Acbx.Acbxdbid, fileNr)
 		adabas.Acbx.Acbxcmd = l4.code()
