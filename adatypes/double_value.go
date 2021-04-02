@@ -127,6 +127,28 @@ func (value *doubleValue) parseBuffer(helper *BufferHelper, option *BufferOption
 	return
 }
 
+func (value *doubleValue) Int8() (int8, error) {
+	fl := byteToFLoat64(value.value)
+	if fl != math.Trunc(fl) {
+		return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
+	}
+	return int8(fl), nil
+}
+
+func (value *doubleValue) UInt8() (uint8, error) {
+	return uint8(byteToFLoat64(value.value)), nil
+}
+func (value *doubleValue) Int16() (int16, error) {
+	fl := byteToFLoat64(value.value)
+	if fl != math.Trunc(fl) {
+		return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")
+	}
+	return int16(fl), nil
+}
+
+func (value *doubleValue) UInt16() (uint16, error) {
+	return uint16(byteToFLoat64(value.value)), nil
+}
 func (value *doubleValue) Int32() (int32, error) {
 	fl := byteToFLoat64(value.value)
 	if fl != math.Trunc(fl) {

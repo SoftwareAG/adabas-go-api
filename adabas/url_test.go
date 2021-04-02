@@ -92,7 +92,6 @@ func TestURLDirect(t *testing.T) {
 	if !assert.Nil(t, URL) {
 		return
 	}
-	assert.Equal(t, "tcpip", URL.Driver)
 	URL, err = NewURL("adatcp://abchost:1230")
 	assert.NoError(t, err)
 	if !assert.NotNil(t, URL) {

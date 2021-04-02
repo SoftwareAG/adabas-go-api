@@ -977,6 +977,26 @@ func convertMapIndex(subValue IAdaValue) string {
 	return string(buf)
 }
 
+// Int8 not used
+func (value *StructureValue) Int8() (int8, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "signed 8-bit integer")
+}
+
+// UInt8 not used
+func (value *StructureValue) UInt8() (uint8, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 8-bit integer")
+}
+
+// Int16 not used
+func (value *StructureValue) Int16() (int16, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "signed 16-bit integer")
+}
+
+// UInt16 not used
+func (value *StructureValue) UInt16() (uint16, error) {
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 16-bit integer")
+}
+
 // Int32 not used
 func (value *StructureValue) Int32() (int32, error) {
 	return 0, NewGenericError(105, value.Type().Name(), "signed 32-bit integer")

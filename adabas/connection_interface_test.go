@@ -140,23 +140,23 @@ func callEmployees(t *testing.T, waitGroup *sync.WaitGroup) {
 		waitGroup.Done()
 		return
 	}
-	a:=[]int{200,507,757,807,1007}
-	for i:=0;i<5;i++ {
-		s:=fmt.Sprintf("AA=[1:%d]",i+2)
-	response, rerr := request.SearchAndOrder(s, "AE")
-	if !assert.NoError(t, rerr) {
-		waitGroup.Done()
-		return
-	}
-	assert.Len(t, response.Data, a[i],s)
-	for _, v := range response.Data {
-		if !assert.IsType(t, &EmployeesInMap{}, v) {
+	a := []int{200, 507, 757, 807, 1007}
+	for i := 0; i < 5; i++ {
+		s := fmt.Sprintf("AA=[1:%d]", i+2)
+		response, rerr := request.SearchAndOrder(s, "AE")
+		if !assert.NoError(t, rerr) {
+			waitGroup.Done()
 			return
 		}
-		// e := v.(*EmployeesInMap)
-		// fmt.Printf("%s %s %T\n", e.FullName.FirstName, e.ID, v)
+		assert.Len(t, response.Data, a[i], s)
+		for _, v := range response.Data {
+			if !assert.IsType(t, &EmployeesInMap{}, v) {
+				return
+			}
+			// e := v.(*EmployeesInMap)
+			// fmt.Printf("%s %s %T\n", e.FullName.FirstName, e.ID, v)
+		}
+
 	}
-		
-}
-waitGroup.Done()
+	waitGroup.Done()
 }

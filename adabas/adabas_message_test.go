@@ -82,7 +82,7 @@ func TestAdabasMessageTranslate(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Return: Hello, i18n
-	assert.Equal(t, "Adabas ist nicht aktive oder erreichbar (rsp=148,subrsp=0,dbid=21,file=0)", NewError(ada).Translate("de"))
+	assert.Equal(t, "Adabas ist nicht aktiv oder erreichbar (rsp=148,subrsp=0,dbid=21,file=0)", NewError(ada).Translate("de"))
 	ada.Acbx.Acbxrsp = AdaNormal
 	assert.Equal(t, "Erfolgreich beendet (rsp=0,subrsp=0,dbid=21,file=0)", NewError(ada).Translate("de"))
 	ada.Acbx.Acbxrsp = AdaInvalidFileNumber

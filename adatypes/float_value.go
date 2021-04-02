@@ -131,6 +131,37 @@ func (value *floatValue) parseBuffer(helper *BufferHelper, option *BufferOption)
 	return
 }
 
+func (value *floatValue) Int8() (int8, error) {
+	fl := byteToFLoat32(value.value)
+	if fl == float32(math.Floor(float64(fl))) {
+		return int8(fl), nil
+	}
+	return 0, NewGenericError(105, value.Type().Name(), "signed 8-bit integer")
+}
+
+func (value *floatValue) UInt8() (uint8, error) {
+	fl := byteToFLoat32(value.value)
+	if fl >= 0 && fl == float32(math.Floor(float64(fl))) {
+		return uint8(fl), nil
+	}
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 8-bit integer")
+}
+func (value *floatValue) Int16() (int16, error) {
+	fl := byteToFLoat32(value.value)
+	if fl == float32(math.Floor(float64(fl))) {
+		return int16(fl), nil
+	}
+	return 0, NewGenericError(105, value.Type().Name(), "signed 16-bit integer")
+}
+
+func (value *floatValue) UInt16() (uint16, error) {
+	fl := byteToFLoat32(value.value)
+	if fl >= 0 && fl == float32(math.Floor(float64(fl))) {
+		return uint16(fl), nil
+	}
+	return 0, NewGenericError(105, value.Type().Name(), "unsigned 16-bit integer")
+}
+
 func (value *floatValue) Int32() (int32, error) {
 	fl := byteToFLoat32(value.value)
 	if fl == float32(math.Floor(float64(fl))) {

@@ -117,6 +117,29 @@ func (value *uint16Value) parseBuffer(helper *BufferHelper, option *BufferOption
 	return
 }
 
+func (value *uint16Value) Int8() (int8, error) {
+	if value.value > uint16(math.MaxInt8) {
+		return 0, NewGenericError(105, value.Type().Name(), "signed 8-bit integer")
+	}
+	return int8(value.value), nil
+}
+
+func (value *uint16Value) UInt8() (uint8, error) {
+	if value.value > uint16(math.MaxUint8) {
+		return 0, NewGenericError(105, value.Type().Name(), "signed 8-bit integer")
+	}
+	return uint8(value.value), nil
+}
+func (value *uint16Value) Int16() (int16, error) {
+	if value.value > uint16(math.MaxInt16) {
+		return 0, NewGenericError(105, value.Type().Name(), "signed 16-bit integer")
+	}
+	return int16(value.value), nil
+}
+
+func (value *uint16Value) UInt16() (uint16, error) {
+	return uint16(value.value), nil
+}
 func (value *uint16Value) Int32() (int32, error) {
 	if value.value > uint16(math.MaxInt16) {
 		return 0, NewGenericError(105, value.Type().Name(), "signed 16-bit integer")
@@ -221,6 +244,26 @@ func (value *int16Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 	return
 }
 
+func (value *int16Value) Int8() (int8, error) {
+	return int8(value.value), nil
+}
+
+func (value *int16Value) UInt8() (uint8, error) {
+	if value.value < 0 {
+		return 0, NewGenericError(105, value.Type().Name(), "unsigned 8-bit integer")
+	}
+	return uint8(value.value), nil
+}
+func (value *int16Value) Int16() (int16, error) {
+	return int16(value.value), nil
+}
+
+func (value *int16Value) UInt16() (uint16, error) {
+	if value.value < 0 {
+		return 0, NewGenericError(105, value.Type().Name(), "unsigned 16-bit integer")
+	}
+	return uint16(value.value), nil
+}
 func (value *int16Value) Int32() (int32, error) {
 	return int32(value.value), nil
 }

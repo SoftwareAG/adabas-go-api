@@ -172,12 +172,18 @@ func evaluateField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (res
 					return EndTraverser, err
 				}
 				f.SetUint(i)
-			case reflect.Uint8, reflect.Uint16:
-				i, err := adaValue.UInt64()
+			case reflect.Uint8:
+				i, err := adaValue.UInt8()
 				if err != nil {
 					return EndTraverser, err
 				}
-				f.SetUint(i)
+				f.SetUint(uint64(i))
+			case reflect.Uint16:
+				i, err := adaValue.UInt16()
+				if err != nil {
+					return EndTraverser, err
+				}
+				f.SetUint(uint64(i))
 			case reflect.Float32, reflect.Float64:
 				fl, err := adaValue.Float()
 				if err != nil {

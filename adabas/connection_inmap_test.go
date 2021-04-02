@@ -375,6 +375,7 @@ type Executions struct {
 }
 
 func TestInmapExecutions(t *testing.T) {
+	initTestLogWithFile(t, "inmap.log")
 	connection, cerr := NewConnection("acj;inmap=23,5")
 	if !assert.NoError(t, cerr) {
 		return
