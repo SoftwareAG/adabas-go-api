@@ -137,8 +137,6 @@ func callFullName(t *testing.T, waitGroup *sync.WaitGroup, dest string) {
 		if !assert.IsType(t, &FullNameInMap{}, v) {
 			return
 		}
-		// e := v.(*FullNameInMap)
-		// fmt.Printf("%s %T\n", e.Name, v)
 	}
 	waitGroup.Done()
 }
