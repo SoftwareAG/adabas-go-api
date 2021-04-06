@@ -449,7 +449,10 @@ func searchDynamicValue(value reflect.Value, fn []string) (v reflect.Value, ok b
 func (request *StoreRequest) storeValue(record reflect.Value, store, etData bool) error {
 	if request.definition == nil {
 		q := request.dynamic.CreateQueryFields()
-		request.StoreFields(q)
+		err := request.StoreFields(q)
+		if err != nil {
+			return err
+		}
 	}
 
 	if record.Kind() == reflect.Ptr {

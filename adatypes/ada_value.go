@@ -326,6 +326,47 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 	return val, nil
 }
 
+func convertByteSlice(v []byte) (int64, error) {
+	switch len(v) {
+	case 1:
+		buf := bytes.NewBuffer(v)
+		var res int8
+		err := binary.Read(buf, endian(), &res)
+		if err != nil {
+			return 0, err
+		}
+		return int64(res), nil
+	case 2:
+		buf := bytes.NewBuffer(v)
+		var res int16
+		err := binary.Read(buf, endian(), &res)
+		if err != nil {
+			return 0, err
+		}
+		return int64(res), nil
+	case 4:
+		buf := bytes.NewBuffer(v)
+		var res int32
+		err := binary.Read(buf, endian(), &res)
+		if err != nil {
+			return 0, err
+		}
+		return int64(res), nil
+	case 8:
+		buf := bytes.NewBuffer(v)
+		var res int64
+		err := binary.Read(buf, endian(), &res)
+		if err != nil {
+			return 0, err
+		}
+		return res, nil
+	default:
+	}
+	Central.Log.Debugf("Error converting to byte slice: %v", v)
+	return 0, NewGenericError(104, len(v), "byte slice conversion")
+
+}
+
 // common format buffer generation
 func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 	if Central.IsDebugLevel() {
@@ -333,76 +374,48 @@ func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 	}
 	var val int64
 	multiplier := math.Pow10(int(adavalue.Type().Fractional()))
-	switch v := x.(type) {
-	case string:
-		sval, err := strconv.Atoi(v)
+	switch reflect.TypeOf(x).Kind() {
+	case reflect.String:
+		v := reflect.ValueOf(x).String()
+		sval, err := strconv.ParseInt(v, 10, 0)
 		if err != nil {
 			return 0, err
 		}
 		val = int64(sval) * int64(multiplier)
-	case int8:
-		val = int64(v) * int64(multiplier)
-	case int16:
-		val = int64(v) * int64(multiplier)
-	case int32:
-		val = int64(v) * int64(multiplier)
-	case int64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		v := reflect.ValueOf(x).Int()
 		val = v * int64(multiplier)
-	case uint8:
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		v := reflect.ValueOf(x).Uint()
 		val = int64(v) * int64(multiplier)
-	case uint16:
-		val = int64(v) * int64(multiplier)
-	case uint32:
-		val = int64(v) * int64(multiplier)
-	case uint64:
-		val = int64(v) * int64(multiplier)
-	case int:
-		val = int64(v) * int64(multiplier)
-	case json.Number:
-		i64, err := v.Int64()
-		if err != nil {
-			return 0, err
-		}
-		val = i64 * int64(multiplier)
-	case []byte:
-		switch len(v) {
-		case 1:
-			buf := bytes.NewBuffer(v)
-			var res int8
-			err := binary.Read(buf, endian(), &res)
+	case reflect.Slice:
+		switch v := x.(type) {
+		case []byte:
+			var err error
+			val, err = convertByteSlice(v)
 			if err != nil {
-				return 0, err
+				Central.Log.Debugf("Error converting to byte slice: %v, %v", x, err)
+				return 0, NewGenericError(104, len(v), adavalue.Type().Name())
 			}
-			return int64(res), nil
-		case 2:
-			buf := bytes.NewBuffer(v)
-			var res int16
-			err := binary.Read(buf, endian(), &res)
-			if err != nil {
-				return 0, err
-			}
-			return int64(res), nil
-		case 4:
-			buf := bytes.NewBuffer(v)
-			var res int32
-			err := binary.Read(buf, endian(), &res)
-			if err != nil {
-				return 0, err
-			}
-			return int64(res), nil
-		case 8:
-			buf := bytes.NewBuffer(v)
-			var res int64
-			err := binary.Read(buf, endian(), &res)
-			if err != nil {
-				return 0, err
-			}
-			return res, nil
 		default:
+			Central.Log.Debugf("Error no byte slice: %v", x)
+			return 0, NewGenericError(104, -1, adavalue.Type().Name())
 		}
-		Central.Log.Debugf("Error converting to byte slice: %v", x)
-		return 0, NewGenericError(104, len(v), adavalue.Type().Name())
-	case float64:
+	case reflect.Array:
+		v := reflect.ValueOf(x)
+		l := v.Len()
+		buffer := bytes.Buffer{}
+		for i := 0; i < l; i++ {
+			buffer.WriteByte(v.Index(i).Interface().(byte))
+		}
+		var err error
+		val, err = convertByteSlice(buffer.Bytes())
+		if err != nil {
+			Central.Log.Debugf("Error converting to byte array: %v, %v", x, err)
+			return 0, NewGenericError(104, buffer.Len(), adavalue.Type().Name())
+		}
+	case reflect.Float64, reflect.Float32:
+		v := reflect.ValueOf(x).Float()
 		if adavalue.Type().Fractional() == 0 {
 			if v != float64(int64(v)) {
 				Central.Log.Debugf("Error converting %v", x)
@@ -412,8 +425,18 @@ func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 		val := int64(v * multiplier)
 		return val, nil
 	default:
-		Central.Log.Debugf("Error converting %v", x)
-		return 0, NewGenericError(103, fmt.Sprintf("%T", x), adavalue.Type().Name())
+		k := reflect.TypeOf(x).Kind()
+		switch k {
+		case reflect.Int, reflect.Int32, reflect.Int8:
+			v := reflect.ValueOf(x).Int()
+			return adavalue.commonInt64Convert(v)
+		case reflect.Uint, reflect.Uint32, reflect.Uint8:
+			v := reflect.ValueOf(x).Uint()
+			return adavalue.commonInt64Convert(v)
+		default:
+			Central.Log.Debugf("Error converting %v from %T", x, x)
+			return 0, NewGenericError(103, fmt.Sprintf("%T", x), adavalue.Type().Name())
+		}
 	}
 	Central.Log.Debugf("Converted value %v from %T", val, x)
 	return val, nil
