@@ -71,12 +71,14 @@ func (value *byteValue) SetValue(v interface{}) error {
 			return NewGenericError(117, intValue)
 		}
 		value.value = int8(intValue)
+		return nil
 	case reflect.Uint, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		uintValue := reflect.ValueOf(v).Uint()
 		if uintValue > math.MaxInt8 {
 			return NewGenericError(117, uintValue)
 		}
 		value.value = int8(uintValue)
+		return nil
 	// }
 	// switch v.(type) {
 	// case byte, int8:
