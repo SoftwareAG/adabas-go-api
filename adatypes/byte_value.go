@@ -104,7 +104,7 @@ func (value *byteValue) SetValue(v interface{}) error {
 		}
 		value.value = int8(ba)
 		return nil
-	case reflect.Array:
+	case reflect.Slice:
 		value.value = convertByteToInt8(v.([]byte)[0])
 		return nil
 	}

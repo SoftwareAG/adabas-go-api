@@ -124,7 +124,7 @@ func endian() binary.ByteOrder {
 	return binary.LittleEndian
 }
 
-// common format buffer generation
+// commonFormatBuffer common format buffer generation defined by the value type
 func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *BufferOption, storeSize uint32) uint32 {
 	if option.SecondCall > 0 {
 		Central.Log.Debugf("Work on %s -> second=%v\n", adavalue.Type().Name(), adavalue.Type().HasFlagSet(FlagOptionSecondCall))
@@ -225,7 +225,7 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 	return adavalue.Type().Length()
 }
 
-// common format buffer generation
+// commonUInt64Convert common conversion from type to 64-byte unsigned integer
 func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 	var val uint64
 	switch reflect.TypeOf(x).Kind() {
@@ -258,7 +258,7 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 	// 		return 0, err
 	// 	}
 	// 	val = uint64(i64)
-	case reflect.Array:
+	case reflect.Slice:
 		v := x.([]byte)
 		switch len(v) {
 		case 1:
@@ -346,7 +346,7 @@ func convertByteSlice(v []byte) (int64, error) {
 
 }
 
-// common format buffer generation
+// commonInt64Convert common conversion from type to 64-byte signed integer
 func (adavalue *adaValue) commonInt64Convert(x interface{}) (int64, error) {
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Convert common int64 value %s %v %s %T", adavalue.Type().Name(), x, reflect.TypeOf(x).Name(), x)

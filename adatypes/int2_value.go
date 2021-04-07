@@ -66,7 +66,7 @@ func (value *uint16Value) SetValue(v interface{}) error {
 	if err != nil {
 		return err
 	}
-	if val < 0 && val > math.MaxUint16 {
+	if val > math.MaxUint16 {
 		return NewGenericError(117, val)
 	}
 	value.value = uint16(val)

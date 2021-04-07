@@ -32,11 +32,13 @@ const (
 	daysecs = 86400
 )
 
+// packedValue defines the packed value of Adabas packed format
 type packedValue struct {
 	adaValue
 	value []byte
 }
 
+// newPackedValue new packed value reference generated
 func newPackedValue(initType IAdaType) *packedValue {
 	value := packedValue{adaValue: adaValue{adatype: initType}}
 	vlen := initType.Length()
@@ -47,10 +49,12 @@ func newPackedValue(initType IAdaType) *packedValue {
 	return &value
 }
 
+// ByteValue byte value
 func (value *packedValue) ByteValue() byte {
 	return value.value[0]
 }
 
+// String return the string representation
 func (value *packedValue) String() string {
 	Central.Log.Debugf("Generate packed string for %s, use format type %c", value.Type().Name(), value.Type().FormatType())
 	packedInt := value.packedToLong()
@@ -84,6 +88,7 @@ func (value *packedValue) String() string {
 	return sv
 }
 
+// natTimeToString Natural time transfered to string representation
 func natTimeToString(nattime int64) string {
 	microsecs := (nattime - 365*daysecs*10) * 100000
 	microsec := microsecs % 1000000
@@ -145,6 +150,7 @@ func (value *packedValue) SetStringValue(stValue string) {
 	}
 }
 
+// SetValue set the packed value by the given interface value
 func (value *packedValue) SetValue(v interface{}) (err error) {
 	Central.Log.Debugf("Set packed value to %v", v)
 	iLen := value.Type().Length()

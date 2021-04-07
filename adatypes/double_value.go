@@ -90,7 +90,7 @@ func (value *doubleValue) SetValue(v interface{}) error {
 	case reflect.String:
 		vs := reflect.ValueOf(v).String()
 		value.SetStringValue(vs)
-	case reflect.Array:
+	case reflect.Slice:
 		bv := v.([]byte)
 		if uint32(len(bv)) > value.Type().Length() {
 			return NewGenericError(109)
