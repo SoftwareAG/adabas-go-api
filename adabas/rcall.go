@@ -77,6 +77,11 @@ func (adabas *Adabas) CallAdabas() (err error) {
 		adatypes.Central.Log.Debugf("Invalid Adabas command received: %s", string(adabas.Acbx.Acbxcmd[:]))
 		return adatypes.NewGenericError(3, string(adabas.Acbx.Acbxcmd[:]))
 	}
+	switch adabas.Acbx.Acbxrsp {
+	case AdaAnact, AdaTransactionAborted, AdaSysCe:
+		adabas.ID.clearTransactions(adabas.URL.String())
+		adabas.ID.changeOpenState(adabas.URL.String(), false)
+	}
 	if adabas.Acbx.Acbxrsp > AdaEOF {
 		return NewError(adabas)
 	}

@@ -19,17 +19,76 @@
 package adatypes
 
 import (
-	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestAdaValue(t *testing.T) {
-	value := doubleValue{adaValue: adaValue{}}
+func TestAdaValueInt64(t *testing.T) {
+	adaType := NewType(FieldTypeInt8, "XX")
+	value := adaValue{adatype: adaType}
 
-	var x IAdaValue
-	var a adaValue
+	x := 1
+	v, err := value.commonInt64Convert(x)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), v)
+	x = 10024432
+	v, err = value.commonInt64Convert(x)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(10024432), v)
+	x = -23
+	v, err = value.commonInt64Convert(x)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(-23), v)
+	s := "3409340"
+	v, err = value.commonInt64Convert(s)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(3409340), v)
+}
 
-	x = &value
-	a = value.adaValue
-	fmt.Println(x, a)
+func TestAdaValueInt(t *testing.T) {
+	adaType := NewType(FieldTypeInt2, "XX")
+	value := adaValue{adatype: adaType}
+
+	x := 1
+	v, err := value.commonInt64Convert(x)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), v)
+	x = 10024432
+	v, err = value.commonInt64Convert(x)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(10024432), v)
+	x = -23
+	v, err = value.commonInt64Convert(x)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(-23), v)
+	s := "3409340"
+	v, err = value.commonInt64Convert(s)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(3409340), v)
+}
+
+func TestAdaValueUint(t *testing.T) {
+	adaType := NewType(FieldTypeUInt2, "XX")
+	value := adaValue{adatype: adaType}
+
+	x := 1
+	v, err := value.commonUInt64Convert(x)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(1), v)
+	x = 10024432
+	v, err = value.commonUInt64Convert(x)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(10024432), v)
+	x = -23
+	v, err = value.commonUInt64Convert(x)
+	assert.Error(t, err)
+	assert.Equal(t, uint64(0), v)
+	ui16 := uint16Value{adaValue: value}
+	err = ui16.SetValue(x)
+	assert.Error(t, err)
+	s := "3409340"
+	v, err = value.commonUInt64Convert(s)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(3409340), v)
 }

@@ -74,7 +74,7 @@ func TestUInt2Byte(t *testing.T) {
 	int2.SetStringValue("2")
 	assert.Equal(t, uint16(2), int2.value)
 	bint2 := int2.Bytes()
-	fmt.Println(bint2)
+	// fmt.Println(bint2)
 	assert.Equal(t, 2, len(bint2))
 	int2.SetStringValue("2000")
 	assert.Equal(t, uint16(2000), int2.value)

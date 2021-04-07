@@ -334,6 +334,11 @@ func (adabas *Adabas) CallAdabas() (err error) {
 		}
 	}
 
+	switch adabas.Acbx.Acbxrsp {
+	case AdaAnact, AdaTransactionAborted, AdaSysCe:
+		adabas.ID.clearTransactions(adabas.URL.String())
+		adabas.ID.changeOpenState(adabas.URL.String(), false)
+	}
 	if adabas.Acbx.Acbxrsp > AdaEOF {
 		return NewError(adabas)
 	}

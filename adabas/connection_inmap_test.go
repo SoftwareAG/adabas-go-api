@@ -273,6 +273,16 @@ type InmapLeave struct {
 	LeaveEnd   uint64 `adabas:"::AY"`
 }
 
+type names string
+type birth int
+type EmployeeInMapType struct {
+	ID        string `adabas:"::AA"`
+	Name      names  `adabas:"::AE"`
+	FirstName names  `adabas:"::AD"`
+	Birth     birth  `adabas:"::AH"`
+	Isn       uint64 `adabas:":isn"`
+}
+
 func TestInlineStorePE(t *testing.T) {
 
 	if testing.Short() {
@@ -392,5 +402,48 @@ func TestInmapExecutions(t *testing.T) {
 	for _, j := range result.Data {
 		e := j.(*Executions)
 		fmt.Println(e.LogContent)
+	}
+}
+
+func TestInmapEmployeesRetyped(t *testing.T) {
+	initTestLogWithFile(t, "inmap.log")
+
+	clearAdabasFile(t, adabasModDBIDs, 16)
+
+	connection, cerr := NewConnection("acj;inmap=23,16")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	x := &EmployeeInMapType{Name: "abc", FirstName: "Otto",
+		ID: "AA123", Birth: 12345}
+	store, err := connection.CreateMapStoreRequest(x)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = store.StoreData(x)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = store.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	read, err := connection.CreateMapReadRequest(&EmployeeInMapType{})
+	if !assert.NoError(t, err) {
+		return
+	}
+	result, rErr := read.SearchAndOrder("AA="+x.ID, "AA")
+	if !assert.NoError(t, rErr) {
+		return
+	}
+
+	if assert.Len(t, result.Data, 1) {
+		e := result.Data[0].(*EmployeeInMapType)
+		assert.Equal(t, "AA123   ", e.ID)
+		assert.Equal(t, names("abc                 "), e.Name)
+		assert.Equal(t, names("Otto                "), e.FirstName)
+		assert.Equal(t, birth(12345), e.Birth)
 	}
 }

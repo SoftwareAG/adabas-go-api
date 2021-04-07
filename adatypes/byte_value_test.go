@@ -39,7 +39,7 @@ func TestIntByte(t *testing.T) {
 	int2.SetStringValue("2")
 	assert.Equal(t, int8(2), int2.value)
 	bint2 := int2.Bytes()
-	fmt.Println(bint2)
+	// fmt.Println(bint2)
 	assert.Equal(t, 1, len(bint2))
 	int2.SetStringValue("100")
 	assert.Equal(t, int8(100), int2.value)
@@ -67,11 +67,11 @@ func TestIntByte(t *testing.T) {
 	int2.SetValue(-2)
 	assert.Equal(t, int8(-2), int2.value)
 	assert.Equal(t, []byte{0xfe}, int2.Bytes())
-	fmt.Println(int2.String())
+	// fmt.Println(int2.String())
 
 	b := []byte{0xff, 0xfe, 0, 1, 2, 126, 127, 128, 129}
 	iv := []int8{-1, -2, 0, 1, 2, 126, int8(math.MaxInt8), int8(math.MinInt8), -127}
-	fmt.Printf("Range %d to %d\n", int8(math.MaxInt8), int8(math.MinInt8))
+	// fmt.Printf("Range %d to %d\n", int8(math.MaxInt8), int8(math.MinInt8))
 	assert.Equal(t, int8(b[0]), int8(-1))
 	assert.Equal(t, int8(b[1]), int8(-2))
 	for i, bv := range b {

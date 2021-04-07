@@ -159,7 +159,17 @@ func (value *stringValue) SetValue(v interface{}) error {
 		vv := v.(reflect.Value)
 		value.setStringWithSize(vv.String())
 	default:
-		return NewGenericError(103, fmt.Sprintf("%T", v), value.Type().Name())
+		switch reflect.TypeOf(v).Kind() {
+		case reflect.String:
+			sv := reflect.ValueOf(v).String()
+			if value.Type().Length() > 0 && uint32(len(sv)) > value.Type().Length() {
+				return NewGenericError(77, len(sv), value.Type().Length())
+			}
+			value.setStringWithSize(sv)
+			Central.Log.Debugf("Set value to >%s<", value.value)
+		default:
+			return NewGenericError(103, fmt.Sprintf("%T", v), value.Type().Name())
+		}
 	}
 	return nil
 }

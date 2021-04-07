@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -25,11 +25,15 @@ import (
 	"strconv"
 )
 
+// unpackedValue handle Adabas fields with the Packed format
+// type. The unpacked value is defined with corresponding
+// values in an byte.
 type unpackedValue struct {
 	adaValue
 	value []byte
 }
 
+// newUnpackedValue creates new unpacked value
 func newUnpackedValue(initType IAdaType) *unpackedValue {
 	if initType == nil {
 		return nil
@@ -39,10 +43,12 @@ func newUnpackedValue(initType IAdaType) *unpackedValue {
 	return &value
 }
 
+// ByteValue byte value of the unpacked value
 func (value *unpackedValue) ByteValue() byte {
 	return value.value[0]
 }
 
+// String string value representation of the unpacked value
 func (value *unpackedValue) String() string {
 	unpackedInt := value.unpackedToLong(false)
 	sv := strconv.FormatInt(unpackedInt, 10)
@@ -65,6 +71,7 @@ func (value *unpackedValue) String() string {
 
 }
 
+// Value return the raw value of the unpacked value
 func (value *unpackedValue) Value() interface{} {
 	return value.value
 }
@@ -81,6 +88,7 @@ func (value *unpackedValue) SetStringValue(stValue string) {
 	}
 }
 
+// SetValue set the unpacked value
 func (value *unpackedValue) SetValue(v interface{}) error {
 	Central.Log.Debugf("Set packed value to %v", v)
 	iLen := value.Type().Length()
@@ -101,7 +109,6 @@ func (value *unpackedValue) SetValue(v interface{}) error {
 		if err != nil {
 			return err
 		}
-		Central.Log.Debugf("Got ... %v", v)
 		if iLen != 0 {
 			err = value.checkValidValue(v, value.Type().Length())
 			if err != nil {
@@ -151,6 +158,8 @@ func (value *unpackedValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOpt
 	return len
 }
 
+// StoreBuffer store buffer generating the record buffer used in the Adabas
+// call
 func (value *unpackedValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
 	// Skip normal fields in second call
 	if option != nil && option.SecondCall > 0 {
@@ -170,6 +179,7 @@ func (value *unpackedValue) StoreBuffer(helper *BufferHelper, option *BufferOpti
 	return helper.putBytes(value.value)
 }
 
+// parseBuffer parse the record buffer defined by the corresponding definition
 func (value *unpackedValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 	if value.Type().Length() == 0 {
 		length, errh := helper.ReceiveUInt8()
@@ -188,6 +198,7 @@ func (value *unpackedValue) parseBuffer(helper *BufferHelper, option *BufferOpti
 	return
 }
 
+// Int8 unpacked value returns the 8-byte integer
 func (value *unpackedValue) Int8() (int8, error) {
 	if value.Type().Fractional() > 0 {
 		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
@@ -195,12 +206,15 @@ func (value *unpackedValue) Int8() (int8, error) {
 	return int8(value.unpackedToLong(false)), nil
 }
 
+// Uint8 unpacked value returns the 8-byte unsigned integer
 func (value *unpackedValue) UInt8() (uint8, error) {
 	if value.Type().Fractional() > 0 {
 		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
 	}
 	return uint8(value.unpackedToLong(false)), nil
 }
+
+// Int16 unpacked value returns the 16-byte signed integer
 func (value *unpackedValue) Int16() (int16, error) {
 	if value.Type().Fractional() > 0 {
 		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
@@ -208,12 +222,15 @@ func (value *unpackedValue) Int16() (int16, error) {
 	return int16(value.unpackedToLong(false)), nil
 }
 
+// UInt16 unpacked value returns the 16-byte unsigned integer
 func (value *unpackedValue) UInt16() (uint16, error) {
 	if value.Type().Fractional() > 0 {
 		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
 	}
 	return uint16(value.unpackedToLong(false)), nil
 }
+
+// Int32 unpacked value returns the 32-byte signed integer
 func (value *unpackedValue) Int32() (int32, error) {
 	if value.Type().Fractional() > 0 {
 		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
@@ -221,12 +238,15 @@ func (value *unpackedValue) Int32() (int32, error) {
 	return int32(value.unpackedToLong(false)), nil
 }
 
+// UInt32 unpacked value returns the 32-byte unsigned integer
 func (value *unpackedValue) UInt32() (uint32, error) {
 	if value.Type().Fractional() > 0 {
 		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
 	}
 	return uint32(value.unpackedToLong(false)), nil
 }
+
+// Int64 unpacked value returns the 64-byte signed integer
 func (value *unpackedValue) Int64() (int64, error) {
 	v := value.unpackedToLong(false)
 	if value.Type().Fractional() > 0 {
@@ -238,12 +258,16 @@ func (value *unpackedValue) Int64() (int64, error) {
 	}
 	return v, nil
 }
+
+// UInt64 unpacked value returns the 64-byte unsigned integer
 func (value *unpackedValue) UInt64() (uint64, error) {
 	if value.Type().Fractional() > 0 {
 		return 0, NewGenericError(112, value.Type().Name(), value.Type().Fractional())
 	}
 	return uint64(value.unpackedToLong(false)), nil
 }
+
+// Float unpacked value returns the floating point representation
 func (value *unpackedValue) Float() (float64, error) {
 	v := float64(value.unpackedToLong(false))
 	if value.Type().Fractional() > 0 {
@@ -252,6 +276,7 @@ func (value *unpackedValue) Float() (float64, error) {
 	return v, nil
 }
 
+// unpackedToLong convert unpacked to long value
 func (value *unpackedValue) unpackedToLong(ebcdic bool) int64 {
 	end := len(value.value) - 1
 	// In case it is variable length
@@ -285,6 +310,7 @@ func (value *unpackedValue) unpackedToLong(ebcdic bool) int64 {
 	return longValue
 }
 
+// LongToUnpacked convert long to unpacked  value
 func (value *unpackedValue) LongToUnpacked(intValue int64, len int, ebcdic bool) {
 	Central.Log.Debugf("Convert integer %d", intValue)
 	b := make([]byte, len)
