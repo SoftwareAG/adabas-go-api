@@ -101,7 +101,6 @@ func (value *unpackedValue) SetValue(v interface{}) error {
 		if err != nil {
 			return err
 		}
-		Central.Log.Debugf("Got ... %v", v)
 		if iLen != 0 {
 			err = value.checkValidValue(v, value.Type().Length())
 			if err != nil {

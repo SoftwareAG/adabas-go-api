@@ -188,7 +188,6 @@ func (value *packedValue) SetValue(v interface{}) (err error) {
 			return err
 		}
 	}
-	Central.Log.Debugf("Got ... %v", v64)
 	if iLen != 0 {
 		err = value.checkValidValue(v64, value.Type().Length())
 		if err != nil {

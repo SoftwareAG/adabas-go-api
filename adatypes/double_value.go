@@ -24,6 +24,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math"
+	"reflect"
 	"strconv"
 )
 
@@ -82,22 +83,19 @@ func (value *doubleValue) SetStringValue(stValue string) {
 }
 
 func (value *doubleValue) SetValue(v interface{}) error {
-	switch v.(type) {
-	case float32:
-		f := float64(v.(float32))
+	switch reflect.TypeOf(v).Kind() {
+	case reflect.Float32, reflect.Float64:
+		f := reflect.ValueOf(v).Float()
 		value.value = float64ToByte(f)
-	case float64:
-		value.value = float64ToByte(v.(float64))
-	case string:
-		vs := v.(string)
+	case reflect.String:
+		vs := reflect.ValueOf(v).String()
 		value.SetStringValue(vs)
-	case []byte:
+	case reflect.Array:
 		bv := v.([]byte)
 		if uint32(len(bv)) > value.Type().Length() {
 			return NewGenericError(109)
 		}
 		copy(value.value[:len(bv)], bv[:])
-		// value.value = bv
 	default:
 		i, err := value.commonInt64Convert(v)
 		if err != nil {

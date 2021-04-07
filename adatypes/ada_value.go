@@ -22,7 +22,6 @@ package adatypes
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
 	"math"
 	"reflect"
@@ -229,58 +228,38 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 // common format buffer generation
 func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 	var val uint64
-	switch v := x.(type) {
-	case string:
+	switch reflect.TypeOf(x).Kind() {
+	case reflect.String:
+		v := reflect.ValueOf(x).String()
 		sval, err := strconv.Atoi(v)
 		if err != nil {
 			return 0, err
 		}
 		val = uint64(sval)
-	case uint64:
-		val = v
-	case int64:
+	case reflect.Uint, reflect.Uint8, reflect.Uint16,
+		reflect.Uint32, reflect.Uint64:
+		val = reflect.ValueOf(x).Uint()
+	case reflect.Int, reflect.Int8, reflect.Int16,
+		reflect.Int32, reflect.Int64:
+		v := reflect.ValueOf(x).Int()
 		if v < 0 {
 			return 0, NewGenericError(101, fmt.Sprintf("unsigned int64 (%T,%d)", x, v))
 		}
 		val = uint64(v)
-	case int:
-		if v < 0 {
-			return 0, NewGenericError(101, fmt.Sprintf("unsigned int64 (%T,%d)", x, v))
-		}
-		val = uint64(v)
-	case uint32:
-		val = uint64(x.(uint32))
-	case int32:
-		if v < 0 {
-			return 0, NewGenericError(101, fmt.Sprintf("unsigned int64 (%T,%d)", x, v))
-		}
-		val = uint64(v)
-	case uint16:
-		val = uint64(v)
-	case int16:
-		if v < 0 {
-			return 0, NewGenericError(101, fmt.Sprintf("unsigned int64 (%T,%d)", x, v))
-		}
-		val = uint64(v)
-	case uint8:
-		val = uint64(v)
-	case int8:
-		if v < 0 {
-			return 0, NewGenericError(101, fmt.Sprintf("unsigned int64 (%T,%d)", x, v))
-		}
-		val = uint64(v)
-	case float64:
+	case reflect.Float32, reflect.Float64:
+		v := reflect.ValueOf(x).Float()
 		if v < 0 {
 			return 0, NewGenericError(101, fmt.Sprintf("unsigned int64 (%T,%f)", x, v))
 		}
 		val = uint64(v)
-	case json.Number:
-		i64, err := v.Int64()
-		if err != nil {
-			return 0, err
-		}
-		val = uint64(i64)
-	case []byte:
+	// case json.Number:
+	// 	i64, err := v.Int64()
+	// 	if err != nil {
+	// 		return 0, err
+	// 	}
+	// 	val = uint64(i64)
+	case reflect.Array:
+		v := x.([]byte)
 		switch len(v) {
 		case 1:
 			buf := bytes.NewBuffer(v)
