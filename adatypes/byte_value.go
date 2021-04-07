@@ -23,6 +23,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"reflect"
 	"strconv"
 )
 
@@ -63,19 +64,34 @@ func (value *byteValue) SetStringValue(stValue string) {
 }
 
 func (value *byteValue) SetValue(v interface{}) error {
-	switch v.(type) {
-	case byte, int8:
-		value.value = v.(int8)
-		return nil
-	case int, int32:
-		val := v.(int)
-		value.value = int8(val)
-		return nil
-	case int64:
-		val := v.(int64)
-		value.value = int8(val)
-		return nil
-	case string:
+	switch reflect.TypeOf(v).Kind() {
+	case reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64:
+		intValue := reflect.ValueOf(v).Int()
+		if intValue < math.MinInt8 || intValue > math.MaxInt8 {
+			return NewGenericError(117, intValue)
+		}
+		value.value = int8(intValue)
+	case reflect.Uint, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		uintValue := reflect.ValueOf(v).Uint()
+		if uintValue > math.MaxInt8 {
+			return NewGenericError(117, uintValue)
+		}
+		value.value = int8(uintValue)
+	// }
+	// switch v.(type) {
+	// case byte, int8:
+	// 	value.value = v.(int8)
+	// 	return nil
+	// case int, int32:
+	// 	val := v.(int)
+	// 	value.value = int8(val)
+	// 	return nil
+	// case int64:
+	// 	val := v.(int64)
+	// 	value.value = int8(val)
+	// 	return nil
+	// case string:
+	case reflect.String:
 		sv := v.(string)
 		ba, err := strconv.Atoi(sv)
 		if err != nil {
@@ -86,7 +102,7 @@ func (value *byteValue) SetValue(v interface{}) error {
 		}
 		value.value = int8(ba)
 		return nil
-	case []byte:
+	case reflect.Array:
 		value.value = convertByteToInt8(v.([]byte)[0])
 		return nil
 	}
