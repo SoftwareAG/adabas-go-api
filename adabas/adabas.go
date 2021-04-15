@@ -48,7 +48,8 @@ const adaFdtXOpt = 'X'
 
 // Transaction flags to synchronize and manage different requests
 type transactions struct {
-	connection interface{}
+	connection   interface{}
+	clusterNodes []*URL
 }
 
 // CallStatistic statistic of one Adabas call
@@ -375,6 +376,9 @@ func (adabas *Adabas) sendTCP() (err error) {
 			tcpConn.Disconnect()
 			adabas.transactions.connection = nil
 		}
+	}
+	if tcpConn.clusterNodes != nil {
+		adabas.transactions.clusterNodes = tcpConn.clusterNodes
 	}
 	adatypes.Central.Log.Debugf("Got context for %s %p ", adabas.String(),
 		adabas.transactions.connection)

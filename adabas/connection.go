@@ -601,3 +601,22 @@ func (connection *Connection) CreateMapDeleteRequest(mapReference interface{}) (
 	}
 	return
 }
+
+// IsCluster response status of remote node Adabas cluster part or not
+func (connection *Connection) IsCluster() bool {
+	if connection == nil || connection.adabasToData == nil {
+		return false
+	}
+	if connection.adabasToData.transactions == nil {
+		return false
+	}
+	return len(connection.adabasToData.transactions.clusterNodes) > 0
+}
+
+// GetClusterNodes retrieve cluster node list
+func (connection *Connection) GetClusterNodes() []*URL {
+	if connection.IsCluster() {
+		return connection.adabasToData.transactions.clusterNodes
+	}
+	return make([]*URL, 0)
+}
