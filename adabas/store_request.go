@@ -471,7 +471,7 @@ func (request *StoreRequest) storeValue(record reflect.Value, store, etData bool
 	}
 	adatypes.Central.Log.Debugf("Put request dynamic field %v", request.dynamic.FieldNames)
 	for an, fn := range request.dynamic.FieldNames {
-		if !strings.HasPrefix(an, "#") {
+		if !strings.HasPrefix(an, "#") && an != "" {
 			v, ok := searchDynamicValue(record, fn)
 			if ok { //&& v.IsValid() {
 				if adatypes.Central.IsDebugLevel() {

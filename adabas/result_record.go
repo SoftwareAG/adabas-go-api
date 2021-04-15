@@ -188,6 +188,11 @@ func (record *Record) searchValue(field string) (adatypes.IAdaValue, bool) {
 // using square brackets. For example AA[1,2] will set the first entry of a
 // period group and the second entry of the multiple field.
 func (record *Record) SetValue(field string, value interface{}) (err error) {
+	if field == "" {
+		err = adatypes.NewGenericError(172)
+		return
+	}
+
 	adatypes.Central.Log.Debugf("Set value %s", field)
 	if strings.ContainsRune(field, '[') {
 		i := strings.IndexRune(field, '[')
