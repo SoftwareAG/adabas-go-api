@@ -447,3 +447,23 @@ func (repository *Repository) RemoveMap(mapName string) (err error) {
 	delete(repository.mapNames, mapName)
 	return nil
 }
+
+// DeleteMap delete map name out of specific map repository
+func (repository *Repository) DeleteMap(adabas *Adabas, mapName string) (err error) {
+	defer adabas.Close()
+	adabasMap, err := repository.SearchMap(adabas, mapName)
+	if err != nil {
+		return err
+	}
+	request := NewDeleteRequestAdabas(adabas, repository.Fnr)
+	err = request.Delete(adabasMap.Isn)
+	if err != nil {
+		return err
+	}
+	err = request.EndTransaction()
+	if err != nil {
+		return err
+	}
+	repository.RemoveMap(mapName)
+	return nil
+}

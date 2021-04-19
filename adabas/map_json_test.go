@@ -550,6 +550,7 @@ func TestImportMaps(t *testing.T) {
 	}
 	fmt.Println("Number of maps", len(maps))
 	if assert.True(t, len(maps) > 0) {
+		nrMaps := len(maps)
 		err = maps[0].Store()
 		assert.Error(t, err)
 
@@ -561,6 +562,28 @@ func TestImportMaps(t *testing.T) {
 				return
 			}
 		}
+
+		repo := NewMapRepositoryWithURL(DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 4})
+		ada, err := NewAdabas(NewURLWithDbid(adabasModDBID))
+		if !assert.NoError(t, err) {
+			return
+		}
+		maps, err = repo.LoadAllMaps(ada)
+		if !assert.NoError(t, err) {
+			return
+		}
+		assert.Len(t, maps, nrMaps)
+		for _, m := range maps {
+			err = m.Delete()
+			if !assert.NoError(t, err) {
+				return
+			}
+		}
+		maps, err = repo.LoadAllMaps(ada)
+		if !assert.NoError(t, err) {
+			return
+		}
+		assert.Len(t, maps, 0)
 	}
 
 }
