@@ -24,6 +24,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -127,17 +128,37 @@ func (repository *Repository) ImportMapRepository(adabas *Adabas, filter string,
 	}
 
 	if mapURL == nil {
-		for _, m := range maps {
-			m.Repository = &repository.DatabaseURL
+		tmpMaps := maps
+		maps = make([]*Map, 0)
+		for _, m := range tmpMaps {
+			if filter == "" {
+				maps = append(maps, m)
+				m.Repository = &repository.DatabaseURL
+			} else {
+				if matched, _ := regexp.MatchString(filter, m.Name); matched {
+					maps = append(maps, m)
+					m.Repository = &repository.DatabaseURL
+				}
+			}
 		}
 		return
 	}
 	dataRepository := &Repository{DatabaseURL: *mapURL}
-	for _, m := range maps {
-		m.Repository = &repository.DatabaseURL
+	tmpMaps := maps
+	maps = make([]*Map, 0)
+	for _, m := range tmpMaps {
 		m.Data = &dataRepository.DatabaseURL
 		repository.RemoveMap(m.Name)
 		repository.AddMapToCache(m.Name, m)
+		if filter == "" {
+			maps = append(maps, m)
+			m.Repository = &repository.DatabaseURL
+		} else {
+			if matched, _ := regexp.MatchString(filter, m.Name); matched {
+				maps = append(maps, m)
+				m.Repository = &repository.DatabaseURL
+			}
+		}
 	}
 
 	return

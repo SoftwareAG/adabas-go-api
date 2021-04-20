@@ -20,6 +20,7 @@
 package adabas
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"regexp"
@@ -40,6 +41,14 @@ func (repURL *DatabaseURL) dbid() (dbid Dbid, err error) {
 	adatypes.Central.Log.Debugf("repURL=%#v", repURL)
 	dbid = repURL.URL.Dbid
 	return
+}
+
+func (repURL *DatabaseURL) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&struct {
+		Target string
+		File   int
+	}{Target: repURL.URL.String(),
+		File: int(repURL.Fnr)})
 }
 
 // map name flags contains map related ISN and if found in search

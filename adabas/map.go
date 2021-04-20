@@ -122,21 +122,25 @@ type Map struct {
 // In advance redefinition of fields to a subset of fields is possible.
 func NewAdabasMap(param ...interface{}) *Map {
 	redefinitionFieldMap := make(map[string][]*MapField)
+	redefinitionFields := make([]*MapField, 0)
 	switch param[0].(type) {
 	case string:
 		name := param[0].(string)
 		if len(param) == 1 {
-			return &Map{Name: name, redefinitionFieldMap: redefinitionFieldMap}
+			return &Map{Name: name, redefinitionFieldMap: redefinitionFieldMap,
+				RedefinitionFields: redefinitionFields}
 		}
 		repository := param[1].(*DatabaseURL)
 		return &Map{Name: name, Repository: repository, DefaultCharset: "US-ASCII",
-			redefinitionFieldMap: redefinitionFieldMap}
+			redefinitionFieldMap: redefinitionFieldMap,
+			RedefinitionFields:   redefinitionFields}
 	case *DatabaseURL:
 		repository := param[0].(*DatabaseURL)
 		dataRepository := param[1].(*DatabaseURL)
 		redefinitionFieldMap := make(map[string][]*MapField)
 		return &Map{Repository: repository, Data: dataRepository, DefaultCharset: "US-ASCII",
-			redefinitionFieldMap: redefinitionFieldMap}
+			redefinitionFieldMap: redefinitionFieldMap,
+			RedefinitionFields:   redefinitionFields}
 	}
 	return nil
 }
