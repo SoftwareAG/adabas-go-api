@@ -579,11 +579,26 @@ func TestImportMaps(t *testing.T) {
 				return
 			}
 		}
+		// Reinitiate repository
+		repo = NewMapRepositoryWithURL(DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 4})
 		maps, err = repo.LoadAllMaps(ada)
 		if !assert.NoError(t, err) {
 			return
 		}
 		assert.Len(t, maps, 0)
+		maps, err = LoadJSONMap("Maps.json")
+		if !assert.NoError(t, err) {
+			return
+		}
+		fmt.Println("Rewrite Number of maps", len(maps))
+		for _, m := range maps {
+			m.Repository = &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 4}
+			fmt.Println("MAP", m.Name)
+			err = m.Store()
+			if !assert.NoError(t, err) {
+				return
+			}
+		}
 	}
 
 }
