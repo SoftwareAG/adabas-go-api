@@ -127,6 +127,9 @@ func (repository *Repository) ImportMapRepository(adabas *Adabas, filter string,
 	}
 
 	if mapURL == nil {
+		for _, m := range maps {
+			m.Repository = &repository.DatabaseURL
+		}
 		return
 	}
 	dataRepository := &Repository{DatabaseURL: *mapURL}

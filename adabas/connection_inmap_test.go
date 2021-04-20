@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"runtime"
 	"testing"
-	"time"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
@@ -368,21 +367,28 @@ func TestInlineStorePEMU(t *testing.T) {
 }
 
 type Executions struct {
-	Isn        uint64    `adabas:":isn"`
-	ID         int64     `json:"Id" adabas:"::"`
-	User       string    `adabas:"::US"`
-	HashID     string    `adabas:"::JI"`
-	Scheduled  time.Time `adabas:"::SB"`
-	Ended      time.Time `adabas:"::SE"`
-	ExitCode   int       `adabas:"::EX"`
-	RecordType byte      `adabas:"::TY"`
-	Flags      byte      `adabas:"::JL"`
-	StartedBy  string    `adabas:"::NA"`
-	ChangeTime string    `adabas:"::ZB"`
-	LogFile    string    `json:"Log" adabas:"::"`
-	LogContent string    `json:"-" adabas:"::LO"`
-	JobDesc    string    `adabas:"::QJ"`
+	Isn        uint64 `adabas:":isn"`
+	ID         int64  `json:"Id" adabas:"::"`
+	User       string `adabas:"::US"`
+	HashID     string `adabas:"::JI"`
+	Scheduled  int64  `adabas:"::SB"`
+	Ended      int64  `adabas:"::SE"`
+	ExitCode   int    `adabas:"::EX"`
+	RecordType byte   `adabas:"::TY"`
+	Flags      byte   `adabas:"::JL"`
+	StartedBy  string `adabas:"::NA"`
+	ChangeTime string `adabas:"::ZB"`
+	LogFile    string `json:"Log" adabas:"::"`
+	LogContent string `json:"-" adabas:"::LO"`
+	JobDesc    string `adabas:"::QJ"`
 }
+
+const logText = `%ADAREP-I-STARTED,      02-MAR-2021 21:57:34, Version 7.1.0.0 (MacOSX 64Bit)
+%ADAREP-F-DBSLMM, Structure level mismatch on database
+%ADAREP-E-ACLOGPERM, The permissions of the LOG_FILE directory are insufficient.
+%ADAREP-I-IOCNT, 1 IOs on dataset ASSO
+%ADAREP-I-ABORTED,      02-MAR-2021 21:57:34, elapsed time: 00:00:00
+`
 
 func TestInmapExecutions(t *testing.T) {
 	initTestLogWithFile(t, "inmap.log")
@@ -399,9 +405,20 @@ func TestInmapExecutions(t *testing.T) {
 	if !assert.NoError(t, rErr) {
 		return
 	}
-	for _, j := range result.Data {
-		e := j.(*Executions)
-		fmt.Println(e.LogContent)
+	assert.Len(t, result.Data, 1)
+	e := result.Data[0].(*Executions)
+	assert.Equal(t, logText, e.LogContent)
+
+	writeJobEx, err := connection.CreateMapStoreRequest(&Executions{})
+	if !assert.NoError(t, err) {
+		return
+	}
+	jobEx := &Executions{ID: 1223224, User: "TestUser",
+		HashID: "0fdeaa0022", LogFile: "testfile.notsee",
+		LogContent: "fndlsnfsldfnsldfnsldfnsödfns.dfnsdfnsldfnslfnsölfnsl"}
+	err = writeJobEx.StoreData(jobEx)
+	if !assert.NoError(t, err) {
+		return
 	}
 }
 

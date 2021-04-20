@@ -500,6 +500,20 @@ func (adabasMap *Map) Store() error {
 	return repository.writeAdabasMapsWithAdabas(adabas, adabasMap)
 }
 
+// Delete deletes the Adabas map in the given Adabas Map repository.
+func (adabasMap *Map) Delete() error {
+	ID := NewAdabasID()
+	if adabasMap.Repository == nil {
+		return adatypes.NewGenericError(65)
+	}
+	adabas, err := NewAdabas(&adabasMap.Repository.URL, ID)
+	if err != nil {
+		return err
+	}
+	repository := NewMapRepository(adabas.URL, adabasMap.Repository.Fnr)
+	return repository.DeleteMap(adabas, adabasMap.Name)
+}
+
 // define the map definition using interface tags
 func (adabasMap *Map) defineByInterface(i interface{}) error {
 	adabasMap.dynamic = adatypes.CreateDynamicInterface(i)

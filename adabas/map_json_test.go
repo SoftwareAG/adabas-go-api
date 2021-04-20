@@ -550,9 +550,47 @@ func TestImportMaps(t *testing.T) {
 	}
 	fmt.Println("Number of maps", len(maps))
 	if assert.True(t, len(maps) > 0) {
+		nrMaps := len(maps)
 		err = maps[0].Store()
 		assert.Error(t, err)
 
+		for _, m := range maps {
+			m.Repository = &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 4}
+			fmt.Println("MAP", m.Name)
+			err = m.Store()
+			if !assert.NoError(t, err) {
+				return
+			}
+		}
+
+		repo := NewMapRepositoryWithURL(DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 4})
+		ada, err := NewAdabas(NewURLWithDbid(adabasModDBID))
+		if !assert.NoError(t, err) {
+			return
+		}
+		maps, err = repo.LoadAllMaps(ada)
+		if !assert.NoError(t, err) {
+			return
+		}
+		assert.Len(t, maps, nrMaps)
+		for _, m := range maps {
+			err = m.Delete()
+			if !assert.NoError(t, err) {
+				return
+			}
+		}
+		// Reinitiate repository
+		repo = NewMapRepositoryWithURL(DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 4})
+		maps, err = repo.LoadAllMaps(ada)
+		if !assert.NoError(t, err) {
+			return
+		}
+		assert.Len(t, maps, 0)
+		maps, err = LoadJSONMap("Maps.json")
+		if !assert.NoError(t, err) {
+			return
+		}
+		fmt.Println("Rewrite Number of maps", len(maps))
 		for _, m := range maps {
 			m.Repository = &DatabaseURL{URL: *NewURLWithDbid(adabasModDBID), Fnr: 4}
 			fmt.Println("MAP", m.Name)
