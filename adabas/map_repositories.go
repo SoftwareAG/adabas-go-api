@@ -43,6 +43,7 @@ func (repURL *DatabaseURL) dbid() (dbid Dbid, err error) {
 	return
 }
 
+// MarshalJSON marshall databaseURL instances
 func (repURL *DatabaseURL) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
 		Target string
