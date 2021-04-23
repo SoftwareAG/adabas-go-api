@@ -78,6 +78,9 @@ func TestMapImport(t *testing.T) {
 	fmt.Println("Number of maps", len(maps))
 	for _, m := range maps {
 		fmt.Println("MAP", m.Name)
+		if !assert.NotNil(t, m.Repository) {
+			return
+		}
 		err = m.Store()
 		if !assert.NoError(t, err) {
 			return

@@ -129,7 +129,7 @@ func (repository *Repository) ImportMapRepository(adabas *Adabas, filter string,
 	}
 
 	var dataRepository *Repository
-	if mapURL == nil {
+	if mapURL != nil {
 		dataRepository = &Repository{DatabaseURL: *mapURL}
 	}
 	maps = repository.filterMaps(filter, maps)
