@@ -148,7 +148,10 @@ func (adaType *AdaSuperType) Value() (adaValue IAdaValue, err error) {
 func (adaType *AdaSuperType) InitSubTypes(definition *Definition) (err error) {
 	Central.Log.Debugf("Init super descriptor types")
 	for _, s := range adaType.Entries {
-		v := definition.fileFields[string(s.Name[:])]
+		v := definition.fileShortFields[string(s.Name[:])]
+		if v == nil {
+			return fmt.Errorf("Error init sub type %s", string(s.Name[:]))
+		}
 		t := NewType(v.Type(), string(s.Name[:]), int(s.To-s.From+1))
 		adaType.SubTypes = append(adaType.SubTypes, t)
 	}

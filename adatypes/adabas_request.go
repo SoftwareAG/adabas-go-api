@@ -268,12 +268,12 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")
 			}
-			buffer.WriteString(fmt.Sprintf("%s,%d", adaType.ShortName(),
+			buffer.WriteString(fmt.Sprintf("%s,%d,A", adaType.ShortName(),
 				adaType.Length()))
 			adabasRequest.RecordBufferLength += adaType.Length()
 		} else {
 			if adabasRequest.DescriptorRead {
-				buffer.WriteString(fmt.Sprintf("%s,%d", adaType.ShortName(),
+				buffer.WriteString(fmt.Sprintf("%s,%d,A", adaType.ShortName(),
 					adaType.Length()))
 				adabasRequest.RecordBufferLength += adaType.Length()
 			} else {

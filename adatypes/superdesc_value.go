@@ -42,15 +42,17 @@ func (value *superDescValue) ByteValue() byte {
 func (value *superDescValue) String() string {
 	adaType := value.Type().(*AdaSuperType)
 	start := 0
-	var buffer bytes.Buffer
-	for _, a := range adaType.SubTypes {
-		v, _ := a.Value()
-		v.SetValue(value.value[start:a.Length()])
-		start += int(a.Length())
-		buffer.WriteString(v.String())
+	if len(adaType.SubTypes) > 0 {
+		var buffer bytes.Buffer
+		for _, a := range adaType.SubTypes {
+			v, _ := a.Value()
+			v.SetValue(value.value[start:a.Length()])
+			start += int(a.Length())
+			buffer.WriteString(v.String())
+		}
+		return buffer.String()
 	}
-	return buffer.String()
-	// return string(value.value)
+	return string(value.value)
 }
 
 func (value *superDescValue) Value() interface{} {
@@ -69,9 +71,9 @@ func (value *superDescValue) SetStringValue(stValue string) {
 
 func (value *superDescValue) SetValue(v interface{}) error {
 	Central.Log.Debugf("Set value for super descriptor of %s to %v length=%d", value.adatype.Name(), v, value.adatype.Length())
-	switch v.(type) {
+	switch superDesc := v.(type) {
 	case []byte:
-		value.value = v.([]byte)
+		value.value = superDesc
 	default:
 	}
 	return nil

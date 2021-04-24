@@ -31,6 +31,7 @@ type Isn uint64
 // Definition struct defines main entry point for parser structure
 type Definition struct {
 	fileFields      map[string]IAdaType
+	fileShortFields map[string]IAdaType
 	fileFieldTree   *StructureType
 	activeFields    map[string]IAdaType
 	activeFieldTree *StructureType
@@ -84,6 +85,7 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 // Register Register field types
 func (def *Definition) Register(t IAdaType) {
 	def.fileFields[t.Name()] = t
+	def.fileShortFields[t.ShortName()] = t
 }
 
 // ParseBuffer method start parsing the definition
@@ -294,7 +296,9 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 
 // NewDefinition create new Definition instance
 func NewDefinition() *Definition {
-	def := &Definition{fileFields: make(map[string]IAdaType), activeFieldTree: NewStructure()}
+	def := &Definition{fileFields: make(map[string]IAdaType),
+		fileShortFields: make(map[string]IAdaType),
+		activeFieldTree: NewStructure()}
 	def.fileFieldTree = def.activeFieldTree
 	return def
 }
@@ -321,6 +325,7 @@ func NewDefinitionClone(old *Definition) *Definition {
 	newDefinition := NewDefinition()
 	newDefinition.fileFieldTree = old.fileFieldTree
 	newDefinition.fileFields = old.fileFields
+	newDefinition.fileShortFields = old.fileShortFields
 	newDefinition.activeFieldTree = old.fileFieldTree
 	return newDefinition
 }
@@ -328,6 +333,7 @@ func NewDefinitionClone(old *Definition) *Definition {
 func initFieldHash(def *Definition, types []IAdaType) {
 	for _, v := range types {
 		def.fileFields[v.Name()] = v
+		def.fileShortFields[v.ShortName()] = v
 		def.activeFields[v.Name()] = v
 		if v.IsStructure() && v.Type() != FieldTypeMultiplefield {
 			sv := v.(*StructureType)
