@@ -40,7 +40,17 @@ func (value *superDescValue) ByteValue() byte {
 }
 
 func (value *superDescValue) String() string {
-	return string(value.value)
+	adaType := value.Type().(*AdaSuperType)
+	start := 0
+	var buffer bytes.Buffer
+	for _, a := range adaType.SubTypes {
+		v, _ := a.Value()
+		v.SetValue(value.value[start:a.Length()])
+		start += int(a.Length())
+		buffer.WriteString(v.String())
+	}
+	return buffer.String()
+	// return string(value.value)
 }
 
 func (value *superDescValue) Value() interface{} {
@@ -109,7 +119,7 @@ func (value *superDescValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 	if option.SecondCall > 0 {
 		return
 	}
-	if value.adatype.IsOption(FieldOptionPE) {
+	if value.adatype.IsOption(FieldOptionPE) && !option.DescriptorRead {
 		return
 	}
 	value.value, err = helper.ReceiveBytes(value.adatype.Length())

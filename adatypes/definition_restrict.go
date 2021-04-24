@@ -120,7 +120,7 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 	newStructure.SubTypes = []IAdaType{}
 	fieldMap.evaluateTopLevelStructure(newStructure.Level())
 	fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newStructure)
-	Central.Log.Debugf("%s part flag %v", fieldMap.lastStructure.Name(), fieldMap.lastStructure.HasFlagSet(FlagOptionPart))
+	Central.Log.Debugf("%s -> %s part flag %v", adaType.Name(), fieldMap.lastStructure.Name(), fieldMap.lastStructure.HasFlagSet(FlagOptionPart))
 	if fieldMap.lastStructure.HasFlagSet(FlagOptionPart) {
 		newStructure.AddFlag(FlagOptionPart)
 		Central.Log.Debugf("Set %s part flag %v", newStructure.Name(), newStructure.HasFlagSet(FlagOptionPart))

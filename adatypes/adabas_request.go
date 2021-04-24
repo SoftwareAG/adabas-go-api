@@ -380,6 +380,7 @@ type AdabasRequestParameter struct {
 func (def *Definition) CreateAdabasRequest(parameter *AdabasRequestParameter) (adabasRequest *Request, err error) {
 	adabasRequest = &Request{FormatBuffer: bytes.Buffer{}, Option: NewBufferOption3(parameter.Store, parameter.SecondCall, parameter.Mainframe),
 		Multifetch: DefaultMultifetchLimit, DescriptorRead: parameter.DescriptorRead}
+	adabasRequest.Option.DescriptorRead = parameter.DescriptorRead
 
 	Central.Log.Debugf("Create format buffer. Init Buffer: %s second=%v", adabasRequest.FormatBuffer.String(), parameter.SecondCall)
 	if parameter.Store || parameter.SecondCall > 0 {
@@ -444,8 +445,7 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 			}
 
 			Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values != nil))
-			var prefix string
-			prefix = fmt.Sprintf("/image/%s/%d/", adabasRequest.Reference, adabasRequest.Isn)
+			prefix := fmt.Sprintf("/image/%s/%d/", adabasRequest.Reference, adabasRequest.Isn)
 			_, err = adabasRequest.Definition.ParseBuffer(adabasRequest.RecordBuffer, adabasRequest.Option, prefix)
 			if err != nil {
 				return

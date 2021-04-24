@@ -290,10 +290,15 @@ func TestConnectionSuperDescriptors(t *testing.T) {
 	if !assert.NoError(t, rErr) {
 		return
 	}
+	readRequest.Limit = 4
 	result, rerr := readRequest.HistogramBy("S3")
 	if !assert.NoError(t, rerr) {
 		return
 	}
-	fmt.Println("S3")
-	fmt.Println(result)
+	// fmt.Println("S3")
+	// fmt.Println(result.String())
+	if assert.Len(t, result.Values, 4) {
+		assert.Equal(t, "ISN=2 quantity=1\n S3=\"DKK100000\"\n", result.Values[0].String())
+		assert.Equal(t, "ISN=5 quantity=1\n S3=\"DKK100000\"\n", result.Values[3].String())
+	}
 }

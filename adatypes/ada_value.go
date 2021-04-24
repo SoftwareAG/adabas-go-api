@@ -52,6 +52,7 @@ type BufferOption struct {
 	PartialLobSize bool
 	Ascending      bool
 	Mainframe      bool
+	DescriptorRead bool
 	multipleSize   uint32
 	StreamCursor   uint8
 	SecondCall     uint32

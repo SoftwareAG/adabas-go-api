@@ -144,6 +144,16 @@ func (adaType *AdaSuperType) Value() (adaValue IAdaValue, err error) {
 	return
 }
 
+func (adaType *AdaSuperType) InitSubTypes(definition *Definition) (err error) {
+	Central.Log.Debugf("Init super descriptor types")
+	for _, s := range adaType.Entries {
+		v := definition.fileFields[string(s.Name[:])]
+		t := NewType(v.Type(), string(s.Name[:]), int(s.To-s.From+1))
+		adaType.SubTypes = append(adaType.SubTypes, t)
+	}
+	return nil
+}
+
 // AdaPhoneticType data type phonetic descriptor for field types, no structures
 type AdaPhoneticType struct {
 	AdaType

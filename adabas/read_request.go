@@ -242,7 +242,7 @@ func (request *ReadRequest) prepareRequest(descriptorRead bool) (adabasRequest *
 			}
 		}
 	}
-	parameter := &adatypes.AdabasRequestParameter{Store: false, SecondCall: 0, Mainframe: request.adabas.status.platform.IsMainframe()}
+	parameter := &adatypes.AdabasRequestParameter{Store: false, DescriptorRead: descriptorRead, SecondCall: 0, Mainframe: request.adabas.status.platform.IsMainframe()}
 	adabasRequest, err = request.definition.CreateAdabasRequest(parameter)
 	if err != nil {
 		return
@@ -972,10 +972,12 @@ func (request *ReadRequest) adaptDescriptorMap(adabasRequest *adatypes.Request) 
 type evaluateFieldMap struct {
 	queryFields map[string]*queryField
 	fields      map[string]int
+	definition  *adatypes.Definition
 }
 
 // initFieldSubTypes initialize field sub types.
 func initFieldSubTypes(st *adatypes.StructureType, queryFields map[string]*queryField, current *int) {
+	adatypes.Central.Log.Debugf("Init field sub types")
 	for _, sub := range st.SubTypes {
 		if sub.IsStructure() {
 			sst := sub.(*adatypes.StructureType)
@@ -992,9 +994,17 @@ func initFieldSubTypes(st *adatypes.StructureType, queryFields map[string]*query
 func traverseFieldMap(adaType adatypes.IAdaType, parentType adatypes.IAdaType, level int, x interface{}) error {
 	ev := x.(*evaluateFieldMap)
 	s := adaType.Name()
+	adatypes.Central.Log.Debugf("Traverse field map, search: %s", s)
 	if index, ok := ev.fields[s]; ok {
 		if _, okq := ev.queryFields[s]; !okq {
-			if adaType.IsStructure() && adaType.Type() != adatypes.FieldTypeRedefinition {
+			adatypes.Central.Log.Debugf("Check field map, search: %s", s)
+			switch {
+			case adaType.Type() == adatypes.FieldTypeSuperDesc:
+				adatypes.Central.Log.Debugf("Adapt subtypes: %s", s)
+				superType := adaType.(*adatypes.AdaSuperType)
+				superType.InitSubTypes(ev.definition)
+			case adaType.IsStructure() && adaType.Type() != adatypes.FieldTypeRedefinition:
+				adatypes.Central.Log.Debugf("Adapt subtypes: %s", s)
 				st := adaType.(*adatypes.StructureType)
 				current := index
 				initFieldSubTypes(st, ev.queryFields, &current)
@@ -1007,7 +1017,7 @@ func traverseFieldMap(adaType adatypes.IAdaType, parentType adatypes.IAdaType, l
 						adatypes.Central.Log.Debugf("New order %s -> %d", s, ev.fields[s])
 					}
 				}
-			} else {
+			default:
 				ev.queryFields[s] = &queryField{field: s, index: index}
 			}
 		}
@@ -1061,7 +1071,7 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 		adatypes.Central.Log.Debugf("Create field content")
 		if fieldq != "*" && fieldq != "" {
 			f := make(map[string]int)
-			ev := &evaluateFieldMap{queryFields: make(map[string]*queryField), fields: f}
+			ev := &evaluateFieldMap{queryFields: make(map[string]*queryField), definition: request.definition, fields: f}
 			for i, s := range strings.Split(fieldq, ",") {
 				sl := strings.ToLower(s)
 				if sl == "#isn" || sl == "#isnquantity" {
