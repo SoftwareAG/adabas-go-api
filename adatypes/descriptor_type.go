@@ -146,7 +146,7 @@ func (adaType *AdaSuperType) Value() (adaValue IAdaValue, err error) {
 
 // InitSubTypes init Adabas super/sub types with adabas definition
 func (adaType *AdaSuperType) InitSubTypes(definition *Definition) (err error) {
-	Central.Log.Debugf("Init super descriptor types")
+	Central.Log.Debugf("Init super descriptor types of %s", adaType.name)
 	for _, s := range adaType.Entries {
 		v := definition.fileShortFields[string(s.Name[:])]
 		if v == nil {
