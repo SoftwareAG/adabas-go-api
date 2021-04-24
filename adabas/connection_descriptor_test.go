@@ -273,3 +273,27 @@ func testSearchAndOrder(t *testing.T, name, search, sortedby string) {
 	}
 
 }
+
+func TestConnectionSuperDescriptors(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection_descriptor.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("ada;target=" + adabasStatDBIDs)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	readRequest, rErr := connection.CreateFileReadRequest(11)
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	result, rerr := readRequest.HistogramBy("S3")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	fmt.Println("S3")
+	fmt.Println(result)
+}

@@ -107,7 +107,7 @@ func (request *ReadRequest) ReadFieldStream(search string) (result *Response, er
 		request.cursoring = &Cursoring{}
 		result = &Response{Definition: request.definition, fields: request.fields}
 
-		adabasRequest, prepareErr := request.prepareRequest()
+		adabasRequest, prepareErr := request.prepareRequest(false)
 		if prepareErr != nil {
 			err = prepareErr
 			return

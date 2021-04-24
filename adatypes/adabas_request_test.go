@@ -90,7 +90,8 @@ func TestAdabasRequestParser_withPeriod(t *testing.T) {
 		return
 	}
 	testDefinition.CreateValues(false)
-	adabasRequest, aerr := testDefinition.CreateAdabasRequest(false, 0, false)
+	parameter := &AdabasRequestParameter{Store: false, SecondCall: 0, Mainframe: false}
+	adabasRequest, aerr := testDefinition.CreateAdabasRequest(parameter)
 	if !assert.NoError(t, aerr) || !assert.NotNil(t, adabasRequest) {
 		return
 	}
@@ -140,7 +141,9 @@ func TestAdabasRequestParser_osEmptyPeriod(t *testing.T) {
 		return
 	}
 	testDefinition.CreateValues(false)
-	adabasRequest, aerr := testDefinition.CreateAdabasRequest(false, 0, false)
+	parameter := &AdabasRequestParameter{Store: false, DescriptorRead: false,
+		SecondCall: 0, Mainframe: false}
+	adabasRequest, aerr := testDefinition.CreateAdabasRequest(parameter)
 	if !assert.NoError(t, aerr) || !assert.NotNil(t, adabasRequest) {
 		return
 	}
@@ -188,7 +191,9 @@ func TestAdabasRequestParser_mfEmptyPeriod(t *testing.T) {
 		return
 	}
 	testDefinition.CreateValues(false)
-	adabasRequest, aerr := testDefinition.CreateAdabasRequest(false, 0, true)
+	parameter := &AdabasRequestParameter{Store: false, DescriptorRead: false,
+		SecondCall: 0, Mainframe: true}
+	adabasRequest, aerr := testDefinition.CreateAdabasRequest(parameter)
 	if !assert.NoError(t, aerr) || !assert.NotNil(t, adabasRequest) {
 		return
 	}

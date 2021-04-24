@@ -869,7 +869,8 @@ func (adabas *Adabas) SendSecondCall(adabasRequest *adatypes.Request, x interfac
 	adatypes.Central.Log.Debugf("Check second call .... values avail.=%v", (adabasRequest.Definition.Values == nil))
 	if adabasRequest.Option.NeedSecondCall != adatypes.NoneSecond {
 		adatypes.Central.Log.Debugf("Need second call %v", adabasRequest.Option.NeedSecondCall)
-		tmpAdabasRequest, err2 := adabasRequest.Definition.CreateAdabasRequest(false, 1, adabas.status.platform.IsMainframe())
+		parameter := &adatypes.AdabasRequestParameter{Store: false, SecondCall: 1, Mainframe: adabas.status.platform.IsMainframe()}
+		tmpAdabasRequest, err2 := adabasRequest.Definition.CreateAdabasRequest(parameter)
 		if err2 != nil {
 			err = err2
 			return

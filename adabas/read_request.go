@@ -228,7 +228,7 @@ func (request *ReadRequest) Open() (opened bool, err error) {
 }
 
 // Prepare read request for special parts in read
-func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, err error) {
+func (request *ReadRequest) prepareRequest(descriptorRead bool) (adabasRequest *adatypes.Request, err error) {
 	if request.definition == nil {
 		err = request.loadDefinition()
 		if err != nil {
@@ -242,10 +242,12 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, e
 			}
 		}
 	}
-	adabasRequest, err = request.definition.CreateAdabasRequest(false, 0, request.adabas.status.platform.IsMainframe())
+	parameter := &adatypes.AdabasRequestParameter{Store: false, SecondCall: 0, Mainframe: request.adabas.status.platform.IsMainframe()}
+	adabasRequest, err = request.definition.CreateAdabasRequest(parameter)
 	if err != nil {
 		return
 	}
+	adatypes.Central.Log.Debugf("Prepare decriptor read %v", descriptorRead)
 	adabasRequest.Definition = request.definition
 	adabasRequest.RecordBufferShift = request.RecordBufferShift
 	adatypes.Central.Log.Debugf("Record shift set to: %d", adabasRequest.RecordBufferShift)
@@ -373,7 +375,7 @@ func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes
 	if err != nil {
 		return
 	}
-	adabasRequest, prepareErr := request.prepareRequest()
+	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
 		err = prepareErr
 		return
@@ -415,7 +417,7 @@ func (request *ReadRequest) ReadISNWithParser(isn adatypes.Isn, resultParser ada
 	if err != nil {
 		return
 	}
-	adabasRequest, prepareErr := request.prepareRequest()
+	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
 		err = prepareErr
 		return
@@ -585,7 +587,7 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 		}
 
 		adatypes.Central.Log.Debugf("Definition generated ...")
-		adabasRequest, prepareErr := request.prepareRequest()
+		adabasRequest, prepareErr := request.prepareRequest(false)
 		if prepareErr != nil {
 			err = prepareErr
 			return
@@ -668,7 +670,7 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 		return
 	}
 	adatypes.Central.Log.Debugf("Prepare read logical by request ... %s", descriptors)
-	adabasRequest, prepareErr := request.prepareRequest()
+	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
 		err = prepareErr
 		return
@@ -711,11 +713,14 @@ func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, er
 		if err != nil {
 			return
 		}
-		adabasRequest, prepareErr := request.prepareRequest()
+		adatypes.Central.Log.Debugf("Prepare histogram read")
+		adabasRequest, prepareErr := request.prepareRequest(true)
 		if prepareErr != nil {
 			err = prepareErr
 			return
 		}
+		adatypes.Central.Log.Debugf("Prepared histogram read")
+		adabasRequest.DescriptorRead = true
 		adabasRequest.Parser = parseReadToRecord
 		adabasRequest.Limit = request.Limit
 		adabasRequest.Descriptors, err = request.definition.Descriptors(descriptor)
@@ -804,7 +809,7 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 		return err
 	}
 	adatypes.Central.Log.Debugf("Before value creation --------")
-	adabasRequest, prepareErr := request.prepareRequest()
+	adabasRequest, prepareErr := request.prepareRequest(true)
 	adatypes.Central.Log.Debugf("Prepare done --------")
 	adabasRequest.SearchTree = tree
 	adabasRequest.Descriptors = adabasRequest.SearchTree.OrderBy()
@@ -885,7 +890,7 @@ func (request *ReadRequest) SearchAndOrderWithParser(search, descriptors string,
 		}
 
 		adatypes.Central.Log.Debugf("Definition generated ...")
-		adabasRequest, prepareErr := request.prepareRequest()
+		adabasRequest, prepareErr := request.prepareRequest(false)
 		if prepareErr != nil {
 			err = prepareErr
 			return
