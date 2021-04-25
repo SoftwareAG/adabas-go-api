@@ -607,10 +607,11 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 			adabasRequest.SearchTree = tree
 			adabasRequest.Descriptors = tree.OrderBy()
 		}
-		err = request.adaptDescriptorMap(adabasRequest)
-		if err != nil {
-			return err
-		}
+		_ = request.adaptDescriptorMap(adabasRequest)
+		// err = request.adaptDescriptorMap(adabasRequest)
+		// if err != nil {
+		// 	return err
+		// }
 		if request.cursoring != nil {
 			request.cursoring.adabasRequest = adabasRequest
 		}
@@ -794,10 +795,11 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 		return
 	}
 	if request.definition == nil {
-		err = request.loadDefinition()
-		if err != nil {
-			return err
-		}
+		_ = request.loadDefinition()
+		// err = request.loadDefinition()
+		// if err != nil {
+		// 	return err
+		// }
 	}
 	searchInfo := adatypes.NewSearchInfo(request.adabas.ID.platform(request.adabas.URL.String()), search)
 	searchInfo.Definition = request.definition
@@ -819,10 +821,11 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 	adatypes.Central.Log.Debugf("Prepare done --------")
 	adabasRequest.SearchTree = tree
 	adabasRequest.Descriptors = adabasRequest.SearchTree.OrderBy()
-	err = request.adaptDescriptorMap(adabasRequest)
-	if err != nil {
-		return
-	}
+	_ = request.adaptDescriptorMap(adabasRequest)
+	// err = request.adaptDescriptorMap(adabasRequest)
+	// if err != nil {
+	// 	return
+	// }
 	if prepareErr != nil {
 		err = prepareErr
 		return
@@ -929,9 +932,10 @@ func (request *ReadRequest) SearchAndOrderWithParser(search, descriptors string,
 			}
 		}
 		err = request.adaptDescriptorMap(adabasRequest)
-		if err != nil {
-			return err
-		}
+		adatypes.Central.Log.Errorf("Adapt Descriptor map error: %v", err)
+		// if err != nil {
+		// 	return err
+		// }
 		if request.cursoring != nil {
 			request.cursoring.adabasRequest = adabasRequest
 		}
