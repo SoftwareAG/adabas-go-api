@@ -435,6 +435,7 @@ func (def *Definition) Fieldnames() []string {
 	return typeList
 }
 
+// CheckField check field part of active fields
 func (def *Definition) CheckField(name string) bool {
 	_, ok := def.activeFields[name]
 	return ok
