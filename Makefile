@@ -26,6 +26,7 @@ DATE         ?= $(shell date +%FT%T%z)
 VERSION      ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/null || \
 			cat $(CURDIR)/.version 2> /dev/null || echo v0)
 BIN           = $(CURDIR)/bin/$(GOOS)_$(GOARCH)
+BINTOOLS      = $(CURDIR)/bin/tools/$(GOOS)_$(GOARCH)
 LOGPATH       = $(CURDIR)/logs
 TESTFILES     = $(CURDIR)/files
 OBJECTS       = adabas/*.go adatypes/*.go
