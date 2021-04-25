@@ -482,7 +482,7 @@ func (adabasMap *Map) adaptFieldType(definition *adatypes.Definition, dynamic *a
 		adatypes.Central.Log.Debugf("Redefine %v", fields)
 	}
 	// TODO restrict to interface if given
-	err = definition.RestrictFieldSlice(fields)
+	_ = definition.RestrictFieldSlice(fields)
 	if adatypes.Central.IsDebugLevel() {
 		definition.DumpTypes(true, false, "after restrict slice")
 	}
