@@ -106,6 +106,8 @@ func TestStructStore(t *testing.T) {
 	}
 	err = connection.ReflectStore(e, "Employees")
 	if assert.NoError(t, err) {
+		fmt.Println("ISN:", e[0].Index)
+		assert.NotEqual(t, 0, e[0].Index)
 		err = connection.EndTransaction()
 		assert.NoError(t, err)
 	}

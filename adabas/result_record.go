@@ -74,6 +74,7 @@ func NewRecord(definition *adatypes.Definition) (*Record, error) {
 		adatypes.Central.Log.Debugf("Definition values empty")
 		err := definition.CreateValues(false)
 		if err != nil {
+			adatypes.Central.Log.Debugf("Error creating Definition values")
 			return nil, err
 		}
 	}
