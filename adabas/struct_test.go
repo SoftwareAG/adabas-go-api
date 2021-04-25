@@ -106,7 +106,8 @@ func TestStructStore(t *testing.T) {
 	}
 	err = connection.ReflectStore(e, "Employees")
 	if assert.NoError(t, err) {
-		connection.EndTransaction()
+		err = connection.EndTransaction()
+		assert.NoError(t, err)
 	}
 }
 

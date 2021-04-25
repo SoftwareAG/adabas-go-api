@@ -348,7 +348,7 @@ func parseMap(adabasRequest *adatypes.Request, x interface{}) (err error) {
 
 	adatypes.Central.Log.Debugf("Got Map ISN %d record", isn)
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseExtractMapField}
-	adabasRequest.Definition.TraverseValues(tm, adabasMap)
+	_, err = adabasRequest.Definition.TraverseValues(tm, adabasMap)
 	return
 }
 

@@ -100,7 +100,7 @@ func TestGlobalMapConnectionString(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 }
 
 func TestGlobalMapConnectionDirect(t *testing.T) {
@@ -127,7 +127,7 @@ func TestGlobalMapConnectionDirect(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 }
 
 func TestThreadMapCache(t *testing.T) {

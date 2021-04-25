@@ -441,7 +441,11 @@ func ExampleAdabas_readFileDefinition9RestrictF0() {
 		fmt.Println("Error: ", err)
 		return
 	}
-	definition.ShouldRestrictToFields("AA,F0")
+	err = definition.ShouldRestrictToFields("AA,F0")
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
 	definition.DumpTypes(false, true)
 	// Output:Open database
 	// Read file definition
@@ -490,7 +494,11 @@ func ExampleAdabas_readFileDefinition9Restricted() {
 		fmt.Println("Error: ", err)
 		return
 	}
-	definition.ShouldRestrictToFields("A0,DA,L0")
+	err = definition.ShouldRestrictToFields("A0,DA,L0")
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
 	definition.DumpTypes(false, true)
 	// Output: Open database
 	// Read file definition

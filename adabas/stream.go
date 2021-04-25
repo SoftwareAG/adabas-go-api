@@ -117,7 +117,10 @@ func (request *ReadRequest) ReadFieldStream(search string) (result *Response, er
 		adabasRequest.Parser = parseReadToRecord
 		adabasRequest.Limit = request.Limit
 		request.cursoring.result = result
-		request.adaptDescriptorMap(adabasRequest)
+		err = request.adaptDescriptorMap(adabasRequest)
+		if err != nil {
+			return
+		}
 		request.cursoring.adabasRequest = adabasRequest
 
 		// Call first

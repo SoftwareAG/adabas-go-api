@@ -159,7 +159,7 @@ type AID struct {
 
 // Status of the referenced connection
 type Status struct {
-	ref              string
+	// ref              string
 	open             bool
 	openTransactions uint32
 	platform         *adatypes.Platform
@@ -241,7 +241,11 @@ func (adaid *ID) changeOpenState(url string, open bool) {
 func (adaid *ID) getAdabas(url *URL) *Adabas {
 	s := adaid.status(url.String())
 	if s.adabas == nil {
-		NewAdabas(url, adaid)
+		a, err := NewAdabas(url, adaid)
+		if err != nil {
+			return nil
+		}
+		return a
 	}
 	return s.adabas
 }

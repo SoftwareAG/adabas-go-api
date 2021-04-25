@@ -93,7 +93,7 @@ func TestConnectionSecure_pwd(t *testing.T) {
 		fmt.Println("Error read logical data", err)
 		return
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 	// Output: XX
 }
 

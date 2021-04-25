@@ -39,7 +39,7 @@ func TestRequestPhysicalSimpleTypes(t *testing.T) {
 	request.QueryFields("AA,AC,AD")
 	result, err := request.ReadPhysicalSequence()
 	if assert.NoError(t, err) {
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 }
 
@@ -60,7 +60,7 @@ func TestRequestPhysicalMultipleField(t *testing.T) {
 	request.definition.DumpTypes(false, true)
 	result, rErr := request.ReadPhysicalSequence()
 	if assert.NoError(t, rErr) {
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 }
 
@@ -78,7 +78,7 @@ func TestRequestLogicalWithQueryFields(t *testing.T) {
 		fmt.Println(err)
 		assert.NoError(t, err)
 	} else {
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 }
 
@@ -95,7 +95,7 @@ func TestRequestLogicalWithFields(t *testing.T) {
 		fmt.Println(err)
 		assert.NoError(t, err)
 	} else {
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 }
 
@@ -112,7 +112,7 @@ func TestReadRequestLogicalBy(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	if result != nil {
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 }
 
@@ -130,7 +130,7 @@ func TestReadRequestLogicalByAll(t *testing.T) {
 	}
 	fmt.Println("Dump result received ...")
 	if result != nil {
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 	if !assert.Equal(t, 2, len(result.Values)) {
 		t.Fatalf("Occurens of result does not fit %d!=2", len(result.Values))
@@ -172,10 +172,10 @@ func ExampleReadRequest_ReadLogicalBy() {
 	request.Limit = 2
 	request.QueryFields("AA,AC,AD")
 	var result *Response
-	result, err = request.ReadLogicalBy("AA")
+	result, _ = request.ReadLogicalBy("AA")
 	fmt.Println("Dump result received ...")
 	if result != nil {
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 
 	// Output:
@@ -206,7 +206,7 @@ func TestReadRequestLogicalBySuperDescriptor(t *testing.T) {
 	assert.NotNil(t, result)
 	if result != nil {
 		fmt.Println("Dump result received ...")
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 }
 
@@ -247,7 +247,7 @@ func TestReadRequestHistogramDescriptorField(t *testing.T) {
 	}
 	if result != nil {
 		fmt.Println("Dump result received ...")
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 	assert.Equal(t, "11100102", result.Values[0].Value[0].String())
 	assert.Equal(t, "11100105", result.Values[1].Value[0].String())
@@ -296,7 +296,7 @@ func ExampleReadRequest_histogramWith() {
 	if err == nil {
 		if result != nil {
 			fmt.Println("Dump result received ...")
-			result.DumpValues()
+			_ = result.DumpValues()
 		}
 	} else {
 		fmt.Println(err)
@@ -363,7 +363,7 @@ func TestReadRequestWithStream(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, uint32(19), i)
 	if assert.NotNil(t, result) {
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 }
 
@@ -388,7 +388,7 @@ func ExampleReadRequest_histogramWithStream() {
 		fmt.Println("Index error", i)
 	}
 	if result != nil {
-		result.DumpValues()
+		_ = result.DumpValues()
 		fmt.Println("Result set should be empty")
 	}
 
@@ -412,7 +412,7 @@ func TestReadRequestPhysicalStream(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, uint32(20), i)
 	if assert.NotNil(t, result) {
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 }
 
@@ -493,7 +493,7 @@ func TestRequestWithMapLogicalBy(t *testing.T) {
 		result, err = request.ReadLogicalBy("PERSONNEL-ID")
 		if assert.NoError(t, err) {
 			fmt.Println("Dump result received ...")
-			result.DumpValues()
+			_ = result.DumpValues()
 		}
 	}
 }
@@ -529,7 +529,8 @@ func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
 		}
 		fsize := 0
 		tm := adatypes.NewTraverserMethods(traverseFieldCounter)
-		request.TraverseFields(tm, &fsize)
+		err = request.TraverseFields(tm, &fsize)
+		assert.NoError(t, err)
 		assert.Equal(t, 4, fsize)
 
 		fmt.Println("After query fields")
@@ -540,7 +541,7 @@ func TestRequestWithMapRepositoryLogicalBy(t *testing.T) {
 		assert.NotNil(t, result)
 		if result != nil {
 			fmt.Println("Dump result received ...")
-			result.DumpValues()
+			_ = result.DumpValues()
 		}
 	}
 }
@@ -583,7 +584,7 @@ func TestReadMaps(t *testing.T) {
 	if err != nil {
 		return
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 }
 
 func TestMapRequestWithHistogramBy(t *testing.T) {
@@ -654,7 +655,7 @@ func TestMapRequestFractional(t *testing.T) {
 		assert.NotNil(t, result)
 		if result != nil {
 			assert.Equal(t, 7, len(result.Values))
-			result.DumpValues()
+			_ = result.DumpValues()
 			x, serr := result.Values[0].SearchValue("FRACT1")
 			assert.NoError(t, serr)
 			assert.Equal(t, "1.44", x.String())
@@ -675,10 +676,10 @@ func ExampleReadRequest_readPhysical() {
 	request.Limit = 2
 	request.QueryFields("*")
 	var result *Response
-	result, err = request.ReadPhysicalSequence()
+	result, _ = request.ReadPhysicalSequence()
 	fmt.Println("Dump result received ...")
 	if result != nil {
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 
 	// Output:
@@ -721,7 +722,7 @@ func TestReadPElevel2Group(t *testing.T) {
 	assert.NotNil(t, result)
 	if result != nil {
 		fmt.Println("Dump result received ...")
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 }
 
@@ -753,7 +754,7 @@ func ExampleReadRequest_readGroup() {
 	}
 	fmt.Println("Dump result received ...")
 	if result != nil {
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 
 	// Output:
@@ -780,10 +781,10 @@ func ExampleReadRequest_readAllFields() {
 	request.Limit = 1
 	request.QueryFields("*")
 	var result *Response
-	result, err = request.ReadPhysicalSequence()
+	result, _ = request.ReadPhysicalSequence()
 	fmt.Println("Dump result received ...")
 	if result != nil {
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 
 	// Output:

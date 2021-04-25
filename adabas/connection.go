@@ -190,7 +190,7 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 	connection = &Connection{adabasToData: adabasToData, ID: adabasID,
 		adabasToMap: adabasToMap, adabasMap: adabasMap, repository: repository}
 	if mapName != "" {
-		connection.searchRepository(adabasID, repository, mapName)
+		err = connection.searchRepository(adabasID, repository, mapName)
 		if err != nil {
 			return nil, err
 		}
@@ -311,13 +311,15 @@ func (connection *Connection) Open() error {
 // Close the Adabas session will be closed. An Adabas session/user queue entry
 // in the database will be removed. If transaction are open, the backout of the
 // transaction is called. All open transaction a rolled back and data restored.
+// The backout transaction error is not provided. It is not sure if BT is done.
+// Do extra BackoutTransaction() call to be sure and track error.
 func (connection *Connection) Close() {
 	if connection.adabasToData != nil {
-		connection.adabasToData.BackoutTransaction()
+		_ = connection.adabasToData.BackoutTransaction()
 		connection.adabasToData.Close()
 	}
 	if connection.adabasToMap != nil {
-		connection.adabasToMap.BackoutTransaction()
+		_ = connection.adabasToMap.BackoutTransaction()
 		connection.adabasToMap.Close()
 	}
 }

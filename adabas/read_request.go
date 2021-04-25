@@ -607,7 +607,10 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 			adabasRequest.SearchTree = tree
 			adabasRequest.Descriptors = tree.OrderBy()
 		}
-		request.adaptDescriptorMap(adabasRequest)
+		err = request.adaptDescriptorMap(adabasRequest)
+		if err != nil {
+			return err
+		}
 		if request.cursoring != nil {
 			request.cursoring.adabasRequest = adabasRequest
 		}
@@ -791,7 +794,10 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 		return
 	}
 	if request.definition == nil {
-		request.loadDefinition()
+		err = request.loadDefinition()
+		if err != nil {
+			return err
+		}
 	}
 	searchInfo := adatypes.NewSearchInfo(request.adabas.ID.platform(request.adabas.URL.String()), search)
 	searchInfo.Definition = request.definition
@@ -813,7 +819,10 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 	adatypes.Central.Log.Debugf("Prepare done --------")
 	adabasRequest.SearchTree = tree
 	adabasRequest.Descriptors = adabasRequest.SearchTree.OrderBy()
-	request.adaptDescriptorMap(adabasRequest)
+	err = request.adaptDescriptorMap(adabasRequest)
+	if err != nil {
+		return
+	}
 	if prepareErr != nil {
 		err = prepareErr
 		return
@@ -919,7 +928,10 @@ func (request *ReadRequest) SearchAndOrderWithParser(search, descriptors string,
 				adabasRequest.Descriptors = tree.OrderBy()
 			}
 		}
-		request.adaptDescriptorMap(adabasRequest)
+		err = request.adaptDescriptorMap(adabasRequest)
+		if err != nil {
+			return err
+		}
 		if request.cursoring != nil {
 			request.cursoring.adabasRequest = adabasRequest
 		}
@@ -1002,7 +1014,10 @@ func traverseFieldMap(adaType adatypes.IAdaType, parentType adatypes.IAdaType, l
 			case adaType.Type() == adatypes.FieldTypeSuperDesc:
 				adatypes.Central.Log.Debugf("Adapt subtypes: %s", s)
 				superType := adaType.(*adatypes.AdaSuperType)
-				superType.InitSubTypes(ev.definition)
+				err := superType.InitSubTypes(ev.definition)
+				if err != nil {
+					return err
+				}
 			case adaType.IsStructure() && adaType.Type() != adatypes.FieldTypeRedefinition:
 				adatypes.Central.Log.Debugf("Adapt subtypes: %s", s)
 				st := adaType.(*adatypes.StructureType)
@@ -1055,7 +1070,10 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	}
 	request.definition.ResetRestrictToFields()
 	if fieldq == "*" {
-		request.definition.RemoveSpecialDescriptors()
+		err = request.definition.RemoveSpecialDescriptors()
+		if err != nil {
+			return err
+		}
 	} else {
 		if !(request.adabasMap != nil && fieldq == "*") {
 			err = request.definition.ShouldRestrictToFields(fieldq)
@@ -1081,7 +1099,10 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 				}
 			}
 			tm := adatypes.NewTraverserMethods(traverseFieldMap)
-			request.definition.TraverseTypes(tm, true, ev)
+			err = request.definition.TraverseTypes(tm, true, ev)
+			if err != nil {
+				return err
+			}
 			request.fields = ev.queryFields
 		}
 	}

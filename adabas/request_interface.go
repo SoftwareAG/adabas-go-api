@@ -46,7 +46,10 @@ func (request *ReadRequest) createInterface(fieldList string) (err error) {
 	isnField := reflect.StructField{Name: "ISN",
 		Type: reflect.TypeOf(uint64(0))}
 	cti.fields = append(cti.fields, isnField)
-	request.definition.TraverseTypes(tm, true, &cti)
+	err = request.definition.TraverseTypes(tm, true, &cti)
+	if err != nil {
+		return err
+	}
 	structType = reflect.StructOf(cti.fields)
 	dynamic := &adatypes.DynamicInterface{DataType: structType, FieldNames: cti.fieldNames}
 	dynamic.FieldNames["#isn"] = []string{"ISN"}

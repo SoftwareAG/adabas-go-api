@@ -371,7 +371,8 @@ func TestConnectionSimpleScan(t *testing.T) {
 	for _, record := range result.Values {
 		var aa, ac, ad, ae string
 		// Read given AA(alpha) and all entries of group AB to string variables
-		record.Scan(&aa, &ac, &ad, &ae)
+		err = record.Scan(&aa, &ac, &ad, &ae)
+		assert.NoError(t, err)
 		fmt.Println(aa, ac, ad, ae)
 		assert.Equal(t, "50005800", aa)
 		assert.Equal(t, "SIMONE", ac)
@@ -410,7 +411,8 @@ func TestConnectionSimpleScanGroupReference(t *testing.T) {
 	for _, record := range result.Values {
 		var aa, ac, ad, ae string
 		// Read given AA(alpha) and all entries of group AB to string variables
-		record.Scan(&aa, &ac, &ae, &ad)
+		err = record.Scan(&aa, &ac, &ae, &ad)
+		assert.NoError(t, err)
 		fmt.Println(aa, ac, ad, ae)
 		assert.Equal(t, "50005800", aa)
 		assert.Equal(t, "SIMONE", ac)
@@ -449,7 +451,8 @@ func TestConnectionSimpleScanGroupAndField(t *testing.T) {
 	for _, record := range result.Values {
 		var aa, ac, ad, ae, ao string
 		// Read given AA(alpha) and all entries of group AB to string variables
-		record.Scan(&aa, &ac, &ae, &ad, &ao)
+		err = record.Scan(&aa, &ac, &ae, &ad, &ao)
+		assert.NoError(t, err)
 		fmt.Println(aa, ac, ad, ae, ao)
 		assert.Equal(t, "50005800", aa)
 		assert.Equal(t, "SIMONE", ac)

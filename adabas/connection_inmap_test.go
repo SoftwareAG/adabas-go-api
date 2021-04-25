@@ -80,14 +80,14 @@ func TestInlineMap(t *testing.T) {
 	if !assert.NoError(t, rerr) {
 		return
 	}
-	response.DumpData()
+	_ = response.DumpData()
 	if assert.Len(t, response.Data, 1) {
 		assert.Equal(t, "30021228", response.Data[0].(*EmployeesInMap).ID)
 		assert.Equal(t, "JAMES               ", response.Data[0].(*EmployeesInMap).FullName.FirstName)
 		assert.Equal(t, "SMEDLEY             ", response.Data[0].(*EmployeesInMap).FullName.Name)
 		assert.Equal(t, "COMP02", response.Data[0].(*EmployeesInMap).Department)
 	}
-	response.DumpValues()
+	_ = response.DumpValues()
 	assert.Len(t, response.Values, 0)
 }
 
@@ -120,14 +120,14 @@ func TestInlineMapSearchAndOrder(t *testing.T) {
 	if !assert.NoError(t, rerr) {
 		return
 	}
-	response.DumpData()
+	_ = response.DumpData()
 	if assert.Len(t, response.Data, 1) {
 		assert.Equal(t, "50005600", response.Data[0].(*EmployeesInMap).ID)
 		assert.Equal(t, "HUMBERTO            ", response.Data[0].(*EmployeesInMap).FullName.FirstName)
 		assert.Equal(t, "MORENO              ", response.Data[0].(*EmployeesInMap).FullName.Name)
 		assert.Equal(t, "VENT07", response.Data[0].(*EmployeesInMap).Department)
 	}
-	response.DumpValues()
+	_ = response.DumpValues()
 	assert.Len(t, response.Values, 0)
 }
 
@@ -160,9 +160,9 @@ func TestInlineMapHistogram(t *testing.T) {
 	if !assert.NoError(t, rerr) {
 		return
 	}
-	response.DumpData()
+	_ = response.DumpData()
 	assert.Len(t, response.Data, 0)
-	response.DumpValues()
+	_ = response.DumpValues()
 	if assert.Len(t, response.Values, 1) {
 		assert.Equal(t, uint64(5), response.Values[0].Quantity)
 	}
@@ -198,9 +198,9 @@ func TestInlineMapHistogramDesc(t *testing.T) {
 	if !assert.NoError(t, rerr) {
 		return
 	}
-	response.DumpData()
+	_ = response.DumpData()
 	assert.Len(t, response.Data, 0)
-	response.DumpValues()
+	_ = response.DumpValues()
 	if assert.Len(t, response.Values, 4) {
 		assert.Equal(t, uint64(5), response.Values[0].Quantity)
 		assert.Equal(t, "ADMA01", response.Values[0].HashFields["AO"].String())
@@ -220,7 +220,7 @@ func TestInlineStoreMap(t *testing.T) {
 	}
 	initTestLogWithFile(t, "inmap.log")
 
-	clearAdabasFile(t, adabasModDBIDs, 16)
+	_ = clearAdabasFile(t, adabasModDBIDs, 16)
 
 	fmt.Println("Starting inmap store ....")
 	connection, cerr := NewConnection("acj;inmap=23,16")

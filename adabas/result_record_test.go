@@ -47,7 +47,9 @@ func TestRecord(t *testing.T) {
 	}
 
 	testDefinition := adatypes.NewDefinitionWithTypes(layout)
-	testDefinition.CreateValues(false)
+	cErr := testDefinition.CreateValues(false)
+	assert.NoError(t, cErr)
+
 	result, err := NewRecord(testDefinition)
 	if assert.NoError(t, err) {
 		assert.NotNil(t, result)
@@ -96,7 +98,8 @@ func TestRecord_Marshal(t *testing.T) {
 	}
 
 	testDefinition := adatypes.NewDefinitionWithTypes(layout)
-	testDefinition.CreateValues(false)
+	err = testDefinition.CreateValues(false)
+	assert.NoError(t, err)
 	result, err := NewRecord(testDefinition)
 	if assert.NoError(t, err) {
 		verr := result.SetValue("I2", 100)
@@ -145,7 +148,8 @@ func TestRecord_MarshalLink(t *testing.T) {
 	}
 
 	testDefinition := adatypes.NewDefinitionWithTypes(layout)
-	testDefinition.CreateValues(false)
+	err = testDefinition.CreateValues(false)
+	assert.NoError(t, err)
 	result, err := NewRecord(testDefinition)
 	if assert.NoError(t, err) {
 		verr := result.SetValue("U4", 100)
@@ -211,13 +215,14 @@ func TestRecordGroupValues(t *testing.T) {
 	}
 
 	testDefinition := adatypes.NewDefinitionWithTypes(layout)
-	testDefinition.CreateValues(false)
+	err = testDefinition.CreateValues(false)
+	assert.NoError(t, err)
 	result, err := NewRecord(testDefinition)
-	result.SetValue("UP[1]", 100)
-	result.SetValue("IP[1]", 1023)
-	result.SetValue("BI", 1)
-	result.SetValue("UI", "ANCXXX")
-	result.SetValue("I2", 1231)
+	_ = result.SetValue("UP[1]", 100)
+	_ = result.SetValue("IP[1]", 1023)
+	_ = result.SetValue("BI", 1)
+	_ = result.SetValue("UI", "ANCXXX")
+	_ = result.SetValue("I2", 1231)
 	if assert.NoError(t, err) {
 		assert.NotNil(t, result)
 		assert.Equal(t, "ISN=0 quantity=0\n UI=\"ANCXXX              \"\n G2=\"\"\n U2=\"0\"\n G3=\"\"\n U3=\"0\"\n I3=\"0\"\n I2=\"1231\"\n P2=\"\"\n UP=\"100\"\n IP=\"1023\"\n BI=\"1\"\n", result.String())

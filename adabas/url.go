@@ -102,7 +102,7 @@ func (URL *URL) examineURL(url string) error {
 			URL.Driver = match[1]
 			return nil
 		}
-		err = adatypes.NewGenericError(70, url)
+		return adatypes.NewGenericError(70, url)
 	}
 	if len(match) < 4 {
 		return adatypes.NewGenericError(71)

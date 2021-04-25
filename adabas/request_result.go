@@ -201,7 +201,7 @@ func (Response *Response) TraverseValues(t adatypes.TraverserValuesMethods, x in
 func (Response *Response) String() string {
 	var buffer bytes.Buffer
 	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump, EnterFunction: traverseDumpRecord}
-	Response.TraverseValues(t, &buffer)
+	_, _ = Response.TraverseValues(t, &buffer)
 	return buffer.String()
 }
 
@@ -209,10 +209,10 @@ func (Response *Response) String() string {
 func traverseMarshalXML(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	enc := x.(*xml.Encoder)
 	start := xml.StartElement{Name: xml.Name{Local: adaValue.Type().Name()}}
-	enc.EncodeToken(start)
+	_ = enc.EncodeToken(start)
 	if !adaValue.Type().IsStructure() {
-		enc.EncodeToken(xml.CharData([]byte(adaValue.String())))
-		enc.EncodeToken(start.End())
+		_ = enc.EncodeToken(xml.CharData([]byte(adaValue.String())))
+		_ = enc.EncodeToken(start.End())
 	}
 	return adatypes.Continue, nil
 }
@@ -222,7 +222,7 @@ func traverseMarshalXMLEnd(adaValue adatypes.IAdaValue, x interface{}) (adatypes
 	if adaValue.Type().IsStructure() {
 		enc := x.(*xml.Encoder)
 		end := xml.EndElement{Name: xml.Name{Local: adaValue.Type().Name()}}
-		enc.EncodeToken(end)
+		_ = enc.EncodeToken(end)
 	}
 	return adatypes.Continue, nil
 }
@@ -230,7 +230,7 @@ func traverseMarshalXMLEnd(adaValue adatypes.IAdaValue, x interface{}) (adatypes
 // MarshalXML provide XML representation of the response
 func (Response *Response) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	x := xml.StartElement{Name: xml.Name{Local: "Response"}}
-	e.EncodeToken(x)
+	_ = e.EncodeToken(x)
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalXML, LeaveFunction: traverseMarshalXMLEnd}
 	adatypes.Central.Log.Debugf("Go through records -> %d", len(Response.Values))
 	if Response.Values != nil {
@@ -242,17 +242,17 @@ func (Response *Response) MarshalXML(e *xml.Encoder, start xml.StartElement) err
 			if record.Quantity > 0 {
 				rec.Attr = []xml.Attr{{Name: xml.Name{Local: "Quantity"}, Value: strconv.Itoa(int(record.Quantity))}}
 			}
-			e.EncodeToken(rec)
+			_ = e.EncodeToken(rec)
 			// e.EncodeToken(xml.Attr{Name: xml.Name{Local: "ISN"}, Value: strconv.Itoa(int(record.Isn))})
-			record.Traverse(tm, e)
-			e.EncodeToken(rec.End())
+			_, err := record.Traverse(tm, e)
+			if err != nil {
+				return err
+			}
+			_ = e.EncodeToken(rec.End())
 		}
 	}
 
-	//	Response.TraverseValues(tm, e)
-	// e.EncodeToken(xml.CharData([]byte("abc")))
-	e.EncodeToken(x.End())
-	return nil
+	return e.EncodeToken(x.End())
 }
 
 type responseJSON struct {

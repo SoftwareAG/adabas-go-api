@@ -68,9 +68,9 @@ type field struct {
 	formatType      string
 	options         uint64
 	fractionalShift string
-	parent          *field
 	childs          []*field
 	comment         string
+	// parent          *field
 }
 
 func (f *field) isGroup() bool {
@@ -105,8 +105,10 @@ func (repository *Repository) ImportMapRepository(adabas *Adabas, filter string,
 	}
 	defer file.Close()
 
-	repository.LoadMapRepository(adabas)
-
+	err = repository.LoadMapRepository(adabas)
+	if err != nil {
+		return nil, err
+	}
 	suffixCheck := strings.ToLower(fileName)
 	switch {
 	case strings.HasSuffix(suffixCheck, ".json"):
@@ -259,7 +261,10 @@ func parseSystransFileForFields(file *os.File) (maps []*Map, err error) {
 								if len(line) > 46 && line[46:47] == "S" {
 									field.fType = superField
 								}
-								curEntry.searchParent(field)
+								err = curEntry.searchParent(field)
+								if err != nil {
+									return
+								}
 								// 											parentField =
 								// 												checkTreeReference(
 								// 													parentStack,

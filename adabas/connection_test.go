@@ -90,7 +90,7 @@ func initLogLevelWithFile(fileName string, level string) (err error) {
 	}
 	var name string
 	if runtime.GOOS == "windows" {
-		zap.RegisterSink("winfile", newWinFileSink)
+		_ = zap.RegisterSink("winfile", newWinFileSink)
 		//		OutputPaths: []string{"stdout", "winfile:///" + filepath.Join(GlobalConfigDir.Path, "info.log.json")},
 		name = "winfile:///" + p + string(os.PathSeparator) + fileName
 	} else {
@@ -205,16 +205,19 @@ func TestConnectionSimpleTypes(t *testing.T) {
 	}
 	defer connection.Close()
 	fmt.Println(connection)
-	connection.Open()
+	err = connection.Open()
+	assert.NoError(t, err)
 	readRequest, rErr := connection.CreateFileReadRequest(16)
 	assert.NoError(t, rErr)
-	readRequest.QueryFields("")
+	err = readRequest.QueryFields("")
+	assert.NoError(t, err)
 	deleteRequest, dErr := connection.CreateDeleteRequest(16)
 	assert.NoError(t, dErr)
 	readRequest.Limit = 0
 	err = readRequest.ReadPhysicalSequenceWithParser(deleteRecords, deleteRequest)
 	assert.NoError(t, err)
-	deleteRequest.EndTransaction()
+	err = deleteRequest.EndTransaction()
+	assert.NoError(t, err)
 
 	request, rErr2 := connection.CreateFileReadRequest(11)
 	if !assert.NoError(t, rErr2) {
@@ -241,7 +244,8 @@ func TestConnectionSimpleTypes(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	storeRequest.EndTransaction()
+	err = storeRequest.EndTransaction()
+	assert.NoError(t, err)
 }
 
 func TestConnectionOpenOpen(t *testing.T) {
@@ -307,13 +311,17 @@ func TestConnectionMultipleFields(t *testing.T) {
 	if !assert.NoError(t, rErr) {
 		return
 	}
-	readRequest.QueryFields("")
+	err = readRequest.QueryFields("")
+	if !assert.NoError(t, err) {
+		return
+	}
 	deleteRequest, dErr := connection.CreateDeleteRequest(16)
 	assert.NoError(t, dErr)
 	readRequest.Limit = 0
 	err = readRequest.ReadPhysicalSequenceWithParser(deleteRecords, deleteRequest)
 	assert.NoError(t, err)
-	deleteRequest.EndTransaction()
+	err = deleteRequest.EndTransaction()
+	assert.NoError(t, err)
 
 	request, rErr2 := connection.CreateFileReadRequest(11)
 	assert.NoError(t, rErr2)
@@ -327,7 +335,8 @@ func TestConnectionMultipleFields(t *testing.T) {
 	err = request.ReadPhysicalSequenceWithParser(parseTestConnection, parseTestStructure)
 	assert.NoError(t, err)
 	fmt.Println("End transaction")
-	storeRequest.EndTransaction()
+	err = storeRequest.EndTransaction()
+	assert.NoError(t, err)
 }
 
 func TestConnectionStorePeriodFields(t *testing.T) {
@@ -346,7 +355,8 @@ func TestConnectionStorePeriodFields(t *testing.T) {
 	connection.Open()
 	readRequest, rErr := connection.CreateFileReadRequest(16)
 	assert.NoError(t, rErr)
-	readRequest.QueryFields("")
+	err = readRequest.QueryFields("")
+	assert.NoError(t, err)
 	deleteRequest, dErr := connection.CreateDeleteRequest(16)
 	assert.NoError(t, dErr)
 	readRequest.Limit = 0
@@ -354,7 +364,8 @@ func TestConnectionStorePeriodFields(t *testing.T) {
 	assert.NoError(t, err)
 	fmt.Println("Delete done, call end of transaction")
 	adatypes.Central.Log.Debugf("Delete done, call end of transaction")
-	deleteRequest.EndTransaction()
+	err = deleteRequest.EndTransaction()
+	assert.NoError(t, err)
 
 	fmt.Println("Call Read to 11")
 	request, rErr2 := connection.CreateFileReadRequest(11)
@@ -371,7 +382,8 @@ func TestConnectionStorePeriodFields(t *testing.T) {
 	err = request.ReadLogicalWithWithParser("AA=[11100301:11100305]", parseTestConnection, parseTestStructure)
 	fmt.Println("Read logical done")
 	assert.NoError(t, err)
-	storeRequest.EndTransaction()
+	err = storeRequest.EndTransaction()
+	assert.NoError(t, err)
 }
 
 func TestConnectionMultifetch(t *testing.T) {
@@ -657,7 +669,7 @@ func ExampleConnection_readLogicalWith() {
 		return
 	}
 	fmt.Println("Result data:")
-	result.DumpValues()
+	_ = result.DumpValues()
 	// Output: Connection :  Adabas url=23 fnr=0
 	// Limit query data:
 	// Read logical data:
@@ -700,7 +712,7 @@ func ExampleConnection_periodGroup() {
 		return
 	}
 	fmt.Println("Result data:")
-	result.DumpValues()
+	_ = result.DumpValues()
 	// Output: Connection :  Adabas url=23 fnr=0
 	// Limit query data:
 	// Read logical data:
@@ -756,21 +768,21 @@ func ExampleConnection_wideCharacter() {
 		return
 	}
 	fmt.Println("Result data:")
-	result.DumpValues()
+	_ = result.DumpValues()
 	result, rErr = request.ReadISN(1250)
 	if rErr != nil {
 		fmt.Println("Error reading", rErr)
 		return
 	}
 	fmt.Println("Result data:")
-	result.DumpValues()
+	_ = result.DumpValues()
 	result, rErr = request.ReadISN(1270)
 	if rErr != nil {
 		fmt.Println("Error reading", rErr)
 		return
 	}
 	fmt.Println("Result data:")
-	result.DumpValues()
+	_ = result.DumpValues()
 	// Output: Connection :  Adabas url=23 fnr=0
 	// Limit query data:
 	// Read logical data:
@@ -986,7 +998,10 @@ func TestConnectionReadMap(t *testing.T) {
 			"AZ": {shortName: "AZ", longName: "LANG", length: 3, index: 29},
 			"S3": {shortName: "S3", longName: "CURRENCY-SALARY", length: 0, index: 33},
 		}
-		record.Traverse(tm, tvc)
+
+		ret, err := record.Traverse(tm, tvc)
+		assert.NoError(t, err)
+		assert.Equal(t, adatypes.Continue, ret)
 		// result.DumpValues()
 	}
 
@@ -1013,7 +1028,7 @@ func ExampleConnection_map() {
 		return
 	}
 	fmt.Println("Result data:")
-	result.DumpValues()
+	_ = result.DumpValues()
 	// Output: Connection : Map=EMPLOYEES-NAT-DDM Adabas url=24 fnr=0 connection file=11
 	// Read logical data, two records:
 	// Result data:
@@ -1050,7 +1065,7 @@ func ExampleConnection_readIsn() {
 		return
 	}
 	fmt.Println("Result data:")
-	result.DumpValues()
+	_ = result.DumpValues()
 	// Output: Connection :  Adabas url=23 fnr=0
 	// Read ISN 250:
 	// Result data:
@@ -1810,7 +1825,7 @@ func ExampleConnection_endTransaction() {
 	}
 	// To adapt output for example
 	result.Values[0].Isn = 0
-	result.DumpValues()
+	_ = result.DumpValues()
 
 	// Output: Example for EndTransaction()
 	// Record stored, check content ...
@@ -1941,7 +1956,10 @@ func TestConnectionSimpleMultipleStore(t *testing.T) {
 	if !assert.NoError(t, rErr) {
 		return
 	}
-	storeRequest16.StoreFields("AA,AB")
+	sErr := storeRequest16.StoreFields("AA,AB")
+	if !assert.NoError(t, sErr) {
+		return
+	}
 	record, err := storeRequest16.CreateRecord()
 	assert.NoError(t, err)
 	_ = record.SetValueWithIndex("AA", nil, "16555_0")
@@ -1956,7 +1974,10 @@ func TestConnectionSimpleMultipleStore(t *testing.T) {
 	if !assert.NoError(t, rErr) {
 		return
 	}
-	storeRequest19.StoreFields("AA,CD")
+	sErr = storeRequest19.StoreFields("AA,CD")
+	if !assert.NoError(t, sErr) {
+		return
+	}
 	record, err = storeRequest19.CreateRecord()
 	if !assert.NoError(t, err) {
 		return
@@ -2108,7 +2129,7 @@ func dumpStoredData(target string, file Fnr, search string) error {
 	for i, record := range result.Values {
 		record.Isn = adatypes.Isn(i + 1)
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 	return nil
 }
 
@@ -2429,7 +2450,8 @@ func TestConnectionSimpleSearchDesc(t *testing.T) {
 	}
 	readRequest, rErr := connection.CreateFileReadRequest(11)
 	assert.NoError(t, rErr)
-	readRequest.QueryFields("AE,AP")
+	rErr = readRequest.QueryFields("AE,AP")
+	assert.NoError(t, rErr)
 	readRequest.Limit = 0
 	assert.False(t, readRequest.HoldRecords.IsHold())
 	result, rErr := readRequest.ReadLogicalWith(`AP=`)
@@ -2470,7 +2492,8 @@ func TestConnectionSimpleSearchNoDesc(t *testing.T) {
 	}
 	readRequest, rErr := connection.CreateFileReadRequest(11)
 	assert.NoError(t, rErr)
-	readRequest.QueryFields("AE,AD")
+	rErr = readRequest.QueryFields("AE,AD")
+	assert.NoError(t, rErr)
 	readRequest.Limit = 0
 	assert.False(t, readRequest.HoldRecords.IsHold())
 	// Fields with NU option are not in descriptor and can be searched for

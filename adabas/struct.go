@@ -146,7 +146,10 @@ func (connection *Connection) ReflectStore(entries interface{}, mapName string) 
 			fieldNames[adabasFieldName] = fieldName
 			buffer.WriteString(ri.Field(fi).Name)
 		}
-		storeRequest.StoreFields(buffer.String())
+		ferr := storeRequest.StoreFields(buffer.String())
+		if ferr != nil {
+			return ferr
+		}
 		for si := 0; si < s.Len(); si++ {
 			storeRecord, serr := storeRequest.CreateRecord()
 			if serr != nil {

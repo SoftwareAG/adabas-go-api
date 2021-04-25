@@ -97,11 +97,26 @@ func loadTestData() (err error) {
 			fmt.Println("Create record", serr)
 			return serr
 		}
-		storeRecord.SetValue("Personel-Id", fmt.Sprintf("REDEF%d", i/10))
-		storeRecord.SetValue("REFFIELD1", 124+i)
-		storeRecord.SetValue("REFFIELD2", 12+i)
-		storeRecord.SetValue("REFFIELD3", i)
-		storeRecord.SetValue("LONGPART", "ABCDEFGHIJ")
+		err = storeRecord.SetValue("Personel-Id", fmt.Sprintf("REDEF%d", i/10))
+		if err != nil {
+			return err
+		}
+		err = storeRecord.SetValue("REFFIELD1", 124+i)
+		if err != nil {
+			return err
+		}
+		err = storeRecord.SetValue("REFFIELD2", 12+i)
+		if err != nil {
+			return err
+		}
+		err = storeRecord.SetValue("REFFIELD3", i)
+		if err != nil {
+			return err
+		}
+		err = storeRecord.SetValue("LONGPART", "ABCDEFGHIJ")
+		if err != nil {
+			return err
+		}
 		serr = storeRequest.Store(storeRecord)
 		if serr != nil {
 			fmt.Println("Store request", serr)
@@ -165,7 +180,7 @@ func TestReadPartRedefinition(t *testing.T) {
 		fmt.Println("Error read sequence", qerr)
 		return
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 	if assert.Equal(t, 4, len(result.Values)) {
 		record := result.Values[0]
 		f := record.HashFields["LONGSTRING"]
@@ -209,7 +224,7 @@ func TestRedefinition(t *testing.T) {
 		fmt.Println("Error read sequence", qerr)
 		return
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 	if assert.Equal(t, 4, len(result.Values)) {
 		record := result.Values[0]
 		f := record.HashFields["LONGSTRING"]

@@ -54,7 +54,10 @@ func TestConnectionMfMap(t *testing.T) {
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
 	if assert.NoError(t, err) {
 		fmt.Println("Limit query data:")
-		request.QueryFields("*")
+		err = request.QueryFields("*")
+		if !assert.NoError(t, err) {
+			return
+		}
 		request.Limit = 20
 		fmt.Println("Read logigcal data:")
 		result, err := request.ReadLogicalBy("personnnel-id")
@@ -103,7 +106,10 @@ func TestConnectionSearchMfMap(t *testing.T) {
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
 	if assert.NoError(t, err) {
 		fmt.Println("Limit query data:")
-		request.QueryFields("full-name")
+		err = request.QueryFields("full-name")
+		if !assert.NoError(t, err) {
+			return
+		}
 		request.Limit = 0
 		fmt.Println("Read logigcal data:")
 		result, err := request.ReadLogicalWith("name=SMITH")
@@ -150,7 +156,10 @@ func TestConnectionAndSearchMfMap(t *testing.T) {
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-MF")
 	if assert.NoError(t, err) {
 		fmt.Println("Limit query data:")
-		request.QueryFields("full-name")
+		err = request.QueryFields("full-name")
+		if !assert.NoError(t, err) {
+			return
+		}
 		request.Limit = 0
 		fmt.Println("Read logigcal data:")
 		result, err := request.ReadLogicalWith("name>'ADAM' AND name<'AECKERLE'")

@@ -288,8 +288,8 @@ func readLogicalInterface(t *testing.T) error {
 	assert.Nil(t, result.Values)
 	assert.NotNil(t, result.Data)
 	if assert.NotNil(t, result) {
-		result.DumpValues()
-		result.DumpData()
+		_ = result.DumpValues()
+		_ = result.DumpData()
 		assert.Len(t, result.Data, 4)
 		e := result.Data[0].(*Employees)
 		assert.Equal(t, "ID", strings.Trim(e.ID, " "))
@@ -335,8 +335,8 @@ func readLogicalIndexInterface(t *testing.T) error {
 	assert.Nil(t, result.Values)
 	assert.NotNil(t, result.Data)
 	if assert.NotNil(t, result) {
-		result.DumpValues()
-		result.DumpData()
+		_ = result.DumpValues()
+		_ = result.DumpData()
 		assert.Len(t, result.Data, 4)
 		e := result.Data[0].(*EmployeesIndex)
 		assert.True(t, e.Index > 0)
@@ -415,8 +415,8 @@ func readPhysicalInterface(t *testing.T) error {
 	assert.Nil(t, result.Values)
 	assert.NotNil(t, result.Data)
 	if assert.NotNil(t, result) {
-		result.DumpValues()
-		result.DumpData()
+		_ = result.DumpValues()
+		_ = result.DumpData()
 		fmt.Println("Length", len(result.Data))
 		assert.True(t, len(result.Data) > 4)
 		if assert.IsType(t, (*Employees)(nil), result.Data[0]) {
@@ -603,8 +603,8 @@ func readLogicalPeriodInterface(t *testing.T) error {
 	if !assert.NotNil(t, result) {
 		return fmt.Errorf("Error got")
 	}
-	result.DumpValues()
-	result.DumpData()
+	_ = result.DumpValues()
+	_ = result.DumpData()
 	if !assert.Len(t, result.Data, 2) {
 		return fmt.Errorf("Error got")
 	}
@@ -666,8 +666,8 @@ func readLogicalPeriodGlobalInterface(t *testing.T) error {
 	if !assert.NotNil(t, result) {
 		return fmt.Errorf("Error got")
 	}
-	result.DumpValues()
-	result.DumpData()
+	_ = result.DumpValues()
+	_ = result.DumpData()
 	if !assert.Len(t, result.Data, 2) {
 		return fmt.Errorf("Error got")
 	}
@@ -715,7 +715,7 @@ func readLogicalPeriodInterfaceByEmployeesSalary(t *testing.T) error {
 		result, err := request.ReadLogicalWith("Id=['pId':'pId9']")
 		assert.NoError(t, err)
 		if assert.NotNil(t, result) {
-			result.DumpValues()
+			_ = result.DumpValues()
 		}
 	}
 	return nil
@@ -745,8 +745,8 @@ func verifyUpdateLogicalInterface(t *testing.T) error {
 	assert.Nil(t, result.Values)
 	assert.NotNil(t, result.Data)
 	if assert.NotNil(t, result) {
-		result.DumpValues()
-		result.DumpData()
+		_ = result.DumpValues()
+		_ = result.DumpData()
 		assert.Len(t, result.Data, 4)
 		e := result.Data[0].(*EmployeesKey)
 		assert.Equal(t, "ID", strings.Trim(e.ID, " "))
@@ -785,7 +785,7 @@ func TestStoreKeyInterface(t *testing.T) {
 			return
 		}
 		if result != nil {
-			result.DumpValues()
+			_ = result.DumpValues()
 		}
 	}
 
@@ -892,7 +892,7 @@ func TestConnectionUsingInterface(t *testing.T) {
 	if !assert.Equal(t, 2, len(result.Data)) {
 		return
 	}
-	result.DumpData()
+	_ = result.DumpData()
 }
 
 func TestConnectionUsingPointerInterface(t *testing.T) {
@@ -925,7 +925,7 @@ func TestConnectionUsingPointerInterface(t *testing.T) {
 	if !assert.Equal(t, 2, len(result.Data)) {
 		return
 	}
-	result.DumpData()
+	_ = result.DumpData()
 }
 
 func TestEmployeesMap(t *testing.T) {
@@ -958,7 +958,6 @@ func TestEmployeesMap(t *testing.T) {
 	if !assert.Equal(t, 1107, len(result.Data)) {
 		return
 	}
-	//result.DumpData()
 	m := result.Data[0].(*EmployeeMap)
 	fmt.Println("Department:", m.Department, string(m.Department))
 	assert.Equal(t, "COMP25", string(m.Department))
@@ -1022,8 +1021,8 @@ func TestDynamicInterfaceFromMap(t *testing.T) {
 	if !assert.NotNil(t, result) {
 		return
 	}
-	result.DumpValues()
-	result.DumpData()
+	_ = result.DumpValues()
+	_ = result.DumpData()
 	// TODO check temporary disabled
 	if !assert.Len(t, result.Data, 0) {
 		return
@@ -1099,8 +1098,8 @@ func TestAllFieldsDynamicInterfaceFromMap(t *testing.T) {
 	if !assert.NotNil(t, result) {
 		return
 	}
-	result.DumpValues()
-	result.DumpData()
+	_ = result.DumpValues()
+	_ = result.DumpData()
 	if !assert.Len(t, result.Data, 1) {
 		return
 	}
@@ -1145,8 +1144,8 @@ func TestAllFieldsDynamicInterfaceFromMapStream(t *testing.T) {
 	if !assert.NotNil(t, result) {
 		return
 	}
-	result.DumpValues()
-	result.DumpData()
+	_ = result.DumpValues()
+	_ = result.DumpData()
 	if !assert.Len(t, result.Data, 0) {
 		return
 	}

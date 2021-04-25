@@ -409,36 +409,66 @@ func (repository *Repository) writeAdabasMapsWithAdabas(adabas *Adabas, adabasMa
 		return
 	}
 	adatypes.Central.Log.Debugf("Write map: %s record=%d", adabasMap.String(), record.Isn)
-	record.SetValue(mapFieldName.fieldName(), adabasMap.Name)
-	record.SetValue("TA", 77)
+	err = record.SetValue(mapFieldName.fieldName(), adabasMap.Name)
+	if err != nil {
+		return err
+	}
+	err = record.SetValue("TA", 77)
+	if err != nil {
+		return err
+	}
 	hostname, herr := os.Hostname()
 	if herr != nil {
 		hostname = "localhost"
 	}
-	record.SetValue("AB", hostname)
+	_ = record.SetValue("AB", hostname)
 	ut := time.Now().Unix()
 	adatypes.Central.Log.Debugf("unit time stamp %d", ut)
-	record.SetValue("AC", ut)
-	record.SetValue("AD", 1)
+	_ = record.SetValue("AC", ut)
+	_ = record.SetValue("AD", 1)
 
 	if adabasMap.Data == nil {
 		err = adatypes.NewGenericError(17)
 		return
 	}
 
-	record.SetValue("RF", uint32(adabasMap.Data.Fnr))
+	err = record.SetValue("RF", uint32(adabasMap.Data.Fnr))
+	if err != nil {
+		return
+	}
 	if adabasMap.Data.URL.String() != adabasMap.Repository.URL.String() {
-		record.SetValue("RD", adabasMap.Data.URL.String())
+		err = record.SetValue("RD", adabasMap.Data.URL.String())
+		if err != nil {
+			return
+		}
 	}
 
 	for index, m := range adabasMap.Fields {
 		adatypes.Central.Log.Debugf("Store fields: %v - %v", m.ShortName, m.LongName)
-		record.SetValueWithIndex("MB", []uint32{uint32(index + 1)}, m.ShortName)
-		record.SetValueWithIndex("MC", []uint32{uint32(index + 1)}, 0)
-		record.SetValueWithIndex("MD", []uint32{uint32(index + 1)}, m.LongName)
-		record.SetValueWithIndex("ML", []uint32{uint32(index + 1)}, m.Length)
-		record.SetValueWithIndex("MT", []uint32{uint32(index + 1)}, m.ContentType)
-		record.SetValueWithIndex("MY", []uint32{uint32(index + 1)}, m.FormatType)
+		err = record.SetValueWithIndex("MB", []uint32{uint32(index + 1)}, m.ShortName)
+		if err != nil {
+			return
+		}
+		err = record.SetValueWithIndex("MC", []uint32{uint32(index + 1)}, 0)
+		if err != nil {
+			return
+		}
+		err = record.SetValueWithIndex("MD", []uint32{uint32(index + 1)}, m.LongName)
+		if err != nil {
+			return
+		}
+		err = record.SetValueWithIndex("ML", []uint32{uint32(index + 1)}, m.Length)
+		if err != nil {
+			return
+		}
+		err = record.SetValueWithIndex("MT", []uint32{uint32(index + 1)}, m.ContentType)
+		if err != nil {
+			return
+		}
+		err = record.SetValueWithIndex("MY", []uint32{uint32(index + 1)}, m.FormatType)
+		if err != nil {
+			return
+		}
 		adatypes.Central.Log.Debugf("Store Map Record %s", record)
 	}
 	err = request.Store(record)
@@ -474,6 +504,5 @@ func (repository *Repository) DeleteMap(adabas *Adabas, mapName string) (err err
 	if err != nil {
 		return err
 	}
-	repository.RemoveMap(mapName)
-	return nil
+	return repository.RemoveMap(mapName)
 }

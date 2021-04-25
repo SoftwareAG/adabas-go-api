@@ -203,8 +203,8 @@ func generateResult() *Response {
 		return nil
 	}
 	record.Isn = 11
-	record.SetValue("AA", 20)
-	record.SetValue("PA", 3)
+	_ = record.SetValue("AA", 20)
+	_ = record.SetValue("PA", 3)
 	result.Values = append(result.Values, record)
 	return result
 }

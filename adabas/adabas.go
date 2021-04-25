@@ -247,7 +247,8 @@ func (adabas *Adabas) Close() {
 		return
 	}
 	if adabas.ID.transactions(adabas.URL.String()) > 0 {
-		adabas.BackoutTransaction()
+		err := adabas.BackoutTransaction()
+		adatypes.Central.Log.Infof("Error backout during close: %v", err)
 	}
 	adabas.lock.Lock()
 	defer adabas.lock.Unlock()
@@ -351,7 +352,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 	err = tcpConn.SendData(buffer, uint32(len(adabas.AdabasBuffers)))
 	if err != nil {
 		adatypes.Central.Log.Infof("Transmit Adabas call error: %v", err)
-		tcpConn.Disconnect()
+		_ = tcpConn.Disconnect()
 		adabas.transactions.connection = nil
 		return
 	}
@@ -365,7 +366,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 	err = adabas.ReadBuffer(&buffer, Endian(), nrAbdBuffers, false)
 	if err != nil {
 		adatypes.Central.Log.Infof("Read buffer error, destroy context ... %v", err)
-		tcpConn.Disconnect()
+		_ = tcpConn.Disconnect()
 		return
 	}
 
@@ -373,7 +374,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 	if adabas.Acbx.Acbxcmd == cl.code() {
 		adatypes.Central.Log.Debugf("Close called, destroy context ...")
 		if tcpConn != nil {
-			tcpConn.Disconnect()
+			_ = tcpConn.Disconnect()
 			adabas.transactions.connection = nil
 		}
 	}
@@ -1288,7 +1289,10 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 			if transferSize > 0 {
 				if abd.abd.Abdsize != transferSize {
 					p := make([]byte, transferSize)
-					buffer.Read(p)
+					_, err = buffer.Read(p)
+					if err != nil {
+						return
+					}
 					copy(abd.buffer, p)
 				} else {
 					_, err = buffer.Read(abd.buffer)

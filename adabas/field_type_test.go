@@ -179,7 +179,8 @@ func TestFieldTypeStore(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	storeRequest.EndTransaction()
+	err = storeRequest.EndTransaction()
+	assert.NoError(t, err)
 }
 
 func TestFieldTypeRead(t *testing.T) {

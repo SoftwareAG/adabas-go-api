@@ -42,7 +42,10 @@ func TestConnectionComplexSearch(t *testing.T) {
 	}
 	defer connection.Close()
 	fmt.Println(connection)
-	connection.Open()
+	err = connection.Open()
+	if !assert.NoError(t, err) {
+		return
+	}
 	readRequest, rErr := connection.CreateFileReadRequest(16)
 	assert.NoError(t, rErr)
 	readRequest.QueryFields("AA,AB")
@@ -72,7 +75,8 @@ func TestConnectionSuperDescriptor(t *testing.T) {
 	connection.Open()
 	readRequest, rErr := connection.CreateFileReadRequest(11)
 	assert.NoError(t, rErr)
-	readRequest.QueryFields("AU,AV")
+	err = readRequest.QueryFields("AU,AV")
+	assert.NoError(t, err)
 
 	adatypes.Central.Log.Debugf("Test Search complex with ...")
 	result, rerr := readRequest.ReadLogicalBy("S1")
@@ -96,7 +100,10 @@ func TestConnectionSuperDescSearch(t *testing.T) {
 	}
 	defer connection.Close()
 
-	connection.Open()
+	err = connection.Open()
+	if !assert.NoError(t, err) {
+		return
+	}
 	readRequest, rErr := connection.CreateFileReadRequest(16)
 	assert.NoError(t, rErr)
 	err = readRequest.QueryFields("AA,AB")
@@ -131,7 +138,8 @@ func TestConnectionDescriptorinMap(t *testing.T) {
 	request, err := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
 	if assert.NoError(t, err) {
 		fmt.Println("Limit query data:")
-		request.QueryFields("*")
+		err = request.QueryFields("*")
+		assert.NoError(t, err)
 		request.Limit = 5
 		fmt.Println("Read logigcal data:")
 		result, err := request.ReadLogicalBy("DEPARTMENT")
@@ -143,7 +151,7 @@ func TestConnectionDescriptorinMap(t *testing.T) {
 		fmt.Println("Check DEPARTMENT ...")
 		if assert.NotNil(t, ae) {
 			assert.Equal(t, "ADMA", strings.TrimSpace(ae.String()))
-			validateResult(t, "descriptorinmap", result)
+			_ = validateResult(t, "descriptorinmap", result)
 		}
 	}
 
@@ -183,7 +191,7 @@ func TestConnectionDescriptorinMapWithQuery(t *testing.T) {
 		fmt.Println("Check DEPARTMENT ...")
 		if assert.NotNil(t, ae) {
 			assert.Equal(t, "ADMA", strings.TrimSpace(ae.String()))
-			validateResult(t, "descriptorinmapwithquery", result)
+			_ = validateResult(t, "descriptorinmapwithquery", result)
 		}
 	}
 
