@@ -400,7 +400,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 	}
 	adabas.lock.Lock()
 	defer adabas.lock.Unlock()
-	adatypes.Central.Log.Debugf("Read file definition with %v", lf.code())
+	adatypes.Central.Log.Debugf("Read file definition with %s", lf.command())
 	adabas.Acbx.Acbxcmd = lf.code()
 	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxcop[0] = adaEmptOpt
@@ -416,7 +416,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 
 	adabas.Acbx.Acbxfnr = fileNr
 	err = adabas.CallAdabas()
-	adatypes.Central.Log.Debugf("Read file definition %v rsp=%d", err, adabas.Acbx.Acbxrsp)
+	adatypes.Central.Log.Debugf("Read file definition error=%v rsp=%d", err, adabas.Acbx.Acbxrsp)
 	if err == nil {
 		/* Create new helper to parse returned buffer */
 		helper := adatypes.NewHelper(adabas.AdabasBuffers[1].buffer, int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())

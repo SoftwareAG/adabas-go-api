@@ -327,6 +327,7 @@ func NewDefinitionClone(old *Definition) *Definition {
 	newDefinition.fileFields = old.fileFields
 	newDefinition.fileShortFields = old.fileShortFields
 	newDefinition.activeFieldTree = old.fileFieldTree
+	// initFieldHash(newDefinition, newDefinition.fileFieldTree.SubTypes)
 	return newDefinition
 }
 
@@ -439,6 +440,21 @@ func (def *Definition) Fieldnames() []string {
 func (def *Definition) CheckField(name string) bool {
 	_, ok := def.activeFields[name]
 	return ok
+}
+
+func (def *Definition) AdaptName(adaType IAdaType, newName string) error {
+	delete(def.fileFields, adaType.Name())
+	def.fileFields[newName] = adaType
+	if def.activeFields == nil {
+		def.activeFields = def.fileFields
+	} else {
+		if &def.fileFields != &def.activeFields {
+			delete(def.activeFields, adaType.Name())
+			def.activeFields[newName] = adaType
+		}
+	}
+	adaType.SetName(newName)
+	return nil
 }
 
 type stackParameter struct {
