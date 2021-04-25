@@ -289,7 +289,7 @@ func TestSearchAndReadWithCursoring(t *testing.T) {
 	request.Limit = 0
 	fmt.Println("Init cursor data...")
 	col, cerr := request.SearchAndOrderWithCursoring("PERSONNEL-ID=[1:5]", "NAME")
-	if !assert.NoError(t, rerr) {
+	if !assert.NoError(t, cerr) {
 		fmt.Println("Error reading logical with using cursoring", cerr)
 		return
 	}

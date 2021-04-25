@@ -273,7 +273,8 @@ func (record *Record) SetValueWithIndex(name string, index []uint32, x interface
 	// TODO why specific?
 	record.definition.Values = record.Value
 	adatypes.Central.Log.Debugf("Record value : %#v", record.Value)
-	return record.definition.SetValueWithIndex(name, index, x)
+	record.definition.SetValueWithIndex(name, index, x)
+	return nil
 }
 
 // SetPartialValue set the field value for a partial part of a lob field
@@ -286,10 +287,10 @@ func (record *Record) SetPartialValue(name string, offset uint32, data []byte) (
 		return adatypes.NewGenericError(134, v.Type().Name())
 	}
 	av := v.(adatypes.PartialValue)
-	err = v.SetValue(data)
-	if err != nil {
-		return
-	}
+	_ = v.SetValue(data)
+	// if err != nil {
+	// 	return
+	// }
 	av.SetPartial(offset, uint32(len(data)))
 
 	return nil
