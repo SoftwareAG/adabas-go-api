@@ -480,9 +480,20 @@ func (adabasMap *Map) adaptFieldType(definition *adatypes.Definition, dynamic *a
 		}
 		fields = newFields
 		adatypes.Central.Log.Debugf("Redefine %v", fields)
+	} else {
+		// Subdivide field list to the definition fields
+		newFields := make([]string, 0)
+		for _, f := range fields {
+			if definition.CheckField(f) {
+				//adatypes.Central.Log.Debugf("Check %s -> %s ok=%v", f, fn, ok)
+				newFields = append(newFields, f)
+			}
+		}
+		fields = newFields
+		adatypes.Central.Log.Debugf("Rework list %v", fields)
 	}
-	// TODO restrict to interface if given
-	_ = definition.RestrictFieldSlice(fields)
+	// Restrict to final fields list
+	err = definition.RestrictFieldSlice(fields)
 	if adatypes.Central.IsDebugLevel() {
 		definition.DumpTypes(true, false, "after restrict slice")
 	}

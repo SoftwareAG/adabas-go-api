@@ -435,6 +435,11 @@ func (def *Definition) Fieldnames() []string {
 	return typeList
 }
 
+func (def *Definition) CheckField(name string) bool {
+	_, ok := def.activeFields[name]
+	return ok
+}
+
 type stackParameter struct {
 	definition     *Definition
 	forStoring     bool
