@@ -404,17 +404,6 @@ func (def *Definition) String() string {
 	}}
 
 	def.TraverseTypes(t, true, nil)
-	// for _, value := range def.activeFieldTree.SubTypes {
-	// 	output := fmt.Sprintf("%s\n", value.String())
-	// 	buffer.WriteString(output)
-	// }
-	// if len(def.Values) > 0 {
-	// 	buffer.WriteString("Definition IAdaTypes:\n")
-	// 	for index, value := range def.Values {
-	// 		output := fmt.Sprintf("%03d %s=%s\n", (index + 1), value.Type().Name(), value.String())
-	// 		buffer.WriteString(output)
-	// 	}
-	// }
 	return buffer.String()
 }
 
@@ -442,7 +431,10 @@ func (def *Definition) CheckField(name string) bool {
 	return ok
 }
 
+// AdaptName adapt new name to an definition entry
 func (def *Definition) AdaptName(adaType IAdaType, newName string) error {
+	Central.Log.Debugf("Adapt new name %s to %s/%s ", newName,
+		adaType.Name(), adaType.ShortName())
 	delete(def.fileFields, adaType.Name())
 	def.fileFields[newName] = adaType
 	if def.activeFields == nil {
