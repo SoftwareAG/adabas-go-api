@@ -117,7 +117,7 @@ func (request *commonRequest) commonOpen() (opened bool, err error) {
 			request.adabas.SetDbid(dbid)
 		}
 		// TODO remove if move succeeed
-		/*err = request.loadDefinition()
+		err = request.loadDefinition()
 		if err != nil {
 			return
 		}
@@ -126,11 +126,13 @@ func (request *commonRequest) commonOpen() (opened bool, err error) {
 			err = adatypes.NewGenericError(26)
 			return
 		}
-		err = request.adabasMap.adaptFieldType(request.definition, request.dynamic)
-		if err != nil {
-			adatypes.Central.Log.Debugf("Adapt fields error request definition %v", err)
-			return
-		}*/
+		if request.adabasMap != nil {
+			err = request.adabasMap.adaptFieldType(request.definition, request.dynamic)
+			if err != nil {
+				adatypes.Central.Log.Debugf("Adapt fields error request definition %v", err)
+				return
+			}
+		}
 	} else {
 		adatypes.Central.Log.Debugf("Open database without map")
 		err = request.loadDefinition()
