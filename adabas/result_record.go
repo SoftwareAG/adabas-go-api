@@ -274,8 +274,7 @@ func (record *Record) SetValueWithIndex(name string, index []uint32, x interface
 	// TODO why specific?
 	record.definition.Values = record.Value
 	adatypes.Central.Log.Debugf("Record value : %#v", record.Value)
-	record.definition.SetValueWithIndex(name, index, x)
-	return nil
+	return record.definition.SetValueWithIndex(name, index, x)
 }
 
 // SetPartialValue set the field value for a partial part of a lob field
