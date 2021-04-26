@@ -24,8 +24,9 @@ CGO_EXT_LDFLAGS = $(if $(ACLDIR),-lsagsmp2 -lsagxts3 -ladazbuf,)
 GO_TAGS         = $(if $(ACLDIR),"release adalnk","release")
 GO_FLAGS        = $(if $(debug),"-x",) -tags $(GO_TAGS)
 BINTESTS        = $(CURDIR)/bin/tests/$(GOOS)_$(GOARCH)
+DYLD_LIBRARY_PATH = $(ACLDIR)/lib:/lib:/usr/lib:$(ACLDIR)/../common/security/openssl/lib
 
-#export GOPATH
+export DYLD_LIBRARY_PATH
 
 GO           = go
 GODOC        = godoc
@@ -164,6 +165,17 @@ test-pprof: prepare $(TESTOUTPUT) | ; $(info $(M) running $(NAME:%=% )pprof…) 
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
 	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
 	    $(GO) test -timeout $(TIMEOUT)s -count=1 -memprofile $(NAME)-memprofile.out -cpuprofile $(NAME)-profile.out $(GO_FLAGS) -v $(ARGS) ./$(NAME) 2>&1 | tee $(TESTOUTPUT)/tests.$(HOST).output
+
+TEST_SINGLE_TARGETS := test-adabas-single test-adatypes-single
+.PHONY: $(TEST_SINGLE_TARGETS) test-single
+test-adabas-signle:   ARGS=-run=$(TEST)  ## Run single adabas tests
+$(TEST_SINGLE_TARGETS): NAME=$(MAKECMDGOALS:test-%-single=%)
+$(TEST_SINGLE_TARGETS): test-single
+test-single: ; $(info $(M) running $(NAME:%=% )single test $(TEST)…) @ ## Run single tests
+	$Q cd $(CURDIR) && LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
+	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
+	    TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) REFERENCES=$(REFERENCES) \
+	    $(GO) test -timeout $(TIMEOUT)s -count=1 -v -tags $(GO_TAGS) $(ARGS) ./$(NAME)
 
 COVERAGE_MODE = atomic
 COVERAGE_PROFILE = $(COVERAGE_DIR)/profile.out

@@ -457,12 +457,8 @@ func ExampleRecord_setValueWithIndex() {
 		fmt.Println("Result record generation error", err)
 		return
 	}
-
+	adatypes.Central.Log.Debugf("Start set value")
 	err = record.SetValueWithIndex("PX", []uint32{1, 1}, 122)
-	if err == nil {
-		fmt.Println("Error setting PX with MU error", err)
-		return
-	}
 	fmt.Println("Correct error:", err)
 	err = record.SetValueWithIndex("PX", []uint32{1, 0}, 122)
 	if err != nil {
