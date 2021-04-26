@@ -327,7 +327,7 @@ func NewDefinitionClone(old *Definition) *Definition {
 	newDefinition.fileFields = old.fileFields
 	newDefinition.fileShortFields = old.fileShortFields
 	newDefinition.activeFieldTree = old.fileFieldTree
-	initFieldHash(newDefinition, newDefinition.fileFieldTree.SubTypes)
+	// initFieldHash(newDefinition, newDefinition.fileFieldTree.SubTypes)
 	return newDefinition
 }
 
