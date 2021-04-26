@@ -327,7 +327,7 @@ func NewDefinitionClone(old *Definition) *Definition {
 	newDefinition.fileFields = old.fileFields
 	newDefinition.fileShortFields = old.fileShortFields
 	newDefinition.activeFieldTree = old.fileFieldTree
-	// initFieldHash(newDefinition, newDefinition.fileFieldTree.SubTypes)
+	initFieldHash(newDefinition, newDefinition.fileFieldTree.SubTypes)
 	return newDefinition
 }
 
@@ -546,7 +546,7 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 // CreateValues Create new value tree
 func (def *Definition) CreateValues(forStoring bool) (err error) {
 	def.Values = nil
-	Central.Log.Debugf("Create values from types for storing=%v", forStoring)
+	Central.Log.Debugf("Create values from types for storing=%v -> %#v", forStoring, def.activeFieldTree)
 	parameter := &stackParameter{definition: def, forStoring: forStoring, stack: NewStack()}
 	t := TraverserMethods{EnterFunction: traverserCreateValue}
 	err = def.TraverseTypes(t, true, parameter)

@@ -153,18 +153,21 @@ func (adabasMap *Map) adaptFieldType(definition *adatypes.Definition, dynamic *a
 	}
 	// Restrict fields to the fields included in the map
 	fields := adabasMap.FieldNames()
-	adatypes.Central.Log.Debugf("Check %v", fields)
 	if dynamic != nil {
+		adatypes.Central.Log.Debugf("Check dynamic adapt fields %v", fields)
 		newFields := make([]string, 0)
 		for _, f := range fields {
 			if _, ok := dynamic.FieldNames[f]; ok {
-				//adatypes.Central.Log.Debugf("Check %s -> %s ok=%v", f, fn, ok)
+				adatypes.Central.Log.Debugf("Checked", f)
 				newFields = append(newFields, f)
+			} else {
+				adatypes.Central.Log.Debugf("Not Checked %s", f)
 			}
 		}
 		fields = newFields
-		adatypes.Central.Log.Debugf("Redefine %v", fields)
+		adatypes.Central.Log.Debugf("Redefine dynamic fields %v", fields)
 	} else {
+		adatypes.Central.Log.Debugf("Check non-dynamic adapt fields %v", fields)
 		// Subdivide field list to the definition fields
 		newFields := make([]string, 0)
 		for _, f := range fields {
@@ -176,7 +179,7 @@ func (adabasMap *Map) adaptFieldType(definition *adatypes.Definition, dynamic *a
 			}
 		}
 		fields = newFields
-		adatypes.Central.Log.Debugf("Rework list %v", fields)
+		adatypes.Central.Log.Debugf("Rework adapted fields %v", fields)
 	}
 	// Restrict to final fields list
 	err = definition.RestrictFieldSlice(fields)

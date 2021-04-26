@@ -383,9 +383,10 @@ func (adabasMap *Map) Delete() error {
 // define the map definition using interface tags
 func (adabasMap *Map) defineByInterface(i interface{}) error {
 	adabasMap.dynamic = adatypes.CreateDynamicInterface(i)
+	adatypes.Central.Log.Debugf("Create dynamic interface %v", adabasMap.dynamic)
 	for index, f := range adabasMap.dynamic.FieldNames {
 		adatypes.Central.Log.Debugf("Define field %s: %s", index, f)
 		adabasMap.addFields(index, index)
 	}
-	return nil // fmt.Errorf("Not implemented")
+	return nil
 }

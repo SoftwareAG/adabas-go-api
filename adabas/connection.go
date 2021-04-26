@@ -513,6 +513,23 @@ func (connection *Connection) CreateMapStoreRequest(mapReference interface{}) (r
 					return nil, err
 				}
 				request, err = NewStoreRequest(connection.adabasToData, connection.adabasMap)
+				if err != nil {
+					return
+				}
+
+				if request.definition == nil {
+					err = request.loadDefinition()
+					if err != nil {
+						adatypes.Central.Log.Debugf("Load definition error: %v", err)
+						return
+					}
+				}
+				request.dynamic = request.adabasMap.dynamic
+				err = request.adabasMap.adaptFieldType(request.definition, request.dynamic)
+				if err != nil {
+					adatypes.Central.Log.Debugf("Adapt fields error request definition %v", err)
+					return
+				}
 			} else {
 				adatypes.Central.Log.Debugf("No repository used: %#v", connection.adabasToMap)
 				request, err = NewStoreRequest(mapReference, connection.adabasToMap)

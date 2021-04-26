@@ -641,6 +641,7 @@ func (request *StoreRequest) modifyData(data interface{}, store, etData bool) er
 		if request.dynamic == nil {
 			request.createDynamic(data)
 		}
+		adatypes.Central.Log.Debugf("Type data %T", data)
 		ti := reflect.ValueOf(data).Elem()
 		err := request.storeValue(ti, store, etData)
 		if err != nil {
