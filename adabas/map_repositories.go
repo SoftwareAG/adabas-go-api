@@ -457,10 +457,8 @@ func (repository *Repository) writeAdabasMapsWithAdabas(adabas *Adabas, adabasMa
 		if err != nil {
 			return
 		}
-		err = record.SetValueWithIndex("ML", []uint32{uint32(index + 1)}, m.Length)
-		if err != nil {
-			return
-		}
+		// Ignore because of negative old values
+		_ = record.SetValueWithIndex("ML", []uint32{uint32(index + 1)}, m.Length)
 		err = record.SetValueWithIndex("MT", []uint32{uint32(index + 1)}, m.ContentType)
 		if err != nil {
 			return
