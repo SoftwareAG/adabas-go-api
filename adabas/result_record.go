@@ -74,6 +74,7 @@ func NewRecord(definition *adatypes.Definition) (*Record, error) {
 		adatypes.Central.Log.Debugf("Definition values empty")
 		err := definition.CreateValues(false)
 		if err != nil {
+			adatypes.Central.Log.Debugf("Error creating Definition values")
 			return nil, err
 		}
 	}
@@ -81,7 +82,10 @@ func NewRecord(definition *adatypes.Definition) (*Record, error) {
 	definition.Values = nil
 	record.HashFields = make(map[string]adatypes.IAdaValue)
 	t := adatypes.TraverserValuesMethods{EnterFunction: traverseHashValues}
-	record.Traverse(t, record)
+	_, err := record.Traverse(t, record)
+	if err != nil {
+		return nil, err
+	}
 	return record, nil
 }
 
@@ -120,10 +124,7 @@ func (record *Record) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString(fmt.Sprintf("ISN=%d quantity=%d\n", record.Isn, record.Quantity))
 	t := adatypes.TraverserValuesMethods{EnterFunction: recordValuesTraverser}
-	record.Traverse(t, &buffer)
-	// for _, v := range record.Value {
-	// 	buffer.WriteString(fmt.Sprintf("value=%#v\n", v))
-	// }
+	_, _ = record.Traverse(t, &buffer)
 	return buffer.String()
 }
 
@@ -170,7 +171,7 @@ func (record *Record) DumpValues() {
 	var buffer bytes.Buffer
 	t := adatypes.TraverserValuesMethods{PrepareFunction: prepareRecordDump,
 		EnterFunction: traverseDumpRecord}
-	record.Traverse(t, &buffer)
+	_, _ = record.Traverse(t, &buffer)
 	fmt.Printf("%s", buffer.String())
 }
 
@@ -286,7 +287,10 @@ func (record *Record) SetPartialValue(name string, offset uint32, data []byte) (
 		return adatypes.NewGenericError(134, v.Type().Name())
 	}
 	av := v.(adatypes.PartialValue)
-	v.SetValue(data)
+	_ = v.SetValue(data)
+	// if err != nil {
+	// 	return
+	// }
 	av.SetPartial(offset, uint32(len(data)))
 
 	return nil
@@ -458,36 +462,36 @@ func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 				attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})
 				start.Attr = attrs
 			}
-			enc.EncodeToken(start)
+			_ = enc.EncodeToken(start)
 		case adatypes.FieldTypeMultiplefield:
 			muName := "Multiple"
 			if adaValue.Type().Name() != adaValue.Type().ShortName() {
 				muName = adaValue.Type().Name()
 				start := xml.StartElement{Name: xml.Name{Local: muName}}
-				enc.EncodeToken(start)
+				_ = enc.EncodeToken(start)
 			} else {
 				start := xml.StartElement{Name: xml.Name{Local: muName}}
 				attrs := make([]xml.Attr, 0)
 				attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})
 				start.Attr = attrs
-				enc.EncodeToken(start)
+				_ = enc.EncodeToken(start)
 			}
 		case adatypes.FieldTypeGroup:
 			grName := "Group"
 			if adaValue.Type().Name() != adaValue.Type().ShortName() {
 				grName = adaValue.Type().Name()
 				start := xml.StartElement{Name: xml.Name{Local: grName}}
-				enc.EncodeToken(start)
+				_ = enc.EncodeToken(start)
 			} else {
 				start := xml.StartElement{Name: xml.Name{Local: grName}}
 				attrs := make([]xml.Attr, 0)
 				attrs = append(attrs, xml.Attr{Name: xml.Name{Local: "sn"}, Value: adaValue.Type().Name()})
 				start.Attr = attrs
-				enc.EncodeToken(start)
+				_ = enc.EncodeToken(start)
 			}
 		default:
 			start := xml.StartElement{Name: xml.Name{Local: adaValue.Type().Name()}}
-			enc.EncodeToken(start)
+			_ = enc.EncodeToken(start)
 		}
 	} else {
 		isLink := strings.HasPrefix(adaValue.Type().Name(), "@")
@@ -499,11 +503,11 @@ func traverseMarshalXML2(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 		if isLink {
 			start.Attr = []xml.Attr{{Name: xml.Name{Local: "type"}, Value: "link"}}
 		}
-		enc.EncodeToken(start)
+		_ = enc.EncodeToken(start)
 		x := adaValue.String()
 		x = strings.Trim(x, " ")
-		enc.EncodeToken(xml.CharData([]byte(x)))
-		enc.EncodeToken(start.End())
+		_ = enc.EncodeToken(xml.CharData([]byte(x)))
+		_ = enc.EncodeToken(start.End())
 	}
 	return adatypes.Continue, nil
 }
@@ -565,10 +569,13 @@ func (record *Record) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	if record.Quantity > 0 {
 		rec.Attr = []xml.Attr{{Name: xml.Name{Local: "Quantity"}, Value: strconv.Itoa(int(record.Quantity))}}
 	}
-	e.EncodeToken(rec)
+	_ = e.EncodeToken(rec)
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalXML2, LeaveFunction: traverseMarshalXMLEnd2, ElementFunction: traverseMarshalXMLElement}
-	record.Traverse(tm, e)
-	e.EncodeToken(rec.End())
+	_, err := record.Traverse(tm, e)
+	if err != nil {
+		return err
+	}
+	_ = e.EncodeToken(rec.End())
 	adatypes.Central.Log.Debugf("Marshal XML record finished")
 
 	return nil

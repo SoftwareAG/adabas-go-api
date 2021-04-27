@@ -204,8 +204,9 @@ func (request *StoreRequest) Open() (err error) {
 
 // prepareRequest prepare a store request create an adabas request information
 // like Format Buffer or Record Buffer
-func (request *StoreRequest) prepareRequest() (adabasRequest *adatypes.Request, err error) {
-	adabasRequest, err = request.definition.CreateAdabasRequest(true, 0, request.adabas.status.platform.IsMainframe())
+func (request *StoreRequest) prepareRequest(descriptorRead bool) (adabasRequest *adatypes.Request, err error) {
+	parameter := &adatypes.AdabasRequestParameter{Store: true, DescriptorRead: descriptorRead, SecondCall: 0, Mainframe: request.adabas.status.platform.IsMainframe()}
+	adabasRequest, err = request.definition.CreateAdabasRequest(parameter)
 	if err != nil {
 		return
 	}
@@ -215,7 +216,9 @@ func (request *StoreRequest) prepareRequest() (adabasRequest *adatypes.Request, 
 }
 
 func (request *StoreRequest) prepareSecondRequest(secondCall uint32) (adabasRequest *adatypes.Request, err error) {
-	adabasRequest, err = request.definition.CreateAdabasRequest(true, secondCall, request.adabas.status.platform.IsMainframe())
+	parameter := &adatypes.AdabasRequestParameter{Store: true, DescriptorRead: false,
+		SecondCall: secondCall, Mainframe: request.adabas.status.platform.IsMainframe()}
+	adabasRequest, err = request.definition.CreateAdabasRequest(parameter)
 	if err != nil {
 		return
 	}
@@ -301,7 +304,7 @@ func (request *StoreRequest) Store(storeRecord *Record) error {
 	}
 	request.definition.Values = storeRecord.Value
 	adatypes.Central.Log.Debugf("Prepare store request")
-	adabasRequest, prepareErr := request.prepareRequest()
+	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
 		return prepareErr
 	}
@@ -373,7 +376,7 @@ func (request *StoreRequest) Update(storeRecord *Record) error {
 		}
 	}
 	request.definition.Values = storeRecord.Value
-	adabasRequest, prepareErr := request.prepareRequest()
+	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
 		return prepareErr
 	}
@@ -388,7 +391,7 @@ func (request *StoreRequest) Update(storeRecord *Record) error {
 // Exchange exchange a record
 func (request *StoreRequest) Exchange(storeRecord *Record) error {
 	request.definition.Values = storeRecord.Value
-	adabasRequest, prepareErr := request.prepareRequest()
+	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
 		return prepareErr
 	}
@@ -638,6 +641,7 @@ func (request *StoreRequest) modifyData(data interface{}, store, etData bool) er
 		if request.dynamic == nil {
 			request.createDynamic(data)
 		}
+		adatypes.Central.Log.Debugf("Type data %T", data)
 		ti := reflect.ValueOf(data).Elem()
 		err := request.storeValue(ti, store, etData)
 		if err != nil {

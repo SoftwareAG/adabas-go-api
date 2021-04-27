@@ -203,8 +203,8 @@ func generateResult() *Response {
 		return nil
 	}
 	record.Isn = 11
-	record.SetValue("AA", 20)
-	record.SetValue("PA", 3)
+	_ = record.SetValue("AA", 20)
+	_ = record.SetValue("PA", 3)
 	result.Values = append(result.Values, record)
 	return result
 }
@@ -457,7 +457,7 @@ func ExampleRecord_setValueWithIndex() {
 		fmt.Println("Result record generation error", err)
 		return
 	}
-
+	adatypes.Central.Log.Debugf("Start set value")
 	err = record.SetValueWithIndex("PX", []uint32{1, 1}, 122)
 	if err == nil {
 		fmt.Println("Error setting PX with MU error", err)

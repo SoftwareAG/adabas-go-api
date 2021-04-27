@@ -228,7 +228,7 @@ func (request *ReadRequest) Open() (opened bool, err error) {
 }
 
 // Prepare read request for special parts in read
-func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, err error) {
+func (request *ReadRequest) prepareRequest(descriptorRead bool) (adabasRequest *adatypes.Request, err error) {
 	if request.definition == nil {
 		err = request.loadDefinition()
 		if err != nil {
@@ -242,10 +242,12 @@ func (request *ReadRequest) prepareRequest() (adabasRequest *adatypes.Request, e
 			}
 		}
 	}
-	adabasRequest, err = request.definition.CreateAdabasRequest(false, 0, request.adabas.status.platform.IsMainframe())
+	parameter := &adatypes.AdabasRequestParameter{Store: false, DescriptorRead: descriptorRead, SecondCall: 0, Mainframe: request.adabas.status.platform.IsMainframe()}
+	adabasRequest, err = request.definition.CreateAdabasRequest(parameter)
 	if err != nil {
 		return
 	}
+	adatypes.Central.Log.Debugf("Prepare decriptor read %v", descriptorRead)
 	adabasRequest.Definition = request.definition
 	adabasRequest.RecordBufferShift = request.RecordBufferShift
 	adatypes.Central.Log.Debugf("Record shift set to: %d", adabasRequest.RecordBufferShift)
@@ -373,7 +375,7 @@ func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes
 	if err != nil {
 		return
 	}
-	adabasRequest, prepareErr := request.prepareRequest()
+	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
 		err = prepareErr
 		return
@@ -415,7 +417,7 @@ func (request *ReadRequest) ReadISNWithParser(isn adatypes.Isn, resultParser ada
 	if err != nil {
 		return
 	}
-	adabasRequest, prepareErr := request.prepareRequest()
+	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
 		err = prepareErr
 		return
@@ -585,7 +587,7 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 		}
 
 		adatypes.Central.Log.Debugf("Definition generated ...")
-		adabasRequest, prepareErr := request.prepareRequest()
+		adabasRequest, prepareErr := request.prepareRequest(false)
 		if prepareErr != nil {
 			err = prepareErr
 			return
@@ -605,7 +607,11 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 			adabasRequest.SearchTree = tree
 			adabasRequest.Descriptors = tree.OrderBy()
 		}
-		request.adaptDescriptorMap(adabasRequest)
+		_ = request.adaptDescriptorMap(adabasRequest)
+		// err = request.adaptDescriptorMap(adabasRequest)
+		// if err != nil {
+		// 	return err
+		// }
 		if request.cursoring != nil {
 			request.cursoring.adabasRequest = adabasRequest
 		}
@@ -668,7 +674,7 @@ func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultPa
 		return
 	}
 	adatypes.Central.Log.Debugf("Prepare read logical by request ... %s", descriptors)
-	adabasRequest, prepareErr := request.prepareRequest()
+	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
 		err = prepareErr
 		return
@@ -711,11 +717,14 @@ func (request *ReadRequest) HistogramBy(descriptor string) (result *Response, er
 		if err != nil {
 			return
 		}
-		adabasRequest, prepareErr := request.prepareRequest()
+		adatypes.Central.Log.Debugf("Prepare histogram read")
+		adabasRequest, prepareErr := request.prepareRequest(true)
 		if prepareErr != nil {
 			err = prepareErr
 			return
 		}
+		adatypes.Central.Log.Debugf("Prepared histogram read")
+		adabasRequest.DescriptorRead = true
 		adabasRequest.Parser = parseReadToRecord
 		adabasRequest.Limit = request.Limit
 		adabasRequest.Descriptors, err = request.definition.Descriptors(descriptor)
@@ -786,7 +795,11 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 		return
 	}
 	if request.definition == nil {
-		request.loadDefinition()
+		_ = request.loadDefinition()
+		// err = request.loadDefinition()
+		// if err != nil {
+		// 	return err
+		// }
 	}
 	searchInfo := adatypes.NewSearchInfo(request.adabas.ID.platform(request.adabas.URL.String()), search)
 	searchInfo.Definition = request.definition
@@ -804,11 +817,15 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 		return err
 	}
 	adatypes.Central.Log.Debugf("Before value creation --------")
-	adabasRequest, prepareErr := request.prepareRequest()
+	adabasRequest, prepareErr := request.prepareRequest(true)
 	adatypes.Central.Log.Debugf("Prepare done --------")
 	adabasRequest.SearchTree = tree
 	adabasRequest.Descriptors = adabasRequest.SearchTree.OrderBy()
-	request.adaptDescriptorMap(adabasRequest)
+	_ = request.adaptDescriptorMap(adabasRequest)
+	// err = request.adaptDescriptorMap(adabasRequest)
+	// if err != nil {
+	// 	return
+	// }
 	if prepareErr != nil {
 		err = prepareErr
 		return
@@ -885,7 +902,7 @@ func (request *ReadRequest) SearchAndOrderWithParser(search, descriptors string,
 		}
 
 		adatypes.Central.Log.Debugf("Definition generated ...")
-		adabasRequest, prepareErr := request.prepareRequest()
+		adabasRequest, prepareErr := request.prepareRequest(false)
 		if prepareErr != nil {
 			err = prepareErr
 			return
@@ -914,7 +931,11 @@ func (request *ReadRequest) SearchAndOrderWithParser(search, descriptors string,
 				adabasRequest.Descriptors = tree.OrderBy()
 			}
 		}
-		request.adaptDescriptorMap(adabasRequest)
+		err = request.adaptDescriptorMap(adabasRequest)
+		adatypes.Central.Log.Errorf("Adapt Descriptor map error: %v", err)
+		// if err != nil {
+		// 	return err
+		// }
 		if request.cursoring != nil {
 			request.cursoring.adabasRequest = adabasRequest
 		}
@@ -967,10 +988,12 @@ func (request *ReadRequest) adaptDescriptorMap(adabasRequest *adatypes.Request) 
 type evaluateFieldMap struct {
 	queryFields map[string]*queryField
 	fields      map[string]int
+	definition  *adatypes.Definition
 }
 
 // initFieldSubTypes initialize field sub types.
 func initFieldSubTypes(st *adatypes.StructureType, queryFields map[string]*queryField, current *int) {
+	adatypes.Central.Log.Debugf("Init field sub types")
 	for _, sub := range st.SubTypes {
 		if sub.IsStructure() {
 			sst := sub.(*adatypes.StructureType)
@@ -987,9 +1010,20 @@ func initFieldSubTypes(st *adatypes.StructureType, queryFields map[string]*query
 func traverseFieldMap(adaType adatypes.IAdaType, parentType adatypes.IAdaType, level int, x interface{}) error {
 	ev := x.(*evaluateFieldMap)
 	s := adaType.Name()
+	adatypes.Central.Log.Debugf("Traverse field map, search: %s", s)
 	if index, ok := ev.fields[s]; ok {
 		if _, okq := ev.queryFields[s]; !okq {
-			if adaType.IsStructure() && adaType.Type() != adatypes.FieldTypeRedefinition {
+			adatypes.Central.Log.Debugf("Check field map, search: %s", s)
+			switch {
+			case adaType.Type() == adatypes.FieldTypeSuperDesc:
+				adatypes.Central.Log.Debugf("Adapt subtypes: %s", s)
+				superType := adaType.(*adatypes.AdaSuperType)
+				err := superType.InitSubTypes(ev.definition)
+				if err != nil {
+					return err
+				}
+			case adaType.IsStructure() && adaType.Type() != adatypes.FieldTypeRedefinition:
+				adatypes.Central.Log.Debugf("Adapt subtypes: %s", s)
 				st := adaType.(*adatypes.StructureType)
 				current := index
 				initFieldSubTypes(st, ev.queryFields, &current)
@@ -1002,7 +1036,7 @@ func traverseFieldMap(adaType adatypes.IAdaType, parentType adatypes.IAdaType, l
 						adatypes.Central.Log.Debugf("New order %s -> %d", s, ev.fields[s])
 					}
 				}
-			} else {
+			default:
 				ev.queryFields[s] = &queryField{field: s, index: index}
 			}
 		}
@@ -1040,7 +1074,10 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 	}
 	request.definition.ResetRestrictToFields()
 	if fieldq == "*" {
-		request.definition.RemoveSpecialDescriptors()
+		err = request.definition.RemoveSpecialDescriptors()
+		if err != nil {
+			return err
+		}
 	} else {
 		if !(request.adabasMap != nil && fieldq == "*") {
 			err = request.definition.ShouldRestrictToFields(fieldq)
@@ -1056,7 +1093,7 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 		adatypes.Central.Log.Debugf("Create field content")
 		if fieldq != "*" && fieldq != "" {
 			f := make(map[string]int)
-			ev := &evaluateFieldMap{queryFields: make(map[string]*queryField), fields: f}
+			ev := &evaluateFieldMap{queryFields: make(map[string]*queryField), definition: request.definition, fields: f}
 			for i, s := range strings.Split(fieldq, ",") {
 				sl := strings.ToLower(s)
 				if sl == "#isn" || sl == "#isnquantity" {
@@ -1066,7 +1103,10 @@ func (request *ReadRequest) QueryFields(fieldq string) (err error) {
 				}
 			}
 			tm := adatypes.NewTraverserMethods(traverseFieldMap)
-			request.definition.TraverseTypes(tm, true, ev)
+			err = request.definition.TraverseTypes(tm, true, ev)
+			if err != nil {
+				return err
+			}
 			request.fields = ev.queryFields
 		}
 	}

@@ -48,7 +48,7 @@ func (repository *Repository) ExportMapRepository(ada *Adabas, filter string,
 	if err != nil {
 		return
 	}
-	if filter == "" {
+	if filter == "" || filter == "*" {
 		mapExport.Maps = maps
 	} else {
 		for _, m := range maps {

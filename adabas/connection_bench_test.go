@@ -42,7 +42,10 @@ func BenchmarkConnection_noMultifetch(b *testing.B) {
 		return
 	}
 	defer connection.Close()
-	connection.Open()
+	err = connection.Open()
+	if !assert.NoError(b, err) {
+		return
+	}
 	readRequest, rErr := connection.CreateFileReadRequest(11)
 	assert.NoError(b, rErr)
 	readRequest.Limit = 0
@@ -73,7 +76,10 @@ func BenchmarkConnection_Multifetch(b *testing.B) {
 		return
 	}
 	defer connection.Close()
-	connection.Open()
+	err = connection.Open()
+	if !assert.NoError(b, err) {
+		return
+	}
 	readRequest, rErr := connection.CreateFileReadRequest(11)
 	assert.NoError(b, rErr)
 	readRequest.Limit = 0

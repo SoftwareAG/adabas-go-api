@@ -90,6 +90,7 @@ type Request struct {
 	CmdCode            [2]byte
 	IsnIncrease        bool
 	StoreIsn           bool
+	DescriptorRead     bool
 	CbIsn              Isn
 	Isn                Isn
 	IsnQuantity        uint64
@@ -267,9 +268,17 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")
 			}
-			buffer.WriteString(fmt.Sprintf("%s,%d", adaType.ShortName(),
+			buffer.WriteString(fmt.Sprintf("%s,%d,A", adaType.ShortName(),
 				adaType.Length()))
 			adabasRequest.RecordBufferLength += adaType.Length()
+		} else {
+			if adabasRequest.DescriptorRead {
+				buffer.WriteString(fmt.Sprintf("%s,%d,A", adaType.ShortName(),
+					adaType.Length()))
+				adabasRequest.RecordBufferLength += adaType.Length()
+			} else {
+				Central.Log.Debugf("Skip PE Desc %s", adaType.ShortName())
+			}
 		}
 	case FieldTypeFieldLength:
 		if buffer.Len() > 0 {
@@ -359,13 +368,22 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 	return nil
 }
 
-// CreateAdabasRequest creates format buffer out of defined metadata tree
-func (def *Definition) CreateAdabasRequest(store bool, secondCall uint32, mainframe bool) (adabasRequest *Request, err error) {
-	adabasRequest = &Request{FormatBuffer: bytes.Buffer{}, Option: NewBufferOption3(store, secondCall, mainframe),
-		Multifetch: DefaultMultifetchLimit}
+// AdabasRequestParameter Adabas request parameter defining type of Adabas request
+type AdabasRequestParameter struct {
+	Store          bool
+	DescriptorRead bool
+	SecondCall     uint32
+	Mainframe      bool
+}
 
-	Central.Log.Debugf("Create format buffer. Init Buffer: %s second=%v", adabasRequest.FormatBuffer.String(), secondCall)
-	if store || secondCall > 0 {
+// CreateAdabasRequest creates format buffer out of defined metadata tree
+func (def *Definition) CreateAdabasRequest(parameter *AdabasRequestParameter) (adabasRequest *Request, err error) {
+	adabasRequest = &Request{FormatBuffer: bytes.Buffer{}, Option: NewBufferOption3(parameter.Store, parameter.SecondCall, parameter.Mainframe),
+		Multifetch: DefaultMultifetchLimit, DescriptorRead: parameter.DescriptorRead}
+	adabasRequest.Option.DescriptorRead = parameter.DescriptorRead
+
+	Central.Log.Debugf("Create format buffer. Init Buffer: %s second=%v", adabasRequest.FormatBuffer.String(), parameter.SecondCall)
+	if parameter.Store || parameter.SecondCall > 0 {
 		t := TraverserValuesMethods{EnterFunction: formatBufferTraverserEnter, LeaveFunction: formatBufferTraverserLeave}
 		_, err = def.TraverseValues(t, adabasRequest)
 		if err != nil {
@@ -427,8 +445,7 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 			}
 
 			Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values != nil))
-			var prefix string
-			prefix = fmt.Sprintf("/image/%s/%d/", adabasRequest.Reference, adabasRequest.Isn)
+			prefix := fmt.Sprintf("/image/%s/%d/", adabasRequest.Reference, adabasRequest.Isn)
 			_, err = adabasRequest.Definition.ParseBuffer(adabasRequest.RecordBuffer, adabasRequest.Option, prefix)
 			if err != nil {
 				return

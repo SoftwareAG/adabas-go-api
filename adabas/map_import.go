@@ -68,9 +68,9 @@ type field struct {
 	formatType      string
 	options         uint64
 	fractionalShift string
-	parent          *field
 	childs          []*field
 	comment         string
+	// parent          *field
 }
 
 func (f *field) isGroup() bool {
@@ -97,6 +97,7 @@ func (f *field) String() string {
 // ImportMapRepository import map by file import
 func (repository *Repository) ImportMapRepository(adabas *Adabas, filter string,
 	fileName string, mapURL *DatabaseURL) (maps []*Map, err error) {
+	adatypes.Central.Log.Debugf("Import map repository of %s using filter %s to %s", fileName, filter, mapURL.URL.String())
 	var file *os.File
 	file, err = os.Open(fileName)
 	if err != nil {
@@ -104,8 +105,10 @@ func (repository *Repository) ImportMapRepository(adabas *Adabas, filter string,
 	}
 	defer file.Close()
 
-	repository.LoadMapRepository(adabas)
-
+	err = repository.LoadMapRepository(adabas)
+	if err != nil {
+		return nil, err
+	}
 	suffixCheck := strings.ToLower(fileName)
 	switch {
 	case strings.HasSuffix(suffixCheck, ".json"):
@@ -127,41 +130,33 @@ func (repository *Repository) ImportMapRepository(adabas *Adabas, filter string,
 		return nil, adatypes.NewGenericError(55, fileName)
 	}
 
-	if mapURL == nil {
-		tmpMaps := maps
-		maps = make([]*Map, 0)
-		for _, m := range tmpMaps {
-			if filter == "" {
-				maps = append(maps, m)
-				m.Repository = &repository.DatabaseURL
-			} else {
-				if matched, _ := regexp.MatchString(filter, m.Name); matched {
-					maps = append(maps, m)
-					m.Repository = &repository.DatabaseURL
-				}
-			}
-		}
-		return
+	var dataRepository *Repository
+	if mapURL != nil {
+		dataRepository = &Repository{DatabaseURL: *mapURL}
 	}
-	dataRepository := &Repository{DatabaseURL: *mapURL}
-	tmpMaps := maps
-	maps = make([]*Map, 0)
-	for _, m := range tmpMaps {
-		m.Data = &dataRepository.DatabaseURL
-		repository.RemoveMap(m.Name)
-		repository.AddMapToCache(m.Name, m)
-		if filter == "" {
-			maps = append(maps, m)
-			m.Repository = &repository.DatabaseURL
-		} else {
-			if matched, _ := regexp.MatchString(filter, m.Name); matched {
-				maps = append(maps, m)
-				m.Repository = &repository.DatabaseURL
-			}
+	maps = repository.filterMaps(filter, maps)
+	for _, m := range maps {
+		if dataRepository != nil {
+			m.Data = &dataRepository.DatabaseURL
 		}
+		m.Repository = &repository.DatabaseURL
 	}
 
 	return
+}
+
+func (repository *Repository) filterMaps(filter string, maps []*Map) []*Map {
+	if filter == "" || filter == "*" {
+		return maps
+	}
+	tmpMaps := make([]*Map, 0)
+	for _, m := range maps {
+		if matched, _ := regexp.MatchString(filter, m.Name); matched {
+			tmpMaps = append(tmpMaps, m)
+			m.Repository = &repository.DatabaseURL
+		}
+	}
+	return tmpMaps
 }
 
 func (curEntry *entry) searchParent(f *field) (err error) {
@@ -243,7 +238,7 @@ func parseSystransFileForFields(file *os.File) (maps []*Map, err error) {
 						if strings.HasPrefix(line, "*S**") {
 							if len(line) > 46 && line[46:47] == "P" {
 								phoneticDescriptor = true
-								adatypes.Central.Log.Debugf("Phonetic: ", line[46:47], phoneticDescriptor)
+								adatypes.Central.Log.Debugf("Phonetic: %s -> %v", line[46:47], phoneticDescriptor)
 							}
 							// field
 							sn := line[6:8]
@@ -252,7 +247,7 @@ func parseSystransFileForFields(file *os.File) (maps []*Map, err error) {
 							// reference to a field, use the
 							// first
 							// only
-							adatypes.Central.Log.Debugf("SN=", sn)
+							adatypes.Central.Log.Debugf("SN=%s", sn)
 							if _, ok := shortNames[sn]; !ok && !phoneticDescriptor {
 								adatypes.Central.Log.Debugf("not found SN=%s phonetic=%v", sn, phoneticDescriptor)
 								shortNames[sn] = true
@@ -266,7 +261,10 @@ func parseSystransFileForFields(file *os.File) (maps []*Map, err error) {
 								if len(line) > 46 && line[46:47] == "S" {
 									field.fType = superField
 								}
-								curEntry.searchParent(field)
+								err = curEntry.searchParent(field)
+								if err != nil {
+									return
+								}
 								// 											parentField =
 								// 												checkTreeReference(
 								// 													parentStack,

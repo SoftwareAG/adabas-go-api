@@ -494,7 +494,10 @@ func copyData(adabasRequest *adatypes.Request, x interface{}) (err error) {
 		return
 	}
 	tm := adatypes.TraverserValuesMethods{EnterFunction: copyRecordData}
-	adabasRequest.Definition.TraverseValues(tm, record)
+	_, err = adabasRequest.Definition.TraverseValues(tm, record)
+	if err != nil {
+		return err
+	}
 	fmt.Println("Record=", record.String())
 
 	adatypes.Central.Log.Debugf("Store init ..........")
@@ -610,7 +613,7 @@ func ExampleConnection_readWithMap() {
 		return
 	}
 
-	result.DumpValues()
+	_ = result.DumpValues()
 	// Output:Read logigcal data:
 	// Dump all result values
 	// Record Isn: 0393
@@ -667,7 +670,7 @@ func ExampleConnection_readWithMapFormatted() {
 		fmt.Println("Error reading", err)
 		return
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 	// Output:Read logigcal data:
 	// Dump all result values
 	// Record Isn: 0393
@@ -727,7 +730,7 @@ func ExampleConnection_readFileDefinitionMapGroup() {
 		fmt.Println("Error read logical data", err)
 		return
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 	// Output: Read logigcal data:
 	// Dump all result values
 	// Record Isn: 0261
@@ -910,7 +913,10 @@ func TestConnectionSimpleMultipleMapStore(t *testing.T) {
 		return
 	}
 	fmt.Println("End transaction")
-	connection.EndTransaction()
+	err = connection.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
 	fmt.Println("Check stored data")
 
 	adatypes.Central.Log.Infof("Check stored data")
@@ -979,7 +985,11 @@ func ExampleConnection_mapStore() {
 	if rErr != nil {
 		return
 	}
-	storeRequest16.StoreFields("PERSONNEL-ID,NAME")
+	err = storeRequest16.StoreFields("PERSONNEL-ID,NAME")
+	if err != nil {
+		fmt.Println("Error store", err)
+		return
+	}
 	record, err := storeRequest16.CreateRecord()
 	if err != nil {
 		fmt.Println("Error create record", err)
@@ -1110,7 +1120,7 @@ func dumpMapStoredData(target string, mapName string, search string) error {
 	for i, record := range result.Values {
 		record.Isn = adatypes.Isn(i + 1)
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 	return nil
 }
 
@@ -1146,7 +1156,7 @@ func ExampleConnection_readShortMap() {
 		fmt.Println("Error read logical", err)
 		return
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 	// Output:Read logigcal data:
 	// Dump all result values
 	// Record Isn: 0393
@@ -1214,13 +1224,13 @@ func ExampleConnection_readLongMapIsn() {
 			fmt.Println("Error search value", e)
 			return
 		}
-		f.SetValue(0)
+		_ = f.SetValue(0)
 		f, e = v.SearchValue("Last_Updates[01]")
 		if e != nil || f == nil {
 			fmt.Println(e)
 			return
 		}
-		f.SetValue(0)
+		_ = f.SetValue(0)
 	}
 
 	fmt.Println(result.String())
@@ -1315,15 +1325,15 @@ func ExampleConnection_readLongMapRange() {
 			fmt.Println("Search error", e)
 			return
 		}
-		f.SetValue(0)
+		_ = f.SetValue(0)
 		f, e = v.SearchValue("Last_Updates[01]")
 		if e != nil || f == nil {
 			fmt.Println(e)
 			return
 		}
-		f.SetValue(0)
+		_ = f.SetValue(0)
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 	// Output:Read logigcal data:
 	// Dump all result values
 	// Record Isn: 0001
@@ -1638,7 +1648,7 @@ func ExampleConnection_mapReadUnicode() {
 		fmt.Println("Error reading ISN order", err)
 		return
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 
 	// Output: Read using ISN order:
 	// Dump all result values
@@ -1694,7 +1704,7 @@ func ExampleConnection_mapReadUnicodeNew() {
 		fmt.Println("Error reading ISN order", err)
 		return
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 
 	// Output: Read using ISN order:
 	// Dump all result values
@@ -1801,7 +1811,7 @@ func ExampleConnection_mapReadDisjunctSearch() {
 		fmt.Println("Error reading ISN order", err)
 		return
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 
 	// Output: Read using ISN order:
 	// Dump all result values
@@ -1880,7 +1890,7 @@ func TestConnectionOsMap(t *testing.T) {
 		if !assert.NoError(t, err) {
 			return
 		}
-		result.DumpValues()
+		_ = result.DumpValues()
 		fmt.Println("Check size ...", len(result.Values))
 		if assert.Equal(t, 20, len(result.Values)) {
 			ae := result.Values[1].HashFields["NAME"]
@@ -1929,7 +1939,7 @@ func TestConnection_cyrillicMap(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	result.DumpValues()
+	_ = result.DumpValues()
 	if assert.Equal(t, 1, len(result.Values)) {
 		v, verr := result.Values[0].SearchValue("cyrilic")
 		if !assert.NoError(t, verr) {
@@ -1968,7 +1978,7 @@ func TestConnectionMapCharset(t *testing.T) {
 		if !assert.NoError(t, err) {
 			return
 		}
-		result.DumpValues()
+		_ = result.DumpValues()
 		fmt.Println("Check size ...", len(result.Values))
 		if assert.Equal(t, 20, len(result.Values)) {
 			ae := result.Values[1].HashFields["cyrilic"]

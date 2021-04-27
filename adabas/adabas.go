@@ -247,7 +247,8 @@ func (adabas *Adabas) Close() {
 		return
 	}
 	if adabas.ID.transactions(adabas.URL.String()) > 0 {
-		adabas.BackoutTransaction()
+		err := adabas.BackoutTransaction()
+		adatypes.Central.Log.Infof("Error backout during close: %v", err)
 	}
 	adabas.lock.Lock()
 	defer adabas.lock.Unlock()
@@ -351,7 +352,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 	err = tcpConn.SendData(buffer, uint32(len(adabas.AdabasBuffers)))
 	if err != nil {
 		adatypes.Central.Log.Infof("Transmit Adabas call error: %v", err)
-		tcpConn.Disconnect()
+		_ = tcpConn.Disconnect()
 		adabas.transactions.connection = nil
 		return
 	}
@@ -365,7 +366,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 	err = adabas.ReadBuffer(&buffer, Endian(), nrAbdBuffers, false)
 	if err != nil {
 		adatypes.Central.Log.Infof("Read buffer error, destroy context ... %v", err)
-		tcpConn.Disconnect()
+		_ = tcpConn.Disconnect()
 		return
 	}
 
@@ -373,7 +374,7 @@ func (adabas *Adabas) sendTCP() (err error) {
 	if adabas.Acbx.Acbxcmd == cl.code() {
 		adatypes.Central.Log.Debugf("Close called, destroy context ...")
 		if tcpConn != nil {
-			tcpConn.Disconnect()
+			_ = tcpConn.Disconnect()
 			adabas.transactions.connection = nil
 		}
 	}
@@ -399,7 +400,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 	}
 	adabas.lock.Lock()
 	defer adabas.lock.Unlock()
-	adatypes.Central.Log.Debugf("Read file definition with %v", lf.code())
+	adatypes.Central.Log.Debugf("Read file definition with %s", lf.command())
 	adabas.Acbx.Acbxcmd = lf.code()
 	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxcop[0] = adaEmptOpt
@@ -415,7 +416,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 
 	adabas.Acbx.Acbxfnr = fileNr
 	err = adabas.CallAdabas()
-	adatypes.Central.Log.Debugf("Read file definition %v rsp=%d", err, adabas.Acbx.Acbxrsp)
+	adatypes.Central.Log.Debugf("Read file definition error=%v rsp=%d", err, adabas.Acbx.Acbxrsp)
 	if err == nil {
 		/* Create new helper to parse returned buffer */
 		helper := adatypes.NewHelper(adabas.AdabasBuffers[1].buffer, int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())
@@ -869,7 +870,8 @@ func (adabas *Adabas) SendSecondCall(adabasRequest *adatypes.Request, x interfac
 	adatypes.Central.Log.Debugf("Check second call .... values avail.=%v", (adabasRequest.Definition.Values == nil))
 	if adabasRequest.Option.NeedSecondCall != adatypes.NoneSecond {
 		adatypes.Central.Log.Debugf("Need second call %v", adabasRequest.Option.NeedSecondCall)
-		tmpAdabasRequest, err2 := adabasRequest.Definition.CreateAdabasRequest(false, 1, adabas.status.platform.IsMainframe())
+		parameter := &adatypes.AdabasRequestParameter{Store: false, SecondCall: 1, Mainframe: adabas.status.platform.IsMainframe()}
+		tmpAdabasRequest, err2 := adabasRequest.Definition.CreateAdabasRequest(parameter)
 		if err2 != nil {
 			err = err2
 			return
@@ -1287,7 +1289,10 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 			if transferSize > 0 {
 				if abd.abd.Abdsize != transferSize {
 					p := make([]byte, transferSize)
-					buffer.Read(p)
+					_, err = buffer.Read(p)
+					if err != nil {
+						return
+					}
 					copy(abd.buffer, p)
 				} else {
 					_, err = buffer.Read(abd.buffer)

@@ -91,7 +91,8 @@ func TestMapFields(t *testing.T) {
 
 	testDefinition := adatypes.NewDefinitionWithTypes(layout)
 
-	m.adaptFieldType(testDefinition, nil)
+	err = m.adaptFieldType(testDefinition, nil)
+	assert.NoError(t, err)
 	testDefinition.DumpTypes(false, true)
 }
 

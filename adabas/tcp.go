@@ -208,7 +208,7 @@ func (connection *AdaTCP) Connect() (err error) {
 		}
 		adatypes.Central.Log.Debugf("Connect dial passed ...")
 		connection.connection = tcpConn
-		tcpConn.SetNoDelay(true)
+		_ = tcpConn.SetNoDelay(true)
 	case "adatcps":
 		err = connection.createSSLConnection(url)
 		if err != nil {

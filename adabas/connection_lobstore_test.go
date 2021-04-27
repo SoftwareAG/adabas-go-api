@@ -134,7 +134,10 @@ func storePerStream(t *testing.T, x []byte) (adatypes.Isn, error) {
 		}
 
 	}
-	connection.EndTransaction()
+	err = connection.EndTransaction()
+	if !assert.NoError(t, err) {
+		return 0, err
+	}
 	return isn, nil
 }
 

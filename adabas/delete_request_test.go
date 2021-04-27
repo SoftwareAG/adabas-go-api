@@ -80,7 +80,10 @@ func prepareCall(t *testing.T, mapName string) {
 		if !assert.NoError(t, err) {
 			return
 		}
-		storeRequest.Store(storeRecord)
+		sErr := storeRequest.Store(storeRecord)
+		if !assert.NoError(t, sErr) {
+			return
+		}
 	}
 	err = storeRequest.EndTransaction()
 	if !assert.NoError(t, err) {

@@ -133,11 +133,13 @@ func TestFdtParse(t *testing.T) {
 	helper := adatypes.NewHelper(employeeFdt, len(employeeFdt), binary.LittleEndian)
 	option := adatypes.NewBufferOption(false, 0)
 	fdtDefinition := createFdtDefintion()
-	fdtDefinition.ParseBuffer(helper, option, "")
+	_, err := fdtDefinition.ParseBuffer(helper, option, "")
+	assert.NoError(t, err)
 	fdt := fdtDefinition.Search("fdt")
 	fmt.Println("FDT ", fdt.PeriodIndex())
 	tm := adatypes.NewTraverserMethods(traverseOutput)
-	fdtDefinition.TraverseTypes(tm, true, nil)
+	err = fdtDefinition.TraverseTypes(tm, true, nil)
+	assert.NoError(t, err)
 }
 
 func TestFdtStructure(t *testing.T) {
@@ -148,7 +150,9 @@ func TestFdtStructure(t *testing.T) {
 	helper := adatypes.NewHelper(employeeFdt, len(employeeFdt), binary.LittleEndian)
 	option := adatypes.NewBufferOption(false, 0)
 	fdtDefinition := createFdtDefintion()
-	fdtDefinition.ParseBuffer(helper, option, "")
+	res, pErr := fdtDefinition.ParseBuffer(helper, option, "")
+	assert.NoError(t, pErr)
+	assert.Equal(t, adatypes.Continue, res)
 	fdtTable, err := createFieldDefinitionTable(fdtDefinition)
 	assert.Nil(t, err, "Error creating fdt table")
 	fmt.Println("FDT TABLE: ", fdtTable)
@@ -162,9 +166,10 @@ func TestFdtStructureNewEmployee(t *testing.T) {
 	helper := adatypes.NewHelper(newEmployeeFdt, len(newEmployeeFdt), binary.LittleEndian)
 	option := adatypes.NewBufferOption(false, 0)
 	fdtDefinition := createFdtDefintion()
-	fdtDefinition.ParseBuffer(helper, option, "")
+	_, err := fdtDefinition.ParseBuffer(helper, option, "")
+	assert.NoError(t, err, "Error parsing fdt table")
 	fdtTable, err := createFieldDefinitionTable(fdtDefinition)
-	assert.Nil(t, err, "Error creating fdt table")
+	assert.NoError(t, err, "Error creating fdt table")
 	fmt.Println("FDT TABLE: ", fdtTable)
 }
 
@@ -175,8 +180,10 @@ func TestFdtStructureHyperExitEmployee(t *testing.T) {
 	fmt.Println("Test FDT structure")
 	helper := adatypes.NewHelper(hyperExitEmployeeFdt, len(hyperExitEmployeeFdt), binary.LittleEndian)
 	fdtDefinition := createFdtDefintion()
-	fdtDefinition.ParseBuffer(helper, adatypes.NewBufferOption(false, 0), "")
+	_, err := fdtDefinition.ParseBuffer(helper, adatypes.NewBufferOption(false, 0), "")
+	assert.NoError(t, err)
 	fdtTable, err := createFieldDefinitionTable(fdtDefinition)
 	assert.Nil(t, err, "Error creating fdt table")
+	assert.NoError(t, err)
 	fmt.Println("FDT TABLE: ", fdtTable)
 }

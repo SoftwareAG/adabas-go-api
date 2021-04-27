@@ -45,7 +45,11 @@ func ExampleReadRequest_ReadLogicalWithCursoring() {
 		return
 	}
 	fmt.Println("Limit query data:")
-	request.QueryFields("NAME,PERSONNEL-ID")
+	err = request.QueryFields("NAME,PERSONNEL-ID")
+	if err != nil {
+		fmt.Println("Error query fields", err)
+		return
+	}
 	request.Limit = 0
 	fmt.Println("Init cursor data...")
 	col, cerr := request.ReadLogicalWithCursoring("PERSONNEL-ID=[11100110:11100115]")
@@ -138,7 +142,11 @@ func ExampleReadRequest_readLogicalWithCursoringLimit() {
 		return
 	}
 	// Define fields to be part of the request
-	request.QueryFields("NAME,PERSONNEL-ID")
+	err := request.QueryFields("NAME,PERSONNEL-ID")
+	if err != nil {
+		fmt.Println("Error query field read request", err)
+		return
+	}
 	// Define chunks of cursoring requests
 	request.Limit = 5
 
@@ -224,7 +232,10 @@ func TestReadLogicalWithCursoring(t *testing.T) {
 		return
 	}
 	fmt.Println("Limit query data:")
-	request.QueryFields("NAME,PERSONNEL-ID")
+	rerr = request.QueryFields("NAME,PERSONNEL-ID")
+	if !assert.NoError(t, rerr) {
+		return
+	}
 	request.Limit = 0
 	fmt.Println("Init cursor data...")
 	col, cerr := request.ReadLogicalWithCursoring("PERSONNEL-ID=[0:9]")
@@ -270,11 +281,15 @@ func TestSearchAndReadWithCursoring(t *testing.T) {
 		return
 	}
 	fmt.Println("Limit query data:")
-	request.QueryFields("NAME,PERSONNEL-ID")
+	rerr = request.QueryFields("NAME,PERSONNEL-ID")
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error creating map read query fields", rerr)
+		return
+	}
 	request.Limit = 0
 	fmt.Println("Init cursor data...")
 	col, cerr := request.SearchAndOrderWithCursoring("PERSONNEL-ID=[1:5]", "NAME")
-	if !assert.NoError(t, rerr) {
+	if !assert.NoError(t, cerr) {
 		fmt.Println("Error reading logical with using cursoring", cerr)
 		return
 	}
@@ -318,8 +333,11 @@ func TestSearchAndReadWithCursoringEmplStruct(t *testing.T) {
 	}
 	initTestLogWithFile(t, "connection_cursoring.log")
 
-	refreshFile(adabasModDBIDs, 16)
-	err := copyAdabasFile(t, "*", adabasModDBIDs, 11, 16)
+	err := refreshFile(adabasModDBIDs, 16)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = copyAdabasFile(t, "*", adabasModDBIDs, 11, 16)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -336,7 +354,10 @@ func TestSearchAndReadWithCursoringEmplStruct(t *testing.T) {
 		return
 	}
 	fmt.Println("Limit query data:")
-	request.QueryFields("Name,ID")
+	err = request.QueryFields("Name,ID")
+	if !assert.NoError(t, err) {
+		return
+	}
 	request.Limit = 0
 	fmt.Println("Init cursor data...")
 	col, cerr := request.SearchAndOrderWithCursoring("ID=[500041:500050]", "Name")
@@ -379,7 +400,7 @@ func TestSearchAndReadWithCursoringEmplStructEmptyFile(t *testing.T) {
 	}
 	initTestLogWithFile(t, "connection_cursoring.log")
 
-	refreshFile(adabasModDBIDs, 16)
+	_ = refreshFile(adabasModDBIDs, 16)
 
 	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
 	if !assert.NoError(t, cerr) {
@@ -393,7 +414,10 @@ func TestSearchAndReadWithCursoringEmplStructEmptyFile(t *testing.T) {
 		return
 	}
 	fmt.Println("Limit query data:")
-	request.QueryFields("Name,ID")
+	cerr = request.QueryFields("Name,ID")
+	if !assert.NoError(t, cerr) {
+		return
+	}
 	request.Limit = 0
 	fmt.Println("Init cursor data...")
 	col, cerr := request.SearchAndOrderWithCursoring("ID=[1:5]", "Name")

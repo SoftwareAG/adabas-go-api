@@ -129,6 +129,7 @@ func (connection *Connection) ReflectStore(entries interface{}, mapName string) 
 		}
 		ri := reflect.TypeOf(s.Index(0).Elem().Interface())
 		var buffer bytes.Buffer
+		var isnsNames []string
 		fieldNames := make(map[string]string)
 		for fi := 0; fi < ri.NumField(); fi++ {
 			if fi > 0 {
@@ -138,15 +139,26 @@ func (connection *Connection) ReflectStore(entries interface{}, mapName string) 
 			adabasFieldName := fieldName
 			tag := ri.Field(fi).Tag.Get("adabas")
 			adatypes.Central.Log.Debugf("Adabas tag: %s", tag)
-			if tag != "" {
-				s := strings.Split(tag, ":")
-				adabasFieldName = s[0]
+			if strings.HasPrefix(tag, "#") {
+				switch strings.ToLower(tag) {
+				case "#isn":
+					isnsNames = append(isnsNames, fieldName)
+				default:
+				}
+			} else {
+				if tag != "" {
+					s := strings.Split(tag, ":")
+					adabasFieldName = s[0]
+				}
+				adatypes.Central.Log.Debugf("Hash field %s=%s", adabasFieldName, fieldName)
+				fieldNames[adabasFieldName] = fieldName
+				buffer.WriteString(ri.Field(fi).Name)
 			}
-			adatypes.Central.Log.Debugf("Hash field %s=%s", adabasFieldName, fieldName)
-			fieldNames[adabasFieldName] = fieldName
-			buffer.WriteString(ri.Field(fi).Name)
 		}
-		storeRequest.StoreFields(buffer.String())
+		ferr := storeRequest.StoreFields(buffer.String())
+		if ferr != nil {
+			return ferr
+		}
 		for si := 0; si < s.Len(); si++ {
 			storeRecord, serr := storeRequest.CreateRecord()
 			if serr != nil {
@@ -173,6 +185,11 @@ func (connection *Connection) ReflectStore(entries interface{}, mapName string) 
 			err = storeRequest.Store(storeRecord)
 			if err != nil {
 				return adatypes.NewGenericError(53, err.Error())
+			}
+			if len(isnsNames) > 0 {
+				for _, isnName := range isnsNames {
+					record.FieldByName(isnName).SetUint(uint64(storeRecord.Isn))
+				}
 			}
 		}
 	default:

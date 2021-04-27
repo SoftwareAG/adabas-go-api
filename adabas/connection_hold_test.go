@@ -43,7 +43,10 @@ func TestHoldResponse(t *testing.T) {
 	}
 	defer connection.Close()
 	fmt.Println(connection)
-	connection.Open()
+	err = connection.Open()
+	if !assert.NoError(t, err) {
+		return
+	}
 	readRequest, rErr := connection.CreateFileReadRequest(11)
 	assert.NoError(t, rErr)
 	readRequest.SetHoldRecords(adatypes.HoldResponse)
@@ -146,7 +149,7 @@ func parallelAccessHoldResponse(t *testing.T, wait chan bool, end chan bool, use
 	if useTimeout {
 		fmt.Println("Sleep 10 seconds ....")
 		time.Sleep(10 * time.Second)
-		connection.Release()
+		_ = connection.Release()
 		fmt.Println("Release ....")
 	}
 	<-end

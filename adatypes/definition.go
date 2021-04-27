@@ -31,6 +31,7 @@ type Isn uint64
 // Definition struct defines main entry point for parser structure
 type Definition struct {
 	fileFields      map[string]IAdaType
+	fileShortFields map[string]IAdaType
 	fileFieldTree   *StructureType
 	activeFields    map[string]IAdaType
 	activeFieldTree *StructureType
@@ -84,6 +85,7 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 // Register Register field types
 func (def *Definition) Register(t IAdaType) {
 	def.fileFields[t.Name()] = t
+	def.fileShortFields[t.ShortName()] = t
 }
 
 // ParseBuffer method start parsing the definition
@@ -294,7 +296,9 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 
 // NewDefinition create new Definition instance
 func NewDefinition() *Definition {
-	def := &Definition{fileFields: make(map[string]IAdaType), activeFieldTree: NewStructure()}
+	def := &Definition{fileFields: make(map[string]IAdaType),
+		fileShortFields: make(map[string]IAdaType),
+		activeFieldTree: NewStructure()}
 	def.fileFieldTree = def.activeFieldTree
 	return def
 }
@@ -321,13 +325,16 @@ func NewDefinitionClone(old *Definition) *Definition {
 	newDefinition := NewDefinition()
 	newDefinition.fileFieldTree = old.fileFieldTree
 	newDefinition.fileFields = old.fileFields
+	newDefinition.fileShortFields = old.fileShortFields
 	newDefinition.activeFieldTree = old.fileFieldTree
+	// initFieldHash(newDefinition, newDefinition.fileFieldTree.SubTypes)
 	return newDefinition
 }
 
 func initFieldHash(def *Definition, types []IAdaType) {
 	for _, v := range types {
 		def.fileFields[v.Name()] = v
+		def.fileShortFields[v.ShortName()] = v
 		def.activeFields[v.Name()] = v
 		if v.IsStructure() && v.Type() != FieldTypeMultiplefield {
 			sv := v.(*StructureType)
@@ -397,17 +404,6 @@ func (def *Definition) String() string {
 	}}
 
 	def.TraverseTypes(t, true, nil)
-	// for _, value := range def.activeFieldTree.SubTypes {
-	// 	output := fmt.Sprintf("%s\n", value.String())
-	// 	buffer.WriteString(output)
-	// }
-	// if len(def.Values) > 0 {
-	// 	buffer.WriteString("Definition IAdaTypes:\n")
-	// 	for index, value := range def.Values {
-	// 		output := fmt.Sprintf("%03d %s=%s\n", (index + 1), value.Type().Name(), value.String())
-	// 		buffer.WriteString(output)
-	// 	}
-	// }
 	return buffer.String()
 }
 
@@ -427,6 +423,30 @@ func (def *Definition) Fieldnames() []string {
 
 	def.TraverseTypes(t, true, typeList)
 	return typeList
+}
+
+// CheckField check field part of active fields
+func (def *Definition) CheckField(name string) bool {
+	_, ok := def.activeFields[name]
+	return ok
+}
+
+// AdaptName adapt new name to an definition entry
+func (def *Definition) AdaptName(adaType IAdaType, newName string) error {
+	Central.Log.Debugf("Adapt new name %s to %s/%s ", newName,
+		adaType.Name(), adaType.ShortName())
+	delete(def.fileFields, adaType.Name())
+	def.fileFields[newName] = adaType
+	if def.activeFields == nil {
+		def.activeFields = def.fileFields
+	} else {
+		if &def.fileFields != &def.activeFields {
+			delete(def.activeFields, adaType.Name())
+			def.activeFields[newName] = adaType
+		}
+	}
+	adaType.SetName(newName)
+	return nil
 }
 
 type stackParameter struct {
@@ -526,7 +546,7 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 // CreateValues Create new value tree
 func (def *Definition) CreateValues(forStoring bool) (err error) {
 	def.Values = nil
-	Central.Log.Debugf("Create values from types for storing=%v", forStoring)
+	Central.Log.Debugf("Create values from types for storing=%v -> %#v", forStoring, def.activeFieldTree)
 	parameter := &stackParameter{definition: def, forStoring: forStoring, stack: NewStack()}
 	t := TraverserMethods{EnterFunction: traverserCreateValue}
 	err = def.TraverseTypes(t, true, parameter)

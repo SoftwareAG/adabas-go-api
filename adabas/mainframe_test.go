@@ -61,7 +61,7 @@ func TestConnection_readMainframe(t *testing.T) {
 	}
 	assert.NotNil(t, result)
 	fmt.Println("Result data:")
-	result.DumpValues()
+	_ = result.DumpValues()
 	validateResult(t, "readMainframe", result)
 }
 func TestConnection_readBorderMainframe(t *testing.T) {
@@ -95,7 +95,7 @@ func TestConnection_readBorderMainframe(t *testing.T) {
 		return
 	}
 	fmt.Println("Result data:")
-	result.DumpValues()
+	_ = result.DumpValues()
 	validateResult(t, "readBorderMainframe", result)
 }
 

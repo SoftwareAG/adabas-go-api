@@ -221,9 +221,11 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 func (def *Definition) SearchType(fieldName string) (adaType IAdaType, err error) {
 	Central.Log.Debugf("Search type %s", fieldName)
 	if af, ok := def.fileFields[fieldName]; ok {
+		Central.Log.Debugf("Found file field %s -> %s", af.Name(), af.Type().name())
 		return af, nil
 	}
 	if af, ok := def.activeFields[fieldName]; ok {
+		Central.Log.Debugf("Found active field %s", af.Type().name())
 		return af, nil
 	}
 	// search := &search{name: fieldName}
@@ -241,7 +243,7 @@ func (def *Definition) SearchType(fieldName string) (adaType IAdaType, err error
 	// err = nil
 	// if search.adaType == nil {
 	// 	Central.Log.Debugf("AdaType not found ", fieldName)
-	Central.Log.Debugf("AdaType %s not found in file fields", fieldName)
+	Central.Log.Debugf("AdaType %s not found in file fields %#v %#v", fieldName, def.fileFields, def.fileFieldTree)
 	for k, v := range def.fileFields {
 		Central.Log.Debugf("%s:%s->%s", k, v.ShortName(), v.Name())
 	}

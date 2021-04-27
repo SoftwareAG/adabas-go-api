@@ -25,6 +25,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -33,6 +34,7 @@ import (
 var (
 	repositories       map[string]*Repository
 	mapHash            map[string]*Repository
+	mapHashLock        sync.Mutex
 	mapLoopRunning     bool
 	mapMaxMinutesCache = 10
 )
@@ -135,6 +137,8 @@ func DelGlobalMapRepository(i interface{}, fnr Fnr) {
 		reference := fmt.Sprintf("%s/%03d", url.String(), fnr)
 		adatypes.Central.Log.Debugf("Remove global repository: %s", reference)
 		r := repositories[reference]
+		mapHashLock.Lock()
+		defer mapHashLock.Unlock()
 		delete(repositories, reference)
 		for k, v := range mapHash {
 			if v == r {
@@ -204,6 +208,8 @@ func AllGlobalMapNames(adabas *Adabas) (maps []string, err error) {
 	// First map loop running using the cache map
 	if mapLoopRunning {
 		maps = make([]string, 0)
+		mapHashLock.Lock()
+		defer mapHashLock.Unlock()
 		for m, mr := range mapHash {
 			if mr.online {
 				maps = append(maps, m)
@@ -221,6 +227,8 @@ func readAllGlobalMapNames(ada *Adabas) (maps []string, err error) {
 	defer ada.Close()
 	maxCacheTime := time.Now().Add(time.Duration(-mapMaxMinutesCache) * time.Minute)
 	// If no map loop running, read through all repositories
+	mapHashLock.Lock()
+	defer mapHashLock.Unlock()
 	for ref, mr := range repositories {
 		mr.ClearCache(maxCacheTime)
 		ada.SetDbid(mr.DatabaseURL.URL.Dbid)
@@ -274,6 +282,8 @@ func SearchMapRepository(adabasID *ID, mapName string) (adabasMap *Map, reposito
 				if adabasMap != nil {
 					adatypes.Central.Log.Debugf("Result map found: %s", adabasMap.String())
 					adatypes.Central.Log.Debugf("in repository %s/%d", mr.URL.String(), mr.Fnr)
+					mapHashLock.Lock()
+					defer mapHashLock.Unlock()
 					mapHash[mapName] = mr
 					return adabasMap, mr, nil
 				}

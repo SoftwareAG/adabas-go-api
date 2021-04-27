@@ -23,8 +23,10 @@ CGO_LDFLAGS     = $(if $(ACLDIR),-L$(ACLDIR)/lib -ladalnkx,)
 CGO_EXT_LDFLAGS = $(if $(ACLDIR),-lsagsmp2 -lsagxts3 -ladazbuf,)
 GO_TAGS         = $(if $(ACLDIR),"release adalnk","release")
 GO_FLAGS        = $(if $(debug),"-x",) -tags $(GO_TAGS)
+BINTESTS        = $(CURDIR)/bin/tests/$(GOOS)_$(GOARCH)
+DYLD_LIBRARY_PATH = $(ACLDIR)/lib:/lib:/usr/lib:$(ACLDIR)/../common/security/openssl/lib
 
-#export GOPATH
+export DYLD_LIBRARY_PATH
 
 GO           = go
 GODOC        = godoc
@@ -77,12 +79,24 @@ $(BIN)/%: $(BIN); $(info $(M) building $(REPOSITORY)…)
 		# (GOPATH=$$tmp go clean -modcache ./...); \
 		rm -rf $$tmp ; exit $$ret
 
-# Tools
-GOLINT = $(BIN)/golint
-$(BIN)/golint: REPOSITORY=golang.org/x/lint/golint
+$(BINTOOLS):
+	@mkdir -p $@
+$(BINTOOLS)/%: $(BINTOOLS) ; $(info $(M) building tool $(BINTOOLS) on $(REPOSITORY)…)
+	$Q tmp=$$(mktemp -d); \
+		(GOPATH=$$tmp CGO_CFLAGS= CGO_LDFLAGS= \
+		go get $(REPOSITORY) && find $$tmp/bin -type f -exec cp {} $(BINTOOLS)/. \;) || ret=$$?; \
+		(GOPATH=$$tmp go clean -modcache ./...); \
+		rm -rf $$tmp ; exit $$ret
 
-GOCILINT = $(BIN)/golangci-lint
-$(BIN)/golangci-lint: REPOSITORY=github.com/golangci/golangci-lint/cmd/golangci-lint
+$(BINTESTS):
+	@mkdir -p $@
+
+# Tools
+GOLINT = $(BINTOOLS)/golint
+$(BINTOOLS)/golint: REPOSITORY=golang.org/x/lint/golint
+
+GOCILINT = $(BINTOOLS)/golangci-lint
+$(BINTOOLS)/golangci-lint: REPOSITORY=github.com/golangci/golangci-lint/cmd/golangci-lint
 
 GOCOVMERGE = $(BIN)/gocovmerge
 $(BIN)/gocovmerge: REPOSITORY=github.com/wadey/gocovmerge
@@ -100,13 +114,13 @@ $(BIN)/gotestsum: REPOSITORY=gotest.tools/gotestsum
 $(TESTOUTPUT):
 	mkdir $(TESTOUTPUT)
 
-test-build: $(OBJECTS) ; $(info $(M) building $(NAME:%=% )tests…) @ ## Build tests
+test-build: $(OBJECTS) $(BINTESTS) ; $(info $(M) building $(NAME:%=% )tests…) @ ## Build tests
 	$Q cd $(CURDIR) && for pkg in $(TESTPKGSDIR); do echo "Build $$pkg in $(CURDIR)"; \
 	LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 		DYLD_LIBRARY_PATH="$(DYLD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
 	    TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) REFERENCES=$(REFERENCES) \
-	    $(GO) test -c -tags $(GO_TAGS) ./$$pkg; done
+	    $(GO) test -c -o $(BINTESTS)/$$pkg.test -tags $(GO_TAGS) ./$$pkg; done
 
 TEST_TARGETS := test-default test-bench test-short test-verbose test-race test-sanitizer
 .PHONY: $(TEST_TARGETS) check test tests
@@ -139,21 +153,29 @@ test-xml: prepare fmt lint $(TESTOUTPUT) | $(GOTESTSUM) ; $(info $(M) running $(
 	    $(GOTESTSUM) --junitfile $(TESTOUTPUT)/tests.xml --raw-command -- $(CURDIR)/scripts/test.sh $(ARGS) ||:
 	sh $(CURDIR)/scripts/evaluateQueues.sh
 
-test-adatypes-pprof: prepare | ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
+TEST_PPROF_TARGETS := test-adatypes-pprof test-adabas-pprof
+.PHONY: $(TEST_PPROF_TARGETS) test-pprof
+test-adatypes-pprof: ARGS= ## Run pprof for adatypes
+test-adabas-pprof:   ARGS= ## Run pprof for adabas
+$(TEST_PPROF_TARGETS): NAME=$(MAKECMDGOALS:test-%-pprof=%)
+$(TEST_PPROF_TARGETS): test-pprof
+test-pprof: prepare $(TESTOUTPUT) | ; $(info $(M) running $(NAME:%=% )pprof…) @ ## Run pprof
 	$Q cd $(CURDIR) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
 	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
 	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
-	    $(GO) test -timeout $(TIMEOUT)s -count=1 -memprofile adatypes-memprofile.out -cpuprofile adatypes-profile.out $(GO_FLAGS) -v $(ARGS) ./adatypes 2>&1 | tee $(TESTOUTPUT)/tests.$(HOST).output
+	    $(GO) test -timeout $(TIMEOUT)s -count=1 -memprofile $(NAME)-memprofile.out -cpuprofile $(NAME)-profile.out $(GO_FLAGS) -v $(ARGS) ./$(NAME) 2>&1 | tee $(TESTOUTPUT)/tests.$(HOST).output
 
-test-adabas-pprof: prepare |  ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
-	$Q cd $(CURDIR) && 2>&1 TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) \
-	    REFERENCES=$(REFERENCES) LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
+TEST_SINGLE_TARGETS := test-adabas-single test-adatypes-single
+.PHONY: $(TEST_SINGLE_TARGETS) test-single
+test-adabas-signle:   ARGS=-run=$(TEST)  ## Run single adabas tests
+$(TEST_SINGLE_TARGETS): NAME=$(MAKECMDGOALS:test-%-single=%)
+$(TEST_SINGLE_TARGETS): test-single
+test-single: ; $(info $(M) running $(NAME:%=% )single test $(TEST)…) @ ## Run single tests
+	$Q cd $(CURDIR) && LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(ACLDIR)/lib" \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" \
-	    ENABLE_DEBUG=$(ENABLE_DEBUG) WCPHOST=$(WCPHOST) ADATCPHOST=$(ADATCPHOST) ADAMFDBID=$(ADAMFDBID) \
-	    $(GO) test -timeout $(TIMEOUT)s -count=1 -memprofile adabas-memprofile.out -cpuprofile adabas-profile.out $(GO_FLAGS) -v $(ARGS) ./adabas 2>&1 | tee $(TESTOUTPUT)/tests.$(HOST).output
-
-test-pprof: test-adatypes-pprof test-adabas-pprof
+	    TESTFILES=$(TESTFILES) GO_ADA_MESSAGES=$(MESSAGES) LOGPATH=$(LOGPATH) REFERENCES=$(REFERENCES) \
+	    $(GO) test -timeout $(TIMEOUT)s -count=1 -v -tags $(GO_TAGS) $(ARGS) ./$(NAME)
 
 COVERAGE_MODE = atomic
 COVERAGE_PROFILE = $(COVERAGE_DIR)/profile.out
@@ -190,7 +212,7 @@ lint: | $(GOLINT) ; $(info $(M) running golint…) @ ## Run golint
 
 .PHONY: cilint
 cilint: | $(GOCILINT) ; $(info $(M) running golint…) @ ## Run golint
-	$Q cd $(CURDIR) && $(GOCILINT) run
+	$Q cd $(CURDIR) && $(GOCILINT) run ./...
 
 .PHONY: fmt
 fmt: ; $(info $(M) running fmt…) @ ## Run go fmt on all source files
@@ -211,12 +233,12 @@ clean: cleanModules; $(info $(M) cleaning…)	@ ## Cleanup everything
 	@rm -rf $(CURDIR)/adabas/vendor $(CURDIR)/vendor
 	@rm -rf $(CURDIR)/bin $(CURDIR)/pkg $(CURDIR)/logs $(CURDIR)/test
 	@rm -rf test/tests.* test/coverage.*
-	@rm -f $(CURDIR)/adabas.test $(CURDIR)/adatypes.test $(CURDIR)/*.log $(CURDIR)/*.output
+	@rm -f $(BINTESTS) $(CURDIR)/*.log $(CURDIR)/*.output
 
 
 .PHONY: help
 help:
-	@grep -E '^[ a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
+	@grep -E '^[ a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sed 's/^[^\:]*://g' | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: doc

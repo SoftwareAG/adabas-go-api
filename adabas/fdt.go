@@ -199,7 +199,7 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 			adatypes.Central.Log.Debugf("Found normal field %s level=%d fieldType=%v", fieldType.Name(), fieldType.Level(), fieldType.Type())
 		case fieldIdentifierSub.code(), fieldIdentifierSuper.code():
 			adatypes.Central.Log.Debugf("Found Super/Sub field %c\n", value.Value().(byte))
-			fieldType, err = createSubSuoerDescriptorType(fdt, index)
+			fieldType, err = createSubSuperDescriptorType(fdt, index)
 			if err != nil {
 				return
 			}
@@ -383,7 +383,7 @@ func createFieldType(fdt *adatypes.StructureValue, index int) (fieldType adatype
 }
 
 // Create Super-/Sub- Descriptor types
-func createSubSuoerDescriptorType(fdt *adatypes.StructureValue, index int) (fieldType adatypes.IAdaType, err error) {
+func createSubSuperDescriptorType(fdt *adatypes.StructureValue, index int) (fieldType adatypes.IAdaType, err error) {
 	name := string(fdt.Get("fieldName", index).Value().([]byte))
 	superList := fdt.Get("superList", index).(*adatypes.StructureValue)
 	fdtFormat := fdt.Get("fieldFormat", index).Value().(byte)

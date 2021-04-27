@@ -146,7 +146,7 @@ func (request *ReadRequest) HistogramWithCursoring(search string) (cursor *Curso
 // This method will call Adabas if no entry is available and reads new entries
 // using Multifetch or partial LOB.
 func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
-	if cursor.empty {
+	if cursor == nil || cursor.empty {
 		return false
 	}
 	adatypes.Central.Log.Debugf("Check next record: %v offset=%d values=%d data=%d", hasNext, cursor.offset+1, len(cursor.result.Values), len(cursor.result.Data))

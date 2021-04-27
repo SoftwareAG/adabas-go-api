@@ -110,7 +110,11 @@ func TestStoreAdabasFields(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	storeRequest.EndTransaction()
+	err = storeRequest.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
+
 }
 
 func prepareCreateTestMap(mapName string, fileName string, dataRepository *DatabaseURL) error {
@@ -454,7 +458,10 @@ func TestStoreUpdateMapField(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	storeRequest.EndTransaction()
+	err = storeRequest.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
 
 	adatypes.Central.Log.Infof("First validate data in database ....")
 	checkUpdateCorrectRead(t, "1111111", storeRecord.Isn)
@@ -467,7 +474,10 @@ func TestStoreUpdateMapField(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	storeRequest.EndTransaction()
+	err = storeRequest.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
 
 	adatypes.Central.Log.Infof("Second validate data in database ....")
 	checkUpdateCorrectRead(t, "9999999", storeRecord.Isn)
@@ -497,7 +507,7 @@ func checkUpdateCorrectReadNumber(t *testing.T, value string, isns []adatypes.Is
 		fmt.Println(err)
 		assert.NoError(t, err)
 	} else {
-		result.DumpValues()
+		_ = result.DumpValues()
 	}
 	assert.Equal(t, number, len(result.Values))
 
@@ -586,7 +596,7 @@ func TestStoreWithMapLobFile(t *testing.T) {
 		return
 	}
 	adatypes.Central.Log.Debugf("Set value to Picture")
-	storeRecord.SetValue("Picture", data)
+	_ = storeRecord.SetValue("Picture", data)
 	adatypes.Central.Log.Debugf("Done set value to Picture, searching ...")
 	s, verr := storeRecord.SearchValue("Picture")
 	if !assert.NoError(t, verr) {
@@ -604,7 +614,10 @@ func TestStoreWithMapLobFile(t *testing.T) {
 		return
 	}
 	fmt.Println("Store record into ISN=", storeRecord.Isn)
-	storeRequest.EndTransaction()
+	err = storeRequest.EndTransaction()
+	if !assert.NoError(t, err) {
+		return
+	}
 	validateUsingAdabas(t, storeRecord.Isn)
 	validateUsingMap(t, storeRecord.Isn)
 }
@@ -781,7 +794,10 @@ func TestStorePeriod(t *testing.T) {
 			return
 		}
 
-		storeRequest.Store(storeRecord)
+		err = storeRequest.Store(storeRecord)
+		if !assert.NoError(t, err) {
+			return
+		}
 	}
 	fmt.Println("End of transaction")
 	err = storeRequest.EndTransaction()
@@ -853,8 +869,8 @@ func TestStoreEndTransaction(t *testing.T) {
 	}
 	checkUpdateCorrectReadNumber(t, "CLTEST", isns, 10)
 
-	storeRequest.EndTransaction()
-
+	err = storeRequest.EndTransaction()
+	assert.NoError(t, err)
 	adatypes.Central.Log.Infof("First validate data in database ....")
 	checkUpdateCorrectReadNumber(t, "CLTEST", isns, 10)
 }
@@ -987,8 +1003,8 @@ func TestStoreBackout(t *testing.T) {
 	}
 	checkUpdateCorrectReadNumber(t, "BTTEST", isns, 10)
 
-	storeRequest.BackoutTransaction()
-
+	err = storeRequest.BackoutTransaction()
+	assert.NoError(t, err)
 	adatypes.Central.Log.Infof("First validate data in database ....")
 	checkUpdateCorrectReadNumber(t, "BTTEST", isns, 0)
 }
@@ -1052,9 +1068,9 @@ func TestUpdateWithMapLob(t *testing.T) {
 	if !assert.NotNil(t, storeRecord) {
 		return
 	}
-	storeRecord.SetValue("Filename", "lobtest")
-	storeRecord.SetValue("PictureSHAchecksum", chkPic)
-	storeRecord.SetValue("ThumbnailSHAchecksum", "x")
+	_ = storeRecord.SetValue("Filename", "lobtest")
+	_ = storeRecord.SetValue("PictureSHAchecksum", chkPic)
+	_ = storeRecord.SetValue("ThumbnailSHAchecksum", "x")
 
 	err = storeRequest.Store(storeRecord)
 	if !assert.NoError(t, err) {
@@ -1079,7 +1095,7 @@ func TestUpdateWithMapLob(t *testing.T) {
 	}
 	storeRecord.Isn = isn
 	storeRecord.LobEndTransaction = true
-	storeRecord.SetValue("Picture", data)
+	_ = storeRecord.SetValue("Picture", data)
 	fmt.Println("Update record into ISN=", storeRecord.Isn)
 	adatypes.Central.Log.Debugf("Update data in ISN=%d field Picture", isn)
 	err = storeRequest.Update(storeRecord)
