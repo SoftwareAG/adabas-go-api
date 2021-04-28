@@ -310,3 +310,31 @@ func TestConnectionSuperDescriptors(t *testing.T) {
 		assert.Equal(t, "ISN=5 quantity=1\n S3=\"DKK100000\"\n", result.Values[3].String())
 	}
 }
+
+func TestDescriptor(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection_descriptor.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("ada;target=" + adabasModDBIDs)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	readRequest, rErr := connection.CreateFileReadRequest(270)
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	readRequest.QueryFields("IT,S1,U1,S2,U2,S4,U4,S8,U8,BB,BR,B1,TY,F4,F8,AA,A1,AS,A2,AB,AF,WC,WU,WL,W4,WF,PI,PA,PF,UI,UP,UF,UE,ZB,S3,SU")
+	readRequest.Limit = 4
+	result, rerr := readRequest.ReadPhysicalSequence()
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	if assert.Len(t, result.Values, 4) {
+		assert.Equal(t, "ISN=2 quantity=1\n S3=\"DKK100000\"\n", result.Values[0].String())
+		assert.Equal(t, "ISN=5 quantity=1\n S3=\"DKK100000\"\n", result.Values[3].String())
+	}
+}
