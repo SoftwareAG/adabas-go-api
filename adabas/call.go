@@ -329,7 +329,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 		recordBufferResize--
 		for index := range adabas.AdabasBuffers {
 			if adabas.AdabasBuffers[index].abd.Abdid == AbdAQRb {
-				adabas.AdabasBuffers[index].extend(1024)
+				adabas.AdabasBuffers[index].extend(8192)
 			}
 		}
 	}

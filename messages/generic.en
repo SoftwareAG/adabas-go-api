@@ -153,3 +153,4 @@ ADG0000169=less unicode source encoded
 ADG0000170=search string error
 ADG0000171=occurrence index error
 ADG0000172=Field name missing
+ADG0000173=Adabas buffer search error

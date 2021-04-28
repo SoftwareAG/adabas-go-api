@@ -1738,4 +1738,5 @@ var staticMessages = []struct {
 	{"ADG0000170", "en", "search string error"},
 	{"ADG0000171", "en", "occurrence index error"},
 	{"ADG0000172", "en", "Field name missing"},
+	{"ADG0000173", "en", "Adabas buffer search error"},
 }

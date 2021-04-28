@@ -804,6 +804,9 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			}
 		}
 		adabas.resetSendSize()
+		// if adabas.Acbx.Acbxcop[0] == 'M' {
+		// 	adabas.Acbx.Acbxisl = 0
+		// }
 		adatypes.Central.Log.Debugf("Send call avail.=%v", (adabasRequest.Definition.Values != nil))
 		// Call Adabas
 		err = adabas.CallAdabas()
@@ -852,6 +855,9 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 		if (adabasRequest.Limit > 0) && (count >= adabasRequest.Limit) {
 			adatypes.Central.Log.Debugf("Limit reached")
 			break
+		}
+		if adabasRequest.Multifetch > 1 && adabasRequest.Limit-count < uint64(adabasRequest.Multifetch) {
+			adabas.Acbx.Acbxisl = adabasRequest.Limit - count
 		}
 	}
 	adatypes.Central.Log.Debugf("Loop call ended count=%d", count)

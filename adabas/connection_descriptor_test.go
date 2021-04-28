@@ -306,7 +306,35 @@ func TestConnectionSuperDescriptors(t *testing.T) {
 	// fmt.Println("S3")
 	// fmt.Println(result.String())
 	if assert.Len(t, result.Values, 4) {
-		assert.Equal(t, "ISN=2 quantity=1\n S3=\"DKK100000\"\n", result.Values[0].String())
-		assert.Equal(t, "ISN=5 quantity=1\n S3=\"DKK100000\"\n", result.Values[3].String())
+		assert.Equal(t, "ISN=2 quantity=1\n S3=\"'DKK' 100000\"\n", result.Values[0].String())
+		assert.Equal(t, "ISN=5 quantity=1\n S3=\"'DKK' 140000\"\n", result.Values[3].String())
+	}
+}
+
+func TestDescriptor(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection_descriptor.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("ada;target=" + adabasModDBIDs)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	readRequest, rErr := connection.CreateFileReadRequest(270)
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	readRequest.QueryFields("IT,S1,U1,S2,U2,S4,U4,S8,U8,BB,BR,B1,TY,F4,F8,AA,A1,AS,A2,AB,AF,WC,WU,WL,W4,WF,PI,PA,PF,UI,UP,UF,UE,ZB,S3,SU")
+	readRequest.Limit = 4
+	result, rerr := readRequest.ReadPhysicalSequence()
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	fmt.Println("LEN:", len(result.Values))
+	if assert.Len(t, result.Values, 4) {
+		assert.Equal(t, "ISN=4 quantity=0\n IT=\"\"\n S1=\"0\"\n U1=\"0\"\n S2=\"0\"\n U2=\"0\"\n S4=\"0\"\n U4=\"0\"\n S8=\"0\"\n U8=\"0\"\n BB=\"\"\n BR=\"[0]\"\n B1=\"[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]\"\n TY=\"\"\n F4=\"0.000000\"\n F8=\"0.000000\"\n AA=\"\"\n A1=\" \"\n AS=\" \"\n A2=\" \"\n AB=\"\"\n AF=\"HUMBERTO            \"\n WC=\"\"\n WU=\" \"\n WL=\" \"\n W4=\" \"\n WF=\"MORENO                                            \"\n PI=\"\"\n PA=\"0\"\n PF=\"2\"\n UI=\"\"\n UP=\"0\"\n UF=\"0\"\n UE=\"0\"\n ZB=\"\"\n ZB=\"20190207140701\"\n S3=\"'HUM' 2\"\n SU=\"'HUM' 2 MOR\"\n", result.Values[3].String())
 	}
 }
