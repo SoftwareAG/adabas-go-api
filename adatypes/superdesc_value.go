@@ -45,6 +45,7 @@ func (value *superDescValue) String() string {
 	valueLen := len(value.value)
 	if len(adaType.SubTypes) > 0 {
 		var buffer bytes.Buffer
+		subTypeCount := len(adaType.SubTypes)
 		for i, a := range adaType.SubTypes {
 			if i > 0 {
 				buffer.WriteRune(' ')
@@ -55,14 +56,14 @@ func (value *superDescValue) String() string {
 				Central.Log.Debugf("End of super descriptor exceed end=%d>valueLen=%d", end, valueLen)
 				end = valueLen
 			}
-			if a.Type().FormatCharacter() == "A" {
+			if subTypeCount > 1 && a.Type().FormatCharacter() == "A" {
 				buffer.WriteRune('\'')
 			}
 			if start < valueLen && start <= end {
 				v.SetValue(value.value[start:end])
 			}
 			buffer.WriteString(v.String())
-			if a.Type().FormatCharacter() == "A" {
+			if subTypeCount > 1 && a.Type().FormatCharacter() == "A" {
 				buffer.WriteRune('\'')
 			}
 			start += int(a.Length())

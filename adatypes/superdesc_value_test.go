@@ -124,3 +124,44 @@ func TestSuperDescString(t *testing.T) {
 	assert.Equal(t, "'A  ' 0", v.String())
 
 }
+
+func TestSubDescString(t *testing.T) {
+	opt := byte(0x1)
+	superType := NewSuperType("AA", opt)
+	superType.AddSubEntry("A1", 1, 3)
+	superType.FdtFormat = 'A'
+
+	superType.InitSubTypes(createExampleDefinition())
+	v, err := superType.Value()
+	assert.NoError(t, err)
+	assert.Equal(t, "   ", v.String())
+	err = v.SetValue([]byte("ABCDEFG"))
+	assert.NoError(t, err)
+	assert.Equal(t, "ABC", v.String())
+
+	err = v.SetValue([]byte("ABCDEFG"))
+	assert.NoError(t, err)
+	assert.Equal(t, "ABC", v.String())
+
+	err = v.SetValue([]byte("ABC"))
+	assert.NoError(t, err)
+	assert.Equal(t, "ABC", v.String())
+
+	superType = NewSuperType("II", opt)
+	superType.AddSubEntry("I4", 1, 4)
+	superType.FdtFormat = 'A'
+	superType.InitSubTypes(createExampleDefinition())
+	v, err = superType.Value()
+	assert.NoError(t, err)
+	assert.Equal(t, "0", v.String())
+	err = v.SetValue([]byte("ABC"))
+	assert.NoError(t, err)
+	assert.Equal(t, "0", v.String())
+	err = v.SetValue([]byte("ABCDE"))
+	assert.NoError(t, err)
+	assert.Equal(t, "1145258561", v.String())
+	err = v.SetValue([]byte("A"))
+	assert.NoError(t, err)
+	assert.Equal(t, "65", v.String())
+
+}
