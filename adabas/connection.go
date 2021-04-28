@@ -21,6 +21,7 @@ package adabas
 
 import (
 	"bytes"
+	"fmt"
 	"math"
 	"reflect"
 	"regexp"
@@ -399,6 +400,42 @@ func (connection *Connection) ReleaseCID() error {
 // The credentials are needed if the Adabas security is active in the database.
 func (connection *Connection) AddCredential(user string, pwd string) {
 	connection.ID.AddCredential(user, pwd)
+}
+
+// ReadRequest this method create a read request defined by the given list of
+// parameters.
+// First parameter is used to indicate target. It might be a file number or
+// map string name.
+// Second parameter is used to indicate query fields.
+func (connection *Connection) ReadRequest(p ...interface{}) (request *ReadRequest, err error) {
+	if len(p) == 0 {
+		return connection.CreateReadRequest()
+	}
+	switch t := p[0].(type) {
+	case int:
+		request, err = connection.CreateFileReadRequest(Fnr(t))
+	case Fnr:
+		request, err = connection.CreateFileReadRequest(t)
+	case string:
+		request, err = connection.CreateMapReadRequest(t)
+	default:
+		return nil, fmt.Errorf("target parameter for read request wrong")
+	}
+	if err != nil {
+		return nil, err
+	}
+	if len(p) > 1 {
+		switch q := p[1].(type) {
+		case string:
+			err = request.QueryFields(q)
+			if err != nil {
+				return nil, err
+			}
+		default:
+			return nil, fmt.Errorf("query fields parameter for read request wrong")
+		}
+	}
+	return request, nil
 }
 
 // CreateReadRequest this method create a read request defined by the given map in

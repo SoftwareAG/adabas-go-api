@@ -856,6 +856,9 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			adatypes.Central.Log.Debugf("Limit reached")
 			break
 		}
+		if adabasRequest.Multifetch > 1 && adabasRequest.Limit-count < uint64(adabasRequest.Multifetch) {
+			adabas.Acbx.Acbxisl = adabasRequest.Limit - count
+		}
 	}
 	adatypes.Central.Log.Debugf("Loop call ended count=%d", count)
 
