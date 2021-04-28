@@ -306,8 +306,8 @@ func TestConnectionSuperDescriptors(t *testing.T) {
 	// fmt.Println("S3")
 	// fmt.Println(result.String())
 	if assert.Len(t, result.Values, 4) {
-		assert.Equal(t, "ISN=2 quantity=1\n S3=\"'DKK' '100000'\"\n", result.Values[0].String())
-		assert.Equal(t, "ISN=5 quantity=1\n S3=\"'DKK' '100000'\"\n", result.Values[3].String())
+		assert.Equal(t, "ISN=2 quantity=1\n S3=\"'DKK' 100000\"\n", result.Values[0].String())
+		assert.Equal(t, "ISN=5 quantity=1\n S3=\"'DKK' 100000\"\n", result.Values[3].String())
 	}
 }
 
