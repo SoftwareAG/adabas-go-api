@@ -804,7 +804,9 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			}
 		}
 		adabas.resetSendSize()
-		adabas.Acbx.Acbxisl = 0
+		// if adabas.Acbx.Acbxcop[0] == 'M' {
+		// 	adabas.Acbx.Acbxisl = 0
+		// }
 		adatypes.Central.Log.Debugf("Send call avail.=%v", (adabasRequest.Definition.Values != nil))
 		// Call Adabas
 		err = adabas.CallAdabas()
