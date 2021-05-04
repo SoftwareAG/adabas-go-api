@@ -1,4 +1,4 @@
-name: Go-Action
+name: Go2-Action
 
 on:
   push:
@@ -10,13 +10,13 @@ jobs:
 
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted ]
     steps:
 
     - name: Set up Go 1.x
       uses: actions/setup-go@v2
       with:
-        go-version: ^1.16
+        go-version: ^1.15
       id: go
 
     - name: Check out code into the Go module directory
@@ -31,13 +31,7 @@ jobs:
         fi
 
     - name: Build
-      run: make
-#      run: go build -v ./...
+      run: make all
 
-    - name: TestAdatypes
-      run: go test -v ./adatypes
-      env:
-        LOGPATH: ${{ github.workspace }}
-        FILES: ${{ github.workspace }}/files
-        REFERENCES: ${{ github.workspace }}/files/references
-
+    - name: Test
+      run: go test -v .
