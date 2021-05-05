@@ -83,6 +83,15 @@ const (
 	fdtFlagMfOption1UQ               // (1<<7) /* 0x80 UQ option (unique descriptor) */
 )
 
+const (
+	fdtIdentifier = "FieldIdentifier"
+	fdtLength     = "fdtLength"
+	fdtStrLevel   = "fdtStrLevel"
+	fdtFlag       = "fdtFlag"
+	fdtCount      = "fdtCount"
+	fdtTime       = "fdtTime"
+)
+
 func (cc option) iv() int {
 	return int(cc)
 }
@@ -101,7 +110,7 @@ var fdtHyperFieldEntry = []adatypes.IAdaType{
 
 // FDT main field structures
 var fdt = []adatypes.IAdaType{
-	adatypes.NewType(adatypes.FieldTypeCharacter, "FieldIdentifier"),                   // 0
+	adatypes.NewType(adatypes.FieldTypeCharacter, fdtIdentifier),                       // 0
 	adatypes.NewType(adatypes.FieldTypeLength, "FieldDefLength"),                       // 1
 	adatypes.NewTypeWithLength(adatypes.FieldTypeString, "fieldName", fieldNameLength), // 2
 	adatypes.NewType(adatypes.FieldTypeCharacter, "fieldFormat"),                       // 3
@@ -155,11 +164,11 @@ var fdtCondition = map[byte][]byte{
 
 // FDT general main level layout for the Adabas LA call
 var fdtGeneralLayout = []adatypes.IAdaType{
-	adatypes.NewType(adatypes.FieldTypeUInt4, "fdtLength"),
-	adatypes.NewType(adatypes.FieldTypeByte, "fdtStrLevel"),
-	adatypes.NewType(adatypes.FieldTypeUByte, "fdtFlag"),
-	adatypes.NewType(adatypes.FieldTypeUInt2, "fdtCount"),
-	adatypes.NewType(adatypes.FieldTypeUInt8, "fdtTime"),
+	adatypes.NewType(adatypes.FieldTypeUInt4, fdtLength),
+	adatypes.NewType(adatypes.FieldTypeByte, fdtStrLevel),
+	adatypes.NewType(adatypes.FieldTypeUByte, fdtFlag),
+	adatypes.NewType(adatypes.FieldTypeUInt2, fdtCount),
+	adatypes.NewType(adatypes.FieldTypeUInt8, fdtTime),
 	adatypes.NewStructureCondition(adatypes.FieldTypeStructure, "fdt", fdt, adatypes.NewFieldCondition(1, 0, fdtCondition)),
 }
 
@@ -183,9 +192,10 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 	fdt := fdtSearch.(*adatypes.StructureValue)
 	nrFdtEntries := len(fdt.Elements)
 	stack := adatypes.NewStack()
+	definition.FileTime = fdtDef.Search(fdtTime)
 	var lastStruct adatypes.IAdaType
 	for index := 1; index < nrFdtEntries+1; index++ {
-		value := fdt.Get("FieldIdentifier", index)
+		value := fdt.Get(fdtIdentifier, index)
 
 		var fieldType adatypes.IAdaType
 		switch value.Value().(byte) {

@@ -30,6 +30,7 @@ type Isn uint64
 
 // Definition struct defines main entry point for parser structure
 type Definition struct {
+	FileTime        IAdaValue
 	fileFields      map[string]IAdaType
 	fileShortFields map[string]IAdaType
 	fileFieldTree   *StructureType
