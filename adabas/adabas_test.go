@@ -23,6 +23,7 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 
@@ -265,9 +266,18 @@ func ExampleAdabas_readFileDefinitionFile11() {
 		fmt.Println("Error: ", err)
 		return
 	}
+	if definition.FileTime == nil {
+		fmt.Println("File time missing")
+		return
+	}
+	ft, _ := definition.FileTime.Int64()
+	msec := ft % 1000000
+	timeFt := time.Unix(ft/1000000, msec)
+	fmt.Println("File creation:", timeFt.UTC())
 	definition.DumpTypes(false, false)
 	// Output: Open database
 	// Read file definition
+	// File creation: 2014-07-15 15:46:10.000993 +0000 UTC
 	// Dump all file field types:
 	//   1, AA, 8, A ,UQ,DE ; AA
 	//   1, AB  ; AB

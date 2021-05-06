@@ -1,4 +1,4 @@
-name: Go
+name: Go-Action
 
 on:
   push:
@@ -31,7 +31,8 @@ jobs:
         fi
 
     - name: Build
-      run: go build -v ./...
+      run: make
+#      run: go build -v ./...
 
     - name: TestAdatypes
       run: go test -v ./adatypes
