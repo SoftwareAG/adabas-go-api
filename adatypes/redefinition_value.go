@@ -179,7 +179,7 @@ func (value *RedefinitionValue) Traverse(t TraverserValuesMethods, x interface{}
 		if Central.IsDebugLevel() {
 			Central.Log.Debugf("%s-%s: Got structure return directive : %d", value.Type().Name(), v.Type().Name(),
 				ret)
-			LogMultiLineString(FormatByteBuffer("DATA: ", v.Bytes()))
+			LogMultiLineString(true, FormatByteBuffer("DATA: ", v.Bytes()))
 		}
 		if ret == SkipStructure {
 			Central.Log.Debugf("Skip structure tree ... ")

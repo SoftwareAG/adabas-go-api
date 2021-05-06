@@ -87,8 +87,7 @@ func loadTestData() (err error) {
 	err = storeRequest.StoreFields("*")
 	if err != nil {
 		fmt.Println("Store Fields", err)
-		//return err
-		panic("Store fields " + err.Error())
+		return err
 	}
 
 	for i := 10; i < 200; i += 10 {
@@ -124,7 +123,6 @@ func loadTestData() (err error) {
 				return nil
 			}
 			return serr
-			//panic("Store request: " + serr.Error())
 		}
 		serr = storeRequest.EndTransaction()
 		if serr != nil {

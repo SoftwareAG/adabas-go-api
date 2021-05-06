@@ -47,7 +47,7 @@ func createStoreRecordBuffer(adaValue adatypes.IAdaValue, x interface{}) (adatyp
 	}
 	err := adaValue.StoreBuffer(record.helper, record.option)
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatByteBuffer("DATA: ", record.helper.Buffer()))
+		adatypes.LogMultiLineString(true, adatypes.FormatByteBuffer("DATA: ", record.helper.Buffer()))
 	}
 	return adatypes.Continue, err
 }

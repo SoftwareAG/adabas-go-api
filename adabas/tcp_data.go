@@ -88,7 +88,7 @@ func (connection *AdaTCP) receiveNodeList() (err error) {
 	send := headerBuffer.Bytes()
 	//	send = append(send, make([]byte, defaultNodeListLength)...)
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatBytes("SND:", send, len(send), 8, 16, true))
+		adatypes.LogMultiLineString(true, adatypes.FormatBytes("SND:", send, len(send), 8, 16, true))
 	}
 	adatypes.Central.Log.Debugf("Write TCP data of length=%d capacity=%d netto bytes send=%d", headerBuffer.Len(), headerBuffer.Cap(), len(send))
 	_, err = connection.connection.Write(send)
@@ -109,7 +109,7 @@ func (connection *AdaTCP) receiveNodeList() (err error) {
 		return
 	}
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatBytes("Received node list:", buffer.Bytes(), buffer.Len(), 8, 16, true))
+		adatypes.LogMultiLineString(true, adatypes.FormatBytes("Received node list:", buffer.Bytes(), buffer.Len(), 8, 16, true))
 	}
 	clusterNodes := strings.Split(buffer.String(), ";")
 	for _, n := range clusterNodes {
@@ -151,7 +151,7 @@ func (connection *AdaTCP) SendData(buffer bytes.Buffer, nrAbdBuffers uint32) (er
 	headerBuffer.Write(buffer.Bytes())
 	send := headerBuffer.Bytes()
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatBytes("SND:", send, len(send), 8, 16, true))
+		adatypes.LogMultiLineString(true, adatypes.FormatBytes("SND:", send, len(send), 8, 16, true))
 	}
 	var n int
 	adatypes.Central.Log.Debugf("Write TCP data of length=%d capacity=%d netto bytes send=%d", headerBuffer.Len(), headerBuffer.Cap(), len(send))
@@ -189,7 +189,7 @@ func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer, expected TransferDat
 	}
 	if adatypes.Central.IsDebugLevel() {
 		adatypes.Central.Log.Debugf("Receive got header .... size=%d/%d", n, len(rcvHeaderBuffer))
-		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV Header BUFFER:", rcvHeaderBuffer, len(rcvHeaderBuffer), 8, 16, true))
+		adatypes.LogMultiLineString(true, adatypes.FormatBytes("RCV Header BUFFER:", rcvHeaderBuffer, len(rcvHeaderBuffer), 8, 16, true))
 	}
 	if n < hl {
 		return 0, adatypes.NewGenericError(92)
@@ -257,7 +257,7 @@ func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer, expected TransferDat
 		adatypes.Central.Log.Debugf("Current size of buffer=%d", buffer.Len())
 	}
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV DATA BUFFER:", buffer.Bytes(), buffer.Len(), 8, 16, false))
+		adatypes.LogMultiLineString(true, adatypes.FormatBytes("RCV DATA BUFFER:", buffer.Bytes(), buffer.Len(), 8, 16, false))
 	}
 	if connection.stats != nil {
 		connection.stats.remoteReceive++

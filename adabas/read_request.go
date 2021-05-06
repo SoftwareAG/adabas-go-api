@@ -1246,7 +1246,7 @@ func traverseCreateTypeInterface(adaType adatypes.IAdaType, parentType adatypes.
 	case adatypes.FieldTypePhonetic, adatypes.FieldTypeReferential:
 	default:
 		fmt.Println("Field Type", name, adaType.Type())
-		panic("Field type missing " + adaType.Type().FormatCharacter())
+		return adatypes.NewGenericError(175, fmt.Sprintf("%T", adaType.Type()))
 	}
 	return nil
 }

@@ -255,7 +255,7 @@ func (connection *AdaTCP) Connect() (err error) {
 
 	send := buffer.Bytes()
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatBytes("Connect PAYLOAD:", send, len(send), 8, 16, true))
+		adatypes.LogMultiLineString(true, adatypes.FormatBytes("Connect PAYLOAD:", send, len(send), 8, 16, true))
 	}
 	_, err = connection.connection.Write(send)
 	if err != nil {
@@ -275,7 +275,7 @@ func (connection *AdaTCP) Connect() (err error) {
 	}
 
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(adatypes.FormatBytes("RCV Reply PAYLOAD:", rcvBuffer, len(rcvBuffer), 8, 16, true))
+		adatypes.LogMultiLineString(true, adatypes.FormatBytes("RCV Reply PAYLOAD:", rcvBuffer, len(rcvBuffer), 8, 16, true))
 	}
 
 	buf := bytes.NewBuffer(rcvBuffer)

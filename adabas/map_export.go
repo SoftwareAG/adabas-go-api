@@ -58,7 +58,7 @@ func (repository *Repository) ExportMapRepository(ada *Adabas, filter string,
 		}
 	}
 	if len(mapExport.Maps) == 0 {
-		panic("Adabas Map export list is empty")
+		return adatypes.NewGenericError(176)
 	}
 	var buffer []byte
 	buffer, err = json.Marshal(mapExport)

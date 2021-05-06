@@ -111,7 +111,7 @@ func initLogLevelWithFile(fileName string, level string) (err error) {
 
 	var cfg zap.Config
 	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
-		panic(err)
+		return err
 	}
 	l := zapcore.ErrorLevel
 	switch level {
@@ -125,7 +125,7 @@ func initLogLevelWithFile(fileName string, level string) (err error) {
 	cfg.OutputPaths = []string{name}
 	logger, err := cfg.Build()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer logger.Sync()
 
@@ -147,7 +147,7 @@ func parseTestConnection(adabasRequest *adatypes.Request, x interface{}) (err er
 	fmt.Println("Parse Test connection")
 	parseTestStructure := x.(parseTestStructure)
 	if parseTestStructure.t == nil {
-		panic("Parse test structure empty test instance")
+		return fmt.Errorf("Parse test structure empty test instance")
 	}
 	if !assert.NotNil(parseTestStructure.t, adabasRequest.Definition.Values) {
 		adatypes.Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values == nil))
@@ -1499,9 +1499,9 @@ func TestConnectionRead9FieldPicture(t *testing.T) {
 	assert.Equal(t, "8B124C139790221469EF6308D6554660", md5sum)
 	fmt.Printf("Got End from 183000...%X\n", md5.Sum(raw[183000:183049]))
 	begRaw := raw[0:50]
-	adatypes.LogMultiLineString(adatypes.FormatBytes("Begin bytes:", begRaw, len(begRaw), len(begRaw), 8, false))
+	adatypes.LogMultiLineString(true, adatypes.FormatBytes("Begin bytes:", begRaw, len(begRaw), len(begRaw), 8, false))
 	endRaw := raw[183000:183049]
-	adatypes.LogMultiLineString(adatypes.FormatBytes("End bytes:", endRaw, len(endRaw), len(endRaw), 8, false))
+	adatypes.LogMultiLineString(true, adatypes.FormatBytes("End bytes:", endRaw, len(endRaw), len(endRaw), 8, false))
 
 }
 

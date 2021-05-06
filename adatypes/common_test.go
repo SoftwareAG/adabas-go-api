@@ -83,13 +83,13 @@ func initLogLevelWithFile(fileName string, level zapcore.Level) (err error) {
 
 	var cfg zap.Config
 	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
-		panic(err)
+		return err
 	}
 	cfg.Level.SetLevel(level)
 	cfg.OutputPaths = []string{name}
 	logger, err := cfg.Build()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer logger.Sync()
 
@@ -112,7 +112,7 @@ func TestLog(t *testing.T) {
 	hallo := "HELLO"
 	Central.Log.Debugf("This is a test of data %s", hallo)
 
-	LogMultiLineString("ABC\nXXXX\n")
+	LogMultiLineString(true, "ABC\nXXXX\n")
 	d := Central.IsDebugLevel()
 	Central.SetDebugLevel(true)
 	Central.SetDebugLevel(false)
