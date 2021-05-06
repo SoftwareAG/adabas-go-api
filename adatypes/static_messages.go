@@ -1739,4 +1739,13 @@ var staticMessages = []struct {
 	{"ADG0000171", "en", "occurrence index error"},
 	{"ADG0000172", "en", "Field name missing"},
 	{"ADG0000173", "en", "Adabas buffer search error"},
+	{"ADG0000174", "en", "ABD transfer error, buffer invalid"},
+	{"ADG0000175", "en", "Field type definition error {0}"},
+	{"ADG0000176", "en", "Adabas Map export list is empty"},
+	{"ADG0000177", "en", "Too many multifetch entries"},
+	{"ADG0000178", "en", "Format name error {0} -> {1}"},
+	{"ADG0000179", "en", "Format map not initialized"},
+	{"ADG0000180", "en", "Internal error: field Range not defined"},
+	{"ADG0000181", "en", "Too many occurrence entries"},
+	{"ADG0000182", "en", "Occurence for {0} exceed to {1}"},
 }
