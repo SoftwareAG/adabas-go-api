@@ -25,6 +25,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
@@ -113,6 +114,7 @@ type Map struct {
 	fieldMap             map[string]*MapField
 	redefinitionFieldMap map[string][]*MapField
 	dynamic              *adatypes.DynamicInterface
+	lock                 *sync.Mutex
 }
 
 // NewAdabasMap create new Adabas map instance containing the long name
@@ -127,19 +129,19 @@ func NewAdabasMap(param ...interface{}) *Map {
 		name := param[0].(string)
 		if len(param) == 1 {
 			return &Map{Name: name, redefinitionFieldMap: redefinitionFieldMap,
-				RedefinitionFields: redefinitionFields}
+				RedefinitionFields: redefinitionFields, lock: &sync.Mutex{}}
 		}
 		repository := param[1].(*DatabaseURL)
 		return &Map{Name: name, Repository: repository, DefaultCharset: "US-ASCII",
 			redefinitionFieldMap: redefinitionFieldMap,
-			RedefinitionFields:   redefinitionFields}
+			RedefinitionFields:   redefinitionFields, lock: &sync.Mutex{}}
 	case *DatabaseURL:
 		repository := param[0].(*DatabaseURL)
 		dataRepository := param[1].(*DatabaseURL)
 		redefinitionFieldMap := make(map[string][]*MapField)
 		return &Map{Repository: repository, Data: dataRepository, DefaultCharset: "US-ASCII",
 			redefinitionFieldMap: redefinitionFieldMap,
-			RedefinitionFields:   redefinitionFields}
+			RedefinitionFields:   redefinitionFields, lock: &sync.Mutex{}}
 	}
 	return nil
 }

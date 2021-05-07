@@ -425,7 +425,7 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 			}
 			if nrMultifetchEntries > 10000 {
 				Central.Log.Debugf("multifetch entries mismatch, panic ...")
-				panic("Too many multifetch entries")
+				return 0, NewGenericError(177)
 			}
 			Central.Log.Debugf("Nr of multifetch entries %d", nrMultifetchEntries)
 		}

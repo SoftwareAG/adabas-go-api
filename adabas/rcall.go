@@ -65,7 +65,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 	defer TimeTrack(time.Now(), "RCall adabas", adabas)
 
 	adatypes.Central.Log.Debugf("Call Adabas (local disabled) adabasp=%p  %s\n%v", adabas, adabas.URL.String(), adabas.ID.String())
-	adatypes.LogMultiLineString(adabas.Acbx.String())
+	adatypes.LogMultiLineString(true, adabas.Acbx.String())
 	if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
 		return adatypes.NewGenericError(2, string(adabas.Acbx.Acbxcmd[:]))
 	}

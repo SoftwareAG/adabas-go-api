@@ -323,7 +323,7 @@ func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 		// fmt.Printf("-> VS=%p V=%p\n", vs, v)
 		// assert.Equal(t, v, vs)
 		raw := v.Bytes()
-		//adatypes.LogMultiLineString(adatypes.FormatBytes("Current bytes:", raw, len(raw), len(raw), 8, false))
+		//adatypes.LogMultiLineString(true,adatypes.FormatBytes("Current bytes:", raw, len(raw), len(raw), 8, false))
 		buffer.Write(raw)
 		counter++
 		if !assert.NoError(t, rerr) {
@@ -342,8 +342,8 @@ func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 	fmt.Printf("Got lob from 4096...%X\n", md5.Sum(raw[4096:4096+4096]))
 	fmt.Printf("Got End from 183000...%X\n", md5.Sum(raw[183000:183049]))
 	begRaw := raw[0:50]
-	adatypes.LogMultiLineString(adatypes.FormatBytes("Begin bytes:", begRaw, len(begRaw), len(begRaw), 8, false))
+	adatypes.LogMultiLineString(true, adatypes.FormatBytes("Begin bytes:", begRaw, len(begRaw), len(begRaw), 8, false))
 	endRaw := raw[183000:183049]
-	adatypes.LogMultiLineString(adatypes.FormatBytes("End bytes:", endRaw, len(endRaw), len(endRaw), 8, false))
+	adatypes.LogMultiLineString(true, adatypes.FormatBytes("End bytes:", endRaw, len(endRaw), len(endRaw), 8, false))
 
 }

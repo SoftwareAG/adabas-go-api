@@ -20,7 +20,6 @@
 package adatypes
 
 import (
-	"fmt"
 	"reflect"
 )
 
@@ -37,7 +36,10 @@ type valueInterface struct {
 
 // evaluateMultipleField evaluate multiple field data into dynamic interface fields
 func evaluateMultipleField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (result TraverseResult, err error) {
-	f := evaluateReflectValue(v, adaValue, tp)
+	f, refErr := evaluateReflectValue(v, adaValue, tp)
+	if refErr != nil {
+		return SkipTree, refErr
+	}
 	t := v.Type()
 	st, ok := t.FieldByName(adaValue.Type().Name())
 	Central.Log.Debugf("Found MU field t=%v st=%v ok=%v", t, st.Name, ok)
@@ -72,7 +74,10 @@ func evaluateMultipleField(adaValue IAdaValue, v reflect.Value, tp *valueInterfa
 
 // evaluatePeriodGroup evaluate period group data into dynamic interface fields
 func evaluatePeriodGroup(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (result TraverseResult, err error) {
-	f := evaluateReflectValue(v, adaValue, tp)
+	f, refErr := evaluateReflectValue(v, adaValue, tp)
+	if refErr != nil {
+		return SkipTree, refErr
+	}
 	t := v.Type()
 	st, ok := t.FieldByName(adaValue.Type().Name())
 	Central.Log.Debugf("Found PE field t=%v st=%v ok=%v", t, st.Name, ok)
@@ -109,7 +114,10 @@ func evaluatePeriodGroup(adaValue IAdaValue, v reflect.Value, tp *valueInterface
 
 // evaluateField evaluate field data into dynamic interface fields
 func evaluateField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (result TraverseResult, err error) {
-	f := evaluateReflectValue(v, adaValue, tp)
+	f, refErr := evaluateReflectValue(v, adaValue, tp)
+	if refErr != nil {
+		return SkipTree, refErr
+	}
 	Central.Log.Debugf("No MU or PE, check kind=%v of %s", f.Kind(), adaValue.Type().Name())
 	switch f.Kind() {
 	case reflect.Slice:
@@ -212,17 +220,17 @@ func evaluateField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (res
 }
 
 // evaluateReflectValue evaluate reflect value defined by tag in interface or by Adabas field of map
-func evaluateReflectValue(v reflect.Value, adaValue IAdaValue, tp *valueInterface) reflect.Value {
+func evaluateReflectValue(v reflect.Value, adaValue IAdaValue, tp *valueInterface) (reflect.Value, error) {
 	var f reflect.Value
 	if fn, ok := tp.fieldNames[adaValue.Type().Name()]; ok {
 		if len(fn) == 0 {
-			panic(fmt.Sprintf("Format name error %s -> %d", adaValue.Type().Name(), len(fn)))
+			return f, NewGenericError(178, adaValue.Type().Name(), len(fn))
 		}
 		f = v.FieldByName(fn[len(fn)-1])
 	} else {
 		f = v.FieldByName(adaValue.Type().Name())
 	}
-	return f
+	return f, nil
 }
 
 // traverseValueToInterface traverse through all fields and put value into interface dynamically
@@ -280,7 +288,7 @@ func traverseValueToInterfaceLeave(adaValue IAdaValue, x interface{}) (result Tr
 func (def *Definition) AdaptInterfaceFields(v reflect.Value, fm map[string][]string) error {
 	Central.Log.Debugf("Adapt interface")
 	if fm == nil {
-		panic("Format map not initialized")
+		return NewGenericError(179)
 	}
 	tp := &valueInterface{curVal: v.Elem(), valStack: NewStack(), fieldNames: fm}
 	t := TraverserValuesMethods{EnterFunction: traverseValueToInterface, LeaveFunction: traverseValueToInterfaceLeave}

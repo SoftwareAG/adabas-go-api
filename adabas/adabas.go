@@ -442,7 +442,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 	// Check response to indicate error reading field definition
 	if adabas.Acbx.Acbxrsp != 0 {
 		adatypes.Central.Log.Infof("Error reading definition: %s", adabas.getAdabasMessage())
-		adatypes.LogMultiLineString(adabas.Acbx.String())
+		adatypes.LogMultiLineString(true, adabas.Acbx.String())
 		err = NewError(adabas)
 	}
 
@@ -1266,7 +1266,7 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 		for index, abd := range adabas.AdabasBuffers {
 			if adatypes.Central.IsDebugLevel() {
 				adatypes.Central.Log.Debugf("Parse %d.ABD got %c rest len=%d\n", index, abd.abd.Abdid, buffer.Len())
-				adatypes.LogMultiLineString(adatypes.FormatBytes("Rest ABD:", buffer.Bytes(), buffer.Len(), 8, 16, false))
+				adatypes.LogMultiLineString(true, adatypes.FormatBytes("Rest ABD:", buffer.Bytes(), buffer.Len(), 8, 16, false))
 			}
 			err = binary.Read(buffer, Endian(), &abd.abd)
 			if err != nil {
@@ -1274,8 +1274,9 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 				return
 			}
 			if abd.abd.Abdver[0] != 'G' {
-				adatypes.Central.Log.Debugf("ABD error %p\n", abd)
-				os.Exit(100)
+				adatypes.Central.Log.Errorf("ABD error %p\n", abd)
+				adatypes.LogMultiLineString(false, adatypes.FormatBytes("Rest ABD:", buffer.Bytes(), buffer.Len(), 8, 16, false))
+				return adatypes.NewGenericError(174)
 			}
 			adatypes.Central.Log.Debugf("%d.ABD got send=%d rcv=%d size=%d\n",
 				index, abd.abd.Abdsend, abd.abd.Abdrecv, abd.abd.Abdsize)
@@ -1307,7 +1308,7 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 					}
 				}
 				if adatypes.Central.IsDebugLevel() {
-					adatypes.LogMultiLineString(adatypes.FormatBytes(fmt.Sprintf("Got data of ABD %d :", index), abd.buffer, len(abd.buffer), 8, 16, false))
+					adatypes.LogMultiLineString(true, adatypes.FormatBytes(fmt.Sprintf("Got data of ABD %d :", index), abd.buffer, len(abd.buffer), 8, 16, false))
 				}
 			}
 		}

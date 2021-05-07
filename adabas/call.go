@@ -208,7 +208,7 @@ func (adabasBuffer *Buffer) createCAbd(pabdArray *C.PABD, index int) {
 		pbuffer, C.uint32_t(uint32(adabasBuffer.abd.Abdsize)))
 	if adatypes.Central.IsDebugLevel() {
 		adatypes.Central.Log.Debugf("C ABD %c: send=%d", cabd.Abdid, cabd.Abdsend)
-		adatypes.LogMultiLineString(adatypes.FormatByteBuffer("Buffer content:", adabasBuffer.buffer))
+		adatypes.LogMultiLineString(true, adatypes.FormatByteBuffer("Buffer content:", adabasBuffer.buffer))
 	}
 
 }
@@ -233,7 +233,7 @@ func (adabasBuffer *Buffer) putCAbd(pabdArray *C.PABD, index int) {
 	adabasBuffer.abd = cabd
 	if adatypes.Central.IsDebugLevel() {
 		adatypes.Central.Log.Debugf("C ABD %c: send=%d recv=%d", cabd.Abdid, cabd.Abdsend, cabd.Abdrecv)
-		adatypes.LogMultiLineString(adatypes.FormatByteBuffer("Buffer content:", adabasBuffer.buffer))
+		adatypes.LogMultiLineString(true, adatypes.FormatByteBuffer("Buffer content:", adabasBuffer.buffer))
 	}
 
 }
@@ -248,7 +248,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 		adatypes.Central.Log.Debugf("Send calling CC %c%c adabasp=%p URL=%s Adabas ID=%v",
 			adabas.Acbx.Acbxcmd[0], adabas.Acbx.Acbxcmd[1],
 			adabas, adabas.URL.String(), adabas.ID.String())
-		adatypes.LogMultiLineString(adabas.Acbx.String())
+		adatypes.LogMultiLineString(true, adabas.Acbx.String())
 	}
 
 	if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
@@ -265,7 +265,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 				return
 			}
 			if adatypes.Central.IsDebugLevel() {
-				adatypes.LogMultiLineString(adabas.Acbx.String())
+				adatypes.LogMultiLineString(true, adabas.Acbx.String())
 				if adabas.Acbx.Acbxrsp != AdaNormal {
 					if adabas.Acbx.Acbxrsp == AdaSYSBU {
 						adatypes.Central.Log.Debugf("%s", adabas.Acbx.String())
@@ -301,7 +301,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 					adabas.Acbx.Acbxcmd[0], adabas.Acbx.Acbxcmd[1],
 					adabas, adabas.URL.String(), adabas.ID.String())
 				adatypes.Central.Log.Debugf("Local Adabas call returns: %d", ret)
-				adatypes.LogMultiLineString(adabas.Acbx.String())
+				adatypes.LogMultiLineString(true, adabas.Acbx.String())
 			}
 
 			// Free the corresponding C based memory
@@ -313,7 +313,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 				//	adatypes.Central.Log.Debugf(index, ".ABD out : ", adabas.AdabasBuffers[index].abd.Abdsize)
 				adabas.AdabasBuffers[index].putCAbd(pabdArray, index)
 				if adatypes.Central.IsDebugLevel() {
-					adatypes.LogMultiLineString(adabas.AdabasBuffers[index].String())
+					adatypes.LogMultiLineString(true, adabas.AdabasBuffers[index].String())
 				}
 			}
 			adatypes.Central.Log.Debugf("Destroy temporary ABD")

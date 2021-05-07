@@ -567,7 +567,7 @@ func newFieldQuery(fl string, rf bool,
 		r := ""
 		if fq.fieldRange != nil && len(fq.fieldRange) > 0 {
 			if fq.fieldRange[0] == nil {
-				panic("field Range nil")
+				return nil
 			}
 			r = fq.fieldRange[0].FormatBuffer()
 		}

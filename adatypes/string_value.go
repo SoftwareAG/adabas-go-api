@@ -370,8 +370,8 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 			}
 			value.value = append(value.value, data...)
 			if Central.IsDebugLevel() {
-				LogMultiLineString(FormatByteBuffer("Data: ", data))
-				LogMultiLineString(FormatByteBuffer("(2)LOB Buffer: ", value.value))
+				LogMultiLineString(true, FormatByteBuffer("Data: ", data))
+				LogMultiLineString(true, FormatByteBuffer("(2)LOB Buffer: ", value.value))
 				Central.Log.Debugf("New size of lob data %d offset=%d/%X", len(value.value), helper.Offset, helper.Offset)
 			}
 		}
@@ -463,7 +463,7 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 		}
 		if Central.IsDebugLevel() {
 			Central.Log.Debugf("Buffer get lob string offset=%d %s size=%d/%d", helper.offset, value.Type().Name(), len(value.value), value.lobSize)
-			LogMultiLineString(FormatByteBuffer("LOB Buffer: ", value.value))
+			LogMultiLineString(true, FormatByteBuffer("LOB Buffer: ", value.value))
 		}
 
 	} else {
@@ -506,8 +506,8 @@ func (value *stringValue) Float() (float64, error) {
 
 func (value *stringValue) SetPartial(x, y uint32) {
 	value.Type().SetPartialRange(NewPartialRange(int(x), int(y)))
-	if value.Type().PartialRange() == nil {
-		panic(fmt.Sprintf("Partial range errror: %d,%d", x, y))
-	}
+	// if value.Type().PartialRange() == nil {
+	// 	panic(fmt.Sprintf("Partial range errror: %d,%d", x, y))
+	// }
 	//value.partial = []uint32{x, y}
 }

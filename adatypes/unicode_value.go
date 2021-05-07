@@ -180,7 +180,7 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 			}
 			value.value = append(value.value, data...)
 			if Central.IsDebugLevel() {
-				LogMultiLineString(FormatByteBuffer("(2)LOB Buffer: ", value.value))
+				LogMultiLineString(true, FormatByteBuffer("(2)LOB Buffer: ", value.value))
 				Central.Log.Debugf("New size of lob data %d", len(value.value))
 			}
 		}
@@ -238,7 +238,7 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 		}
 		if Central.IsDebugLevel() {
 			Central.Log.Debugf("Buffer get lob string offset=%d %s size=%d/%d", helper.offset, value.Type().Name(), len(value.value), value.lobSize)
-			LogMultiLineString(FormatByteBuffer("LOB Buffer: ", value.value))
+			LogMultiLineString(true, FormatByteBuffer("LOB Buffer: ", value.value))
 		}
 
 	} else {

@@ -22,7 +22,6 @@ package adatypes
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"math"
 	"reflect"
 	"strconv"
@@ -196,7 +195,7 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 		Central.Log.Debugf("%s read %d entries", value.Type().Name(), occNumber)
 		if occNumber > 10000 {
 			Central.Log.Debugf("Too many occurrences")
-			panic("Too many occurrence entries")
+			return SkipTree, NewGenericError(181)
 		}
 		peIndex := value.peIndex
 		muIndex := uint32(0)
@@ -424,7 +423,7 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 	}
 	// TODO Remove because it it only a limit and assert statement
 	if occNumber > 4000 && !strings.HasPrefix(value.Type().Name(), "fdt") {
-		panic(fmt.Sprintf("Occurence for %s exceed to %d", value.Type().Name(), occNumber))
+		return SkipTree, NewGenericError(182, value.Type().Name(), occNumber)
 	}
 	Central.Log.Debugf("Occurrence %d period index=%d", occNumber, value.peIndex)
 	switch value.Type().Type() {
@@ -590,7 +589,7 @@ func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (
 				if Central.IsDebugLevel() {
 					Central.Log.Debugf("%s-%s: Got structure return directive : %d", value.Type().Name(), v.Type().Name(),
 						ret)
-					LogMultiLineString(FormatByteBuffer("DATA: ", v.Bytes()))
+					LogMultiLineString(true, FormatByteBuffer("DATA: ", v.Bytes()))
 				}
 				if ret == SkipStructure {
 					if Central.IsDebugLevel() {

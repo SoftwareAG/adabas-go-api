@@ -74,10 +74,17 @@ func (log *centralOptions) SetDebugLevel(debug bool) {
 
 // LogMultiLineString log multi line string to log. This prevent the \n display in log.
 // Instead multiple lines are written to log
-func LogMultiLineString(logOutput string) {
+func LogMultiLineString(debug bool, logOutput string) {
+	if debug && !Central.IsDebugLevel() {
+		return
+	}
 	columns := strings.Split(logOutput, "\n")
 	for _, c := range columns {
-		Central.Log.Debugf("%s", c)
+		if debug {
+			Central.Log.Debugf("%s", c)
+		} else {
+			Central.Log.Errorf("%s", c)
+		}
 	}
 }
 

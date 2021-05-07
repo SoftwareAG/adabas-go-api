@@ -159,7 +159,7 @@ func (def *Definition) DumpTypes(doLog bool, activeTree bool, msg ...string) {
 		t := TraverserMethods{EnterFunction: dumpTypeEnterTrav}
 		def.TraverseTypes(t, activeTree, &buffer)
 		if doLog {
-			LogMultiLineString(buffer.String())
+			LogMultiLineString(true, buffer.String())
 			// Central.Log.Debugf("Dump all types: ", buffer.String())
 		} else {
 			fmt.Println(buffer.String())

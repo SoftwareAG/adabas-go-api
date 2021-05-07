@@ -205,13 +205,15 @@ func initLogLevelWithFile(fileName string, level zapcore.Level) (err error) {
 
 	var cfg zap.Config
 	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
-		panic(err)
+		fmt.Printf("Initial logging JSON configuration error: %v\n", err)
+		os.Exit(1)
 	}
 	cfg.Level.SetLevel(level)
 	cfg.OutputPaths = []string{name}
 	logger, err := cfg.Build()
 	if err != nil {
-		panic(err)
+		fmt.Printf("Initial logging error: %v\n", err)
+		os.Exit(1)
 	}
 	defer logger.Sync()
 
@@ -291,12 +293,14 @@ func main() {
 	if displayFdt {
 		ada, aerr := adabas.NewAdabas(args[0])
 		if aerr != nil {
-			panic("Error init Adabas call: " + aerr.Error())
+			fmt.Printf("Error init Adabas call: %v\n", aerr.Error())
+			os.Exit(20)
 		}
 		defer ada.Close()
 		fdt, err := ada.ReadFileDefinition(adabas.Fnr(file))
 		if err != nil {
-			panic("Error evaluate Adabas FDT: " + err.Error())
+			fmt.Printf("Error evaluate Adabas FDT: %v\n", err.Error())
+			os.Exit(21)
 		}
 		fmt.Printf("Display FDT of database %s file %d\n", args[0], file)
 		fmt.Println(fdt.String())
