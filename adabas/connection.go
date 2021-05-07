@@ -468,6 +468,9 @@ func (connection *Connection) CreateMapReadRequest(param ...interface{}) (reques
 	case reflect.Ptr, reflect.Struct:
 		if connection.repository == nil {
 			if connection.adabasMap != nil && connection.adabasMap.Name == inmapMapName {
+				// Lock this Adabas Map for ReadRequest creation process of dynamic part
+				connection.adabasMap.lock.Lock()
+				defer connection.adabasMap.lock.Unlock()
 				adatypes.Central.Log.Debugf("InMap used %s", connection.adabasMap.Name)
 				err = connection.adabasMap.defineByInterface(param[0])
 				if err != nil {
@@ -491,6 +494,9 @@ func (connection *Connection) CreateMapReadRequest(param ...interface{}) (reques
 		if err != nil {
 			return
 		}
+		connection.adabasMap.lock.Lock()
+		defer connection.adabasMap.lock.Unlock()
+
 		connection.fnr = connection.adabasMap.Data.Fnr
 		adatypes.Central.Log.Debugf("Map referenced : %#v", connection.adabasMap)
 		request, err = NewReadRequest(connection.adabasToData, connection.adabasMap)
@@ -545,6 +551,9 @@ func (connection *Connection) CreateMapStoreRequest(mapReference interface{}) (r
 		if connection.repository == nil {
 			if connection.adabasMap != nil && connection.adabasMap.Name == inmapMapName {
 				adatypes.Central.Log.Debugf("InMap used: %s", connection.adabasMap.Name)
+				// Lock this Adabas Map for ReadRequest creation process of dynamic part
+				connection.adabasMap.lock.Lock()
+				defer connection.adabasMap.lock.Unlock()
 				err = connection.adabasMap.defineByInterface(mapReference)
 				if err != nil {
 					return nil, err
@@ -612,6 +621,9 @@ func (connection *Connection) CreateMapDeleteRequest(mapReference interface{}) (
 	case reflect.Ptr, reflect.Struct:
 		if connection.repository == nil {
 			if connection.adabasMap != nil && connection.adabasMap.Name == inmapMapName {
+				// Lock this Adabas Map for ReadRequest creation process of dynamic part
+				connection.adabasMap.lock.Lock()
+				defer connection.adabasMap.lock.Unlock()
 				adatypes.Central.Log.Debugf("InMap used: %s", connection.adabasMap.Name)
 				err = connection.adabasMap.defineByInterface(mapReference)
 				if err != nil {
