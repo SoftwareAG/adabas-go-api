@@ -306,13 +306,7 @@ func (adabas *Adabas) SetAbd(abd []*Buffer) {
 	adabas.AdabasBuffers = abd
 }
 
-// IsRemote Indicate if the call uses WCL remote calls
-func (adabas *Adabas) IsRemote() bool {
-	adatypes.Central.Log.Debugf("Remote usage check of %s", adabas.URL)
-	return adabas.URL != nil && adabas.URL.Port > 0
-}
-
-func (adabas *Adabas) callRemoteAdabas() (err error) {
+func (adabas *Adabas) callAdabasDriver() (err error) {
 	var driver Driver
 	// Call remote database URL
 	// Check if connection is already available

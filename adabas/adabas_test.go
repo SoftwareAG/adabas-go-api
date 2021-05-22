@@ -125,7 +125,8 @@ func TestAdabasOk(t *testing.T) {
 		t.Fatal("Adabas call return value not correct", retb)
 	}
 	assert.Equal(t, "50005800", string(abds[1].Bytes()))
-	assert.False(t, adabas.IsRemote())
+	driver := adabas.URL.Instance(adabas.ID)
+	assert.IsType(t, (*AdaIPC)(nil), driver)
 
 	adabas.Acbx.Acbxcmd = cl.code()
 	retb = adabas.CallAdabas()

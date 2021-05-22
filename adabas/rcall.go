@@ -69,7 +69,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 	if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
 		return adatypes.NewGenericError(2, string(adabas.Acbx.Acbxcmd[:]))
 	}
-	err = adabas.callRemoteAdabas()
+	err = adabas.callAdabasDriver()
 	if err != nil {
 		return
 	}
