@@ -25,7 +25,7 @@ GO_TAGS         = $(if $(ACLDIR),"release adalnk","release")
 GO_FLAGS        = $(if $(debug),"-x",) -tags $(GO_TAGS)
 BINTESTS        = $(CURDIR)/bin/tests/$(GOOS)_$(GOARCH)
 DYLD_LIBRARY_PATH = $(ACLDIR)/lib:/lib:/usr/lib:$(ACLDIR)/../common/security/openssl/lib
-SUFFIX          = $(if '$(GOOS)' 'windows',.exe,)
+GOEXE          ?= $(shell $(GO) env GOEXE)
 
 export DYLD_LIBRARY_PATH
 
@@ -59,7 +59,7 @@ $(EXECS): $(OBJECTS) ; $(info $(M) building executable $(@:$(BIN)/%=%)…) @ ## 
 	$Q cd $(CURDIR) &&  \
 	    CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" $(GO) build $(GO_FLAGS) \
 		-ldflags '-X $(PACKAGE)/adabas.Version=$(VERSION) -X $(PACKAGE)/adabas.BuildDate=$(DATE)' \
-		-o $@$(SUFFIX) ./$(@:$(BIN)/%=%)
+		-o $@$(GOEXE) ./$(@:$(BIN)/%=%)
 
 cleanModules:  ; $(info $(M) cleaning modules) @ ## Build program binary
 ifneq ("$(wildcard $(GOPATH)/pkg/mod)","")

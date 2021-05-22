@@ -189,8 +189,60 @@ func NewAdaTCP(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 	return t
 }
 
+// Send Send the TCP/IP request to remote Adabas database
+func (connection *AdaTCP) Send(adabas *Adabas) (err error) {
+	var buffer bytes.Buffer
+	err = adabas.WriteBuffer(&buffer, Endian(), false)
+	if err != nil {
+		adatypes.Central.Log.Infof("Buffer transmit preparation error ", err)
+		return
+	}
+	adatypes.Central.Log.Debugf("Send buffer of length=%d lenBuffer=%d", buffer.Len(), len(adabas.AdabasBuffers))
+	err = connection.SendData(buffer, uint32(len(adabas.AdabasBuffers)))
+	if err != nil {
+		adatypes.Central.Log.Infof("Transmit Adabas call error: %v", err)
+		_ = connection.Disconnect()
+		adabas.transactions.connection = nil
+		return
+	}
+	buffer.Reset()
+	var nrAbdBuffers uint32
+	nrAbdBuffers, err = connection.ReceiveData(&buffer, adabasReply)
+	if err != nil {
+		adatypes.Central.Log.Infof("Receive Adabas call error: %v", err)
+		return
+	}
+	err = adabas.ReadBuffer(&buffer, Endian(), nrAbdBuffers, false)
+	if err != nil {
+		adatypes.Central.Log.Infof("Read buffer error, destroy context ... %v", err)
+		_ = connection.Disconnect()
+		return
+	}
+
+	adatypes.Central.Log.Debugf("Remote Adabas call returns successfully")
+	if adabas.Acbx.Acbxcmd == cl.code() {
+		adatypes.Central.Log.Debugf("Close called, destroy context ...")
+		if connection != nil {
+			_ = connection.Disconnect()
+			adabas.transactions.connection = nil
+		}
+	}
+	if connection.clusterNodes != nil {
+		adabas.transactions.clusterNodes = connection.clusterNodes
+	}
+	adatypes.Central.Log.Debugf("Got context for %s %p ", adabas.String(),
+		adabas.transactions.connection)
+	return
+}
+
 // Connect establish connection to ADATCP server
-func (connection *AdaTCP) Connect() (err error) {
+func (connection *AdaTCP) Connect(adabas *Adabas) (err error) {
+	connection.stats = adabas.statistics
+	return connection.tcpConnect()
+}
+
+// tcpConnect establish connection to ADATCP server
+func (connection *AdaTCP) tcpConnect() (err error) {
 	url := fmt.Sprintf("%s:%d", connection.URL.Host, connection.URL.Port)
 	adatypes.Central.Log.Debugf("Open/Connect TCP connection to %s", url)
 	addr, _ := net.ResolveTCPAddr("tcp", url)
@@ -317,7 +369,6 @@ func (connection *AdaTCP) Connect() (err error) {
 		adatypes.Central.Log.Infof("Database cluster found %v", header.DatabaseType)
 		err = connection.receiveNodeList()
 	}
-
 	return
 }
 

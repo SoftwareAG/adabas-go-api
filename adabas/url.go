@@ -146,6 +146,22 @@ func (URL *URL) examineURL(url string) error {
 	return nil
 }
 
+// Instance create instance of TCP driver
+func (URL URL) Instance(id *ID) Driver {
+	switch URL.Driver {
+	case "adatcp":
+		return NewAdaTCP(&URL, Endian(), id.AdaID.User,
+			id.AdaID.Node, id.AdaID.Pid, id.AdaID.Timestamp)
+	case "adatcps":
+		return NewAdaTCP(&URL, Endian(), id.AdaID.User,
+			id.AdaID.Node, id.AdaID.Pid, id.AdaID.Timestamp)
+	case "tcpip":
+		return nil
+	default:
+	}
+	return nil
+}
+
 // URL URL representation containing the TCP/IP host and port part only
 func (URL URL) URL() string {
 	return URL.Host + ":" + strconv.Itoa(int(URL.Port))

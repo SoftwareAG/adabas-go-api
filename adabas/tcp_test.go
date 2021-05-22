@@ -58,7 +58,7 @@ func TestFailConnect(t *testing.T) {
 	// No Connect() called and a error is returned if Disconnect() is called
 	url, _ := NewURL("1(adatcp://xx:12345)")
 	connection := NewAdaTCP(url, binary.LittleEndian, user, node, 0, 0)
-	err := connection.Connect()
+	err := connection.tcpConnect()
 	assert.Error(t, err)
 	err = connection.Disconnect()
 	assert.Error(t, err)
