@@ -44,7 +44,7 @@ func TestURLGeneral(t *testing.T) {
 	assert.Nil(t, URL)
 	URL, err = NewURL("222(tcpip://host:1234)")
 	assert.Error(t, err)
-	assert.Equal(t, "ADG0000115: Entire Network target drivers cannot be connect directly, configure Adabas client.", err.Error())
+	assert.Equal(t, "ADG0000099: Given driver 'tcpip' is not supported", err.Error())
 	assert.Nil(t, URL)
 	URL, err = NewURL("333(adatcp://host:123)")
 	assert.NoError(t, err)
@@ -88,7 +88,7 @@ func TestURLDirect(t *testing.T) {
 	}
 	URL, err = NewURL("201(tcpip://wcphost:30011)")
 	assert.Error(t, err)
-	assert.Equal(t, "ADG0000115: Entire Network target drivers cannot be connect directly, configure Adabas client.", err.Error())
+	assert.Equal(t, "ADG0000099: Given driver 'tcpip' is not supported", err.Error())
 	if !assert.Nil(t, URL) {
 		return
 	}
@@ -112,7 +112,7 @@ func TestURLDirect(t *testing.T) {
 	if !assert.Nil(t, URL) {
 		return
 	}
-	assert.Equal(t, "ADG0000115: Entire Network target drivers cannot be connect directly, configure Adabas client.", err.Error())
+	assert.Equal(t, "ADG0000099: Given driver 'tcpip' is not supported", err.Error())
 }
 
 func TestURLSecured(t *testing.T) {

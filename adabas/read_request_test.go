@@ -156,7 +156,7 @@ func TestRequestRemoteLogicalByAll(t *testing.T) {
 	ID := NewAdabasID()
 	_, aerr := NewAdabas(url, ID)
 	assert.Error(t, aerr)
-	assert.Equal(t, "ADG0000115: Entire Network target drivers cannot be connect directly, configure Adabas client.", aerr.Error())
+	assert.Equal(t, "ADG0000099: Given driver 'tcpip' is not supported", aerr.Error())
 }
 
 func ExampleReadRequest_ReadLogicalBy() {

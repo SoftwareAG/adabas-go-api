@@ -605,7 +605,7 @@ func TestAdabasFdtNewEmployeeRemote(t *testing.T) {
 	ID := NewAdabasID()
 	_, err := NewAdabas(url, ID)
 	assert.Error(t, err)
-	assert.Equal(t, "ADG0000115: Entire Network target drivers cannot be connect directly, configure Adabas client.", err.Error())
+	assert.Equal(t, "ADG0000099: Given driver 'tcpip' is not supported", err.Error())
 
 	fmt.Println("test done")
 }

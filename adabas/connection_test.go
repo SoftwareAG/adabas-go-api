@@ -568,7 +568,7 @@ func TestConnectionRemote(t *testing.T) {
 	fmt.Println("Connect to ", url)
 	_, cerr := NewConnection("acj;target=" + url)
 	assert.Error(t, cerr)
-	assert.Equal(t, "ADG0000115: Entire Network target drivers cannot be connect directly, configure Adabas client.", cerr.Error())
+	assert.Equal(t, "ADG0000099: Given driver 'tcpip' is not supported", cerr.Error())
 
 }
 
