@@ -121,9 +121,12 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 					return nil, err
 				}
 				adabasMap.Data = &DatabaseURL{URL: *url}
-				fnr, err := strconv.Atoi(ref[1])
-				if err != nil {
-					return nil, err
+				fnr := 0
+				if len(ref) > 1 {
+					fnr, err = strconv.Atoi(ref[1])
+					if err != nil {
+						return nil, err
+					}
 				}
 				if fnr < 0 || fnr > 32000 {
 					return nil, adatypes.NewGenericError(116, fnr)
@@ -486,7 +489,13 @@ func (connection *Connection) CreateMapReadRequest(param ...interface{}) (reques
 		if err != nil {
 			return
 		}
-		connection.fnr = request.adabasMap.Data.Fnr
+		if len(param) > 1 {
+			fnr := param[1].(int)
+			connection.fnr = Fnr(fnr)
+			request.repository.Fnr = Fnr(fnr)
+		} else {
+			connection.fnr = request.adabasMap.Data.Fnr
+		}
 		connection.adabasMap = request.adabasMap
 	case reflect.String:
 		m := param[0].(string)

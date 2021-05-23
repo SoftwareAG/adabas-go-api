@@ -51,6 +51,15 @@ type FullNameInMap struct {
 	Name       string `adabas:"::AE"`
 }
 
+type VehicleInMap struct {
+	Index uint64 `adabas:":isn"`
+	Reg   string `adabas:":key:AA"`
+	ID    string `adabas:"::AC"`
+	Model string `adabas:"::AE"`
+	Color string `adabas:"::AF"`
+	Year  uint64 `adabas:"::AG"`
+}
+
 func TestInlineMap(t *testing.T) {
 
 	if testing.Short() {

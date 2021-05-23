@@ -42,7 +42,7 @@ type InterfaceFunction func(data interface{}, x interface{}) error
 // loadDefinition load the complete definition of the field
 func (request *commonRequest) loadDefinition() (err error) {
 	if request.definition == nil {
-		adatypes.Central.Log.Debugf("Load file Definition ....")
+		adatypes.Central.Log.Debugf("Load file Definition ....%d", request.repository.Fnr)
 		request.definition, err = request.adabas.ReadFileDefinition(request.repository.Fnr)
 		if err != nil {
 			return
@@ -92,7 +92,7 @@ func (request *commonRequest) commonOpen() (opened bool, err error) {
 	if request.initialized {
 		return
 	}
-	if request.MapName != "" {
+	if request.MapName != "" && request.MapName != "<inmap>" {
 		adatypes.Central.Log.Debugf("Open Adabas with map %s for %d", request.MapName, request.repository.Fnr)
 		if request.adabasMap == nil {
 			request.adabasMap, err = request.repository.readAdabasMapWithRequest(request, request.MapName)
@@ -119,6 +119,7 @@ func (request *commonRequest) commonOpen() (opened bool, err error) {
 		// TODO remove if move succeeed
 		err = request.loadDefinition()
 		if err != nil {
+			adatypes.Central.Log.Debugf("Error loading definition during open")
 			return
 		}
 		if request.definition == nil {
