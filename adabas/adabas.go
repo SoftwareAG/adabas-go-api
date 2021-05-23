@@ -46,9 +46,16 @@ const adaFdtXOpt = 'X'
 
 //type adabasOption uint32
 
+// Driver driver interface for different TCP/IP based connections
+type Driver interface {
+	Connect(adabas *Adabas) error
+	Disconnect() error
+	Send(adabas *Adabas) error
+}
+
 // Transaction flags to synchronize and manage different requests
 type transactions struct {
-	connection   interface{}
+	connection   Driver
 	clusterNodes []*URL
 }
 
@@ -299,91 +306,35 @@ func (adabas *Adabas) SetAbd(abd []*Buffer) {
 	adabas.AdabasBuffers = abd
 }
 
-// IsRemote Indicate if the call uses WCL remote calls
-func (adabas *Adabas) IsRemote() bool {
-	adatypes.Central.Log.Debugf("Remote usage check of %s", adabas.URL)
-	return adabas.URL != nil && adabas.URL.Port > 0
-}
-
-func (adabas *Adabas) callRemoteAdabas() (err error) {
+func (adabas *Adabas) callAdabasDriver() (err error) {
+	var driver Driver
 	// Call remote database URL
-	adatypes.Central.Log.Debugf("Call remote via driver url: %s", adabas.URL)
-	switch adabas.URL.Driver {
-	case "tcpip":
-		return adatypes.NewGenericError(68)
-	case "adatcp", "adatcps":
-		return adabas.sendTCP()
-	case "":
-		adabas.Acbx.Acbxrsp = AdaSysCe
-		return adatypes.NewGenericError(49)
-	}
-	return adatypes.NewGenericError(1, adabas.URL.Driver)
-}
-
-// sendTCP Send the TCP/IP request to remote Adabas database
-func (adabas *Adabas) sendTCP() (err error) {
-	var tcpConn *AdaTCP
 	// Check if connection is already available
 	if adabas.transactions.connection == nil {
 		adatypes.Central.Log.Debugf("Establish new context for %p", adabas)
-
-		tcpConn = NewAdaTCP(adabas.URL, Endian(), adabas.ID.AdaID.User,
-			adabas.ID.AdaID.Node, adabas.ID.AdaID.Pid, adabas.ID.AdaID.Timestamp)
-		tcpConn.stats = adabas.statistics
-		err = tcpConn.Connect()
+		driver = adabas.URL.Instance(adabas.ID)
+		// tcpConn = NewAdaTCP(adabas.URL, Endian(), adabas.ID.AdaID.User,
+		// 	adabas.ID.AdaID.Node, adabas.ID.AdaID.Pid, adabas.ID.AdaID.Timestamp)
+		if driver == nil {
+			return adatypes.NewGenericError(68)
+		}
+		err = driver.Connect(adabas)
 		if err != nil {
 			adabas.Acbx.Acbxrsp = AdaSysCe
 			adatypes.Central.Log.Infof("Establish TCP context error %v", err)
 			err = NewError(adabas)
 			return
 		}
-		adabas.transactions.connection = tcpConn
+		adabas.transactions.connection = driver
 	} else {
 		adatypes.Central.Log.Debugf("Use context for %p %p ", adabas, adabas.transactions.connection)
-		tcpConn = adabas.transactions.connection.(*AdaTCP)
+		driver = adabas.transactions.connection
 	}
-	var buffer bytes.Buffer
-	err = adabas.WriteBuffer(&buffer, Endian(), false)
-	if err != nil {
-		adatypes.Central.Log.Infof("Buffer transmit preparation error ", err)
-		return
+	adatypes.Central.Log.Debugf("Call remote via driver url: %s", adabas.URL)
+	if driver == nil {
+		return adatypes.NewGenericError(68)
 	}
-	adatypes.Central.Log.Debugf("Send buffer of length=%d lenBuffer=%d", buffer.Len(), len(adabas.AdabasBuffers))
-	err = tcpConn.SendData(buffer, uint32(len(adabas.AdabasBuffers)))
-	if err != nil {
-		adatypes.Central.Log.Infof("Transmit Adabas call error: %v", err)
-		_ = tcpConn.Disconnect()
-		adabas.transactions.connection = nil
-		return
-	}
-	buffer.Reset()
-	var nrAbdBuffers uint32
-	nrAbdBuffers, err = tcpConn.ReceiveData(&buffer, adabasReply)
-	if err != nil {
-		adatypes.Central.Log.Infof("Receive Adabas call error: %v", err)
-		return
-	}
-	err = adabas.ReadBuffer(&buffer, Endian(), nrAbdBuffers, false)
-	if err != nil {
-		adatypes.Central.Log.Infof("Read buffer error, destroy context ... %v", err)
-		_ = tcpConn.Disconnect()
-		return
-	}
-
-	adatypes.Central.Log.Debugf("Remote Adabas call returns successfully")
-	if adabas.Acbx.Acbxcmd == cl.code() {
-		adatypes.Central.Log.Debugf("Close called, destroy context ...")
-		if tcpConn != nil {
-			_ = tcpConn.Disconnect()
-			adabas.transactions.connection = nil
-		}
-	}
-	if tcpConn.clusterNodes != nil {
-		adabas.transactions.clusterNodes = tcpConn.clusterNodes
-	}
-	adatypes.Central.Log.Debugf("Got context for %s %p ", adabas.String(),
-		adabas.transactions.connection)
-	return
+	return driver.Send(adabas)
 }
 
 // ReadFileDefinition Read file definition out of Adabas file

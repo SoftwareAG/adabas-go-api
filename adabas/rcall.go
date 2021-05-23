@@ -32,6 +32,11 @@ import (
 
 var idCounter uint32
 
+// NewAdaIPC fake nil instance to disable driver
+func NewAdaIPC(URL *URL, ID *ID) Driver {
+	return nil
+}
+
 // NewAdabasID create a new unique Adabas ID instance using static data. Instead
 // using the current process id a generate unique time stamp and counter version
 // of the pid is used.
@@ -69,7 +74,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 	if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
 		return adatypes.NewGenericError(2, string(adabas.Acbx.Acbxcmd[:]))
 	}
-	err = adabas.callRemoteAdabas()
+	err = adabas.callAdabasDriver()
 	if err != nil {
 		return
 	}

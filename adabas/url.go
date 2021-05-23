@@ -44,6 +44,21 @@ type URL struct {
 	Port   uint32
 }
 
+// ExternalDriver external driver
+type ExternalDriver interface {
+	Driver() string
+	NewInstance(URL *URL, ID *ID) Driver
+}
+
+var drivers []ExternalDriver
+
+// RegisterExternalDriver register external drivers
+func RegisterExternalDriver(driver ExternalDriver) {
+	if driver != nil {
+		drivers = append(drivers, driver)
+	}
+}
+
 // NewURLWithDbid create a new URL based on the database id only. Simple local access
 // to the database
 func NewURLWithDbid(dbid Dbid) *URL {
@@ -134,14 +149,44 @@ func (URL *URL) examineURL(url string) error {
 		switch URL.Driver {
 		case "adatcp":
 		case "adatcps":
-		case "tcpip":
-			err = adatypes.NewGenericError(115)
-			return err
 		default:
-			err = adatypes.NewGenericError(99, URL.Driver)
-			return err
+			found := false
+			for _, d := range drivers {
+				if d.Driver() == URL.Driver {
+					found = true
+					break
+				}
+			}
+			if !found {
+				err = adatypes.NewGenericError(99, URL.Driver)
+				return err
+			}
 		}
 		URL.Host = match[3]
+	}
+	return nil
+}
+
+// Instance create instance of TCP driver
+func (URL URL) Instance(id *ID) Driver {
+	if URL.Port == 0 {
+		return NewAdaIPC(&URL, id)
+	}
+
+	switch URL.Driver {
+	case "adatcp":
+		return NewAdaTCP(&URL, Endian(), id.AdaID.User,
+			id.AdaID.Node, id.AdaID.Pid, id.AdaID.Timestamp)
+	case "adatcps":
+		return NewAdaTCP(&URL, Endian(), id.AdaID.User,
+			id.AdaID.Node, id.AdaID.Pid, id.AdaID.Timestamp)
+	default:
+	}
+
+	for _, d := range drivers {
+		if d.Driver() == URL.Driver {
+			return d.NewInstance(&URL, id)
+		}
 	}
 	return nil
 }

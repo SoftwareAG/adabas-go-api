@@ -125,7 +125,8 @@ func TestAdabasOk(t *testing.T) {
 		t.Fatal("Adabas call return value not correct", retb)
 	}
 	assert.Equal(t, "50005800", string(abds[1].Bytes()))
-	assert.False(t, adabas.IsRemote())
+	driver := adabas.URL.Instance(adabas.ID)
+	assert.IsType(t, (*AdaIPC)(nil), driver)
 
 	adabas.Acbx.Acbxcmd = cl.code()
 	retb = adabas.CallAdabas()
@@ -604,7 +605,7 @@ func TestAdabasFdtNewEmployeeRemote(t *testing.T) {
 	ID := NewAdabasID()
 	_, err := NewAdabas(url, ID)
 	assert.Error(t, err)
-	assert.Equal(t, "ADG0000115: Entire Network target drivers cannot be connect directly, configure Adabas client.", err.Error())
+	assert.Equal(t, "ADG0000099: Given driver 'tcpip' is not supported", err.Error())
 
 	fmt.Println("test done")
 }
