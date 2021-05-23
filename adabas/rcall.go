@@ -32,6 +32,7 @@ import (
 
 var idCounter uint32
 
+// NewAdaIPC fake nil instance to disable driver
 func NewAdaIPC(URL *URL, ID *ID) Driver {
 	return nil
 }
