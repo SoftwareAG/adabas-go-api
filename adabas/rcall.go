@@ -32,6 +32,10 @@ import (
 
 var idCounter uint32
 
+func NewAdaIPC(URL *URL, ID *ID) Driver {
+	return nil
+}
+
 // NewAdabasID create a new unique Adabas ID instance using static data. Instead
 // using the current process id a generate unique time stamp and counter version
 // of the pid is used.
