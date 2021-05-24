@@ -305,7 +305,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 		if !adaType.IsStructure() {
 			if adabasRequest.DescriptorRead {
 				buffer.WriteString(adaType.ShortName())
-				adabasRequest.RecordBufferLength += 2
+				adabasRequest.RecordBufferLength += adaType.Length()
 			} else {
 				Central.Log.Debugf(" MUGhost: %v", adaType.HasFlagSet(FlagOptionMUGhost))
 				Central.Log.Debugf(" SingleIndex: %v", adaType.HasFlagSet(FlagOptionSingleIndex))
