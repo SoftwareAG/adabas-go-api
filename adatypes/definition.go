@@ -89,7 +89,9 @@ func (def *Definition) Register(t IAdaType) {
 	def.fileShortFields[t.ShortName()] = t
 }
 
-// ParseBuffer method start parsing the definition
+// ParseBuffer method start parsing the record Buffer using the definition.
+// This may be by using either types or values (if available) to parse the buffer.
+// Values may be available if second call is done or other means.
 func (def *Definition) ParseBuffer(helper *BufferHelper, option *BufferOption, prefix string) (res TraverseResult, err error) {
 	if def.Values == nil {
 		Central.Log.Debugf("Parse buffer types...")

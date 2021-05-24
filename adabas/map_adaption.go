@@ -158,7 +158,7 @@ func (adabasMap *Map) adaptFieldType(definition *adatypes.Definition, dynamic *a
 		newFields := make([]string, 0)
 		for _, f := range fields {
 			if _, ok := dynamic.FieldNames[f]; ok {
-				adatypes.Central.Log.Debugf("Checked", f)
+				adatypes.Central.Log.Debugf("Checked %s", f)
 				newFields = append(newFields, f)
 			} else {
 				adatypes.Central.Log.Debugf("Not Checked %s", f)
