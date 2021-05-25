@@ -51,6 +51,18 @@ type FullNameInMap struct {
 	Name       string `adabas:"::AE"`
 }
 
+type NewEmployeesInMap struct {
+	Index  uint64                `adabas:":isn"`
+	ID     string                `adabas:":key:AA"`
+	Income []*NewEmployeesIncome `adabas:"::L0"`
+}
+
+type NewEmployeesIncome struct {
+	CurCode string `adabas:"::LA"`
+	Salary  int    `adabas:"::LB"`
+	Bonus   []int  `adabas:"::LC"`
+}
+
 type VehicleInMap struct {
 	Index uint64 `adabas:":isn"`
 	Reg   string `adabas:":key:AA"`
@@ -471,5 +483,54 @@ func TestInmapEmployeesRetyped(t *testing.T) {
 		assert.Equal(t, names("abc                 "), e.Name)
 		assert.Equal(t, names("Otto                "), e.FirstName)
 		assert.Equal(t, birth(12345), e.Birth)
+	}
+}
+
+func TestInlineMapPeriodSearchAndOrder(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "inmap.log")
+
+	connection, cerr := NewConnection("acj;inmap=24,9")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest(&NewEmployeesInMap{})
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = request.QueryFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	response, rerr := request.SearchAndOrder("AA=11100108", "AA")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	_ = response.DumpData()
+	if assert.Len(t, response.Data, 1) {
+		entry := response.Data[0].(*NewEmployeesInMap)
+		assert.Equal(t, "11100108", entry.ID)
+		assert.Len(t, entry.Income, 4)
+	}
+	_ = response.DumpValues()
+	assert.Len(t, response.Values, 0)
+	response, rerr = request.SearchAndOrder("AA=11300321", "AA")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	_ = response.DumpData()
+	if assert.Len(t, response.Data, 1) {
+		entry := response.Data[0].(*NewEmployeesInMap)
+		assert.Equal(t, "11300321", entry.ID)
+		assert.Len(t, entry.Income, 5)
 	}
 }
