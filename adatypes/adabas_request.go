@@ -455,20 +455,20 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 			}
 
 			Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values != nil))
-			if !adabasRequest.DescriptorRead {
-				prefix := fmt.Sprintf("/image/%s/%d/", adabasRequest.Reference, adabasRequest.Isn)
-				_, err = adabasRequest.Definition.ParseBuffer(adabasRequest.RecordBuffer, adabasRequest.Option, prefix)
+			//if !adabasRequest.DescriptorRead {
+			prefix := fmt.Sprintf("/image/%s/%d/", adabasRequest.Reference, adabasRequest.Isn)
+			_, err = adabasRequest.Definition.ParseBuffer(adabasRequest.RecordBuffer, adabasRequest.Option, prefix)
+			if err != nil {
+				return
+			}
+			Central.Log.Debugf("Ready parse buffer .... %p values avail.=%v", adabasRequest.Definition, (adabasRequest.Definition.Values == nil))
+			if adabasRequest.Caller != nil {
+				err = adabasRequest.Caller.SendSecondCall(adabasRequest, x)
 				if err != nil {
 					return
 				}
-				Central.Log.Debugf("Ready parse buffer .... %p values avail.=%v", adabasRequest.Definition, (adabasRequest.Definition.Values == nil))
-				if adabasRequest.Caller != nil {
-					err = adabasRequest.Caller.SendSecondCall(adabasRequest, x)
-					if err != nil {
-						return
-					}
-				}
 			}
+			//}
 			Central.Log.Debugf("Found parser .... values avail.=%v", (adabasRequest.Definition.Values == nil))
 			err = adabasRequest.Parser(adabasRequest, x)
 			if err != nil {
