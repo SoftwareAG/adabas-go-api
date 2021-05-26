@@ -1,5 +1,4 @@
 # Exploit your assets in Adabas by using the Adabas API for Go
-
 <!-- TOC -->
 
 - [Exploit your assets in Adabas by using the Adabas API for Go](#exploit-your-assets-in-adabas-by-using-the-adabas-api-for-go)
@@ -11,12 +10,13 @@
   - [Adabas API for Go example](#adabas-api-for-go-example)
     - [Standard usage](#standard-usage)
     - [Classic database usage](#classic-database-usage)
-    - [Using a Go struct](#using-a-go-struct)
+    - [Golang structure definitions](#golang-structure-definitions)
+      - [Golang structure with Adabas Map definition](#golang-structure-with-adabas-map-definition)
+      - [Define Golang structure to Adabas field name definition](#define-golang-structure-to-adabas-field-name-definition)
   - [Log output](#log-output)
   - [Summary](#summary)
 
 <!-- /TOC -->
-
 ## Introduction
 
 This package is designed for using Adabas databases from Go. It's an data interface to Adabas. You can find a detailed overview about the design and technical implementation [here](.//doc//Overview.md).
@@ -159,9 +159,11 @@ result.Values[0].Scan(&aa,&ac,&ad,&ae)
 
 The example code is referenced [here](.//tests//simple_read.go). See detailed documentation [here](.//doc//README.md).
 
-### Using a Go struct
+### Golang structure definitions
 
-The Adabas API for Go can handle simple Go struct definitions to map them to a Adabas Map definition.
+#### Golang structure with Adabas Map definition
+
+The Adabas API for Go can handle simple Golang struct-definitions to map them to an Adabas Map definition.
 
 For example if the structure is defined like this:
 
@@ -170,12 +172,11 @@ type Employees struct {
 ID        string
 Birth     int64
 Name      string `adabas:"Name"`
-FirstName string `adabas:"FirstName"`
+First     string `adabas:"FirstName"`
 }
 ```
 
-The struct can be used to read or store data of the field `Name` and `FirstName` directly. The fields `Birth` is wrote too.
-
+The struct can be used to read or store data of the Adabas Map field `Birth`, `Name` and `FirstName` directly using the corresponding struct-fields `Birth`, `Name` and `First`.
 To store the struct record, do this:
 
 ```go
@@ -185,7 +186,7 @@ err = storeRequest.StoreData(e)
 err = storeRequest.EndTransaction()
 ```
 
-The read of the struct data will be done with:
+The read of the struct data will be done similar with:
 
 ```go
 request, err := adabas.NewReadRequest(Employees{}, adabas, mapRepository)
@@ -195,6 +196,50 @@ e := result.Data[0].(*Employees)
 ```
 
 All fields of the struct are mapped to an Adabas Map field name. The `adabas` tag of the struct definition changes the mapped name.
+
+
+#### Define Golang structure to Adabas field name definition
+
+The Adabas API for Go can handle simple Golang struct-definitions to map them to an Adabas field shortname.
+For example if the structure is defined like this:
+
+```go
+type NewEmployeesInMap struct {
+	Index  uint64                `adabas:":isn"`
+	ID     string                `adabas:":key:AA"`
+	Income []*NewEmployeesIncome `adabas:"::L0"`
+}
+
+type NewEmployeesIncome struct {
+	CurCode string `adabas:"::LA"`
+	Salary  int    `adabas:"::LB"`
+	Bonus   []int  `adabas:"::LC"`
+}
+```
+
+The Golang-struct can be used to read or store data of the Adabas new employee example file (File 9) directly. In this example the slice of an sub structure is generated in the call. The third value in the `:`-separated field defines the Adabas shortname. In the example above, the period group L0 is read into the `NewEmployeesIncome` Golang-struct-slice.
+
+To read the record using the `NewEmployeesInMap`-struct out of Adabas database file 9 of database id 24:
+
+```go
+	connection, _ := NewConnection("acj;inmap=24")
+	defer connection.Close()
+	request, _ := connection.CreateMapReadRequest(&NewEmployeesInMap{},9)
+	_ = request.QueryFields("*")
+	response, rerr := request.SearchAndOrder("AA=11100108", "AA")
+```
+
+To read the record using the `NewEmployeesInMap`-struct out of Adabas database file 9 of database on ADATCP host `desthost` port `64100`, do this:
+
+```go
+	connection, _ := NewConnection("acj;inmap=adatcp://desthost:64100")
+	defer connection.Close()
+	request, _ := connection.CreateMapReadRequest(&NewEmployeesInMap{},9)
+	_ = request.QueryFields("*")
+	response, rerr := request.SearchAndOrder("AA=11100108", "AA")
+```
+
+All fields of the struct are mapped to an Adabas classic field shortname. The `adabas` tag of the struct definition defines the Adabas shortname.
 
 ## Log output
 
