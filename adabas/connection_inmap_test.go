@@ -519,7 +519,14 @@ func TestInlineMapPeriodSearchAndOrder(t *testing.T) {
 	if assert.Len(t, response.Data, 1) {
 		entry := response.Data[0].(*NewEmployeesInMap)
 		assert.Equal(t, "11100108", entry.ID)
+		assert.Equal(t, uint64(208), entry.Index)
 		assert.Len(t, entry.Income, 4)
+		x := []string{"EUR", "EUR", "EUR", "EUR"}
+		y := []int{22564, 21538, 20000, 18974}
+		for i, e := range entry.Income {
+			assert.Equal(t, x[i], e.CurCode)
+			assert.Equal(t, y[i], e.Salary)
+		}
 	}
 	_ = response.DumpValues()
 	assert.Len(t, response.Values, 0)

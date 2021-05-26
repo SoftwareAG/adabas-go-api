@@ -32,7 +32,10 @@ type DynamicInterface struct {
 }
 
 func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string) {
-	Central.Log.Debugf("Generate field names for %s", ri.Name())
+	Central.Log.Debugf("Generate field names for %s %s", ri.Name(), ri.Kind())
+	if ri.Kind() != reflect.Struct {
+		return
+	}
 	for fi := 0; fi < ri.NumField(); fi++ {
 		ct := ri.Field(fi)
 		fieldName := ct.Name
@@ -77,10 +80,18 @@ func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string)
 		Central.Log.Debugf("Set field names to %s -> %v", adabasFieldName, subFields)
 		f[adabasFieldName] = subFields
 		Central.Log.Debugf("Type struct field = %v", ct.Type.Kind())
-		if ct.Type.Kind() == reflect.Ptr {
+		switch ct.Type.Kind() {
+		case reflect.Ptr:
 			Central.Log.Debugf("Pointer found %v %v", ct.Type.Name(), ct.Type.Elem().Name())
 			//et := reflect.TypeOf(ct.Type.Elem())
 			generateFieldNames(ct.Type.Elem(), f, subFields)
+		case reflect.Slice:
+			Central.Log.Debugf("Slice found %v %v", ct.Type.Name(), ct.Type.Elem().Name())
+			sliceT := ct.Type.Elem()
+			if sliceT.Kind() == reflect.Ptr {
+				sliceT = sliceT.Elem()
+			}
+			generateFieldNames(sliceT, f, subFields)
 		}
 	}
 
