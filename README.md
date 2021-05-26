@@ -10,9 +10,9 @@
   - [Adabas API for Go example](#adabas-api-for-go-example)
     - [Standard usage](#standard-usage)
     - [Classic database usage](#classic-database-usage)
-    - [Golang structure definitions](#golang-structure-definitions)
-      - [Golang structure with Adabas Map definition](#golang-structure-with-adabas-map-definition)
-      - [Define Golang structure to Adabas field name definition](#define-golang-structure-to-adabas-field-name-definition)
+    - [Adabas reflected to Go-struct](#adabas-reflected-to-go-struct)
+      - [Go-struct with Adabas Map definition](#go-struct-with-adabas-map-definition)
+      - [Define Go-struct to Adabas field name definition](#define-go-struct-to-adabas-field-name-definition)
   - [Log output](#log-output)
   - [Summary](#summary)
 
@@ -159,11 +159,11 @@ result.Values[0].Scan(&aa,&ac,&ad,&ae)
 
 The example code is referenced [here](.//tests//simple_read.go). See detailed documentation [here](.//doc//README.md).
 
-### Golang structure definitions
+### Adabas reflected to Go-struct 
 
-#### Golang structure with Adabas Map definition
+#### Go-struct with Adabas Map definition
 
-The Adabas API for Go can handle simple Golang struct-definitions to map them to an Adabas Map definition.
+The Adabas API for Go can handle simple Go struct-definitions to map them to an Adabas Map definition.
 
 For example if the structure is defined like this:
 
@@ -198,9 +198,9 @@ e := result.Data[0].(*Employees)
 All fields of the struct are mapped to an Adabas Map field name. The `adabas` tag of the struct definition changes the mapped name.
 
 
-#### Define Golang structure to Adabas field name definition
+#### Define Go-struct to Adabas field name definition
 
-The Adabas API for Go can handle simple Golang struct-definitions to map them to an Adabas field shortname.
+The Adabas API for Go can handle simple Go struct-definitions to map them to an Adabas field shortname.
 For example if the structure is defined like this:
 
 ```go
@@ -217,7 +217,7 @@ type NewEmployeesIncome struct {
 }
 ```
 
-The Golang-struct can be used to read or store data of the Adabas new employee example file (File 9) directly. In this example the slice of an sub structure is generated in the call. The third value in the `:`-separated field defines the Adabas shortname. In the example above, the period group L0 is read into the `NewEmployeesIncome` Golang-struct-slice.
+The Go-struct can be used to read or store data of the Adabas new employee example file (File 9) directly. In this example the slice of an sub structure is generated in the call. The third value in the `:`-separated field defines the Adabas shortname. In the example above, the period group L0 is read into the `NewEmployeesIncome` Go-struct-slice.
 
 To read the record using the `NewEmployeesInMap`-struct out of Adabas database file 9 of database id 24:
 
