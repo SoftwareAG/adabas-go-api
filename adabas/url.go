@@ -55,6 +55,13 @@ var drivers []ExternalDriver
 // RegisterExternalDriver register external drivers
 func RegisterExternalDriver(driver ExternalDriver) {
 	if driver != nil {
+		for _, d := range drivers {
+			if d.Driver() == driver.Driver() {
+				adatypes.Central.Log.Debugf("Driver %s already registered", driver.Driver())
+				return
+			}
+		}
+		adatypes.Central.Log.Debugf("Driver %s registered", driver.Driver())
 		drivers = append(drivers, driver)
 	}
 }
