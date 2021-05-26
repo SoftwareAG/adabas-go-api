@@ -175,16 +175,21 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 	}
 	Central.Log.Debugf("%s/%s parse buffer for MU in PE/first call", value.Type().Name(), value.Type().ShortName())
 	var occNumber int
-	// In the second call the occurrence is available
-	if option.SecondCall > 0 && value.Type().Type() == FieldTypePeriodGroup {
-		occNumber = value.NrElements()
-		Central.Log.Debugf("Second call use available occurrence %d Type %s", occNumber, value.Type().Type().name())
+	Central.Log.Debugf("Check descriptor read %v", option.DescriptorRead)
+	if option.DescriptorRead {
+		occNumber = 1
 	} else {
-		occNumber, err = value.evaluateOccurrence(helper)
-		if err != nil {
-			return
+		// In the second call the occurrence is available
+		if option.SecondCall > 0 && value.Type().Type() == FieldTypePeriodGroup {
+			occNumber = value.NrElements()
+			Central.Log.Debugf("Second call use available occurrence %d Type %s", occNumber, value.Type().Type().name())
+		} else {
+			occNumber, err = value.evaluateOccurrence(helper)
+			if err != nil {
+				return
+			}
+			Central.Log.Debugf("Call got occurrence %d available Type %s", occNumber, value.Type().Type().name())
 		}
-		Central.Log.Debugf("Call got occurrence %d available Type %s", occNumber, value.Type().Type().name())
 	}
 	Central.Log.Debugf("PE occurrence %s has %d entries pos=%d", value.Type().Name(), occNumber, helper.offset)
 	if occNumber > 0 {
@@ -411,19 +416,25 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 		Central.Log.Debugf("Parse Buffer structure without MUPE name=%s offset=%d remaining=%d length=%d value length=%d type=%d", value.Type().Name(),
 			helper.offset, helper.Remaining(), len(helper.buffer), len(value.Elements), value.Type().Type())
 	}
+
 	var occNumber int
-	if option.SecondCall > 0 /*&& value.Type().Type() == FieldTypePeriodGroup */ {
-		occNumber = value.NrElements()
-		Central.Log.Debugf("Second call use available occurrence %d", occNumber)
+	Central.Log.Debugf("Check descriptor read %v", option.DescriptorRead)
+	if option.DescriptorRead {
+		occNumber = 1
 	} else {
-		occNumber, err = value.evaluateOccurrence(helper)
-		if err != nil {
-			return
+		if option.SecondCall > 0 /*&& value.Type().Type() == FieldTypePeriodGroup */ {
+			occNumber = value.NrElements()
+			Central.Log.Debugf("Second call use available occurrence %d", occNumber)
+		} else {
+			occNumber, err = value.evaluateOccurrence(helper)
+			if err != nil {
+				return
+			}
 		}
-	}
-	// TODO Remove because it it only a limit and assert statement
-	if occNumber > 4000 && !strings.HasPrefix(value.Type().Name(), "fdt") {
-		return SkipTree, NewGenericError(182, value.Type().Name(), occNumber)
+		// TODO Remove because it it only a limit and assert statement
+		if occNumber > 4000 && !strings.HasPrefix(value.Type().Name(), "fdt") {
+			return SkipTree, NewGenericError(182, value.Type().Name(), occNumber)
+		}
 	}
 	Central.Log.Debugf("Occurrence %d period index=%d", occNumber, value.peIndex)
 	switch value.Type().Type() {

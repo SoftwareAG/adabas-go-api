@@ -20,6 +20,9 @@ package adabas
 
 import (
 	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func ExampleConnection_periodGroup2() {
@@ -368,5 +371,64 @@ func ExampleConnection_singleIndex() {
 	//   INCOME = [ 1 ]
 	//    BONUS[ 3] = [ 1 ]
 	//     BONUS[ 3, 1] = > 0 <
+
+}
+
+func TestPeriodGroupDescriptor(t *testing.T) {
+	initLogWithFile("connection.log")
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		fmt.Println("Error new connection", cerr)
+		return
+	}
+	defer connection.Close()
+	openErr := connection.Open()
+	if !assert.NoError(t, openErr) {
+		fmt.Println("Error open connection", openErr)
+		return
+	}
+
+	request, err := connection.CreateMapReadRequest("EMPLOYEES")
+	if !assert.NoError(t, err) {
+		fmt.Println("Error create request", err)
+		return
+	}
+	err = request.QueryFields("city")
+	if !assert.NoError(t, err) {
+		fmt.Println("Query fields error", err)
+		return
+	}
+	request.Limit = 0
+	var result *Response
+	result, err = request.HistogramWith("city=Paris")
+	if !assert.NoError(t, err) {
+		fmt.Println("Error create request", err)
+		return
+	}
+	if !assert.Len(t, result.Values, 1) {
+		return
+	}
+	assert.Equal(t, uint64(26), result.Values[0].Quantity)
+
+	result, err = request.HistogramWith("city=Rennes")
+	if !assert.NoError(t, err) {
+		fmt.Println("Error create request", err)
+		return
+	}
+	if !assert.Len(t, result.Values, 1) {
+		return
+	}
+	assert.Equal(t, uint64(1), result.Values[0].Quantity)
+
+	result, err = request.HistogramWith("city=Bar sur Seine")
+	if !assert.NoError(t, err) {
+		fmt.Println("Error create request", err)
+		return
+	}
+	if !assert.Len(t, result.Values, 1) {
+		return
+	}
+	assert.Equal(t, uint64(4), result.Values[0].Quantity)
 
 }

@@ -97,7 +97,10 @@ func (f *field) String() string {
 // ImportMapRepository import map by file import
 func (repository *Repository) ImportMapRepository(adabas *Adabas, filter string,
 	fileName string, mapURL *DatabaseURL) (maps []*Map, err error) {
-	adatypes.Central.Log.Debugf("Import map repository of %s using filter %s to %s", fileName, filter, mapURL.URL.String())
+	adatypes.Central.Log.Debugf("Import map repository of %s using filter %s", fileName, filter)
+	if mapURL != nil {
+		adatypes.Central.Log.Debugf("Importing map repository to redefined %s", mapURL.URL.String())
+	}
 	var file *os.File
 	file, err = os.Open(fileName)
 	if err != nil {

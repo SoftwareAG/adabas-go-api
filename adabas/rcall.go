@@ -69,19 +69,49 @@ func NewAdabasID() *ID {
 func (adabas *Adabas) CallAdabas() (err error) {
 	defer TimeTrack(time.Now(), "RCall adabas", adabas)
 
-	adatypes.Central.Log.Debugf("Call Adabas (local disabled) adabasp=%p  %s\n%v", adabas, adabas.URL.String(), adabas.ID.String())
-	adatypes.LogMultiLineString(true, adabas.Acbx.String())
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Call Adabas (local disabled) adabasp=%p  %s\n%v", adabas, adabas.URL.String(), adabas.ID.String())
+		adatypes.LogMultiLineString(true, adabas.Acbx.String())
+	}
+
 	if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
 		return adatypes.NewGenericError(2, string(adabas.Acbx.Acbxcmd[:]))
 	}
-	err = adabas.callAdabasDriver()
-	if err != nil {
-		return
+	adabas.Acbx.Acbxrsp = AdaAnact
+	adabas.Acbx.Acbxerrc = 0
+	adatypes.Central.Log.Debugf("Input Adabas response = %d", adabas.Acbx.Acbxrsp)
+	recordBufferResize := uint8(5)
+	for {
+		err = adabas.callAdabasDriver()
+		if err != nil {
+			return
+		}
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.LogMultiLineString(true, adabas.Acbx.String())
+			if adabas.Acbx.Acbxrsp != AdaNormal {
+				if adabas.Acbx.Acbxrsp == AdaSYSBU {
+					adatypes.Central.Log.Debugf("%s", adabas.Acbx.String())
+					for index := range adabas.AdabasBuffers {
+						adatypes.Central.Log.Debugf("%s", adabas.AdabasBuffers[index].String())
+					}
+				}
+			}
+		}
+		if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
+			adatypes.Central.Log.Debugf("Invalid Adabas command received: %s", string(adabas.Acbx.Acbxcmd[:]))
+			return adatypes.NewGenericError(3, string(adabas.Acbx.Acbxcmd[:]))
+		}
+		if adabas.Acbx.Acbxrsp != AdaRbts || recordBufferResize == 0 {
+			break
+		}
+		recordBufferResize--
+		for index := range adabas.AdabasBuffers {
+			if adabas.AdabasBuffers[index].abd.Abdid == AbdAQRb {
+				adabas.AdabasBuffers[index].extend(8192)
+			}
+		}
 	}
-	if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
-		adatypes.Central.Log.Debugf("Invalid Adabas command received: %s", string(adabas.Acbx.Acbxcmd[:]))
-		return adatypes.NewGenericError(3, string(adabas.Acbx.Acbxcmd[:]))
-	}
+
 	switch adabas.Acbx.Acbxrsp {
 	case AdaAnact, AdaTransactionAborted, AdaSysCe:
 		adabas.ID.clearTransactions(adabas.URL.String())

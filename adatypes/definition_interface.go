@@ -76,16 +76,21 @@ func evaluateMultipleField(adaValue IAdaValue, v reflect.Value, tp *valueInterfa
 func evaluatePeriodGroup(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (result TraverseResult, err error) {
 	f, refErr := evaluateReflectValue(v, adaValue, tp)
 	if refErr != nil {
+		Central.Log.Debugf("Error evaluating reflect value %s", adaValue.Type().Name())
 		return SkipTree, refErr
 	}
+	Central.Log.Debugf("Use for PE field f=%v %T", f, f)
 	t := v.Type()
-	st, ok := t.FieldByName(adaValue.Type().Name())
-	Central.Log.Debugf("Found PE field t=%v st=%v ok=%v", t, st.Name, ok)
+	name := tp.evaluateReflectName(adaValue.Type().Name())
+	st, ok := t.FieldByName(name)
 	if !ok {
+		Central.Log.Debugf("Not found PE field %s t=%v v=%s", adaValue.Type().Name(), t, v.Type().Name())
 		return Continue, nil
 	}
+	Central.Log.Debugf("Found PE field %s t=%v st=%v ok=%v", adaValue.Type().Name(), t, st.Name, ok)
 	Central.Log.Debugf("Add slice %s %v -> %v %s", st.Name, st.Type, st.Type.String(), st.Type.Kind())
-	stt := st.Type.Elem()
+	//stt := st.Type.Elem()
+	stt := f.Type().Elem()
 	Central.Log.Debugf("Use type %s %s %v kind=%v", stt.Name(), stt.String(), stt, stt.Kind())
 	sv := adaValue.(*StructureValue)
 	cap := 10
@@ -118,7 +123,7 @@ func evaluateField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (res
 	if refErr != nil {
 		return SkipTree, refErr
 	}
-	Central.Log.Debugf("No MU or PE, check kind=%v of %s", f.Kind(), adaValue.Type().Name())
+	Central.Log.Debugf("No MU or PE, check kind=%v of %s in %T", f.Kind(), adaValue.Type().Name(), tp.curVal.Type().Name())
 	switch f.Kind() {
 	case reflect.Slice:
 		if !f.IsNil() && f.CanInterface() {
@@ -219,17 +224,63 @@ func evaluateField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (res
 	return Continue, nil
 }
 
+// evaluateReflectName evaluate field name adaption
+func (tp *valueInterface) evaluateReflectName(name string) (reflectName string) {
+	reflectName = name
+	if fn, ok := tp.fieldNames[name]; ok {
+		if len(fn) > 0 {
+			reflectName = fn[len(fn)-1]
+		}
+	}
+	return reflectName
+}
+
 // evaluateReflectValue evaluate reflect value defined by tag in interface or by Adabas field of map
 func evaluateReflectValue(v reflect.Value, adaValue IAdaValue, tp *valueInterface) (reflect.Value, error) {
 	var f reflect.Value
-	if fn, ok := tp.fieldNames[adaValue.Type().Name()]; ok {
-		if len(fn) == 0 {
-			return f, NewGenericError(178, adaValue.Type().Name(), len(fn))
+	Central.Log.Debugf("Check reflect value %s for tp.curVal=%T", adaValue.Type().Name(), tp.curVal)
+
+	name := tp.evaluateReflectName(adaValue.Type().Name())
+	if tp.curVal.Kind() == reflect.Slice {
+		// return tp.curVal, nil
+		sv := tp.curVal.Index(int(adaValue.PeriodIndex() - 1))
+		Central.Log.Debugf("Check final slice value %s (kind=%s)", sv.Type().Name(), sv.Type().Kind())
+		if sv.Kind() == reflect.Ptr {
+			sv = sv.Elem()
 		}
-		f = v.FieldByName(fn[len(fn)-1])
+		Central.Log.Debugf("Check final slice value %s (kind=%s)", name, sv.Type().Kind())
+
+		f = sv.FieldByName(name)
 	} else {
-		f = v.FieldByName(adaValue.Type().Name())
+		f = tp.curVal.FieldByName(name)
 	}
+	if f.IsValid() {
+		Central.Log.Debugf("Check final reflect value %s for %s", adaValue.Type().Name(), f.Type().Name())
+	} else {
+		Central.Log.Debugf("Check final reflect, got invalid value %s", adaValue.Type().Name())
+	}
+	// if fn, ok := tp.fieldNames[adaValue.Type().Name()]; ok {
+	// 	if len(fn) == 0 {
+	// 		return f, NewGenericError(178, adaValue.Type().Name(), len(fn))
+	// 	}
+	// 	Central.Log.Debugf("Search field name %s->%s in %v in %v", adaValue.Type().Name(), fn[len(fn)-1], v, fn)
+	// 	f = v.FieldByName(fn[len(fn)-1])
+	// } else {
+	// 	f = v.FieldByName(adaValue.Type().Name())
+	// }
+
+	// if f.Kind() == reflect.Slice {
+	// 	fmt.Println(reflect.TypeOf(f))
+	// 	fe := f.Type().Elem()
+	// 	fmt.Println("Found slice", fe.Kind())
+	// 	if fe.Kind() == reflect.Ptr {
+	// 		fee := fe.Elem()
+
+	// 		fmt.Println(adaValue.Type().Name(), "returning....", fee.Name(), reflect.ValueOf(fee).Type().Name())
+	// 		return reflect.ValueOf(fee), nil
+	// 	}
+	// 	return reflect.ValueOf(fe), nil
+	// }
 	return f, nil
 }
 
@@ -241,7 +292,7 @@ func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result Travers
 		return Continue, nil
 	}
 	tp := x.(*valueInterface)
-	Central.Log.Debugf("Work on value %s to interface", adaValue.Type().Name())
+	Central.Log.Debugf("Work on value %s to interface: %s", adaValue.Type().Name(), tp.curVal.Type().Name())
 	v := tp.curVal
 	if v.Kind() == reflect.Slice {
 		v = v.Index(int(adaValue.PeriodIndex() - 1))
@@ -267,6 +318,7 @@ func traverseValueToInterfaceLeave(adaValue IAdaValue, x interface{}) (result Tr
 		tp := x.(*valueInterface)
 		Central.Log.Debugf("Current %s struct value %v", adaValue.Type().Name(), tp.curVal.Type())
 		Central.Log.Debugf("Pop from stack for %s type=%s", adaValue.Type().Name(), adaValue.Type().Type().name())
+
 		if adaValue.Type().Type() != FieldTypeMultiplefield && tp.valStack.Size > 0 {
 			sdi, err := tp.valStack.Pop()
 			if err != nil {

@@ -53,6 +53,7 @@ func (request *ReadRequest) createInterface(fieldList string) (err error) {
 	structType = reflect.StructOf(cti.fields)
 	dynamic := &adatypes.DynamicInterface{DataType: structType, FieldNames: cti.fieldNames}
 	dynamic.FieldNames["#isn"] = []string{"ISN"}
+	adatypes.Central.Log.Debugf("Create final field names map: %v", dynamic.FieldNames)
 	request.dynamic = dynamic
 	return nil
 }

@@ -180,3 +180,63 @@ func callEmployees(t *testing.T, waitGroup *sync.WaitGroup, dest string) {
 	}
 	waitGroup.Done()
 }
+
+func TestInlineMapSearchAndOrderDifferentFiles(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "inmap.log")
+
+	connection, cerr := NewConnection("acj;inmap=24")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest(&EmployeesInMap{}, 11)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = request.QueryFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	response, rerr := request.SearchAndOrder("AA=50005600", "AE")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	_ = response.DumpData()
+	if assert.Len(t, response.Data, 1) {
+		assert.Equal(t, "50005600", response.Data[0].(*EmployeesInMap).ID)
+		assert.Equal(t, "HUMBERTO            ", response.Data[0].(*EmployeesInMap).FullName.FirstName)
+		assert.Equal(t, "MORENO              ", response.Data[0].(*EmployeesInMap).FullName.Name)
+		assert.Equal(t, "VENT07", response.Data[0].(*EmployeesInMap).Department)
+	}
+	_ = response.DumpValues()
+	assert.Len(t, response.Values, 0)
+	request2, err2 := connection.CreateMapReadRequest(&VehicleInMap{}, 12)
+	if !assert.NoError(t, err2) {
+		return
+	}
+	err = request2.QueryFields("AA,AC,AE,AF,AG")
+	if !assert.NoError(t, err) {
+		return
+	}
+	response, rerr = request2.SearchAndOrder("AC=50005600", "AC")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	_ = response.DumpData()
+	if assert.Len(t, response.Data, 1) {
+		assert.Equal(t, "50005600", response.Data[0].(*VehicleInMap).ID)
+		assert.Equal(t, "301                 ", response.Data[0].(*VehicleInMap).Model)
+		assert.Equal(t, "GRISE     ", response.Data[0].(*VehicleInMap).Color)
+		assert.Equal(t, uint64(1980), response.Data[0].(*VehicleInMap).Year)
+	}
+
+}
