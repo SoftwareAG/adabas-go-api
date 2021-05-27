@@ -228,7 +228,8 @@ func evaluateField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (res
 	return Continue, nil
 }
 
-// evaluateReflectName evaluate field name adaption
+// evaluateReflectName evaluate struct field name out of hash map registered during
+// dynamic interface creation. It is referenced by Adabas field or Map name
 func (tp *valueInterface) evaluateReflectName(name string) (reflectName string) {
 	reflectName = name
 	if fn, ok := tp.fieldNames[name]; ok {

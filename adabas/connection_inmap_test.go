@@ -536,7 +536,6 @@ func TestInlineMapPeriodSearchAndOrder(t *testing.T) {
 	if !assert.NoError(t, rerr) {
 		return
 	}
-	_ = response.DumpData()
 	if assert.Len(t, response.Data, 1) {
 		entry := response.Data[0].(*NewEmployeesInMap)
 		assert.Equal(t, "11300321", entry.ID)
