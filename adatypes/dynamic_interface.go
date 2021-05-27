@@ -31,6 +31,8 @@ type DynamicInterface struct {
 	FieldNames map[string][]string
 }
 
+// generateFieldNames examine all 'adabas'-tags in the given structure and build up
+// field names map pointing to corresponding path with names of structures
 func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string) {
 	Central.Log.Debugf("Generate field names for %s %s", ri.Name(), ri.Kind())
 	if ri.Kind() != reflect.Struct {
@@ -58,7 +60,6 @@ func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string)
 			if len(s) > 1 {
 				switch s[1] {
 				case "key":
-					//fmt.Println(fieldName, adabasFieldName)
 					f["#key"] = []string{adabasFieldName}
 				case "isn":
 					f["#isn"] = []string{adabasFieldName}
@@ -74,16 +75,21 @@ func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string)
 				}
 			}
 		}
+
+		// copy of subfields
 		subFields := make([]string, len(fields))
 		copy(subFields, fields)
 		subFields = append(subFields, fieldName)
-		Central.Log.Debugf("Set field names to %s -> %v", adabasFieldName, subFields)
 		f[adabasFieldName] = subFields
-		Central.Log.Debugf("Type struct field = %v", ct.Type.Kind())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Set field names to %s -> %v", adabasFieldName, subFields)
+			Central.Log.Debugf("Type struct field = %v", ct.Type.Kind())
+		}
+
+		// Handle special case for pointer and slices
 		switch ct.Type.Kind() {
 		case reflect.Ptr:
 			Central.Log.Debugf("Pointer found %v %v", ct.Type.Name(), ct.Type.Elem().Name())
-			//et := reflect.TypeOf(ct.Type.Elem())
 			generateFieldNames(ct.Type.Elem(), f, subFields)
 		case reflect.Slice:
 			Central.Log.Debugf("Slice found %v %v", ct.Type.Name(), ct.Type.Elem().Name())
