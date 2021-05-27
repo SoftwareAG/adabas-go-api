@@ -184,106 +184,195 @@ func formatBufferTraverserLeave(adaValue IAdaValue, x interface{}) (TraverseResu
 	return Continue, nil
 }
 
-func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
-	Central.Log.Debugf("Format Buffer Read traverser: %s-%s level=%d/%d -> %T", adaType.Name(), adaType.ShortName(),
-		adaType.Level(), level, adaType)
-	if adaType.HasFlagSet(FlagOptionReference) {
-		Central.Log.Debugf("Skip reference")
-		return nil
+func generateFormatBufferPeriodGroup(adabasRequest *Request, adaType IAdaType) {
+	if !adabasRequest.DescriptorRead {
+		Central.Log.Debugf(" FOSI: %v", adaType.HasFlagSet(FlagOptionSingleIndex))
+		if !adaType.HasFlagSet(FlagOptionSingleIndex) {
+			buffer := &(adabasRequest.FormatBuffer)
+			if buffer.Len() > 0 {
+				buffer.WriteString(",")
+			}
+			structureType := adaType.(*StructureType)
+			r := structureType.peRange.FormatBuffer()
+			Central.Log.Debugf("------->>>>>> Range %s=%s%s %p", structureType.name, structureType.shortName, r, structureType)
+			buffer.WriteString(adaType.ShortName() + "C,4,B")
+			adabasRequest.RecordBufferLength += 4
+			if !adaType.HasFlagSet(FlagOptionAtomicFB) && !adaType.HasFlagSet(FlagOptionPart) {
+				Central.Log.Debugf("No MU field, use general range group query")
+				if buffer.Len() > 0 {
+					buffer.WriteString(",")
+				}
+				buffer.WriteString(fmt.Sprintf("%s%s", adaType.ShortName(), r))
+				adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
+			}
+		}
 	}
-	adabasRequest := x.(*Request)
-	Central.Log.Debugf("Curent Record Buffer length : %d", adabasRequest.RecordBufferLength)
+}
+
+func generateFormatBufferMultipleField(adabasRequest *Request, adaType IAdaType) {
 	buffer := &(adabasRequest.FormatBuffer)
-	switch adaType.Type() {
-	case FieldTypePeriodGroup:
-		if !adabasRequest.DescriptorRead {
-			Central.Log.Debugf(" FOSI: %v", adaType.HasFlagSet(FlagOptionSingleIndex))
-			if !adaType.HasFlagSet(FlagOptionSingleIndex) {
-				if buffer.Len() > 0 {
-					buffer.WriteString(",")
-				}
-				structureType := adaType.(*StructureType)
-				r := structureType.peRange.FormatBuffer()
-				Central.Log.Debugf("------->>>>>> Range %s=%s%s %p", structureType.name, structureType.shortName, r, structureType)
-				buffer.WriteString(adaType.ShortName() + "C,4,B")
-				adabasRequest.RecordBufferLength += 4
-				if !adaType.HasFlagSet(FlagOptionAtomicFB) && !adaType.HasFlagSet(FlagOptionPart) {
-					Central.Log.Debugf("No MU field, use general range group query")
-					if buffer.Len() > 0 {
-						buffer.WriteString(",")
-					}
-					buffer.WriteString(fmt.Sprintf("%s%s", adaType.ShortName(), r))
-					adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
-				}
-			}
+	if adaType.HasFlagSet(FlagOptionPE) {
+		structureType := adaType.(*StructureType)
+		// r := structureType.peRange.FormatBuffer()
+		// buffer.WriteString(adaType.ShortName() + r + "C,4,B")
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Periodic range FB PE CS: %s", structureType.PeriodicRange().FormatBuffer())
+			Central.Log.Debugf("Multiple range FB PE CS: %s", structureType.MultipleRange().FormatBuffer())
 		}
-	case FieldTypeMultiplefield:
-		if adaType.HasFlagSet(FlagOptionPE) {
+		if adaType.PeriodicRange().IsSingleIndex() {
 			structureType := adaType.(*StructureType)
-			// r := structureType.peRange.FormatBuffer()
-			// buffer.WriteString(adaType.ShortName() + r + "C,4,B")
-			if Central.IsDebugLevel() {
-				Central.Log.Debugf("Periodic range FB PE CS: %s", structureType.PeriodicRange().FormatBuffer())
-				Central.Log.Debugf("Multiple range FB PE CS: %s", structureType.MultipleRange().FormatBuffer())
+			// fmt.Println("PE Range:", structureType.peRange.FormatBuffer())
+			// fmt.Println("MU Range:", structureType.muRange.FormatBuffer())
+			if buffer.Len() > 0 {
+				buffer.WriteString(",")
 			}
-			if adaType.PeriodicRange().IsSingleIndex() {
-				structureType := adaType.(*StructureType)
-				// fmt.Println("PE Range:", structureType.peRange.FormatBuffer())
-				// fmt.Println("MU Range:", structureType.muRange.FormatBuffer())
-				if buffer.Len() > 0 {
-					buffer.WriteString(",")
-				}
-				at := structureType.SubTypes[0]
-				if !at.MultipleRange().IsSingleIndex() {
-					buffer.WriteString(adaType.ShortName() + structureType.peRange.FormatBuffer() + "C,4,B,")
-				}
-				buffer.WriteString(fmt.Sprintf("%s%s(%s),%d,%s",
-					at.ShortName(), at.PeriodicRange().FormatBuffer(), at.MultipleRange().FormatBuffer(),
-					at.Length(), at.Type().FormatCharacter()))
-			}
-		} else {
-			structureType := adaType.(*StructureType)
 			at := structureType.SubTypes[0]
-			Central.Log.Debugf("Multiple range FB CS: %s", structureType.MultipleRange().FormatBuffer())
-			Central.Log.Debugf("Multiple range FB C: %s", at.MultipleRange().FormatBuffer())
-			if !structureType.MultipleRange().IsSingleIndex() {
-				if buffer.Len() > 0 {
-					buffer.WriteString(",")
-				}
-				buffer.WriteString(adaType.ShortName() + "C,4,B")
+			if !at.MultipleRange().IsSingleIndex() {
+				buffer.WriteString(adaType.ShortName() + structureType.peRange.FormatBuffer() + "C,4,B,")
 			}
+			buffer.WriteString(fmt.Sprintf("%s%s(%s),%d,%s",
+				at.ShortName(), at.PeriodicRange().FormatBuffer(), at.MultipleRange().FormatBuffer(),
+				at.Length(), at.Type().FormatCharacter()))
 		}
-		adabasRequest.RecordBufferLength += 4
-		if !adaType.HasFlagSet(FlagOptionPE) {
+	} else {
+		structureType := adaType.(*StructureType)
+		at := structureType.SubTypes[0]
+		Central.Log.Debugf("Multiple range FB CS: %s", structureType.MultipleRange().FormatBuffer())
+		Central.Log.Debugf("Multiple range FB C: %s", at.MultipleRange().FormatBuffer())
+		if !structureType.MultipleRange().IsSingleIndex() {
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")
 			}
-			strType := adaType.(*StructureType)
-			subType := strType.SubTypes[0]
-			r := strType.muRange.FormatBuffer()
-			Central.Log.Debugf("Multiple range FB: %s", r)
-			buffer.WriteString(fmt.Sprintf("%s%s,%d,%s", adaType.ShortName(), r, subType.Length(), subType.Type().FormatCharacter()))
-			adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
+			buffer.WriteString(adaType.ShortName() + "C,4,B")
 		}
-		Central.Log.Debugf("FB MU %s", buffer.String())
-	case FieldTypeSuperDesc, FieldTypeHyperDesc:
-		if !adaType.IsOption(FieldOptionPE) {
-			if buffer.Len() > 0 {
-				buffer.WriteString(",")
-			}
+	}
+	adabasRequest.RecordBufferLength += 4
+	if !adaType.HasFlagSet(FlagOptionPE) {
+		if buffer.Len() > 0 {
+			buffer.WriteString(",")
+		}
+		strType := adaType.(*StructureType)
+		subType := strType.SubTypes[0]
+		r := strType.muRange.FormatBuffer()
+		Central.Log.Debugf("Multiple range FB: %s", r)
+		buffer.WriteString(fmt.Sprintf("%s%s,%d,%s", adaType.ShortName(), r, subType.Length(), subType.Type().FormatCharacter()))
+		adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
+	}
+	Central.Log.Debugf("FB MU %s", buffer.String())
+}
+
+func generateFormatBufferSpecialDescriptor(adabasRequest *Request, adaType IAdaType) {
+	if !adaType.IsOption(FieldOptionPE) {
+		buffer := &(adabasRequest.FormatBuffer)
+		if buffer.Len() > 0 {
+			buffer.WriteString(",")
+		}
+		buffer.WriteString(fmt.Sprintf("%s,%d,A", adaType.ShortName(),
+			adaType.Length()))
+		adabasRequest.RecordBufferLength += adaType.Length()
+	} else {
+		if adabasRequest.DescriptorRead {
+			buffer := &(adabasRequest.FormatBuffer)
 			buffer.WriteString(fmt.Sprintf("%s,%d,A", adaType.ShortName(),
 				adaType.Length()))
 			adabasRequest.RecordBufferLength += adaType.Length()
 		} else {
-			if adabasRequest.DescriptorRead {
-				buffer.WriteString(fmt.Sprintf("%s,%d,A", adaType.ShortName(),
-					adaType.Length()))
-				adabasRequest.RecordBufferLength += adaType.Length()
+			Central.Log.Debugf("Skip PE Desc %s", adaType.ShortName())
+		}
+	}
+}
+
+func generateFormatBufferField(adabasRequest *Request, adaType IAdaType) {
+	if !adaType.IsStructure() {
+		buffer := &(adabasRequest.FormatBuffer)
+		if adabasRequest.DescriptorRead {
+			buffer.WriteString(adaType.ShortName())
+			adabasRequest.RecordBufferLength += adaType.Length()
+		} else {
+			Central.Log.Debugf(" MUGhost: %v", adaType.HasFlagSet(FlagOptionMUGhost))
+			Central.Log.Debugf(" SingleIndex: %v", adaType.HasFlagSet(FlagOptionSingleIndex))
+			Central.Log.Debugf(" PE: %v", adaType.HasFlagSet(FlagOptionPE))
+			Central.Log.Debugf(" AtomicFB: %v", adaType.HasFlagSet(FlagOptionAtomicFB))
+			Central.Log.Debugf(" Part: %v", adaType.HasFlagSet(FlagOptionPart))
+			if !adaType.HasFlagSet(FlagOptionMUGhost) && (!adaType.HasFlagSet(FlagOptionPE) ||
+				(adaType.HasFlagSet(FlagOptionPE) && (adaType.HasFlagSet(FlagOptionAtomicFB) || adaType.HasFlagSet(FlagOptionPart)))) {
+				if buffer.Len() > 0 {
+					buffer.WriteString(",")
+				}
+				fieldIndex := ""
+				genType := adaType
+				if adaType.Type() == FieldTypeRedefinition {
+					genType = adaType.(*RedefinitionType).MainType
+				}
+				if adaType.Type() == FieldTypeLBString {
+					partialRange := adaType.PartialRange()
+					if partialRange != nil {
+						Central.Log.Infof("Partial Range %d:%d\n", partialRange.from, partialRange.to)
+						if partialRange.from == 0 {
+							buffer.WriteString(fmt.Sprintf("%s(*,%d)", adaType.ShortName(), partialRange.to))
+						} else {
+							buffer.WriteString(fmt.Sprintf("%s(%d,%d)", adaType.ShortName(), partialRange.from, partialRange.to))
+						}
+						adabasRequest.RecordBufferLength += uint32(partialRange.to)
+					} else {
+						if genType.HasFlagSet(FlagOptionPE) {
+							t := genType.(*AdaType)
+							fieldIndex = t.peRange.FormatBuffer()
+						}
+						buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(1,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
+							PartialLobSize))
+						adabasRequest.RecordBufferLength += (4 + PartialLobSize)
+					}
+				} else {
+					if genType.HasFlagSet(FlagOptionPE) {
+						t := genType.(*AdaType)
+						// fieldIndex = "1-N"
+						fieldIndex = t.peRange.FormatBuffer()
+						adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
+					} else {
+						if genType.Length() == uint32(0) {
+							adabasRequest.RecordBufferLength += 512
+						} else {
+							adabasRequest.RecordBufferLength += adaType.Length()
+						}
+					}
+					if Central.IsDebugLevel() {
+						Central.Log.Debugf("FB generate %T %s -> %s field index=%s", adaType, genType.ShortName(), genType.Type().FormatCharacter(), fieldIndex)
+						// TODO check pe range
+						ft := adaType.(*AdaType)
+						Central.Log.Debugf("FB %s peRange=%s muRange=%s", ft.name, ft.peRange.FormatBuffer(), ft.muRange.FormatBuffer())
+					}
+					buffer.WriteString(fmt.Sprintf("%s%s,%d,%s", genType.ShortName(), fieldIndex,
+						genType.Length(), genType.Type().FormatCharacter()))
+				}
 			} else {
-				Central.Log.Debugf("Skip PE Desc %s", adaType.ShortName())
+				Central.Log.Debugf("MU ghost or PE")
 			}
 		}
+	} else {
+		Central.Log.Debugf("Unknown FB generator")
+	}
+
+}
+
+func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+	Central.Log.Debugf("Format Buffer Read traverser: %s-%s level=%d/%d -> %T", adaType.Name(), adaType.ShortName(),
+		adaType.Level(), level, adaType)
+	if adaType.HasFlagSet(FlagOptionReference) {
+		Central.Log.Debugf("Skip FB reference generation [%s]", adaType.Name())
+		return nil
+	}
+	adabasRequest := x.(*Request)
+	Central.Log.Debugf("Curent Record Buffer length : %d", adabasRequest.RecordBufferLength)
+	switch adaType.Type() {
+	case FieldTypePeriodGroup:
+		generateFormatBufferPeriodGroup(adabasRequest, adaType)
+	case FieldTypeMultiplefield:
+		generateFormatBufferMultipleField(adabasRequest, adaType)
+	case FieldTypeSuperDesc, FieldTypeHyperDesc:
+		generateFormatBufferSpecialDescriptor(adabasRequest, adaType)
 	case FieldTypeFieldLength:
+		buffer := &(adabasRequest.FormatBuffer)
 		if buffer.Len() > 0 {
 			buffer.WriteString(",")
 		}
@@ -295,83 +384,19 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 		adabasRequest.RecordBufferLength += 4
 	case FieldTypePhonetic, FieldTypeCollation, FieldTypeReferential:
 	case FieldTypeRedefinition:
+		buffer := &(adabasRequest.FormatBuffer)
 		if buffer.Len() > 0 {
 			buffer.WriteString(",")
 		}
 		genType := adaType.(*RedefinitionType).MainType
 		buffer.WriteString(fmt.Sprintf("%s,%d,%s", genType.ShortName(),
 			genType.Length(), genType.Type().FormatCharacter()))
+		adabasRequest.RecordBufferLength += genType.Length()
 	default:
-		if !adaType.IsStructure() {
-			if adabasRequest.DescriptorRead {
-				buffer.WriteString(adaType.ShortName())
-				adabasRequest.RecordBufferLength += adaType.Length()
-			} else {
-				Central.Log.Debugf(" MUGhost: %v", adaType.HasFlagSet(FlagOptionMUGhost))
-				Central.Log.Debugf(" SingleIndex: %v", adaType.HasFlagSet(FlagOptionSingleIndex))
-				Central.Log.Debugf(" PE: %v", adaType.HasFlagSet(FlagOptionPE))
-				Central.Log.Debugf(" AtomicFB: %v", adaType.HasFlagSet(FlagOptionAtomicFB))
-				Central.Log.Debugf(" Part: %v", adaType.HasFlagSet(FlagOptionPart))
-				if !adaType.HasFlagSet(FlagOptionMUGhost) && (!adaType.HasFlagSet(FlagOptionPE) ||
-					(adaType.HasFlagSet(FlagOptionPE) && (adaType.HasFlagSet(FlagOptionAtomicFB) || adaType.HasFlagSet(FlagOptionPart)))) {
-					if buffer.Len() > 0 {
-						buffer.WriteString(",")
-					}
-					fieldIndex := ""
-					genType := adaType
-					if adaType.Type() == FieldTypeRedefinition {
-						genType = adaType.(*RedefinitionType).MainType
-					}
-					if adaType.Type() == FieldTypeLBString {
-						partialRange := adaType.PartialRange()
-						if partialRange != nil {
-							Central.Log.Infof("Partial Range %d:%d\n", partialRange.from, partialRange.to)
-							if partialRange.from == 0 {
-								buffer.WriteString(fmt.Sprintf("%s(*,%d)", adaType.ShortName(), partialRange.to))
-							} else {
-								buffer.WriteString(fmt.Sprintf("%s(%d,%d)", adaType.ShortName(), partialRange.from, partialRange.to))
-							}
-							adabasRequest.RecordBufferLength += uint32(partialRange.to)
-						} else {
-							if genType.HasFlagSet(FlagOptionPE) {
-								t := genType.(*AdaType)
-								fieldIndex = t.peRange.FormatBuffer()
-							}
-							buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(1,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
-								PartialLobSize))
-							adabasRequest.RecordBufferLength += (4 + PartialLobSize)
-						}
-					} else {
-						if genType.HasFlagSet(FlagOptionPE) {
-							t := genType.(*AdaType)
-							// fieldIndex = "1-N"
-							fieldIndex = t.peRange.FormatBuffer()
-							adabasRequest.RecordBufferLength += adabasRequest.Option.multipleSize
-						} else {
-							if genType.Length() == uint32(0) {
-								adabasRequest.RecordBufferLength += 512
-							} else {
-								adabasRequest.RecordBufferLength += adaType.Length()
-							}
-						}
-						if Central.IsDebugLevel() {
-							Central.Log.Debugf("FB generate %T %s -> %s field index=%s", adaType, genType.ShortName(), genType.Type().FormatCharacter(), fieldIndex)
-							// TODO check pe range
-							ft := adaType.(*AdaType)
-							Central.Log.Debugf("FB %s peRange=%s muRange=%s", ft.name, ft.peRange.FormatBuffer(), ft.muRange.FormatBuffer())
-						}
-						buffer.WriteString(fmt.Sprintf("%s%s,%d,%s", genType.ShortName(), fieldIndex,
-							genType.Length(), genType.Type().FormatCharacter()))
-					}
-				} else {
-					Central.Log.Debugf("MU ghost or PE")
-				}
-			}
-		} else {
-			Central.Log.Debugf("Unknown FB generator")
-		}
+		generateFormatBufferField(adabasRequest, adaType)
 	}
 	if Central.IsDebugLevel() {
+		buffer := &(adabasRequest.FormatBuffer)
 		Central.Log.Debugf("Final type generated Format Buffer : %s", buffer.String())
 		Central.Log.Debugf("Final Record Buffer length : %d", adabasRequest.RecordBufferLength)
 	}
