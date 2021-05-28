@@ -542,3 +542,55 @@ func TestInlineMapPeriodSearchAndOrder(t *testing.T) {
 		assert.Len(t, entry.Income, 5)
 	}
 }
+
+type Parameter struct {
+	Parameter string `adabas:"::PN"`
+}
+
+type Job struct {
+	Isn        uint64      `adabas:":isn"`
+	Name       string      `adabas:"Id:key:NA"`
+	HashID     string      `adabas:"::JI"`
+	Flags      byte        `adabas:"::JL"`
+	User       string      `adabas:"::US"`
+	Parameters []Parameter `adabas:"::PA"`
+}
+
+func TestInlineMapJobSearchAndOrder(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "inmap.log")
+
+	connection, cerr := NewConnection("acj;inmap=23")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest((*Job)(nil), 5)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = request.QueryFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	response, rerr := request.SearchAndOrder("TY=J", "NA")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	if assert.Len(t, response.Data, 5) {
+		entry := response.Data[0].(*Job)
+		assert.Equal(t, "ADAREP", entry.Name)
+		assert.Equal(t, uint8(0), entry.Flags)
+		assert.Len(t, entry.Parameters, 2)
+		assert.Equal(t, Parameter(Parameter{Parameter: "db=24"}), entry.Parameters[0])
+		assert.Equal(t, Parameter(Parameter{Parameter: "sum"}), entry.Parameters[1])
+	}
+}
