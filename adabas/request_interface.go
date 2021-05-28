@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2020 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -20,10 +20,56 @@
 package adabas
 
 import (
+	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
+
+type createTypeInterface struct {
+	fields     []reflect.StructField
+	fieldHash  map[string]bool
+	fieldNames map[string][]string
+}
+
+// traverseCreateTypeInterface traverser method create type interface
+func traverseCreateTypeInterface(adaType adatypes.IAdaType, parentType adatypes.IAdaType, level int, x interface{}) error {
+	cti := x.(*createTypeInterface)
+	name := strings.ReplaceAll(adaType.Name(), "-", "")
+	adatypes.Central.Log.Debugf("Add field %s/%s of %v", adaType.Name(), name, cti.fieldHash[name])
+	cti.fieldNames[name] = []string{adaType.Name()}
+	switch adaType.Type() {
+	case adatypes.FieldTypeString, adatypes.FieldTypeUnicode,
+		adatypes.FieldTypeLAString, adatypes.FieldTypeLBString,
+		adatypes.FieldTypeLAUnicode, adatypes.FieldTypeLBUnicode:
+		cti.fields = append(cti.fields, reflect.StructField{Name: name,
+			Type: reflect.TypeOf(string(""))})
+	case adatypes.FieldTypePacked, adatypes.FieldTypeUnpacked:
+		cti.fields = append(cti.fields, reflect.StructField{Name: name,
+			Type: reflect.TypeOf(int64(0))})
+	case adatypes.FieldTypeByte, adatypes.FieldTypeInt2, adatypes.FieldTypeInt4:
+		cti.fields = append(cti.fields, reflect.StructField{Name: name,
+			Type: reflect.TypeOf(int32(0))})
+	case adatypes.FieldTypeInt8:
+		cti.fields = append(cti.fields, reflect.StructField{Name: name,
+			Type: reflect.TypeOf(int64(0))})
+	case adatypes.FieldTypeUByte, adatypes.FieldTypeUInt2, adatypes.FieldTypeUInt4:
+		cti.fields = append(cti.fields, reflect.StructField{Name: name,
+			Type: reflect.TypeOf(uint32(0))})
+	case adatypes.FieldTypeUInt8:
+		cti.fields = append(cti.fields, reflect.StructField{Name: name,
+			Type: reflect.TypeOf(uint64(0))})
+	case adatypes.FieldTypeMultiplefield:
+	case adatypes.FieldTypeGroup, adatypes.FieldTypePeriodGroup, adatypes.FieldTypeStructure:
+	case adatypes.FieldTypeSuperDesc, adatypes.FieldTypeHyperDesc, adatypes.FieldTypeCollation:
+	case adatypes.FieldTypePhonetic, adatypes.FieldTypeReferential:
+	default:
+		fmt.Println("Field Type", name, adaType.Type())
+		return adatypes.NewGenericError(175, fmt.Sprintf("%T", adaType.Type()))
+	}
+	return nil
+}
 
 func (request *commonRequest) createDynamic(i interface{}) {
 	request.dynamic = adatypes.CreateDynamicInterface(i)

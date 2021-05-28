@@ -270,8 +270,7 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 				newType.muRange = fieldMap.lastStructure.muRange
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
 				newType.RemoveFlag(FlagOptionToBeRemoved)
-			case FieldTypeHyperDesc:
-			case FieldTypePhonetic:
+			case FieldTypeHyperDesc, FieldTypePhonetic, FieldTypeCollation, FieldTypeReferential, FieldTypeRedefinition:
 			default:
 				newType := &AdaType{}
 				oldType := adaType.(*AdaType)
@@ -502,25 +501,25 @@ func removeFromTree(value *StructureType) {
 func SetValueData(s reflect.Value, v IAdaValue) error {
 	Central.Log.Debugf("%s = %s", v.Type().Name(), s.Type().Name())
 	switch s.Interface().(type) {
-	case *int8, *int16, *int32, *int64:
+	case *int, *int8, *int16, *int32, *int64:
 		vi, err := v.Int64()
 		if err != nil {
 			return err
 		}
 		s.Elem().SetInt(vi)
-	case *uint8, *uint16, *uint32, *uint64:
+	case *uint, *uint8, *uint16, *uint32, *uint64:
 		vui, err := v.UInt64()
 		if err != nil {
 			return err
 		}
 		s.Elem().SetUint(vui)
-	case int8, int16, int32, int64:
+	case int, int8, int16, int32, int64:
 		vi, err := v.Int64()
 		if err != nil {
 			return err
 		}
 		s.SetInt(vi)
-	case uint8, uint16, uint32, uint64:
+	case uint, uint8, uint16, uint32, uint64:
 		vui, err := v.UInt64()
 		if err != nil {
 			return err
