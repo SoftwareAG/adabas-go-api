@@ -102,16 +102,24 @@ func (tp *valueInterface) evaluatePeriodGroup(adaValue IAdaValue, v reflect.Valu
 		cap = sv.NrElements()
 	}
 	elemSlice := reflect.MakeSlice(reflect.SliceOf(stt), sv.NrElements(), cap)
+	sliceElementPointer := false
 	if stt.Kind() == reflect.Ptr {
+		sliceElementPointer = true
 		stt = stt.Elem()
 	}
-	Central.Log.Debugf("Created slice %s", elemSlice.Type().String())
-	Central.Log.Debugf("of slice entry %s - %s %v slice %v", stt.Name(), stt.String(), stt.Kind(), elemSlice.Type())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Created slice %s", elemSlice.Type().String())
+		Central.Log.Debugf("of slice entry %s - %s %v slice %v", stt.Name(), stt.String(), stt.Kind(), elemSlice.Type())
+	}
 
 	for i := 0; i < sv.NrElements(); i++ {
 		entry := reflect.New(stt)
 		Central.Log.Debugf("New entry %s -> %s ok=%v i=%v", entry.Type().Name(), entry.Type().String(), entry.IsValid(), entry.CanInterface())
-		elemSlice.Index(i).Set(entry)
+		if sliceElementPointer {
+			elemSlice.Index(i).Set(entry)
+		} else {
+			elemSlice.Index(i).Set(entry.Elem())
+		}
 	}
 	f.Set(elemSlice)
 	Central.Log.Debugf("Push slice to stack for %s", adaValue.Type().Name())
