@@ -587,10 +587,10 @@ func TestInlineMapJobSearchAndOrder(t *testing.T) {
 	}
 	if assert.Len(t, response.Data, 5) {
 		entry := response.Data[0].(*Job)
-		assert.Equal(t, "1620208612967", entry.Name)
+		assert.Equal(t, "ADAREP", entry.Name)
 		assert.Equal(t, uint8(0), entry.Flags)
-		assert.Len(t, entry.Parameters, 4)
-		assert.Equal(t, Parameter(Parameter{Parameter: "DBID=23"}), entry.Parameters[0])
-		assert.Equal(t, Parameter(Parameter{Parameter: "ET_SYNC_WAIT=10"}), entry.Parameters[3])
+		assert.Len(t, entry.Parameters, 2)
+		assert.Equal(t, Parameter(Parameter{Parameter: "db=24"}), entry.Parameters[0])
+		assert.Equal(t, Parameter(Parameter{Parameter: "ET_SYNC_WAIT=10"}), entry.Parameters[1])
 	}
 }
