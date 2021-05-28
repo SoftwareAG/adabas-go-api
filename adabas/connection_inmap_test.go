@@ -585,7 +585,7 @@ func TestInlineMapJobSearchAndOrder(t *testing.T) {
 	if !assert.NoError(t, rerr) {
 		return
 	}
-	if assert.Len(t, response.Data, 10) {
+	if assert.Len(t, response.Data, 5) {
 		entry := response.Data[0].(*Job)
 		assert.Equal(t, "1620208612967", entry.Name)
 		assert.Equal(t, uint8(0), entry.Flags)
