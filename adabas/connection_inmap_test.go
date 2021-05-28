@@ -591,6 +591,6 @@ func TestInlineMapJobSearchAndOrder(t *testing.T) {
 		assert.Equal(t, uint8(0), entry.Flags)
 		assert.Len(t, entry.Parameters, 2)
 		assert.Equal(t, Parameter(Parameter{Parameter: "db=24"}), entry.Parameters[0])
-		assert.Equal(t, Parameter(Parameter{Parameter: "ET_SYNC_WAIT=10"}), entry.Parameters[1])
+		assert.Equal(t, Parameter(Parameter{Parameter: "sum"}), entry.Parameters[1])
 	}
 }
