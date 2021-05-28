@@ -503,7 +503,7 @@ func TestInlineMapPeriodSearchAndOrder(t *testing.T) {
 	}
 	defer connection.Close()
 	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
-	request, err := connection.CreateMapReadRequest(&NewEmployeesInMap{})
+	request, err := connection.CreateMapReadRequest((*NewEmployeesInMap)(nil))
 	if !assert.NoError(t, err) {
 		return
 	}
