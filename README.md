@@ -12,7 +12,7 @@
     - [Classic database usage](#classic-database-usage)
     - [Adabas reflected to Go-struct](#adabas-reflected-to-go-struct)
       - [Go-struct with Adabas Map definition](#go-struct-with-adabas-map-definition)
-      - [Define Go-struct to Adabas field name definition](#define-go-struct-to-adabas-field-name-definition)
+      - [Define Go-struct to Adabas shortname field definition](#define-go-struct-to-adabas-shortname-field-definition)
   - [Log output](#log-output)
   - [Summary](#summary)
 
@@ -198,7 +198,7 @@ e := result.Data[0].(*Employees)
 All fields of the struct are mapped to an Adabas Map field name. The `adabas` tag of the struct definition changes the mapped name.
 
 
-#### Define Go-struct to Adabas field name definition
+#### Define Go-struct to Adabas shortname field definition
 
 The Adabas API for Go can handle simple Go struct-definitions to map them to an Adabas field shortname. This is an direct connection into the database. It might be used to work on RAW data or Large objects directly.
 
