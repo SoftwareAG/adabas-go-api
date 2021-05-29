@@ -387,6 +387,8 @@ const (
 	FlagOptionPart
 	// FlagOptionSingleIndex single index query
 	FlagOptionSingleIndex
+	// FlagOptionLengthPE instead of length use period group count
+	FlagOptionLengthPE
 )
 
 // Bit return the Bit of the option flag

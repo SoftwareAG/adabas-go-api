@@ -52,9 +52,10 @@ type FullNameInMap struct {
 }
 
 type NewEmployeesInMap struct {
-	Index  uint64                `adabas:":isn"`
-	ID     string                `adabas:":key:AA"`
-	Income []*NewEmployeesIncome `adabas:"::L0"`
+	Index        uint64                `adabas:":isn"`
+	ID           string                `adabas:":key:AA"`
+	IncomeLength int                   `adabas:"::#L0"`
+	Income       []*NewEmployeesIncome `adabas:"::L0"`
 }
 
 type NewEmployeesIncome struct {
@@ -540,6 +541,51 @@ func TestInlineMapPeriodSearchAndOrder(t *testing.T) {
 		entry := response.Data[0].(*NewEmployeesInMap)
 		assert.Equal(t, "11300321", entry.ID)
 		assert.Len(t, entry.Income, 5)
+	}
+}
+
+func TestInlineMapEmpQuantity(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "inmap.log")
+
+	connection, cerr := NewConnection("acj;inmap=23")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest((*NewEmployeesInMap)(nil), 9)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = request.QueryFields("AA,L0,#L0")
+	if !assert.NoError(t, err) {
+		return
+	}
+	response, rerr := request.ReadLogicalBy("AA")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	if assert.Len(t, response.Data, 20) {
+		entry := response.Data[0].(*NewEmployeesInMap)
+		assert.Equal(t, "11100102", entry.ID)
+		assert.Equal(t, int(4), entry.IncomeLength)
+		assert.Len(t, entry.Income, 4)
+		entry = response.Data[9].(*NewEmployeesInMap)
+		assert.Equal(t, "11100113", entry.ID)
+		assert.Equal(t, int(4), entry.IncomeLength)
+		assert.Len(t, entry.Income, 4)
+		entry = response.Data[19].(*NewEmployeesInMap)
+		assert.Equal(t, "11100305", entry.ID)
+		assert.Equal(t, int(1), entry.IncomeLength)
+		assert.Len(t, entry.Income, 1)
 	}
 }
 
