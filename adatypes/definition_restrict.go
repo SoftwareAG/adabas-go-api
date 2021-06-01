@@ -384,7 +384,7 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 				if fl != "" {
 					rf := false
 					switch {
-					case strings.ToLower(f) == "#isn" || strings.ToLower(f) == "#key":
+					case strings.ToLower(f) == "#isn" || strings.ToLower(f) == "#isnquantity" || strings.ToLower(f) == "#key":
 					case f[0] == '#':
 						// def.IsPeriodGroup(fl)
 						//fl = f[1:]
