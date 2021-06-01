@@ -307,7 +307,7 @@ func generateFormatBufferField(adabasRequest *Request, adaType IAdaType) {
 				if adaType.Type() == FieldTypeLBString {
 					partialRange := adaType.PartialRange()
 					if partialRange != nil {
-						Central.Log.Infof("Partial Range %d:%d\n", partialRange.from, partialRange.to)
+						Central.Log.Debugf("Partial Range %d:%d\n", partialRange.from, partialRange.to)
 						if partialRange.from == 0 {
 							buffer.WriteString(fmt.Sprintf("%s(*,%d)", adaType.ShortName(), partialRange.to))
 						} else {

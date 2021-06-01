@@ -321,7 +321,7 @@ func (adabas *Adabas) callAdabasDriver() (err error) {
 		err = driver.Connect(adabas)
 		if err != nil {
 			adabas.Acbx.Acbxrsp = AdaSysCe
-			adatypes.Central.Log.Infof("Establish TCP context error %v", err)
+			adatypes.Central.Log.Debugf("Establish TCP context error %v", err)
 			err = NewError(adabas)
 			return
 		}

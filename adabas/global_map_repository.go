@@ -70,12 +70,12 @@ func loopMapCache(interval int) {
 		adatypes.Central.Log.Debugf("Start loop map cache check")
 		ada, err := NewAdabas(1)
 		if err != nil {
-			adatypes.Central.Log.Infof("Error loop map cache %v", err)
+			adatypes.Central.Log.Debugf("Error loop map cache %v", err)
 			return
 		}
 		_, err = readAllGlobalMapNames(ada)
 		if err != nil {
-			adatypes.Central.Log.Infof("Some map cache name error %v", err)
+			adatypes.Central.Log.Debugf("Some map cache name error %v", err)
 		}
 		adatypes.Central.Log.Debugf("Number of Hashed maps: %d", len(mapHash))
 		ada.Close()
@@ -236,7 +236,7 @@ func readAllGlobalMapNames(ada *Adabas) (maps []string, err error) {
 			ada.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr, ref)
 		err = mr.LoadMapRepository(ada)
 		if err != nil {
-			adatypes.Central.Log.Infof("Skip repository %s/%d due to error %v define offline", mr.DatabaseURL.URL.String(), mr.Fnr, err)
+			adatypes.Central.Log.Debugf("Skip repository %s/%d due to error %v define offline", mr.DatabaseURL.URL.String(), mr.Fnr, err)
 			mr.online = false
 			continue
 		}
