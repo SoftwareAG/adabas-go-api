@@ -490,9 +490,14 @@ func (connection *Connection) CreateMapReadRequest(param ...interface{}) (reques
 			return
 		}
 		if len(param) > 1 {
-			fnr := param[1].(int)
-			connection.fnr = Fnr(fnr)
-			request.repository.Fnr = Fnr(fnr)
+			switch t := param[1].(type) {
+			case int:
+				connection.fnr = Fnr(t)
+				request.repository.Fnr = Fnr(t)
+			case Fnr:
+				connection.fnr = t
+				request.repository.Fnr = t
+			}
 		} else {
 			connection.fnr = request.adabasMap.Data.Fnr
 		}
@@ -553,8 +558,8 @@ func (connection *Connection) prepareMapUsage(mapName string) (err error) {
 // CreateMapStoreRequest this method creates a store request using an Go struct which
 // struct field names fit to an Adabas Map field. The struct name will be used to search
 // the Adabas Map.
-func (connection *Connection) CreateMapStoreRequest(mapReference interface{}) (request *StoreRequest, err error) {
-	t := reflect.TypeOf(mapReference)
+func (connection *Connection) CreateMapStoreRequest(param ...interface{}) (request *StoreRequest, err error) {
+	t := reflect.TypeOf(param[0])
 	switch t.Kind() {
 	case reflect.Ptr, reflect.Struct:
 		if connection.repository == nil {
@@ -563,7 +568,7 @@ func (connection *Connection) CreateMapStoreRequest(mapReference interface{}) (r
 				// Lock this Adabas Map for ReadRequest creation process of dynamic part
 				connection.adabasMap.lock.Lock()
 				defer connection.adabasMap.lock.Unlock()
-				err = connection.adabasMap.defineByInterface(mapReference)
+				err = connection.adabasMap.defineByInterface(param[0])
 				if err != nil {
 					return nil, err
 				}
@@ -587,19 +592,30 @@ func (connection *Connection) CreateMapStoreRequest(mapReference interface{}) (r
 				}
 			} else {
 				adatypes.Central.Log.Debugf("No repository used: %#v", connection.adabasToMap)
-				request, err = NewStoreRequest(mapReference, connection.adabasToMap)
+				request, err = NewStoreRequest(param[0], connection.adabasToMap)
 			}
 		} else {
 			adatypes.Central.Log.Debugf("With repository used: %#v", connection.adabasMap)
-			request, err = NewStoreRequest(mapReference, connection.adabasToMap, connection.repository)
+			request, err = NewStoreRequest(param[0], connection.adabasToMap, connection.repository)
 			if err != nil {
 				return
 			}
 		}
-		connection.fnr = request.adabasMap.Data.Fnr
+		if len(param) > 1 {
+			switch t := param[1].(type) {
+			case int:
+				connection.fnr = Fnr(t)
+				request.repository.Fnr = Fnr(t)
+			case Fnr:
+				connection.fnr = t
+				request.repository.Fnr = t
+			}
+		} else {
+			connection.fnr = request.adabasMap.Data.Fnr
+		}
 		connection.adabasMap = request.adabasMap
 	case reflect.String:
-		mapName := mapReference.(string)
+		mapName := param[0].(string)
 		err = connection.prepareMapUsage(mapName)
 		if err != nil {
 			return
@@ -624,8 +640,8 @@ func evaluateInterface(mapReference interface{}) string {
 }
 
 // CreateMapDeleteRequest this method creates a delete request using a given Adabas Map name
-func (connection *Connection) CreateMapDeleteRequest(mapReference interface{}) (request *DeleteRequest, err error) {
-	t := reflect.TypeOf(mapReference)
+func (connection *Connection) CreateMapDeleteRequest(param ...interface{}) (request *DeleteRequest, err error) {
+	t := reflect.TypeOf(param[0])
 	switch t.Kind() {
 	case reflect.Ptr, reflect.Struct:
 		if connection.repository == nil {
@@ -634,26 +650,37 @@ func (connection *Connection) CreateMapDeleteRequest(mapReference interface{}) (
 				connection.adabasMap.lock.Lock()
 				defer connection.adabasMap.lock.Unlock()
 				adatypes.Central.Log.Debugf("InMap used: %s", connection.adabasMap.Name)
-				err = connection.adabasMap.defineByInterface(mapReference)
+				err = connection.adabasMap.defineByInterface(param[0])
 				if err != nil {
 					return nil, err
 				}
 				request, err = NewMapDeleteRequest(connection.adabasToData, connection.adabasMap)
 			} else {
 				adatypes.Central.Log.Debugf("No repository used: %#v", connection.adabasToMap)
-				request, err = NewMapNameDeleteRequest(connection.adabasToMap, evaluateInterface(mapReference))
+				request, err = NewMapNameDeleteRequest(connection.adabasToMap, evaluateInterface(param[0]))
 			}
 		} else {
 			adatypes.Central.Log.Debugf("With repository used: %#v", connection.adabasMap)
-			request, err = NewMapNameDeleteRequestRepo(evaluateInterface(mapReference), connection.adabasToMap, connection.repository)
+			request, err = NewMapNameDeleteRequestRepo(evaluateInterface(param[0]), connection.adabasToMap, connection.repository)
 			if err != nil {
 				return
 			}
 		}
-		connection.fnr = request.adabasMap.Data.Fnr
+		if len(param) > 1 {
+			switch t := param[1].(type) {
+			case int:
+				connection.fnr = Fnr(t)
+				request.repository.Fnr = Fnr(t)
+			case Fnr:
+				connection.fnr = t
+				request.repository.Fnr = t
+			}
+		} else {
+			connection.fnr = request.adabasMap.Data.Fnr
+		}
 		connection.adabasMap = request.adabasMap
 	case reflect.String:
-		mapName := mapReference.(string)
+		mapName := param[0].(string)
 		err = connection.prepareMapUsage(mapName)
 		if err != nil {
 			return
