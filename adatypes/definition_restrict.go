@@ -20,7 +20,6 @@
 package adatypes
 
 import (
-	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -405,10 +404,10 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 						rf = true
 						fallthrough
 					default:
-						if _, ok := def.fileFields[fl]; !ok {
-							fmt.Println(fl, "unknown field")
-							return nil, NewGenericError(0)
-						}
+						// if _, ok := def.fileFields[fl]; !ok {
+						// 	fmt.Println(fl, "unknown field")
+						// 	return nil, NewGenericError(0)
+						// }
 						fq := newFieldQuery(fl, rf, s, mt[4], mt[6], mt[7])
 						fieldMap.set[fl] = fq
 					}
