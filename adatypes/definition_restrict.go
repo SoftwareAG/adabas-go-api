@@ -20,7 +20,6 @@
 package adatypes
 
 import (
-	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -385,7 +384,7 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 				if fl != "" {
 					rf := false
 					switch {
-					case strings.ToLower(f) == "#isn" || strings.ToLower(f) == "#key":
+					case strings.ToLower(f) == "#isn" || strings.ToLower(f) == "#isnquantity" || strings.ToLower(f) == "#key":
 					case f[0] == '#':
 						// def.IsPeriodGroup(fl)
 						//fl = f[1:]
@@ -405,10 +404,10 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 						rf = true
 						fallthrough
 					default:
-						if _, ok := def.fileFields[fl]; !ok {
-							fmt.Println(fl, "unknown field")
-							return nil, NewGenericError(0)
-						}
+						// if _, ok := def.fileFields[fl]; !ok {
+						// 	fmt.Println(fl, "unknown field")
+						// 	return nil, NewGenericError(0)
+						// }
 						fq := newFieldQuery(fl, rf, s, mt[4], mt[6], mt[7])
 						fieldMap.set[fl] = fq
 					}

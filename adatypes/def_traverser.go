@@ -182,7 +182,7 @@ func dumpValuesEnterTrav(adaValue IAdaValue, x interface{}) (TraverseResult, err
 	default:
 		name = adaValue.Type().Name()
 	}
-	if adaValue.Type().IsStructure() {
+	if adaValue.Type().IsStructure() && adaValue.Type().Type() != FieldTypeRedefinition {
 		structureValue := adaValue.(*StructureValue)
 		buffer.WriteString(fmt.Sprintf("%s%s = [%d]\n", y, name, structureValue.NrElements()))
 	} else {
