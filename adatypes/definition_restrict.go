@@ -20,6 +20,7 @@
 package adatypes
 
 import (
+	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -270,8 +271,7 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 				newType.muRange = fieldMap.lastStructure.muRange
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
 				newType.RemoveFlag(FlagOptionToBeRemoved)
-			case FieldTypeHyperDesc:
-			case FieldTypePhonetic:
+			case FieldTypeHyperDesc, FieldTypePhonetic, FieldTypeCollation, FieldTypeReferential, FieldTypeRedefinition:
 			default:
 				newType := &AdaType{}
 				oldType := adaType.(*AdaType)
@@ -387,14 +387,28 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 					switch {
 					case strings.ToLower(f) == "#isn" || strings.ToLower(f) == "#key":
 					case f[0] == '#':
+						// def.IsPeriodGroup(fl)
 						//fl = f[1:]
+						var adaType IAdaType
+						var ok bool
+						if adaType, ok = def.fileFields[fl[1:]]; !ok {
+							return nil, NewGenericError(0)
+						}
 						lenType := NewType(FieldTypeFieldLength, fl)
+						switch adaType.Type() {
+						case FieldTypePeriodGroup, FieldTypeMultiplefield:
+							lenType.AddFlag(FlagOptionLengthPE)
+						}
 						fieldMap.parentStructure.SubTypes = append(fieldMap.parentStructure.SubTypes, lenType)
 					case f[0] == '@':
 						fl = f[1:]
 						rf = true
 						fallthrough
 					default:
+						if _, ok := def.fileFields[fl]; !ok {
+							fmt.Println(fl, "unknown field")
+							return nil, NewGenericError(0)
+						}
 						fq := newFieldQuery(fl, rf, s, mt[4], mt[6], mt[7])
 						fieldMap.set[fl] = fq
 					}
@@ -502,25 +516,25 @@ func removeFromTree(value *StructureType) {
 func SetValueData(s reflect.Value, v IAdaValue) error {
 	Central.Log.Debugf("%s = %s", v.Type().Name(), s.Type().Name())
 	switch s.Interface().(type) {
-	case *int8, *int16, *int32, *int64:
+	case *int, *int8, *int16, *int32, *int64:
 		vi, err := v.Int64()
 		if err != nil {
 			return err
 		}
 		s.Elem().SetInt(vi)
-	case *uint8, *uint16, *uint32, *uint64:
+	case *uint, *uint8, *uint16, *uint32, *uint64:
 		vui, err := v.UInt64()
 		if err != nil {
 			return err
 		}
 		s.Elem().SetUint(vui)
-	case int8, int16, int32, int64:
+	case int, int8, int16, int32, int64:
 		vi, err := v.Int64()
 		if err != nil {
 			return err
 		}
 		s.SetInt(vi)
-	case uint8, uint16, uint32, uint64:
+	case uint, uint8, uint16, uint32, uint64:
 		vui, err := v.UInt64()
 		if err != nil {
 			return err

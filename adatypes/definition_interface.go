@@ -35,13 +35,14 @@ type valueInterface struct {
 }
 
 // evaluateMultipleField evaluate multiple field data into dynamic interface fields
-func evaluateMultipleField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (result TraverseResult, err error) {
+func (tp *valueInterface) evaluateMultipleField(adaValue IAdaValue, v reflect.Value) (result TraverseResult, err error) {
 	f, refErr := evaluateReflectValue(v, adaValue, tp)
 	if refErr != nil {
 		return SkipTree, refErr
 	}
 	t := v.Type()
-	st, ok := t.FieldByName(adaValue.Type().Name())
+	name := tp.evaluateReflectName(adaValue.Type().Name())
+	st, ok := t.FieldByName(name)
 	Central.Log.Debugf("Found MU field t=%v st=%v ok=%v", t, st.Name, ok)
 	if !ok {
 		return Continue, nil
@@ -60,11 +61,14 @@ func evaluateMultipleField(adaValue IAdaValue, v reflect.Value, tp *valueInterfa
 	for i := 0; i < sv.NrElements(); i++ {
 		entry := reflect.New(stt)
 		Central.Log.Debugf("New entry %s -> %s ok=%v i=%v", entry.Type().Name(), entry.Type().String(), entry.IsValid(), entry.CanInterface())
+		if entry.Kind() == reflect.Ptr {
+			entry = entry.Elem()
+		}
 		err := SetValueData(entry, sv.Elements[i].Values[0])
 		if err != nil {
 			return EndTraverser, err
 		}
-		elemSlice.Index(i).Set(entry.Elem())
+		elemSlice.Index(i).Set(entry)
 	}
 	f.Set(elemSlice)
 	//		tp.curVal = elemSlice
@@ -73,7 +77,7 @@ func evaluateMultipleField(adaValue IAdaValue, v reflect.Value, tp *valueInterfa
 }
 
 // evaluatePeriodGroup evaluate period group data into dynamic interface fields
-func evaluatePeriodGroup(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (result TraverseResult, err error) {
+func (tp *valueInterface) evaluatePeriodGroup(adaValue IAdaValue, v reflect.Value) (result TraverseResult, err error) {
 	f, refErr := evaluateReflectValue(v, adaValue, tp)
 	if refErr != nil {
 		Central.Log.Debugf("Error evaluating reflect value %s", adaValue.Type().Name())
@@ -98,16 +102,24 @@ func evaluatePeriodGroup(adaValue IAdaValue, v reflect.Value, tp *valueInterface
 		cap = sv.NrElements()
 	}
 	elemSlice := reflect.MakeSlice(reflect.SliceOf(stt), sv.NrElements(), cap)
+	sliceElementPointer := false
 	if stt.Kind() == reflect.Ptr {
+		sliceElementPointer = true
 		stt = stt.Elem()
 	}
-	Central.Log.Debugf("Created slice %s", elemSlice.Type().String())
-	Central.Log.Debugf("of slice entry %s - %s %v slice %v", stt.Name(), stt.String(), stt.Kind(), elemSlice.Type())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Created slice %s", elemSlice.Type().String())
+		Central.Log.Debugf("of slice entry %s - %s %v slice %v", stt.Name(), stt.String(), stt.Kind(), elemSlice.Type())
+	}
 
 	for i := 0; i < sv.NrElements(); i++ {
 		entry := reflect.New(stt)
 		Central.Log.Debugf("New entry %s -> %s ok=%v i=%v", entry.Type().Name(), entry.Type().String(), entry.IsValid(), entry.CanInterface())
-		elemSlice.Index(i).Set(entry)
+		if sliceElementPointer {
+			elemSlice.Index(i).Set(entry)
+		} else {
+			elemSlice.Index(i).Set(entry.Elem())
+		}
 	}
 	f.Set(elemSlice)
 	Central.Log.Debugf("Push slice to stack for %s", adaValue.Type().Name())
@@ -224,7 +236,8 @@ func evaluateField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (res
 	return Continue, nil
 }
 
-// evaluateReflectName evaluate field name adaption
+// evaluateReflectName evaluate struct field name out of hash map registered during
+// dynamic interface creation. It is referenced by Adabas field or Map name
 func (tp *valueInterface) evaluateReflectName(name string) (reflectName string) {
 	reflectName = name
 	if fn, ok := tp.fieldNames[name]; ok {
@@ -259,28 +272,7 @@ func evaluateReflectValue(v reflect.Value, adaValue IAdaValue, tp *valueInterfac
 	} else {
 		Central.Log.Debugf("Check final reflect, got invalid value %s", adaValue.Type().Name())
 	}
-	// if fn, ok := tp.fieldNames[adaValue.Type().Name()]; ok {
-	// 	if len(fn) == 0 {
-	// 		return f, NewGenericError(178, adaValue.Type().Name(), len(fn))
-	// 	}
-	// 	Central.Log.Debugf("Search field name %s->%s in %v in %v", adaValue.Type().Name(), fn[len(fn)-1], v, fn)
-	// 	f = v.FieldByName(fn[len(fn)-1])
-	// } else {
-	// 	f = v.FieldByName(adaValue.Type().Name())
-	// }
 
-	// if f.Kind() == reflect.Slice {
-	// 	fmt.Println(reflect.TypeOf(f))
-	// 	fe := f.Type().Elem()
-	// 	fmt.Println("Found slice", fe.Kind())
-	// 	if fe.Kind() == reflect.Ptr {
-	// 		fee := fe.Elem()
-
-	// 		fmt.Println(adaValue.Type().Name(), "returning....", fee.Name(), reflect.ValueOf(fee).Type().Name())
-	// 		return reflect.ValueOf(fee), nil
-	// 	}
-	// 	return reflect.ValueOf(fe), nil
-	// }
 	return f, nil
 }
 
@@ -292,7 +284,7 @@ func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result Travers
 		return Continue, nil
 	}
 	tp := x.(*valueInterface)
-	Central.Log.Debugf("Work on value %s to interface: %s", adaValue.Type().Name(), tp.curVal.Type().Name())
+	Central.Log.Debugf("Work on value [%s] to interface: %s", adaValue.Type().Name(), tp.curVal.Type().Name())
 	v := tp.curVal
 	if v.Kind() == reflect.Slice {
 		v = v.Index(int(adaValue.PeriodIndex() - 1))
@@ -302,11 +294,12 @@ func traverseValueToInterface(adaValue IAdaValue, x interface{}) (result Travers
 		Central.Log.Debugf("Slice pe=%d kind=%s", adaValue.PeriodIndex(), v.Kind())
 	}
 	Central.Log.Debugf("Current struct value %v", v.Type())
-	if adaValue.Type().Type() == FieldTypeMultiplefield {
-		return evaluateMultipleField(adaValue, v, tp)
-	}
-	if adaValue.Type().Type() == FieldTypePeriodGroup {
-		return evaluatePeriodGroup(adaValue, v, tp)
+	switch adaValue.Type().Type() {
+	case FieldTypeMultiplefield:
+		return tp.evaluateMultipleField(adaValue, v)
+	case FieldTypePeriodGroup:
+		return tp.evaluatePeriodGroup(adaValue, v)
+	default:
 	}
 	return evaluateField(adaValue, v, tp)
 }

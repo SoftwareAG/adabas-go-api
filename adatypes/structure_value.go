@@ -718,7 +718,7 @@ func (value *StructureValue) SetValue(v interface{}) error {
 				ti = ti.Elem()
 			}
 			jsonV, _ := json.Marshal(v)
-			Central.Log.Infof("Work on group entry %s -> %s", ti.Name(), string(jsonV))
+			Central.Log.Debugf("Work on group entry %s -> %s", ti.Name(), string(jsonV))
 			for i := 0; i < vi.Len(); i++ {
 				value.initMultipleSubValues(uint32(i), uint32(i+1), 0, false)
 				Central.Log.Debugf("%d. Element len is %d", i, len(value.Elements))
@@ -761,10 +761,10 @@ func (value *StructureValue) SetValue(v interface{}) error {
 		}
 	case reflect.Ptr, reflect.Struct:
 		if value.Type().Type() != FieldTypeMultiplefield && value.Type().Type() != FieldTypePeriodGroup {
-			Central.Log.Infof("Check struct possible")
+			Central.Log.Debugf("Check struct possible")
 		}
 	default:
-		Central.Log.Infof("Structure set interface, not implement yet %s -> %v", value.Type().Name(), v)
+		Central.Log.Debugf("Structure set interface, not implement yet %s -> %v", value.Type().Name(), v)
 	}
 	return nil
 }

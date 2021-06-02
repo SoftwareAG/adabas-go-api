@@ -63,7 +63,7 @@ func traverseHashValues(adaValue adatypes.IAdaValue, x interface{}) (adatypes.Tr
 	return adatypes.Continue, nil
 }
 
-// NewRecord create new result record
+// NewRecord create new result record infrastructure based on the given definition
 func NewRecord(definition *adatypes.Definition) (*Record, error) {
 	adatypes.Central.Log.Debugf("Create new record")
 	if definition == nil {
@@ -296,7 +296,7 @@ func (record *Record) SetPartialValue(name string, offset uint32, data []byte) (
 	return nil
 }
 
-// extractIndex extract the index information of the field
+// extractIndex extract the index information RA[1] of the field
 func extractIndex(name string) []uint32 {
 	var index []uint32
 	var re = regexp.MustCompile(`(?m)(\w+(\[(\d+),?(\d+)?\])?)`)
@@ -353,7 +353,8 @@ func (record *Record) SearchValueIndex(name string, index []uint32) (adatypes.IA
 	return record.definition.SearchByIndex(name, index, false)
 }
 
-// PeriodGroup period group of field value
+// PeriodGroup return if it is part of an  period group return the period
+// group field of level 1. If no period group field, returns nil
 func PeriodGroup(v adatypes.IAdaValue) adatypes.IAdaValue {
 	if v.Type().HasFlagSet(adatypes.FlagOptionPE) {
 		c := v

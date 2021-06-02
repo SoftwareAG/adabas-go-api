@@ -52,9 +52,10 @@ type FullNameInMap struct {
 }
 
 type NewEmployeesInMap struct {
-	Index  uint64                `adabas:":isn"`
-	ID     string                `adabas:":key:AA"`
-	Income []*NewEmployeesIncome `adabas:"::L0"`
+	Index        uint64                `adabas:":isn"`
+	ID           string                `adabas:":key:AA"`
+	IncomeLength int                   `adabas:"::#L0"`
+	Income       []*NewEmployeesIncome `adabas:"::L0"`
 }
 
 type NewEmployeesIncome struct {
@@ -503,7 +504,7 @@ func TestInlineMapPeriodSearchAndOrder(t *testing.T) {
 	}
 	defer connection.Close()
 	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
-	request, err := connection.CreateMapReadRequest(&NewEmployeesInMap{})
+	request, err := connection.CreateMapReadRequest((*NewEmployeesInMap)(nil))
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -515,7 +516,6 @@ func TestInlineMapPeriodSearchAndOrder(t *testing.T) {
 	if !assert.NoError(t, rerr) {
 		return
 	}
-	_ = response.DumpData()
 	if assert.Len(t, response.Data, 1) {
 		entry := response.Data[0].(*NewEmployeesInMap)
 		assert.Equal(t, "11100108", entry.ID)
@@ -523,21 +523,120 @@ func TestInlineMapPeriodSearchAndOrder(t *testing.T) {
 		assert.Len(t, entry.Income, 4)
 		x := []string{"EUR", "EUR", "EUR", "EUR"}
 		y := []int{22564, 21538, 20000, 18974}
+		z := [][]int{[]int{1538}, []int{}, []int{}, []int{}}
 		for i, e := range entry.Income {
 			assert.Equal(t, x[i], e.CurCode)
 			assert.Equal(t, y[i], e.Salary)
+			assert.NotNil(t, e.Bonus)
+			assert.Len(t, e.Bonus, len(z[i]), fmt.Sprintf("Index %d wrong %v", i, e.Bonus))
+			assert.Equal(t, z[i], e.Bonus)
 		}
 	}
-	_ = response.DumpValues()
 	assert.Len(t, response.Values, 0)
 	response, rerr = request.SearchAndOrder("AA=11300321", "AA")
 	if !assert.NoError(t, rerr) {
 		return
 	}
-	_ = response.DumpData()
 	if assert.Len(t, response.Data, 1) {
 		entry := response.Data[0].(*NewEmployeesInMap)
 		assert.Equal(t, "11300321", entry.ID)
 		assert.Len(t, entry.Income, 5)
+	}
+}
+
+func TestInlineMapEmpQuantity(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "inmap.log")
+
+	connection, cerr := NewConnection("acj;inmap=23")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest((*NewEmployeesInMap)(nil), 9)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = request.QueryFields("AA,L0,#L0")
+	if !assert.NoError(t, err) {
+		return
+	}
+	response, rerr := request.ReadLogicalBy("AA")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	if assert.Len(t, response.Data, 20) {
+		entry := response.Data[0].(*NewEmployeesInMap)
+		assert.Equal(t, "11100102", entry.ID)
+		assert.Equal(t, int(4), entry.IncomeLength)
+		assert.Len(t, entry.Income, 4)
+		entry = response.Data[9].(*NewEmployeesInMap)
+		assert.Equal(t, "11100113", entry.ID)
+		assert.Equal(t, int(4), entry.IncomeLength)
+		assert.Len(t, entry.Income, 4)
+		entry = response.Data[19].(*NewEmployeesInMap)
+		assert.Equal(t, "11100305", entry.ID)
+		assert.Equal(t, int(1), entry.IncomeLength)
+		assert.Len(t, entry.Income, 1)
+	}
+}
+
+type Parameter struct {
+	Parameter string `adabas:"::PN"`
+}
+
+type Job struct {
+	Isn        uint64      `adabas:":isn"`
+	Name       string      `adabas:"Id:key:NA"`
+	HashID     string      `adabas:"::JI"`
+	Flags      byte        `adabas:"::JL"`
+	User       string      `adabas:"::US"`
+	Parameters []Parameter `adabas:"::PA"`
+}
+
+func TestInlineMapJobSearchAndOrder(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	if runtime.GOARCH == "arm" {
+		t.Skip("Not supported on this architecture")
+		return
+	}
+	initTestLogWithFile(t, "inmap.log")
+
+	connection, cerr := NewConnection("acj;inmap=23")
+	if !assert.NoError(t, cerr) {
+		return
+	}
+	defer connection.Close()
+	adatypes.Central.Log.Debugf("Created connection : %#v", connection)
+	request, err := connection.CreateMapReadRequest((*Job)(nil), 5)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = request.QueryFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	response, rerr := request.SearchAndOrder("TY=J", "NA")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	if assert.Len(t, response.Data, 5) {
+		entry := response.Data[0].(*Job)
+		assert.Equal(t, "ADAREP", entry.Name)
+		assert.Equal(t, uint8(0), entry.Flags)
+		assert.Len(t, entry.Parameters, 2)
+		assert.Equal(t, Parameter(Parameter{Parameter: "db=24"}), entry.Parameters[0])
+		assert.Equal(t, Parameter(Parameter{Parameter: "sum"}), entry.Parameters[1])
 	}
 }

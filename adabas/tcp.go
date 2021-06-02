@@ -194,13 +194,13 @@ func (connection *AdaTCP) Send(adabas *Adabas) (err error) {
 	var buffer bytes.Buffer
 	err = adabas.WriteBuffer(&buffer, Endian(), false)
 	if err != nil {
-		adatypes.Central.Log.Infof("Buffer transmit preparation error ", err)
+		adatypes.Central.Log.Debugf("Buffer transmit preparation error ", err)
 		return
 	}
 	adatypes.Central.Log.Debugf("Send buffer of length=%d lenBuffer=%d", buffer.Len(), len(adabas.AdabasBuffers))
 	err = connection.SendData(buffer, uint32(len(adabas.AdabasBuffers)))
 	if err != nil {
-		adatypes.Central.Log.Infof("Transmit Adabas call error: %v", err)
+		adatypes.Central.Log.Debugf("Transmit Adabas call error: %v", err)
 		_ = connection.Disconnect()
 		adabas.transactions.connection = nil
 		return
@@ -209,12 +209,12 @@ func (connection *AdaTCP) Send(adabas *Adabas) (err error) {
 	var nrAbdBuffers uint32
 	nrAbdBuffers, err = connection.ReceiveData(&buffer, adabasReply)
 	if err != nil {
-		adatypes.Central.Log.Infof("Receive Adabas call error: %v", err)
+		adatypes.Central.Log.Debugf("Receive Adabas call error: %v", err)
 		return
 	}
 	err = adabas.ReadBuffer(&buffer, Endian(), nrAbdBuffers, false)
 	if err != nil {
-		adatypes.Central.Log.Infof("Read buffer error, destroy context ... %v", err)
+		adatypes.Central.Log.Debugf("Read buffer error, destroy context ... %v", err)
 		_ = connection.Disconnect()
 		return
 	}
@@ -281,7 +281,7 @@ func (connection *AdaTCP) tcpConnect() (err error) {
 	var buffer bytes.Buffer
 	err = binary.Write(&buffer, binary.BigEndian, header)
 	if err != nil {
-		adatypes.Central.Log.Infof("Write TCP header in buffer error %s", err)
+		adatypes.Central.Log.Debugf("Write TCP header in buffer error %s", err)
 		connection.connection.Close()
 		connection.connection = nil
 		return
@@ -298,7 +298,7 @@ func (connection *AdaTCP) tcpConnect() (err error) {
 	// Send payload in big endian needed until remote knows the endianess of the client
 	err = binary.Write(&buffer, binary.BigEndian, payload)
 	if err != nil {
-		adatypes.Central.Log.Infof("Write TCP generate payload buffer error: %v", err)
+		adatypes.Central.Log.Debugf("Write TCP generate payload buffer error: %v", err)
 		connection.connection.Close()
 		connection.connection = nil
 		return
@@ -311,7 +311,7 @@ func (connection *AdaTCP) tcpConnect() (err error) {
 	}
 	_, err = connection.connection.Write(send)
 	if err != nil {
-		adatypes.Central.Log.Infof("Error TCP writing data %s", err)
+		adatypes.Central.Log.Debugf("Error TCP writing data %s", err)
 		connection.connection.Close()
 		connection.connection = nil
 		return
@@ -320,7 +320,7 @@ func (connection *AdaTCP) tcpConnect() (err error) {
 	_, err = io.ReadFull(connection.connection, rcvBuffer)
 	//	_, err = connection.connection.Read(rcvBuffer)
 	if err != nil {
-		adatypes.Central.Log.Infof("Error TCP reading data %v", err)
+		adatypes.Central.Log.Debugf("Error TCP reading data %v", err)
 		connection.connection.Close()
 		connection.connection = nil
 		return
@@ -333,7 +333,7 @@ func (connection *AdaTCP) tcpConnect() (err error) {
 	buf := bytes.NewBuffer(rcvBuffer)
 	err = binary.Read(buf, binary.BigEndian, &header)
 	if err != nil {
-		adatypes.Central.Log.Infof("Error TCP buffer parsing header %v", err)
+		adatypes.Central.Log.Debugf("Error TCP buffer parsing header %v", err)
 		connection.connection.Close()
 		connection.connection = nil
 		return
@@ -351,7 +351,7 @@ func (connection *AdaTCP) tcpConnect() (err error) {
 
 	err = binary.Read(buf, binary.BigEndian, &payload)
 	if err != nil {
-		adatypes.Central.Log.Infof("Error parsing payload %v", err)
+		adatypes.Central.Log.Debugf("Error parsing payload %v", err)
 		connection.connection.Close()
 		connection.connection = nil
 		return
@@ -366,7 +366,7 @@ func (connection *AdaTCP) tcpConnect() (err error) {
 	connection.databaseID = payload.DatabaseID
 	connection.databaseType = header.DatabaseType
 	if header.DatabaseType == adaTCPCluster {
-		adatypes.Central.Log.Infof("Database cluster found %v", header.DatabaseType)
+		adatypes.Central.Log.Debugf("Database cluster found %v", header.DatabaseType)
 		err = connection.receiveNodeList()
 	}
 	return
