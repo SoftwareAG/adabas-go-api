@@ -249,6 +249,7 @@ func (URL *URL) searchCertificate() []string {
 	return pair
 }
 
+// GetOption get URL option by name
 func (URL *URL) GetOption(option string) string {
 	checkOption := strings.ToLower(option)
 	options := strings.Split(URL.Options, "&")
