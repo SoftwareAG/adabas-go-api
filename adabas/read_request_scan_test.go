@@ -338,7 +338,7 @@ func TestHistogramWithQueryFieldsScan(t *testing.T) {
 			i++
 		}
 	}
-	assert.Equal(t, 20, i)
+	assert.Equal(t, 25, i)
 
 }
 
