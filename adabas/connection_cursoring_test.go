@@ -390,6 +390,7 @@ func TestSearchAndReadWithCursoringEmplStruct(t *testing.T) {
 		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
 	}
 	assert.Equal(t, 5, counter)
+	assert.Nil(t, col.Error())
 	fmt.Println("Last cursor record read")
 
 }
@@ -456,6 +457,7 @@ func TestSearchAndReadWithCursoringEmplStructEmptyFile(t *testing.T) {
 		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
 	}
 	assert.Equal(t, 0, counter)
+	assert.Nil(t, col.Error())
 	fmt.Println("Last cursor record read")
 
 }
@@ -479,7 +481,7 @@ func TestHistogramWithCursoring(t *testing.T) {
 	}
 	request.Limit = 0
 	fmt.Println("Init cursor data...")
-	col, cerr := request.HistogramWithCursoring("NAME=[A:B]")
+	col, cerr := request.HistogramWithCursoring("NAME=[A:C]")
 	if !assert.NoError(t, rerr) {
 		fmt.Println("Error reading logical with using cursoring", cerr)
 		return
@@ -507,9 +509,13 @@ func TestHistogramWithCursoring(t *testing.T) {
 		case 10:
 			assert.Equal(t, "ALESTIA             ", record.HashFields["NAME"].String())
 			assert.Equal(t, uint64(1), record.Quantity)
+		case 110:
+			assert.Equal(t, "BURKNER             ", record.HashFields["NAME"].String())
+			assert.Equal(t, uint64(1), record.Quantity)
 		}
 	}
-	assert.Equal(t, 10, counter)
+	assert.Equal(t, 115, counter)
+	assert.Nil(t, col.Error())
 	fmt.Println("Last cursor record read")
 
 }
@@ -571,7 +577,8 @@ func TestPhysicalWithCursoring(t *testing.T) {
 			assert.Equal(t, adatypes.Isn(0x12c), record.Isn)
 		}
 	}
-	assert.Equal(t, 1048, counter)
+	assert.Equal(t, 1107, counter)
+	assert.Nil(t, col.Error())
 	fmt.Println("Last cursor record read")
 
 }

@@ -251,3 +251,11 @@ func (cursor *Cursoring) NextData() (record interface{}, err error) {
 	}
 	return cursor.result.Data[cursor.offset-1], nil
 }
+
+// Error Provide the current error state for the cursor
+func (cursor *Cursoring) Error() (err error) {
+	if cursor == nil {
+		return nil
+	}
+	return cursor.err
+}

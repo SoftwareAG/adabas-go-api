@@ -803,50 +803,60 @@ func (request *ReadRequest) histogramWith(search, descriptors string) (result *R
 // histogramWithWithParser read a descriptor given by a search criteria
 func (request *ReadRequest) histogramWithWithParser(search string, resultParser adatypes.RequestParser,
 	x interface{}) (err error) {
-	_, err = request.Open()
-	if err != nil {
-		return
-	}
-	if request.definition == nil {
-		_ = request.loadDefinition()
-		// err = request.loadDefinition()
-		// if err != nil {
-		// 	return err
-		// }
-	}
-	searchInfo := adatypes.NewSearchInfo(request.adabas.ID.platform(request.adabas.URL.String()), search)
-	searchInfo.Definition = request.definition
-	tree, err := searchInfo.GenerateTree()
-	if err != nil {
-		return
-	}
-	fields := tree.SearchFields()
-	if len(fields) != 1 {
-		err = adatypes.NewGenericError(24, len(fields))
-		return
-	}
-	err = request.definition.ShouldRestrictToFieldSlice(fields)
-	if err != nil {
-		return err
-	}
-	adatypes.Central.Log.Debugf("Before value creation --------")
-	adabasRequest, prepareErr := request.prepareRequest(true)
-	adatypes.Central.Log.Debugf("Prepare done --------")
-	adabasRequest.SearchTree = tree
-	adabasRequest.Descriptors = adabasRequest.SearchTree.OrderBy()
-	_ = request.adaptDescriptorMap(adabasRequest)
-	// err = request.adaptDescriptorMap(adabasRequest)
-	// if err != nil {
-	// 	return
-	// }
-	if prepareErr != nil {
-		err = prepareErr
-		return
-	}
-	adabasRequest.Parser = resultParser
-	adabasRequest.Limit = request.Limit
 
-	err = request.adabas.Histogram(request.repository.Fnr, adabasRequest, x)
+	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
+		_, err = request.Open()
+		if err != nil {
+			return
+		}
+		if request.definition == nil {
+			_ = request.loadDefinition()
+			// err = request.loadDefinition()
+			// if err != nil {
+			// 	return err
+			// }
+		}
+		searchInfo := adatypes.NewSearchInfo(request.adabas.ID.platform(request.adabas.URL.String()), search)
+		searchInfo.Definition = request.definition
+		tree, gerr := searchInfo.GenerateTree()
+		if gerr != nil {
+			err = gerr
+			return
+		}
+		fields := tree.SearchFields()
+		if len(fields) != 1 {
+			err = adatypes.NewGenericError(24, len(fields))
+			return
+		}
+		err = request.definition.ShouldRestrictToFieldSlice(fields)
+		if err != nil {
+			return err
+		}
+		adatypes.Central.Log.Debugf("Before value creation --------")
+		adabasRequest, prepareErr := request.prepareRequest(true)
+		adatypes.Central.Log.Debugf("Prepare done --------")
+		adabasRequest.SearchTree = tree
+		adabasRequest.Descriptors = adabasRequest.SearchTree.OrderBy()
+		_ = request.adaptDescriptorMap(adabasRequest)
+		// err = request.adaptDescriptorMap(adabasRequest)
+		// if err != nil {
+		// 	return
+		// }
+		if prepareErr != nil {
+			err = prepareErr
+			return
+		}
+		adabasRequest.Parser = resultParser
+		adabasRequest.Limit = request.Limit
+		if request.cursoring != nil {
+			request.cursoring.adabasRequest = adabasRequest
+		}
+
+		err = request.adabas.Histogram(request.repository.Fnr, adabasRequest, x)
+	} else {
+		adatypes.Central.Log.Debugf("read histograp with ...cursoring")
+		err = request.adabas.loopCall(request.cursoring.adabasRequest, x)
+	}
 	return
 }
 
