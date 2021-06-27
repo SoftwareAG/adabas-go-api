@@ -513,3 +513,65 @@ func TestHistogramWithCursoring(t *testing.T) {
 	fmt.Println("Last cursor record read")
 
 }
+
+func TestPhysicalWithCursoring(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection_cursoring.log")
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		fmt.Println("Error creating new connection", cerr)
+		return
+	}
+	defer connection.Close()
+	request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error creating map read request", rerr)
+		return
+	}
+	err := request.QueryFields("PERSONNEL-ID,NAME")
+	if !assert.NoError(t, err) {
+		fmt.Println("Error define query fields:", err)
+		return
+	}
+	request.Limit = 0
+	fmt.Println("Init cursor data...")
+	col, cerr := request.ReadPhysicalWithCursoring()
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error reading physical with using cursoring", cerr)
+		return
+	}
+	fmt.Println("Read next cursor record...")
+	counter := 0
+	for col.HasNextRecord() {
+		record, rerr := col.NextRecord()
+		if record == nil {
+			fmt.Println("Record nil received")
+			return
+		}
+		counter++
+		if !assert.NoError(t, rerr) {
+			fmt.Println("Error reading physical with using cursoring", rerr)
+			return
+		}
+		switch counter {
+		case 1:
+			assert.Equal(t, "ADAM                ", record.HashFields["NAME"].String())
+			assert.Equal(t, adatypes.Isn(1), record.Isn)
+		case 3:
+			assert.Equal(t, "BLOND               ", record.HashFields["NAME"].String())
+			assert.Equal(t, adatypes.Isn(3), record.Isn)
+		case 10:
+			assert.Equal(t, "MONTASSIER          ", record.HashFields["NAME"].String())
+			assert.Equal(t, adatypes.Isn(10), record.Isn)
+		case 300:
+			assert.Equal(t, "YALCIN              ", record.HashFields["NAME"].String())
+			assert.Equal(t, adatypes.Isn(0x12c), record.Isn)
+		}
+	}
+	assert.Equal(t, 1048, counter)
+	fmt.Println("Last cursor record read")
+
+}

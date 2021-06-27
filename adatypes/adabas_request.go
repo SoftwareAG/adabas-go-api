@@ -477,7 +477,7 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 					return
 				}
 				if responseCode != AdaNormal {
-					Central.Log.Debugf("Adabas multifetch response received %d", responseCode)
+					Central.Log.Debugf("Adabas multifetch response received %d at %d", responseCode, *count)
 					break
 				}
 			}

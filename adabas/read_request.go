@@ -339,6 +339,10 @@ func (request *ReadRequest) ReadPhysicalSequence() (result *Response, err error)
 	return
 }
 
+func (request *ReadRequest) readPhysical(search, descriptors string) (result *Response, err error) {
+	return request.ReadPhysicalSequence()
+}
+
 // ReadPhysicalSequenceStream the Adabas records will be read in physical order. The
 // physical read is an I/O optimal read with physical order of the records.
 // For each read record a callback function defined by `streamFunction` will be called.
@@ -371,32 +375,41 @@ func (request *ReadRequest) ReadPhysicalInterface(interfaceFunction InterfaceFun
 // ReadPhysicalSequenceWithParser read records in physical order using a
 // special parser metod. This function will be removed in further version.
 func (request *ReadRequest) ReadPhysicalSequenceWithParser(resultParser adatypes.RequestParser, x interface{}) (err error) {
-	_, err = request.Open()
-	if err != nil {
-		return
-	}
-	adabasRequest, prepareErr := request.prepareRequest(false)
-	if prepareErr != nil {
-		err = prepareErr
-		return
-	}
-	switch {
-	case resultParser != nil:
-		adabasRequest.Parser = resultParser
-	case adabasRequest.DataType != nil:
-		adatypes.Central.Log.Debugf("Set parseReadToInterface for dynamic %v", adabasRequest.DataType)
-		adabasRequest.Parser = parseReadToInterface
-	default:
-		adabasRequest.Parser = parseReadToRecord
-	}
-	adabasRequest.Limit = request.Limit
-	adabasRequest.Multifetch = request.Multifetch
-	if request.Limit != 0 && request.Limit < uint64(request.Multifetch) {
-		adabasRequest.Multifetch = uint32(request.Limit)
-	}
-	adabasRequest.Parameter = request.adabasMap
+	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
+		_, err = request.Open()
+		if err != nil {
+			return
+		}
+		adabasRequest, prepareErr := request.prepareRequest(false)
+		if prepareErr != nil {
+			adatypes.Central.Log.Debugf("Prepare failed: %v", prepareErr)
+			err = prepareErr
+			return
+		}
+		switch {
+		case resultParser != nil:
+			adabasRequest.Parser = resultParser
+		case adabasRequest.DataType != nil:
+			adatypes.Central.Log.Debugf("Set parseReadToInterface for dynamic %v", adabasRequest.DataType)
+			adabasRequest.Parser = parseReadToInterface
+		default:
+			adabasRequest.Parser = parseReadToRecord
+		}
+		adabasRequest.Limit = request.Limit
+		adabasRequest.Multifetch = request.Multifetch
+		if request.Limit != 0 && request.Limit < uint64(request.Multifetch) {
+			adabasRequest.Multifetch = uint32(request.Limit)
+		}
+		adabasRequest.Parameter = request.adabasMap
+		if request.cursoring != nil {
+			request.cursoring.adabasRequest = adabasRequest
+		}
 
-	err = request.adabas.ReadPhysical(request.repository.Fnr, adabasRequest, x)
+		err = request.adabas.ReadPhysical(request.repository.Fnr, adabasRequest, x)
+	} else {
+		adatypes.Central.Log.Debugf("read physical with ...cursoring")
+		err = request.adabas.loopCall(request.cursoring.adabasRequest, x)
+	}
 	return
 }
 

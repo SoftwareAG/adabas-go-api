@@ -141,6 +141,32 @@ func (request *ReadRequest) HistogramWithCursoring(search string) (cursor *Curso
 	return request.cursoring, nil
 }
 
+// ReadPhysicalWithCursoring this method provide the physical read of records in Adabas
+// and provide a cursor. The cursor will read a number of records using Multifetch
+// calls. The number of records is defined in `Limit`.
+// This method initialize the read records using cursoring.
+func (request *ReadRequest) ReadPhysicalWithCursoring() (cursor *Cursoring, err error) {
+	request.cursoring = &Cursoring{}
+	/* Define the read chunk to 20 if not defined */
+	if request.Limit == 0 {
+		request.Limit = 20
+	}
+	request.Multifetch = uint32(request.Limit)
+	if request.Multifetch > 20 {
+		request.Multifetch = 20
+	}
+	result, rerr := request.ReadPhysicalSequence()
+	if rerr != nil {
+		return nil, rerr
+	}
+	request.cursoring.result = result
+	request.cursoring.search = ""
+	request.cursoring.request = request
+	request.queryFunction = request.readPhysical
+	request.cursoring.empty = result.NrRecords() == 0
+	return request.cursoring, nil
+}
+
 // HasNextRecord with cursoring this method checks if a next record
 // or stream entry is available return `true` if it is.
 // This method will call Adabas if no entry is available and reads new entries
