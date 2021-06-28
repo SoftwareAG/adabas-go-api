@@ -307,7 +307,7 @@ func generateFormatBufferField(adabasRequest *Request, adaType IAdaType) {
 				if adaType.Type() == FieldTypeLBString {
 					partialRange := adaType.PartialRange()
 					if partialRange != nil {
-						Central.Log.Infof("Partial Range %d:%d\n", partialRange.from, partialRange.to)
+						Central.Log.Debugf("Partial Range %d:%d\n", partialRange.from, partialRange.to)
 						if partialRange.from == 0 {
 							buffer.WriteString(fmt.Sprintf("%s(*,%d)", adaType.ShortName(), partialRange.to))
 						} else {
@@ -350,7 +350,7 @@ func generateFormatBufferField(adabasRequest *Request, adaType IAdaType) {
 			}
 		}
 	} else {
-		Central.Log.Debugf("Unknown FB generator")
+		Central.Log.Debugf("Unknown FB generator: %v", adaType.Name())
 	}
 
 }
@@ -380,7 +380,11 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 		if fn[0] == '#' {
 			fn = fn[1:]
 		}
-		buffer.WriteString(fmt.Sprintf("%sL,4,B", fn))
+		if adaType.HasFlagSet(FlagOptionLengthPE) {
+			buffer.WriteString(fmt.Sprintf("%sC,4,B", fn))
+		} else {
+			buffer.WriteString(fmt.Sprintf("%sL,4,B", fn))
+		}
 		adabasRequest.RecordBufferLength += 4
 	case FieldTypePhonetic, FieldTypeCollation, FieldTypeReferential:
 	case FieldTypeRedefinition:
@@ -462,7 +466,6 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 				Central.Log.Debugf("multifetch entries mismatch, panic ...")
 				return 0, NewGenericError(177)
 			}
-			Central.Log.Debugf("Nr of multifetch entries %d", nrMultifetchEntries)
 		}
 		Central.Log.Debugf("Nr Multifetch entries %d", nrMultifetchEntries)
 		for nrMultifetchEntries > 0 {
@@ -474,7 +477,7 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 					return
 				}
 				if responseCode != AdaNormal {
-					Central.Log.Debugf("Adabas multifetch response received %d", responseCode)
+					Central.Log.Debugf("Adabas multifetch response received %d at %d", responseCode, *count)
 					break
 				}
 			}

@@ -75,10 +75,21 @@ func (value *lengthValue) SetValue(v interface{}) error {
 }
 
 func (value *lengthValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
+	if option.SecondCall > 0 {
+		return 0
+	}
 	if buffer.Len() > 0 {
 		buffer.WriteRune(',')
 	}
-	buffer.WriteString(value.Type().Name() + "L,4,B")
+	fn := value.Type().Name()
+	if fn[0] == '#' {
+		fn = fn[1:]
+	}
+	if value.Type().HasFlagSet(FlagOptionLengthPE) {
+		buffer.WriteString(fn + "C,4,B")
+	} else {
+		buffer.WriteString(fn + "L,4,B")
+	}
 	return 4
 }
 
@@ -87,8 +98,15 @@ func (value *lengthValue) StoreBuffer(helper *BufferHelper, option *BufferOption
 }
 
 func (value *lengthValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
+	if option.SecondCall > 0 {
+		return Continue, nil
+	}
+	Central.Log.Debugf("Parse length value")
 	value.value, err = helper.ReceiveUInt32()
-	return
+	if err != nil {
+		return SkipTree, err
+	}
+	return Continue, nil
 }
 
 func (value *lengthValue) Int8() (int8, error) {

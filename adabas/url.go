@@ -38,10 +38,11 @@ import (
 // Dependent on the Driver the corresponding connection is used. To use the local
 // call access the Adabas Client native library is used.
 type URL struct {
-	Dbid   Dbid
-	Driver string
-	Host   string
-	Port   uint32
+	Dbid    Dbid
+	Driver  string
+	Host    string
+	Port    uint32
+	Options string
 }
 
 // ExternalDriver external driver
@@ -85,12 +86,14 @@ func NewURL(url string) (*URL, error) {
 // examineURL examine and validate string representation of URL
 func (URL *URL) examineURL(url string) error {
 	adatypes.Central.Log.Debugf("New Adabas URL %s", url)
-	re := regexp.MustCompile(`([0-9]+)\((\w*):\/\/([^:]*?):(.*)\)`)
+	re := regexp.MustCompile(`([0-9]+)\((\w*):\/\/([^:]*?):([^?]*)(\?.*)?\)`)
 	match := re.FindStringSubmatch(url)
 	if len(match) == 0 {
-		re := regexp.MustCompile(`^(adatcp[s]?):\/\/([^:]*?):([0-9]*)`)
+		adatypes.Central.Log.Debugf("No match parse adtcp:")
+		re := regexp.MustCompile(`^(adatcp[s]?):\/\/([^:]*?):([^?]*)\??(.*)?`)
 		match := re.FindStringSubmatch(url)
 		if len(match) == 0 {
+			adatypes.Central.Log.Debugf("No match parse dbid:")
 			dbid, err := strconv.Atoi(url)
 			if err != nil {
 				adatypes.Central.Log.Debugf("No numeric: %v", err)
@@ -103,9 +106,13 @@ func (URL *URL) examineURL(url string) error {
 			URL.Dbid = Dbid(dbid)
 			return nil
 		}
-		if len(match) != 4 {
+		if len(match) != 4 && len(match) != 5 {
 			return adatypes.NewGenericError(71)
 		}
+		if len(match) == 5 {
+			URL.Options = match[4]
+		}
+		adatypes.Central.Log.Debugf("Found 4 matches")
 		port, err := strconv.Atoi(match[3])
 		if err != nil {
 			adatypes.Central.Log.Debugf("Port not numeric: %v", err)
@@ -122,6 +129,7 @@ func (URL *URL) examineURL(url string) error {
 		URL.Port = uint32(port)
 		if URL.Port > 0 {
 			URL.Driver = match[1]
+			adatypes.Central.Log.Debugf("Found port")
 			return nil
 		}
 		return adatypes.NewGenericError(70, url)
@@ -170,6 +178,9 @@ func (URL *URL) examineURL(url string) error {
 			}
 		}
 		URL.Host = match[3]
+	}
+	if match[5] != "" {
+		URL.Options = match[5][1:]
 	}
 	return nil
 }
@@ -236,4 +247,20 @@ func (URL *URL) searchCertificate() []string {
 	adatypes.Central.Log.Debugf("Add key file %s", key)
 	pair = append(pair, key)
 	return pair
+}
+
+// GetOption get URL option by name
+func (URL *URL) GetOption(option string) string {
+	checkOption := strings.ToLower(option)
+	options := strings.Split(URL.Options, "&")
+	for _, o := range options {
+		paraVal := strings.Split(o, "=")
+		if strings.ToLower(paraVal[0]) == checkOption {
+			if len(paraVal) > 1 {
+				return paraVal[1]
+			}
+			return ""
+		}
+	}
+	return ""
 }

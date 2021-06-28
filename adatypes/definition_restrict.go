@@ -384,16 +384,30 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 				if fl != "" {
 					rf := false
 					switch {
-					case strings.ToLower(f) == "#isn" || strings.ToLower(f) == "#key":
+					case strings.ToLower(f) == "#isn" || strings.ToLower(f) == "#isnquantity" || strings.ToLower(f) == "#key":
 					case f[0] == '#':
+						// def.IsPeriodGroup(fl)
 						//fl = f[1:]
+						var adaType IAdaType
+						var ok bool
+						if adaType, ok = def.fileFields[fl[1:]]; !ok {
+							return nil, NewGenericError(0)
+						}
 						lenType := NewType(FieldTypeFieldLength, fl)
+						switch adaType.Type() {
+						case FieldTypePeriodGroup, FieldTypeMultiplefield:
+							lenType.AddFlag(FlagOptionLengthPE)
+						}
 						fieldMap.parentStructure.SubTypes = append(fieldMap.parentStructure.SubTypes, lenType)
 					case f[0] == '@':
 						fl = f[1:]
 						rf = true
 						fallthrough
 					default:
+						// if _, ok := def.fileFields[fl]; !ok {
+						// 	fmt.Println(fl, "unknown field")
+						// 	return nil, NewGenericError(0)
+						// }
 						fq := newFieldQuery(fl, rf, s, mt[4], mt[6], mt[7])
 						fieldMap.set[fl] = fq
 					}

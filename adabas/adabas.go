@@ -321,7 +321,7 @@ func (adabas *Adabas) callAdabasDriver() (err error) {
 		err = driver.Connect(adabas)
 		if err != nil {
 			adabas.Acbx.Acbxrsp = AdaSysCe
-			adatypes.Central.Log.Infof("Establish TCP context error %v", err)
+			adatypes.Central.Log.Debugf("Establish TCP context error %v", err)
 			err = NewError(adabas)
 			return
 		}
@@ -751,6 +751,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 		if !(adabasRequest.Option.SecondCall > 0 || adabasRequest.Option.StreamCursor > 0) {
 			err = adabasRequest.Definition.CreateValues(false)
 			if err != nil {
+				adatypes.Central.Log.Debugf("Error creating values: %v", err)
 				return
 			}
 		}
@@ -771,6 +772,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 
 		// End of file reached
 		if adabas.Acbx.Acbxrsp == AdaEOF {
+			adatypes.Central.Log.Debugf("Adabas AdaEOF=%d", AdaEOF)
 			return
 		}
 		// Error received from Adabas
@@ -788,9 +790,11 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())
 		adabasRequest.MultifetchBuffer, err = adabas.multifetchBuffer()
 		if err != nil {
+			adatypes.Central.Log.Debugf("Multifetch buffer error: %v", err)
 			return
 		}
 		if adabasRequest.Parser == nil {
+			adatypes.Central.Log.Debugf("Error parser not defined")
 			break
 		}
 		adabasRequest.CbIsn = adabas.Acbx.Acbxisn
@@ -799,6 +803,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 		}
 		responseCode, err = adabasRequest.ParseBuffer(&count, x)
 		if err != nil {
+			adatypes.Central.Log.Debugf("Error parsing buffer: %v (%d)", err, count)
 			return
 		}
 		adabas.Acbx.Acbxisn = adabasRequest.CbIsn
@@ -809,6 +814,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 		}
 		if adabasRequest.Multifetch > 1 && adabasRequest.Limit-count < uint64(adabasRequest.Multifetch) {
 			adabas.Acbx.Acbxisl = adabasRequest.Limit - count
+			adatypes.Central.Log.Debugf("Limit ISL to %d", adabas.Acbx.Acbxisl)
 		}
 	}
 	adatypes.Central.Log.Debugf("Loop call ended count=%d", count)

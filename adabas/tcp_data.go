@@ -93,7 +93,7 @@ func (connection *AdaTCP) receiveNodeList() (err error) {
 	adatypes.Central.Log.Debugf("Write TCP data of length=%d capacity=%d netto bytes send=%d", headerBuffer.Len(), headerBuffer.Cap(), len(send))
 	_, err = connection.connection.Write(send)
 	if err != nil {
-		adatypes.Central.Log.Infof("Send data TCP node list request error: %v", err)
+		adatypes.Central.Log.Debugf("Send data TCP node list request error: %v", err)
 		return
 	}
 	if connection.stats != nil {
@@ -103,7 +103,7 @@ func (connection *AdaTCP) receiveNodeList() (err error) {
 	buffer := &bytes.Buffer{}
 	_, err = connection.ReceiveData(buffer, clusterNodesReply)
 	if err != nil {
-		adatypes.Central.Log.Infof("Error TCP reading node list: %v", err)
+		adatypes.Central.Log.Debugf("Error TCP reading node list: %v", err)
 		connection.connection.Close()
 		connection.connection = nil
 		return
@@ -123,7 +123,7 @@ func (connection *AdaTCP) receiveNodeList() (err error) {
 		return adatypes.NewGenericError(163)
 	}
 	if *connection.URL == *connection.clusterNodes[0] {
-		adatypes.Central.Log.Infof("Connection to master already available")
+		adatypes.Central.Log.Debugf("Connection to master already available")
 	}
 	return
 }
@@ -157,7 +157,7 @@ func (connection *AdaTCP) SendData(buffer bytes.Buffer, nrAbdBuffers uint32) (er
 	adatypes.Central.Log.Debugf("Write TCP data of length=%d capacity=%d netto bytes send=%d", headerBuffer.Len(), headerBuffer.Cap(), len(send))
 	n, err = connection.connection.Write(send)
 	if err != nil {
-		adatypes.Central.Log.Infof("Send data TCP data error: %v", err)
+		adatypes.Central.Log.Debugf("Send data TCP data error: %v", err)
 		return
 	}
 	if connection.stats != nil {
@@ -184,7 +184,7 @@ func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer, expected TransferDat
 	//	n, err = io.ReadFull(connection.connection, rcvHeaderBuffer)
 	n, err = io.ReadAtLeast(connection.connection, rcvHeaderBuffer, hl)
 	if err != nil {
-		adatypes.Central.Log.Infof("Receive TCP data error: %v", err)
+		adatypes.Central.Log.Debugf("Receive TCP data error: %v", err)
 		return
 	}
 	if adatypes.Central.IsDebugLevel() {
@@ -197,7 +197,7 @@ func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer, expected TransferDat
 	headerBuffer := bytes.NewBuffer(rcvHeaderBuffer)
 	err = binary.Read(headerBuffer, binary.BigEndian, &header)
 	if err != nil {
-		adatypes.Central.Log.Infof("Read TCP header error: %v", err)
+		adatypes.Central.Log.Debugf("Read TCP header error: %v", err)
 		return
 	}
 
@@ -209,7 +209,7 @@ func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer, expected TransferDat
 	adatypes.Central.Log.Debugf("Receive got header length .... size=%d error=%d", header.Length, header.ErrorCode)
 	err = binary.Read(headerBuffer, Endian(), &dataHeader)
 	if err != nil {
-		adatypes.Central.Log.Infof("Read TCP data header error: %v", err)
+		adatypes.Central.Log.Debugf("Read TCP data header error: %v", err)
 		return
 	}
 	adatypes.Central.Log.Debugf("Receive got data length .... size=%d nrBuffer=%d", dataHeader.Length, dataHeader.NumberOfBuffers)

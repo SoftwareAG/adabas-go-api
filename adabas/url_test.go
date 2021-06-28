@@ -26,6 +26,10 @@ import (
 )
 
 func TestURLGeneral(t *testing.T) {
+	lErr := initLogWithFile("url.log")
+	if !assert.NoError(t, lErr) {
+		return
+	}
 	dbidURL := NewURLWithDbid(123)
 	assert.Equal(t, "123", dbidURL.String())
 	assert.Equal(t, ":0", dbidURL.URL())
@@ -69,6 +73,10 @@ func TestURLGeneral(t *testing.T) {
 }
 
 func TestURLDirect(t *testing.T) {
+	lErr := initLogWithFile("url.log")
+	if !assert.NoError(t, lErr) {
+		return
+	}
 	URL, err := NewURL("adatcp://host:1230")
 	assert.NoError(t, err)
 	if !assert.NotNil(t, URL) {
@@ -113,6 +121,63 @@ func TestURLDirect(t *testing.T) {
 		return
 	}
 	assert.Equal(t, "ADG0000099: Given driver 'tcpip' is not supported", err.Error())
+
+	URL, err = NewURL("001(adatcp://abchost:1230)")
+	assert.NoError(t, err)
+	if !assert.NotNil(t, URL) {
+		return
+	}
+	assert.Equal(t, "1(adatcp://abchost:1230)", URL.String())
+	assert.Equal(t, "abchost", URL.Host)
+	assert.Equal(t, uint32(1230), URL.Port)
+	assert.Equal(t, Dbid(1), URL.Dbid)
+	assert.Equal(t, "", URL.GetOption("adb"))
+
+}
+
+func TestURLOptions(t *testing.T) {
+	lErr := initLogWithFile("url.log")
+	if !assert.NoError(t, lErr) {
+		return
+	}
+	URL, err := NewURL("adatcp://abchost:1230?check=true")
+	assert.NoError(t, err)
+	if !assert.NotNil(t, URL) {
+		return
+	}
+	assert.Equal(t, "1(adatcp://abchost:1230)", URL.String())
+	assert.Equal(t, "abchost", URL.Host)
+	assert.Equal(t, uint32(1230), URL.Port)
+	assert.Equal(t, Dbid(1), URL.Dbid)
+	assert.Equal(t, "check=true", URL.Options)
+	URL, err = NewURL("adatcp://abchost:1230?check=true&test=true&adapt=false")
+	assert.NoError(t, err)
+	if !assert.NotNil(t, URL) {
+		return
+	}
+	assert.Equal(t, "1(adatcp://abchost:1230)", URL.String())
+	assert.Equal(t, "abchost", URL.Host)
+	assert.Equal(t, uint32(1230), URL.Port)
+	assert.Equal(t, Dbid(1), URL.Dbid)
+	assert.Equal(t, "check=true&test=true&adapt=false", URL.Options)
+	assert.Equal(t, "true", URL.GetOption("check"))
+	assert.Equal(t, "true", URL.GetOption("test"))
+	assert.Equal(t, "false", URL.GetOption("adapt"))
+	assert.Equal(t, "", URL.GetOption("adb"))
+	URL, err = NewURL("1(adatcp://abchost:1230?check=true&test=true&adapt=false)")
+	assert.NoError(t, err)
+	if !assert.NotNil(t, URL) {
+		return
+	}
+	assert.Equal(t, "1(adatcp://abchost:1230)", URL.String())
+	assert.Equal(t, "abchost", URL.Host)
+	assert.Equal(t, uint32(1230), URL.Port)
+	assert.Equal(t, Dbid(1), URL.Dbid)
+	assert.Equal(t, "check=true&test=true&adapt=false", URL.Options)
+	assert.Equal(t, "true", URL.GetOption("check"))
+	assert.Equal(t, "true", URL.GetOption("test"))
+	assert.Equal(t, "false", URL.GetOption("adapt"))
+	assert.Equal(t, "", URL.GetOption("adb"))
 }
 
 func TestURLSecured(t *testing.T) {

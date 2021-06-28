@@ -53,6 +53,7 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 	parameter := x.(*parserBufferTr)
 
 	if adaValue.Type().HasFlagSet(FlagOptionReference) {
+		Central.Log.Debugf("Skip parsing value .... %s", adaValue.Type().Name())
 		name := adaValue.Type().Name()
 		if name[0] != '@' {
 			adaType := adaValue.Type().(*AdaType)
@@ -97,6 +98,8 @@ func (def *Definition) ParseBuffer(helper *BufferHelper, option *BufferOption, p
 		Central.Log.Debugf("Parse buffer types...")
 		def.Values, err = parseBufferTypes(helper, option, def.activeFieldTree, 0)
 	} else {
+		def.DumpTypes(true, true, "Parse buffer type tree")
+		def.DumpValues(true)
 		Central.Log.Debugf("Parse buffer values... avail.=%v", (def.Values != nil))
 		x := parserBufferTr{helper: helper, option: option, prefix: prefix, definition: def}
 		t := TraverserValuesMethods{EnterFunction: parseBufferValues}
