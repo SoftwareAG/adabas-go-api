@@ -153,11 +153,15 @@ func evaluateField(adaValue IAdaValue, v reflect.Value, tp *valueInterface) (res
 		switch st.Kind() {
 		case reflect.Int8:
 			Central.Log.Debugf("Go for byte array")
+			nv := reflect.ValueOf(adaValue.Bytes())
+			f.Set(nv)
 		case reflect.Uint8:
 			nv := reflect.ValueOf(adaValue.Bytes())
 			f.Set(nv)
 		default:
-			Central.Log.Errorf("Unknown sub type %s", st.Kind())
+			Central.Log.Errorf("Unknown sub type %s for %s", st.Kind(), adaValue.Type().Name())
+			nv := reflect.ValueOf(adaValue.Bytes())
+			f.Set(nv)
 		}
 	case reflect.Ptr:
 		if f.Elem().IsValid() {
