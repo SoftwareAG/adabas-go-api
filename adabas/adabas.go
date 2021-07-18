@@ -741,8 +741,8 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 		adabasRequest.Reference = fmt.Sprintf("db/%d/%d", adabas.Acbx.Acbxdbid, adabas.Acbx.Acbxfnr)
 	} else {
 		adabasMap := adabasRequest.Parameter.(*Map)
-		adatypes.Central.Log.Debugf("%v -> %#v\n", adabasRequest.Parameter, adabasMap)
 		if adabasMap != nil {
+			adatypes.Central.Log.Debugf("%v -> %#v\n", adabasRequest.Parameter, adabasMap)
 			adabasRequest.Reference = fmt.Sprintf("map/%s", adabasMap.Name)
 		}
 	}
