@@ -263,6 +263,66 @@ func TestReadLogicalWithCursoring(t *testing.T) {
 
 }
 
+func TestReadLogicalByCursoring(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection_cursoring.log")
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		fmt.Println("Error creating new connection", cerr)
+		return
+	}
+	defer connection.Close()
+	request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error creating map read request", rerr)
+		return
+	}
+	fmt.Println("Limit query data:")
+	rerr = request.QueryFields("NAME,PERSONNEL-ID")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	request.Limit = 0
+	fmt.Println("Init cursor data...")
+	col, cerr := request.ReadLogicalByCursoring("PERSONNEL-ID")
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error reading logical with using cursoring", cerr)
+		return
+	}
+	fmt.Println("Read next cursor record...")
+	counter := 0
+	for col.HasNextRecord() {
+		record, rerr := col.NextRecord()
+		if record == nil {
+			fmt.Println("Record nil received")
+			return
+		}
+		counter++
+		if !assert.NoError(t, rerr) {
+			fmt.Println("Error reading logical with using cursoring", rerr)
+			return
+		}
+		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
+		switch counter {
+		case 1:
+			assert.Equal(t, "11100102", record.Value[0].String())
+		case 100:
+			assert.Equal(t, "11400305", record.Value[0].String())
+		case 200:
+			assert.Equal(t, "11700325", record.Value[0].String())
+		case 1005:
+			assert.Equal(t, "50025500", record.Value[0].String())
+		default:
+		}
+	}
+	assert.Equal(t, 1107, counter)
+	fmt.Println("Last cursor record read")
+
+}
+
 func TestSearchAndReadWithCursoring(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")

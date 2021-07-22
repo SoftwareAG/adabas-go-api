@@ -224,7 +224,7 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 	Central.Log.Debugf("%s length set to %d", value.Type().Name(), fieldLength)
 
 	value.value, err = helper.ReceiveBytes(fieldLength)
-	if value.adatype.Type() == FieldTypeLBUnicode && option.PartialLobSize {
+	if value.adatype.Type() == FieldTypeLBUnicode {
 		switch {
 		case value.lobSize < PartialLobSize:
 			value.value = value.value[:value.lobSize]

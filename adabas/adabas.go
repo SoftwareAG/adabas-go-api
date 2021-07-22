@@ -514,10 +514,14 @@ func (adabas *Adabas) readISN(fileNr Fnr, adabasRequest *adatypes.Request, x int
 	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxisn = adabasRequest.Isn
 	adabas.Acbx.Acbxisq = 0
+	adabas.Acbx.Acbxisl = 0
 	adabas.Acbx.Acbxcid = [4]uint8{0xff, 0xff, 0xff, 0xff}
 	adabas.Acbx.Acbxfnr = fileNr
 	if adabasRequest.HoldRecords == adatypes.HoldResponse {
 		adabas.Acbx.Acbxcop[0] = 'R'
+	}
+	if adabasRequest.Option.PartialRead {
+		adabas.Acbx.Acbxcop[1] = 'L'
 	}
 	// adabas.Acbx.Acbxcop[2] = adabasRequest.HoldRecords.HoldOption()
 	switch adabasRequest.HoldRecords {
@@ -748,7 +752,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 	}
 	var responseCode uint32
 	for responseCode == 0 {
-		if !(adabasRequest.Option.SecondCall > 0 || adabasRequest.Option.StreamCursor > 0) {
+		if !adabasRequest.Option.PartialRead && !(adabasRequest.Option.SecondCall > 0 || adabasRequest.Option.StreamCursor > 0) {
 			err = adabasRequest.Definition.CreateValues(false)
 			if err != nil {
 				adatypes.Central.Log.Debugf("Error creating values: %v", err)

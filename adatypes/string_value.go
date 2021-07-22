@@ -51,8 +51,10 @@ type ConvertUnicode interface {
 // stringValue string structure
 type stringValue struct {
 	adaValue
-	value   []byte
-	lobSize uint32
+	value          []byte
+	lobSize        uint32
+	PartialLobSize uint32
+	PartialLobRead bool
 }
 
 func newStringValue(initType IAdaType) *stringValue {
@@ -67,6 +69,8 @@ func newStringValue(initType IAdaType) *stringValue {
 	} else {
 		stringValue.value = make([]byte, 0)
 	}
+	stringValue.PartialLobSize = PartialLobSize
+	stringValue.PartialLobRead = false
 	return &stringValue
 }
 
@@ -222,9 +226,9 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 		}
 		// If LOB field is read, use part
 		if option.SecondCall > 0 {
-			if value.lobSize > PartialLobSize {
-				buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), PartialLobSize+1, value.lobSize-PartialLobSize))
-				recLength = value.lobSize - PartialLobSize
+			if value.lobSize > value.PartialLobSize {
+				buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), value.PartialLobSize+1, value.lobSize-value.PartialLobSize))
+				recLength = value.lobSize - value.PartialLobSize
 			}
 		} else {
 			partialRange := value.Type().PartialRange()
@@ -238,8 +242,8 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 					recLength = uint32(partialRange.to)
 				}
 			} else {
-				buffer.WriteString(fmt.Sprintf("%sL,4,%s(0,%d)", value.Type().ShortName(), value.Type().ShortName(), PartialLobSize))
-				recLength = 4 + PartialLobSize
+				buffer.WriteString(fmt.Sprintf("%sL,4,%s(0,%d)", value.Type().ShortName(), value.Type().ShortName(), value.PartialLobSize))
+				recLength = 4 + value.PartialLobSize
 			}
 		}
 	} else {
@@ -254,7 +258,10 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 				l = 1
 			}
 			recLength = value.commonFormatBuffer(buffer, option, l)
-			Central.Log.Debugf("String value format buffer length for %s -> %d", value.Type().ShortName(), recLength)
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("String value format buffer length for %s -> %d",
+					value.Type().ShortName(), recLength)
+			}
 			if recLength == 0 {
 				switch value.adatype.Type() {
 				case FieldTypeLAString:
@@ -293,9 +300,11 @@ func (value *stringValue) StoreBuffer(helper *BufferHelper, option *BufferOption
 		return nil
 	}
 
-	Central.Log.Debugf("Store string %s at %d len=%d", value.Type().Name(), len(helper.buffer), value.Type().Length())
 	stringLen := len(value.value)
-	Central.Log.Debugf("Current buffer size = %d/%d offset = %d/%x", len(helper.buffer), stringLen, helper.offset, helper.offset)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Store string %s at %d len=%d", value.Type().Name(), len(helper.buffer), value.Type().Length())
+		Central.Log.Debugf("Current buffer size = %d/%d offset = %d/%x", len(helper.buffer), stringLen, helper.offset, helper.offset)
+	}
 	if stringLen > PartialStoreLobSizeChunks {
 		start := uint32(option.SecondCall) * PartialStoreLobSizeChunks
 		end := start + PartialStoreLobSizeChunks
@@ -303,7 +312,9 @@ func (value *stringValue) StoreBuffer(helper *BufferHelper, option *BufferOption
 			end = uint32(len(value.value))
 		}
 		helper.putBytes(value.value[start:end])
-		Central.Log.Debugf("Partial buffer added to size = %d (chunk=%d) offset = %d", len(helper.buffer), PartialStoreLobSizeChunks, helper.offset)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Partial buffer added to size = %d (chunk=%d) offset = %d", len(helper.buffer), PartialStoreLobSizeChunks, helper.offset)
+		}
 		return nil
 	}
 	// Skip normal fields in second call
@@ -342,7 +353,10 @@ func (value *stringValue) StoreBuffer(helper *BufferHelper, option *BufferOption
 func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 
 	if option.SecondCall > 0 {
-		if value.Type().HasFlagSet(FlagOptionMUGhost) && value.Type().HasFlagSet(FlagOptionPE) {
+		Central.Log.Debugf("Old size of lob data %d of %d offset=%d/%X %v secondCall=%d",
+			len(value.value), value.lobSize, helper.offset, helper.offset, option.PartialRead, option.SecondCall)
+		switch {
+		case value.Type().HasFlagSet(FlagOptionMUGhost) && value.Type().HasFlagSet(FlagOptionPE):
 			Central.Log.Debugf("MU flag evaluate length at offset %d", helper.Offset())
 			value.lobSize, err = helper.ReceiveUInt32()
 			if err != nil {
@@ -355,14 +369,18 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 				return EndTraverser, err
 			}
 			return Continue, nil
-		}
-		if value.lobSize < PartialLobSize {
-			Central.Log.Debugf("value lob size %d lower then partial lob size %d", value.lobSize, PartialLobSize)
+		case value.lobSize < value.PartialLobSize:
+			Central.Log.Debugf("value LOB size %d lower then partial lob size %d", value.lobSize, PartialLobSize)
 			return Continue, nil
-		}
-		Central.Log.Debugf("Old size of lob data %d of %d offset=%d/%X", len(value.value), value.lobSize, helper.offset, helper.offset)
-		if value.Type().Type() == FieldTypeLBString && uint32(len(value.value)) < value.lobSize {
-			Central.Log.Debugf("Read bytes : %d", value.lobSize-uint32(len(value.value)))
+		case option.PartialRead:
+			Central.Log.Debugf("LOB size=%d offset=%d", value.lobSize, helper.offset)
+			value.value, err = helper.ReceiveBytes(value.PartialLobSize)
+			if err != nil {
+				return EndTraverser, err
+			}
+			return Continue, nil
+		case value.Type().Type() == FieldTypeLBString && uint32(len(value.value)) < value.lobSize:
+			Central.Log.Debugf("Read LOB bytes : %d", value.lobSize-uint32(len(value.value)))
 			data, rErr := helper.ReceiveBytes(value.lobSize - uint32(len(value.value)))
 			if rErr != nil {
 				err = rErr
@@ -374,13 +392,14 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 				LogMultiLineString(true, FormatByteBuffer("(2)LOB Buffer: ", value.value))
 				Central.Log.Debugf("New size of lob data %d offset=%d/%X", len(value.value), helper.Offset, helper.Offset)
 			}
-		}
-		if !value.Type().HasFlagSet(FlagOptionSecondCall) {
+			return Continue, nil
+		case !value.Type().HasFlagSet(FlagOptionSecondCall):
 			Central.Log.Debugf("Skip parsing %s offset=%d, no second call flag", value.Type().Name(), helper.offset)
 			return Continue, nil
+
+		default:
 		}
 	}
-
 	if value.adatype.Type() == FieldTypeLBString && value.adatype.PartialRange() != nil {
 		partialRange := value.adatype.PartialRange()
 		// Read only the partial lob info
@@ -415,11 +434,11 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 				}
 				//value.lobSize = uint32(value.lobSize - 4)
 				// if value.lobSize > PartialLobSize {
-				fieldLength = PartialLobSize
+				fieldLength = value.PartialLobSize
 				//} else {
 				// fieldLength = value.lobSize
 				//}
-				Central.Log.Debugf("Take partial buffer .... of size=%d current lob size is %d", PartialLobSize, value.lobSize)
+				Central.Log.Debugf("Take partial buffer .... of size=%d current lob size is %d", value.PartialLobSize, value.lobSize)
 			default:
 				length, errh := helper.ReceiveUInt8()
 				if errh != nil {
@@ -430,15 +449,16 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 		}
 	default:
 	}
-	Central.Log.Debugf("Alpha %s length set to %d", value.Type().Name(), fieldLength)
+	Central.Log.Debugf("Alpha %s length set to %d partial=%d", value.Type().Name(), fieldLength, value.PartialLobSize)
 
 	value.value, err = helper.ReceiveBytes(fieldLength)
 	if err != nil {
+		Central.Log.Debugf("Field length error: %v", err)
 		return EndTraverser, err
 	}
 	if value.adatype.Type() == FieldTypeLBString {
 		switch {
-		case value.lobSize <= PartialLobSize:
+		case value.lobSize <= value.PartialLobSize:
 			if len(value.value) < int(value.lobSize) {
 				err = NewGenericError(56, len(value.value), value.lobSize)
 				Central.Log.Debugf("Error parsing lob: %s", err.Error())
@@ -450,7 +470,9 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 			} else {
 				value.value = make([]byte, 0)
 			}
-		case value.lobSize > PartialLobSize:
+		case option.PartialRead:
+			Central.Log.Debugf("Partial read %s of value size %d", value.Type().Name(), len(value.value))
+		case value.lobSize > value.PartialLobSize:
 			Central.Log.Debugf("Due to lobSize is bigger then partial size, need second call (lob) for %s", value.Type().Name())
 
 			if option.NeedSecondCall = ReadSecond; option.StoreCall {
@@ -510,4 +532,16 @@ func (value *stringValue) SetPartial(x, y uint32) {
 	// 	panic(fmt.Sprintf("Partial range errror: %d,%d", x, y))
 	// }
 	//value.partial = []uint32{x, y}
+}
+
+func (value *stringValue) LobBlockSize() uint64 {
+	return uint64(value.PartialLobSize)
+}
+
+func (value *stringValue) SetLobBlockSize(partialBlockSize uint64) {
+	value.PartialLobSize = uint32(partialBlockSize)
+}
+
+func (value *stringValue) SetLobPartRead(partialPartRead bool) {
+	value.PartialLobRead = partialPartRead
 }

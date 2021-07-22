@@ -98,6 +98,7 @@ type Request struct {
 	Parameter          interface{}
 	Reference          string
 	DataType           *DynamicInterface
+	PartialLobSize     uint32
 }
 
 // func (adabasRequest *Request) reset() {
@@ -319,9 +320,9 @@ func generateFormatBufferField(adabasRequest *Request, adaType IAdaType) {
 							t := genType.(*AdaType)
 							fieldIndex = t.peRange.FormatBuffer()
 						}
-						buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(1,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
-							PartialLobSize))
-						adabasRequest.RecordBufferLength += (4 + PartialLobSize)
+						buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(*,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
+							adabasRequest.PartialLobSize))
+						adabasRequest.RecordBufferLength += (4 + adabasRequest.PartialLobSize)
 					}
 				} else {
 					if genType.HasFlagSet(FlagOptionPE) {
@@ -413,12 +414,13 @@ type AdabasRequestParameter struct {
 	DescriptorRead bool
 	SecondCall     uint32
 	Mainframe      bool
+	BlockSize      uint32
 }
 
 // CreateAdabasRequest creates format buffer out of defined metadata tree
 func (def *Definition) CreateAdabasRequest(parameter *AdabasRequestParameter) (adabasRequest *Request, err error) {
 	adabasRequest = &Request{FormatBuffer: bytes.Buffer{}, Option: NewBufferOption3(parameter.Store, parameter.SecondCall, parameter.Mainframe),
-		Multifetch: DefaultMultifetchLimit, DescriptorRead: parameter.DescriptorRead}
+		Multifetch: DefaultMultifetchLimit, DescriptorRead: parameter.DescriptorRead, PartialLobSize: parameter.BlockSize}
 	adabasRequest.Option.DescriptorRead = parameter.DescriptorRead
 
 	Central.Log.Debugf("Create format buffer. Init Buffer: %s second=%v", adabasRequest.FormatBuffer.String(), parameter.SecondCall)

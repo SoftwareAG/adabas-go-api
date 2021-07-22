@@ -275,7 +275,7 @@ func TestUnicodeLBParseBufferVariable(t *testing.T) {
 	typ.length = 0
 	adaValue := newUnicodeValue(typ)
 	assert.NotNil(t, adaValue)
-	option := &BufferOption{PartialLobSize: false}
+	option := &BufferOption{}
 	helper := &BufferHelper{order: binary.LittleEndian, buffer: []byte{0xc, 0x0, 0x0, 0x0, 0xc3, 0xa4, 0xc3, 0xb6, 0xc3, 0xbc, 0xc3, 0x9f}}
 	var res TraverseResult
 	res, err = adaValue.parseBuffer(helper, option)
