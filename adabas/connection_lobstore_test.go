@@ -329,6 +329,7 @@ func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 		fmt.Println("Error creating map read request", rerr)
 		return
 	}
+	request.BlockSize = 64000
 	fmt.Println("Init stream ...")
 	col, cerr := request.ReadLobStream("AA=11300323", "RA")
 	if !assert.NoError(t, cerr) {
@@ -342,7 +343,7 @@ func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 	adatypes.Central.Log.Debugf("===> Start next record check")
 	for col.HasNextRecord() {
 		record, err := col.NextRecord()
-		if record == nil || !assert.NoError(t, err) {
+		if !assert.NotNil(t, record) || !assert.NoError(t, err) {
 			fmt.Println("Record nil received")
 			return
 		}
@@ -356,11 +357,11 @@ func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 		if v == nil {
 			v = vs
 		}
-		// fmt.Printf("-> VS=%p V=%p\n", vs, v)
-		// assert.Equal(t, v, vs)
-		raw := v.Bytes()
+		//assert.Equal(t, v, vs)
+		raw := vs.Bytes()
 		//adatypes.LogMultiLineString(true,adatypes.FormatBytes("Current bytes:", raw, len(raw), len(raw), 8, false))
 		buffer.Write(raw)
+		fmt.Println("RAW len:", len(raw), buffer.Len())
 		counter++
 		if !assert.NoError(t, rerr) {
 			fmt.Println("Error reading partial stream with using cursoring", rerr)
@@ -375,7 +376,7 @@ func TestReadLogicalWithCursoring_LOB(t *testing.T) {
 	assert.Equal(t, 3, counter)
 	assert.Equal(t, 183049, buffer.Len())
 	raw := buffer.Bytes()
-	x := md5.Sum(raw[0:col.FieldLength])
+	x := md5.Sum(raw[0:])
 	assert.Equal(t, "8B124C139790221469EF6308D6554660", fmt.Sprintf("%X", x))
 	fmt.Printf("Got lob from    0...%X\n", md5.Sum(raw[0:4096]))
 	fmt.Printf("Got lob from 4096...%X\n", md5.Sum(raw[4096:4096+4096]))

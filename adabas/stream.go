@@ -54,11 +54,14 @@ func (request *ReadRequest) ReadLobStream(search, field string) (cursor *Cursori
 	}
 	request.definition.ResetRestrictToFields()
 
-	adatypes.Central.Log.Debugf("Found record ...streaming ISN=%d", result.Values[0].Isn)
-	request.cursoring.result, err = request.ReadLOBRecord(result.Values[0].Isn, field, defaultBlockSize)
+	adatypes.Central.Log.Debugf("Found record ...streaming ISN=%d BlockSize=%d",
+		result.Values[0].Isn, request.BlockSize)
+	request.cursoring.result, err = request.ReadLOBRecord(result.Values[0].Isn, field, uint64(request.BlockSize))
 	if err != nil {
 		return nil, err
 	}
+	adatypes.Central.Log.Debugf("Read record ...streaming ISN=%d BlockSize=%d",
+		result.Values[0].Isn, request.BlockSize)
 	return request.cursoring, nil
 }
 
@@ -110,7 +113,7 @@ func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocks
 			return nil, err
 		}
 		if adatypes.Central.IsDebugLevel() {
-			adatypes.Central.Log.Debugf("LOB Definition generated ...")
+			adatypes.Central.Log.Debugf("LOB Definition generated ...BlockSize=%d", request.BlockSize)
 		}
 		err = request.definition.CreateValues(false)
 		if err != nil {
