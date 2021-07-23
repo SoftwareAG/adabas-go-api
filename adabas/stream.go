@@ -20,8 +20,6 @@
 package adabas
 
 import (
-	"fmt"
-
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
@@ -95,8 +93,12 @@ func (request *ReadRequest) ReadLOBSegment(isn adatypes.Isn, field string, block
 // ReadLOBRecord read lob records in an stream, repeated call will read next segment of LOB
 func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocksize uint64) (result *Response, err error) {
 	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Read LOB record initiated ...")
+		}
 		request.cursoring = &Cursoring{}
 		request.BlockSize = uint32(blocksize)
+		request.PartialRead = true
 		_, oErr := request.Open()
 		if oErr != nil {
 			err = oErr
@@ -110,6 +112,18 @@ func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocks
 		if adatypes.Central.IsDebugLevel() {
 			adatypes.Central.Log.Debugf("LOB Definition generated ...")
 		}
+		err = request.definition.CreateValues(false)
+		if err != nil {
+			return
+		}
+		fieldValue := request.definition.Search(field)
+		lob := fieldValue.(adatypes.ILob)
+		lob.SetLobBlockSize(blocksize)
+		lob.SetLobPartRead(true)
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Read LOB with ...%#v", field)
+		}
+
 		adabasRequest, prepareErr := request.prepareRequest(false)
 		if prepareErr != nil {
 			err = prepareErr
@@ -121,18 +135,6 @@ func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocks
 		if adatypes.Central.IsDebugLevel() {
 			adatypes.Central.Log.Debugf("Query field LOB values ...%#v", field)
 			adatypes.Central.Log.Debugf("Create LOB values ...%#v", field)
-		}
-		err = request.definition.CreateValues(false)
-		if err != nil {
-			return
-		}
-		fieldValue := request.definition.Search(field)
-		lob := fieldValue.(adatypes.ILob)
-		lob.SetLobBlockSize(blocksize)
-		lob.SetLobPartRead(true)
-
-		if adatypes.Central.IsDebugLevel() {
-			adatypes.Central.Log.Debugf("read LOB with ...%#v", field)
 		}
 		adabasRequest.Limit = 1
 		adabasRequest.Multifetch = 1
@@ -148,26 +150,31 @@ func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocks
 		if adatypes.Central.IsDebugLevel() {
 			adatypes.Central.Log.Debugf("Read next LOB segment with ...cursoring")
 		}
-		request.definition.DumpTypes(false, false, "All")
-		request.definition.DumpTypes(false, true, "Active")
-		request.definition.DumpValues(true)
-		request.definition.DumpValues(false)
+		/*
+			request.definition.DumpTypes(false, false, "All")
+			request.definition.DumpTypes(false, true, "Active")
+			request.definition.DumpValues(true)
+			request.definition.DumpValues(false)*/
 		err = request.definition.CreateValues(false)
 		if err != nil {
 			return
 		}
-		request.definition.DumpTypes(false, false, "All")
-		request.definition.DumpTypes(false, true, "Active")
-		request.definition.DumpValues(true)
-		request.definition.DumpValues(false)
-		fmt.Println("Search", field, request.definition.Fieldnames())
+		/*
+			request.definition.DumpTypes(false, false, "All")
+			request.definition.DumpTypes(false, true, "Active")
+			request.definition.DumpValues(true)
+			request.definition.DumpValues(false)
+			fmt.Println("Search", field, request.definition.Fieldnames())
+		*/
 		fieldValue := request.definition.Search(field)
 		lob := fieldValue.(adatypes.ILob)
 		lob.SetLobBlockSize(blocksize)
 		lob.SetLobPartRead(true)
 		request.cursoring.adabasRequest.Option.PartialRead = true
-		request.definition.DumpValues(true)
-		request.definition.DumpValues(false)
+		/*
+			request.definition.DumpValues(true)
+			request.definition.DumpValues(false)
+		*/
 		result = &Response{Definition: request.definition, fields: request.fields}
 		if adatypes.Central.IsDebugLevel() {
 			adatypes.Central.Log.Debugf("Call next LOB read %v/%d", request.cursoring.adabasRequest.Option.PartialRead, request.BlockSize)

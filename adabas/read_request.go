@@ -54,6 +54,7 @@ type ReadRequest struct {
 	HoldRecords       adatypes.HoldType
 	queryFunction     func(string, string) (*Response, error)
 	cursoring         *Cursoring
+	PartialRead       bool
 	BlockSize         uint32
 }
 
@@ -137,7 +138,7 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 
 // NewReadRequestCommon create a request defined by another request (not even ReadRequest required)
 func createNewReadRequestCommon(commonRequest *commonRequest) (*ReadRequest, error) {
-	request := &ReadRequest{HoldRecords: adatypes.HoldNone, BlockSize: defaultBlockSize}
+	request := &ReadRequest{HoldRecords: adatypes.HoldNone, PartialRead: false, BlockSize: defaultBlockSize}
 	request.commonRequest = *commonRequest
 	request.commonRequest.adabasMap = nil
 	request.commonRequest.MapName = ""
@@ -164,7 +165,7 @@ func createNewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Rep
 	}
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
 	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
-		BlockSize: defaultBlockSize,
+		BlockSize: defaultBlockSize, PartialRead: false,
 		commonRequest: commonRequest{MapName: mapName, adabas: dataAdabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
@@ -187,7 +188,7 @@ func createNewMapReadRequest(mapName string, adabas *Adabas) (request *ReadReque
 
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
 	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
-		BlockSize: defaultBlockSize,
+		BlockSize: defaultBlockSize, PartialRead: false,
 		commonRequest: commonRequest{MapName: mapName, adabas: adabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
@@ -217,7 +218,7 @@ func createNewReadRequestAdabas(adabas *Adabas, fnr Fnr) *ReadRequest {
 	clonedAdabas := NewClonedAdabas(adabas)
 
 	return &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
-		BlockSize: defaultBlockSize,
+		BlockSize: defaultBlockSize, PartialRead: false,
 		commonRequest: commonRequest{adabas: clonedAdabas,
 			repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}
 }
@@ -245,7 +246,7 @@ func (request *ReadRequest) prepareRequest(descriptorRead bool) (adabasRequest *
 	parameter := &adatypes.AdabasRequestParameter{Store: false,
 		DescriptorRead: descriptorRead, SecondCall: 0,
 		Mainframe: request.adabas.status.platform.IsMainframe(),
-		BlockSize: request.BlockSize}
+		BlockSize: request.BlockSize, PartialRead: request.PartialRead}
 	adabasRequest, err = request.definition.CreateAdabasRequest(parameter)
 	if err != nil {
 		return

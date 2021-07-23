@@ -1126,6 +1126,8 @@ var staticMessages = []struct {
 	{"ADAGE2C008", "en", "Reused format with different number of format buffers"},
 	{"ADAGE2C009", "en", "Number of format buffer segments (ABDs) is zero"},
 	{"ADAGE2C00A", "en", "'AAS,AA,AA' is invalid"},
+	{"ADAGE2C00C", "en", "L option specified but the format has no LOB section with *-position. "},
+	{"ADAGE2C00D", "en", "The format buffer for an A1 commands with command option 2='T' did not contain a last-update-timestamp system generated field."},
 	{"ADAGE2D000", "en", "Field count for PE or MU overflowed when using N-option for update"},
 	{"ADAGE2E000", "en", "Mismatch of format buffer usage for supplied command ID"},
 	{"ADAGE2F000", "en", "Maximum number of ISNs held by a single user are reached"},
