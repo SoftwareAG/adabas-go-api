@@ -258,6 +258,9 @@ func TestReadLogicalWithCursoring(t *testing.T) {
 		}
 		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
 	}
+	if !assert.Nil(t, col.Error(), fmt.Sprintf("Error: %v", col.Error())) {
+		return
+	}
 	assert.Equal(t, 1107, counter)
 	fmt.Println("Last cursor record read")
 
@@ -317,6 +320,9 @@ func TestReadLogicalByCursoring(t *testing.T) {
 			assert.Equal(t, "50025500", record.Value[0].String())
 		default:
 		}
+	}
+	if !assert.Nil(t, col.Error(), fmt.Sprintf("Error: %v", col.Error())) {
+		return
 	}
 	assert.Equal(t, 1107, counter)
 	fmt.Println("Last cursor record read")
@@ -381,6 +387,9 @@ func TestSearchAndReadWithCursoring(t *testing.T) {
 			assert.Equal(t, "WORTH               ", record.HashFields["NAME"].String())
 		}
 		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
+	}
+	if !assert.Nil(t, col.Error(), fmt.Sprintf("Error: %v", col.Error())) {
+		return
 	}
 	assert.Equal(t, 807, counter)
 	fmt.Println("Last cursor record read")
@@ -449,6 +458,9 @@ func TestSearchAndReadWithCursoringEmplStruct(t *testing.T) {
 		}
 		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
 	}
+	if !assert.Nil(t, col.Error(), fmt.Sprintf("Error: %v", col.Error())) {
+		return
+	}
 	assert.Equal(t, 5, counter)
 	assert.Nil(t, col.Error())
 	fmt.Println("Last cursor record read")
@@ -516,6 +528,9 @@ func TestSearchAndReadWithCursoringEmplStructEmptyFile(t *testing.T) {
 		}
 		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
 	}
+	if !assert.Nil(t, col.Error(), fmt.Sprintf("Error: %v", col.Error())) {
+		return
+	}
 	assert.Equal(t, 0, counter)
 	assert.Nil(t, col.Error())
 	fmt.Println("Last cursor record read")
@@ -573,6 +588,9 @@ func TestHistogramWithCursoring(t *testing.T) {
 			assert.Equal(t, "BURKNER             ", record.HashFields["NAME"].String())
 			assert.Equal(t, uint64(1), record.Quantity)
 		}
+	}
+	if !assert.Nil(t, col.Error(), fmt.Sprintf("Error: %v", col.Error())) {
+		return
 	}
 	assert.Equal(t, 115, counter)
 	assert.Nil(t, col.Error())
@@ -636,6 +654,9 @@ func TestPhysicalWithCursoring(t *testing.T) {
 			assert.Equal(t, "YALCIN              ", record.HashFields["NAME"].String())
 			assert.Equal(t, adatypes.Isn(0x12c), record.Isn)
 		}
+	}
+	if !assert.Nil(t, col.Error(), fmt.Sprintf("Error: %v", col.Error())) {
+		return
 	}
 	assert.Equal(t, 1107, counter)
 	assert.Nil(t, col.Error())

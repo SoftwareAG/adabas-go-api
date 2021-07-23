@@ -1070,17 +1070,17 @@ func TestDefinitionStoreBigLob(t *testing.T) {
 	assert.Nil(t, testDefinition.Values)
 	testDefinition.CreateValues(false)
 	assert.NotNil(t, testDefinition.Values)
-	testDefinition.DumpTypes(false, false)
-	testDefinition.DumpValues(false)
+	// testDefinition.DumpTypes(false, false)
+	// testDefinition.DumpValues(false)
 	Central.Log.Debugf("Test: no second call, read")
 	adabasParameter := &AdabasRequestParameter{Store: false, DescriptorRead: false,
-		SecondCall: 0, Mainframe: false}
+		SecondCall: 0, Mainframe: false, BlockSize: 2345}
 	req, rerr := testDefinition.CreateAdabasRequest(adabasParameter)
 	if !assert.NoError(t, rerr) {
 		fmt.Println("Create request", rerr)
 		return
 	}
-	assert.Equal(t, "U4,4,B,CH,1,A,LBL,4,LB(1,4096),ST,0,A,UB,1,B.", req.FormatBuffer.String())
+	assert.Equal(t, "U4,4,B,CH,1,A,LBL,4,LB(1,2345),ST,0,A,UB,1,B.", req.FormatBuffer.String())
 	s := testDefinition.Search("LB").(*stringValue)
 	s.lobSize = 1000000
 
@@ -1142,17 +1142,17 @@ func TestDefinitionLob(t *testing.T) {
 		fmt.Println("restrict request", err)
 		return
 	}
-	testDefinition.DumpTypes(false, false)
-	testDefinition.DumpValues(false)
+	// testDefinition.DumpTypes(false, false)
+	// testDefinition.DumpValues(false)
 	Central.Log.Debugf("Test: no second call, read")
 	adabasParameter := &AdabasRequestParameter{Store: false, DescriptorRead: false,
-		SecondCall: 0, Mainframe: false}
+		SecondCall: 0, Mainframe: false, BlockSize: 12345}
 	req, rerr := testDefinition.CreateAdabasRequest(adabasParameter)
 	if !assert.NoError(t, rerr) {
 		fmt.Println("Create request", rerr)
 		return
 	}
-	assert.Equal(t, "U4,4,B,LBL,4,LB(1,4096).", req.FormatBuffer.String())
+	assert.Equal(t, "U4,4,B,LBL,4,LB(1,12345).", req.FormatBuffer.String())
 
 	err = testDefinition.RestrictFieldSlice([]string{"LB(1,100)", "U4"})
 	if !assert.NoError(t, err) {
@@ -1161,8 +1161,8 @@ func TestDefinitionLob(t *testing.T) {
 	}
 	f := testDefinition.activeFields["LB"]
 	assert.Equal(t, "  2, LB, 0, A ,LB ; LB", f.String())
-	testDefinition.DumpTypes(false, false)
-	testDefinition.DumpValues(false)
+	// testDefinition.DumpTypes(false, false)
+	// testDefinition.DumpValues(false)
 	Central.Log.Debugf("Test: no second call, read")
 	adabasParameter = &AdabasRequestParameter{Store: false, DescriptorRead: false,
 		SecondCall: 0, Mainframe: false}

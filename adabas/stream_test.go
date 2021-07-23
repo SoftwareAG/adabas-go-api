@@ -19,6 +19,8 @@
 package adabas
 
 import (
+	"bytes"
+	"crypto/md5"
 	"fmt"
 	"testing"
 
@@ -55,6 +57,8 @@ func TestMapStreamValidation(t *testing.T) {
 	refValue, err := record.Values[0].SearchValue("Picture")
 	refData := refValue.Bytes()
 	assert.Equal(t, 769996, len(refData))
+	x := md5.Sum(refData)
+	assert.Equal(t, "A4FB766859E7AC6E9B1413ED4A93FA51", fmt.Sprintf("%X", x))
 
 	// Now read stream and compare parts
 	request, rerr = connection.CreateMapReadRequest("LOBPICTURE")
@@ -71,6 +75,7 @@ func TestMapStreamValidation(t *testing.T) {
 		return
 	}
 	blockCount := 0
+	var buffer bytes.Buffer
 	for cursor.HasNextRecord() {
 		record, err := cursor.NextRecord()
 		if !assert.NoError(t, err, fmt.Sprintf("invalid on block count %d", blockCount)) {
@@ -87,6 +92,7 @@ func TestMapStreamValidation(t *testing.T) {
 		if !assert.NotNil(t, data, fmt.Sprintf("invalid on block count %d", blockCount)) {
 			return
 		}
+		buffer.Write(data)
 		if blockCount < 188 {
 			if !assert.True(t, len(data) == defaultBlockSize, fmt.Sprintf("Invalid len = %d on block count %d should be blocksize", len(data), blockCount)) {
 				return
@@ -103,6 +109,12 @@ func TestMapStreamValidation(t *testing.T) {
 			}
 		}
 	}
+	if !assert.Nil(t, cursor.Error(), fmt.Sprintf("Error: %v", cursor.Error())) {
+		return
+	}
+	assert.Equal(t, 769996, buffer.Len())
+	x = md5.Sum(buffer.Bytes())
+	assert.Equal(t, "A4FB766859E7AC6E9B1413ED4A93FA51", fmt.Sprintf("%X", x))
 	assert.Equal(t, 188, blockCount)
 }
 
@@ -183,6 +195,9 @@ func TestDirectStreamValidation(t *testing.T) {
 				return
 			}
 		}
+	}
+	if !assert.Nil(t, cursor.Error(), fmt.Sprintf("Error: %v", cursor.Error())) {
+		return
 	}
 	assert.Equal(t, 188, blockCount)
 }
