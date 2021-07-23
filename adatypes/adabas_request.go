@@ -320,8 +320,13 @@ func generateFormatBufferField(adabasRequest *Request, adaType IAdaType) {
 							t := genType.(*AdaType)
 							fieldIndex = t.peRange.FormatBuffer()
 						}
-						buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(*,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
-							adabasRequest.PartialLobSize))
+						if adabasRequest.Option.PartialRead {
+							buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(*,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
+								adabasRequest.PartialLobSize))
+						} else {
+							buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(1,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
+								adabasRequest.PartialLobSize))
+						}
 						adabasRequest.RecordBufferLength += (4 + adabasRequest.PartialLobSize)
 					}
 				} else {

@@ -70,6 +70,7 @@ func newStringValue(initType IAdaType) *stringValue {
 		stringValue.value = make([]byte, 0)
 	}
 	stringValue.PartialLobSize = PartialLobSize
+	Central.Log.Debugf("Init Partial LOB size set to %d", stringValue.PartialLobSize)
 	stringValue.PartialLobRead = false
 	return &stringValue
 }
@@ -539,6 +540,7 @@ func (value *stringValue) LobBlockSize() uint64 {
 }
 
 func (value *stringValue) SetLobBlockSize(partialBlockSize uint64) {
+	Central.Log.Debugf("Partial LOB size set to %d", partialBlockSize)
 	value.PartialLobSize = uint32(partialBlockSize)
 }
 

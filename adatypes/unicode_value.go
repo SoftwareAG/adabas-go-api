@@ -221,7 +221,9 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 			Central.Log.Debugf("Take field length 8 =%d", fieldLength)
 		}
 	}
-	Central.Log.Debugf("%s length set to %d", value.Type().Name(), fieldLength)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("%s length set to %d", value.Type().Name(), fieldLength)
+	}
 
 	value.value, err = helper.ReceiveBytes(fieldLength)
 	if value.adatype.Type() == FieldTypeLBUnicode && option.PartialRead {
@@ -243,7 +245,9 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 		}
 
 	} else {
-		Central.Log.Debugf("Buffer get string offset=%d %s:%s size=%d", helper.offset, value.Type().Name(), value.value, len(value.value))
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Buffer get string offset=%d %s:%s size=%d", helper.offset, value.Type().Name(), value.value, len(value.value))
+		}
 	}
 	return
 }

@@ -30,7 +30,7 @@ import (
 
 const (
 	maxReadRecordLimit = 20
-	defaultBlockSize   = 64000
+	defaultBlockSize   = adatypes.PartialLobSize
 )
 
 type queryField struct {
