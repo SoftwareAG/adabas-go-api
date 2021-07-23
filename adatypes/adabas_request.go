@@ -94,6 +94,7 @@ type Request struct {
 	CbIsn              Isn
 	Isn                Isn
 	IsnQuantity        uint64
+	IsnLowerLimit      uint64
 	Option             *BufferOption
 	Parameter          interface{}
 	Reference          string
@@ -494,6 +495,7 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 			}
 
 			Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values != nil))
+			adabasRequest.Option.LowerLimit = adabasRequest.IsnLowerLimit
 			// Parse the received request
 			prefix := fmt.Sprintf("/image/%s/%d/", adabasRequest.Reference, adabasRequest.Isn)
 			_, err = adabasRequest.Definition.ParseBuffer(adabasRequest.RecordBuffer, adabasRequest.Option, prefix)

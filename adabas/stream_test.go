@@ -88,14 +88,14 @@ func TestMapStreamValidation(t *testing.T) {
 			return
 		}
 		if blockCount < 188 {
-			if !assert.True(t, len(data) == defaultBlockSize, fmt.Sprintf("Invalid len = %d on block count %d", len(data), blockCount)) {
+			if !assert.True(t, len(data) == defaultBlockSize, fmt.Sprintf("Invalid len = %d on block count %d should be blocksize", len(data), blockCount)) {
 				return
 			}
 			if !assert.Equal(t, refData[(blockCount-1)*defaultBlockSize:blockCount*defaultBlockSize], data, "Data not correct") {
 				return
 			}
 		} else {
-			if !assert.True(t, len(data) == 40404, fmt.Sprintf("Invalid len = %d on block count %d", len(data), blockCount)) {
+			if !assert.True(t, len(data) == 4044, fmt.Sprintf("Invalid len = %d on block count %d shout be 4044", len(data), blockCount)) {
 				return
 			}
 			if !assert.Equal(t, refData[(blockCount-1)*defaultBlockSize:blockCount*defaultBlockSize], data, "Data not correct") {
@@ -168,14 +168,23 @@ func TestDirectStreamValidation(t *testing.T) {
 		if !assert.NotNil(t, data, fmt.Sprintf("invalid on block count %d", blockCount)) {
 			return
 		}
-		if !assert.True(t, len(data) == defaultBlockSize, fmt.Sprintf("Invalid len = %d on block count %d", len(data), blockCount)) {
-			return
-		}
-		if !assert.Equal(t, refData[(blockCount-1)*defaultBlockSize:blockCount*defaultBlockSize], data, fmt.Sprintf("Data mismatch len = %d on block count %d", len(data), blockCount)) {
-			return
+		if blockCount < 188 {
+			if !assert.True(t, len(data) == defaultBlockSize, fmt.Sprintf("Invalid len = %d on block count %d should be blocksize", len(data), blockCount)) {
+				return
+			}
+			if !assert.Equal(t, refData[(blockCount-1)*defaultBlockSize:blockCount*defaultBlockSize], data, "Data not correct") {
+				return
+			}
+		} else {
+			if !assert.True(t, len(data) == 4044, fmt.Sprintf("Invalid len = %d on block count %d shout be 4044", len(data), blockCount)) {
+				return
+			}
+			if !assert.Equal(t, refData[(blockCount-1)*defaultBlockSize:], data, "Data not correct") {
+				return
+			}
 		}
 	}
-	assert.Equal(t, 17, blockCount)
+	assert.Equal(t, 188, blockCount)
 }
 
 func TestLOBSegment(t *testing.T) {

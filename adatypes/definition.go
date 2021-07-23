@@ -98,9 +98,11 @@ func (def *Definition) ParseBuffer(helper *BufferHelper, option *BufferOption, p
 		Central.Log.Debugf("Parse buffer types...")
 		def.Values, err = parseBufferTypes(helper, option, def.activeFieldTree, 0)
 	} else {
-		def.DumpTypes(true, true, "Parse buffer type tree")
-		def.DumpValues(true)
-		Central.Log.Debugf("Parse buffer values... avail.=%v", (def.Values != nil))
+		if Central.IsDebugLevel() {
+			def.DumpTypes(true, true, "Parse buffer type tree")
+			def.DumpValues(true)
+			Central.Log.Debugf("Parse buffer values... avail.=%v", (def.Values != nil))
+		}
 		x := parserBufferTr{helper: helper, option: option, prefix: prefix, definition: def}
 		t := TraverserValuesMethods{EnterFunction: parseBufferValues}
 		res, err = def.TraverseValues(t, &x)

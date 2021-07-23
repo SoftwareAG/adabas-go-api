@@ -54,6 +54,7 @@ type BufferOption struct {
 	DescriptorRead bool
 	multipleSize   uint32
 	StreamCursor   uint8
+	LowerLimit     uint64
 	SecondCall     uint32
 	PartialRead    bool
 }

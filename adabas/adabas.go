@@ -787,6 +787,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 		}
 		adabasRequest.Isn = adatypes.Isn(adabas.Acbx.Acbxisn)
 		adabasRequest.IsnQuantity = adabas.Acbx.Acbxisq
+		adabasRequest.IsnLowerLimit = adabas.Acbx.Acbxisl
 		adatypes.Central.Log.Debugf("ISN= %d ISN quantity=%d multifetch=%d", adabasRequest.Isn, adabasRequest.IsnQuantity,
 			adabasRequest.Multifetch)
 
