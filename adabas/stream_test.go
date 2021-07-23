@@ -112,7 +112,7 @@ func TestDirectStreamValidation(t *testing.T) {
 	}
 	initTestLogWithFile(t, "stream.log")
 
-	connection, cerr := NewConnection("acj;target=adatcp://localhost:64024")
+	connection, cerr := NewConnection("acj;target=24")
 	if !assert.NoError(t, cerr) {
 		fmt.Println("Error creating new connection", cerr)
 		return
