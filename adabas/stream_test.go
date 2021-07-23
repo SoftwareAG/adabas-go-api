@@ -98,12 +98,12 @@ func TestMapStreamValidation(t *testing.T) {
 			if !assert.True(t, len(data) == 4044, fmt.Sprintf("Invalid len = %d on block count %d shout be 4044", len(data), blockCount)) {
 				return
 			}
-			if !assert.Equal(t, refData[(blockCount-1)*defaultBlockSize:blockCount*defaultBlockSize], data, "Data not correct") {
+			if !assert.Equal(t, refData[(blockCount-1)*defaultBlockSize:], data, "Data not correct") {
 				return
 			}
 		}
 	}
-	assert.Equal(t, 17, blockCount)
+	assert.Equal(t, 188, blockCount)
 }
 
 func TestDirectStreamValidation(t *testing.T) {
