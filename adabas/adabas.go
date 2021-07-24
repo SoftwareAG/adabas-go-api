@@ -514,10 +514,14 @@ func (adabas *Adabas) readISN(fileNr Fnr, adabasRequest *adatypes.Request, x int
 	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxisn = adabasRequest.Isn
 	adabas.Acbx.Acbxisq = 0
+	adabas.Acbx.Acbxisl = 0
 	adabas.Acbx.Acbxcid = [4]uint8{0xff, 0xff, 0xff, 0xff}
 	adabas.Acbx.Acbxfnr = fileNr
 	if adabasRequest.HoldRecords == adatypes.HoldResponse {
 		adabas.Acbx.Acbxcop[0] = 'R'
+	}
+	if adabasRequest.Option.PartialRead {
+		adabas.Acbx.Acbxcop[1] = 'L'
 	}
 	// adabas.Acbx.Acbxcop[2] = adabasRequest.HoldRecords.HoldOption()
 	switch adabasRequest.HoldRecords {
@@ -741,14 +745,14 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 		adabasRequest.Reference = fmt.Sprintf("db/%d/%d", adabas.Acbx.Acbxdbid, adabas.Acbx.Acbxfnr)
 	} else {
 		adabasMap := adabasRequest.Parameter.(*Map)
-		adatypes.Central.Log.Debugf("%v -> %#v\n", adabasRequest.Parameter, adabasMap)
 		if adabasMap != nil {
+			adatypes.Central.Log.Debugf("%v -> %#v\n", adabasRequest.Parameter, adabasMap)
 			adabasRequest.Reference = fmt.Sprintf("map/%s", adabasMap.Name)
 		}
 	}
 	var responseCode uint32
 	for responseCode == 0 {
-		if !(adabasRequest.Option.SecondCall > 0 || adabasRequest.Option.StreamCursor > 0) {
+		if !adabasRequest.Option.PartialRead && !(adabasRequest.Option.SecondCall > 0 || adabasRequest.Option.StreamCursor > 0) {
 			err = adabasRequest.Definition.CreateValues(false)
 			if err != nil {
 				adatypes.Central.Log.Debugf("Error creating values: %v", err)
@@ -783,6 +787,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 		}
 		adabasRequest.Isn = adatypes.Isn(adabas.Acbx.Acbxisn)
 		adabasRequest.IsnQuantity = adabas.Acbx.Acbxisq
+		adabasRequest.IsnLowerLimit = adabas.Acbx.Acbxisl
 		adatypes.Central.Log.Debugf("ISN= %d ISN quantity=%d multifetch=%d", adabasRequest.Isn, adabasRequest.IsnQuantity,
 			adabasRequest.Multifetch)
 
@@ -833,7 +838,8 @@ func (adabas *Adabas) SendSecondCall(adabasRequest *adatypes.Request, x interfac
 	adatypes.Central.Log.Debugf("Check second call .... values avail.=%v", (adabasRequest.Definition.Values == nil))
 	if adabasRequest.Option.NeedSecondCall != adatypes.NoneSecond {
 		adatypes.Central.Log.Debugf("Need second call %v", adabasRequest.Option.NeedSecondCall)
-		parameter := &adatypes.AdabasRequestParameter{Store: false, SecondCall: 1, Mainframe: adabas.status.platform.IsMainframe()}
+		parameter := &adatypes.AdabasRequestParameter{Store: false, SecondCall: 1,
+			Mainframe: adabas.status.platform.IsMainframe(), PartialRead: adabasRequest.Option.PartialRead}
 		tmpAdabasRequest, err2 := adabasRequest.Definition.CreateAdabasRequest(parameter)
 		if err2 != nil {
 			err = err2

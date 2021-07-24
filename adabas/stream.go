@@ -35,7 +35,8 @@ import (
 // Important parameter is the blocksize in the `ReadRequest` which
 // defines the size of one block to be read
 func (request *ReadRequest) ReadLobStream(search, field string) (cursor *Cursoring, err error) {
-	err = request.QueryFields("#" + field)
+	//err = request.QueryFields("#" + field)
+	err = request.QueryFields("")
 	if err != nil {
 		return
 	}
@@ -51,100 +52,145 @@ func (request *ReadRequest) ReadLobStream(search, field string) (cursor *Cursori
 		err = adatypes.NewGenericError(138)
 		return
 	}
-	adatypes.Central.Log.Debugf("Found record ...streaming ISN=%d", result.Values[0].Isn)
-	v, verr := result.Values[0].SearchValue("#" + field)
-	if verr != nil {
-		return nil, verr
-	}
-	recLen, _ := v.UInt32()
+	request.definition.ResetRestrictToFields()
 
-	// Limit records to 3 because more then one record is error case, match should be only
-	// one record defining a stream
-	request.Limit = 1
-	request.Multifetch = 1
-
-	// Prepare search of field to current one
-	err = request.QueryFields(field)
+	adatypes.Central.Log.Debugf("Found record ...streaming ISN=%d BlockSize=%d",
+		result.Values[0].Isn, request.BlockSize)
+	request.cursoring.result, err = request.ReadLOBRecord(result.Values[0].Isn, field, uint64(request.BlockSize))
 	if err != nil {
-		return
+		return nil, err
 	}
-
-	// Define partial range on field value
-	v = request.definition.Search(field)
-	vs := v.(adatypes.PartialValue)
-	vs.SetPartial(0, request.BlockSize)
-
-	// Init first read of the stream used in the cursoring
-	result, rerr = request.ReadFieldStream(search)
-	if rerr != nil {
-		return nil, rerr
-	}
-
-	// Prepare cursoring
-	request.cursoring.result = result
-	request.cursoring.search = search
-	request.cursoring.request = request
-	request.cursoring.offset = 0
-	request.cursoring.FieldLength = recLen
-	request.queryFunction = request.readFieldStream
+	adatypes.Central.Log.Debugf("Read record ...streaming ISN=%d BlockSize=%d",
+		result.Values[0].Isn, request.BlockSize)
 	return request.cursoring, nil
 }
 
-// ReadFieldStream reads field data using partial lob reads and provide it
+// ReadLOBSegment reads field data using partial lob reads and provide it
 // stream-like to the user. It is possible to use it to read big LOB data
 // or stream a video.
 // The value of the field is reused, so that the value does not need to
 // evaluate/searched in the result instance once more after the first
 // call.
-// The stream will be read in blocks. The blocksize is defined in the
-// `ReadRequest`. The last block will be filled up with space by Adabas.
-// To examine the length of the field, the `Cursoring` instance provide
-// the current block number in `StreamCursor` beginning by 0 and the
-// maximum field length in `FieldLength`.
-func (request *ReadRequest) ReadFieldStream(search string) (result *Response, err error) {
-	adatypes.Central.Log.Debugf("Read stream with parser")
+// This method initialize the first call by
+// - offset 0
+// - prepare partial lob query of given blocksize
+// Important parameter is the blocksize in the `ReadRequest` which
+// defines the size of one block to be read
+func (request *ReadRequest) ReadLOBSegment(isn adatypes.Isn, field string, blocksize uint64) (segment []byte, err error) {
+	segment = make([]byte, 0)
+	result, err := request.ReadLOBRecord(isn, field, blocksize)
+	if err != nil {
+		return nil, err
+	}
+	if result.NrRecords() != 1 {
+		err = adatypes.NewGenericError(0)
+		return
+	}
+	v, found := result.Values[0].searchValue(field)
+	if found {
+		segment = v.Bytes()
+	}
+	return
+}
+
+// ReadLOBRecord read lob records in an stream, repeated call will read next segment of LOB
+func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocksize uint64) (result *Response, err error) {
 	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Read LOB record initiated ...")
+		}
 		request.cursoring = &Cursoring{}
-		result = &Response{Definition: request.definition, fields: request.fields}
+		request.BlockSize = uint32(blocksize)
+		request.PartialRead = true
+		_, oErr := request.Open()
+		if oErr != nil {
+			err = oErr
+			return
+		}
+		err = request.QueryFields(field)
+		if err != nil {
+			adatypes.Central.Log.Debugf("Query fields error ...%#v", err)
+			return nil, err
+		}
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("LOB Definition generated ...BlockSize=%d", request.BlockSize)
+		}
+		err = request.definition.CreateValues(false)
+		if err != nil {
+			return
+		}
+		fieldValue := request.definition.Search(field)
+		lob := fieldValue.(adatypes.ILob)
+		lob.SetLobBlockSize(blocksize)
+		lob.SetLobPartRead(true)
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Read LOB with ...%#v", field)
+		}
 
 		adabasRequest, prepareErr := request.prepareRequest(false)
 		if prepareErr != nil {
 			err = prepareErr
 			return
 		}
-
-		// Define parser parameters
 		adabasRequest.Parser = parseReadToRecord
-		adabasRequest.Limit = request.Limit
-		request.cursoring.result = result
-		err = request.adaptDescriptorMap(adabasRequest)
-		if err != nil {
-			return
-		}
+		adabasRequest.Limit = 1
 		request.cursoring.adabasRequest = adabasRequest
-
-		// Call first
-		err = request.adabas.ReadStream(request.cursoring.adabasRequest, 0, request.cursoring.result)
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Query field LOB values ...%#v", field)
+			adatypes.Central.Log.Debugf("Create LOB values ...%#v", field)
+		}
+		adabasRequest.Limit = 1
+		adabasRequest.Multifetch = 1
+		adabasRequest.Isn = isn
+		adabasRequest.Option.PartialRead = true
+		request.cursoring.adabasRequest = adabasRequest
+		request.cursoring.search = field
+		request.queryFunction = request.readSteamSegment
+		request.cursoring.request = request
+		result = &Response{Definition: request.definition, fields: request.fields}
+		err = request.adabas.readISN(request.repository.Fnr, adabasRequest, result)
+	} else {
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Read next LOB segment with ...cursoring")
+		}
+		/*
+			request.definition.DumpTypes(false, false, "All")
+			request.definition.DumpTypes(false, true, "Active")
+			request.definition.DumpValues(true)
+			request.definition.DumpValues(false)*/
+		err = request.definition.CreateValues(false)
 		if err != nil {
 			return
 		}
-		adatypes.Central.Log.Debugf("read with ...streaming ISN=%d", request.cursoring.adabasRequest.Isn)
-		request.cursoring.adabasRequest.Option.StreamCursor++
-	} else {
-		if uint32(request.cursoring.adabasRequest.Option.StreamCursor)*request.BlockSize > request.cursoring.FieldLength {
-			return nil, adatypes.NewGenericError(168)
+		/*
+			request.definition.DumpTypes(false, false, "All")
+			request.definition.DumpTypes(false, true, "Active")
+			request.definition.DumpValues(true)
+			request.definition.DumpValues(false)
+			fmt.Println("Search", field, request.definition.Fieldnames())
+		*/
+		fieldValue := request.definition.Search(field)
+		lob := fieldValue.(adatypes.ILob)
+		lob.SetLobBlockSize(blocksize)
+		lob.SetLobPartRead(true)
+		request.cursoring.adabasRequest.Option.PartialRead = true
+		/*
+			request.definition.DumpValues(true)
+			request.definition.DumpValues(false)
+		*/
+		result = &Response{Definition: request.definition, fields: request.fields}
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Call next LOB read %v/%d", request.cursoring.adabasRequest.Option.PartialRead, request.BlockSize)
 		}
-		request.cursoring.adabasRequest.Definition.Values = request.cursoring.result.Values[0].Value
-		adatypes.Central.Log.Debugf("Next read with ...streaming ISN=%d avail.=%v", request.cursoring.adabasRequest.Isn, (request.cursoring.adabasRequest.Definition.Values != nil))
-		err = request.adabas.loopCall(request.cursoring.adabasRequest, request.cursoring.result)
-		result = request.cursoring.result
-		adatypes.Central.Log.Debugf("Stream read finished: %v", err)
-		request.cursoring.adabasRequest.Option.StreamCursor++
+		err = request.adabas.loopCall(request.cursoring.adabasRequest, result)
 	}
-	request.cursoring.offset = uint32(request.cursoring.adabasRequest.Option.StreamCursor) * 4096
-	return
+
+	return result, err
 }
 
-func (request *ReadRequest) readFieldStream(search, descriptors string) (result *Response, err error) {
-	return request.ReadFieldStream(search)
+func (request *ReadRequest) readSteamSegment(search, descriptors string) (result *Response, err error) {
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("read LOB >1 segments")
+	}
+	return request.ReadLOBRecord(0, search, uint64(request.BlockSize))
 }

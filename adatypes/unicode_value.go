@@ -221,19 +221,22 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 			Central.Log.Debugf("Take field length 8 =%d", fieldLength)
 		}
 	}
-	Central.Log.Debugf("%s length set to %d", value.Type().Name(), fieldLength)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("%s length set to %d", value.Type().Name(), fieldLength)
+	}
 
 	value.value, err = helper.ReceiveBytes(fieldLength)
-	if value.adatype.Type() == FieldTypeLBUnicode && option.PartialLobSize {
+	if value.adatype.Type() == FieldTypeLBUnicode && option.PartialRead {
 		switch {
 		case value.lobSize < PartialLobSize:
+			Central.Log.Debugf("Due to Unicode LOB lobSize is smaller then partial size for %s", value.Type().Name())
 			value.value = value.value[:value.lobSize]
 		case value.lobSize > PartialLobSize:
-			Central.Log.Debugf("Due to lobSize is bigger then partial size, need secand call (lob) for %s", value.Type().Name())
+			Central.Log.Debugf("Due to Unicode LOB lobSize is bigger then partial size, need second call (lob) for %s", value.Type().Name())
 			if option.NeedSecondCall = ReadSecond; option.StoreCall {
 				option.NeedSecondCall = StoreSecond
 			}
-			Central.Log.Debugf("ULOB: need second call %d", option.NeedSecondCall)
+			Central.Log.Debugf("Unicode LOB: need second call %d", option.NeedSecondCall)
 		default:
 		}
 		if Central.IsDebugLevel() {
@@ -242,7 +245,9 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 		}
 
 	} else {
-		Central.Log.Debugf("Buffer get string offset=%d %s:%s size=%d", helper.offset, value.Type().Name(), value.value, len(value.value))
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Buffer get string offset=%d %s:%s size=%d", helper.offset, value.Type().Name(), value.value, len(value.value))
+		}
 	}
 	return
 }

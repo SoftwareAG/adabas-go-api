@@ -63,6 +63,31 @@ func (request *ReadRequest) ReadLogicalWithCursoring(search string) (cursor *Cur
 	return request.cursoring, nil
 }
 
+// ReadLogicalByCursoring this method provide the descriptor read of records in Adabas
+// and provide a cursor. The cursor will read a number of records using Multifetch
+// calls. The number of records is defined in `Limit`.
+// This method initialize the read records using cursoring.
+func (request *ReadRequest) ReadLogicalByCursoring(descriptor string) (cursor *Cursoring, err error) {
+	request.cursoring = &Cursoring{}
+	if request.Limit == 0 {
+		request.Limit = 10
+	}
+	request.Multifetch = uint32(request.Limit)
+	if request.Multifetch > 20 {
+		request.Multifetch = 20
+	}
+	result, rerr := request.ReadLogicalBy(descriptor)
+	if rerr != nil {
+		return nil, rerr
+	}
+	request.cursoring.result = result
+	request.cursoring.search = ""
+	request.cursoring.request = request
+	request.queryFunction = request.readLogicalBy
+	request.cursoring.empty = result.NrRecords() == 0
+	return request.cursoring, nil
+}
+
 // SearchAndOrderWithCursoring this method provide the search of records in Adabas
 // ordered by a descriptor. It provide a cursor. The cursor will read a number of records using Multifetch
 // calls. The number of records is defined in `Limit`.
@@ -171,6 +196,8 @@ func (request *ReadRequest) ReadPhysicalWithCursoring() (cursor *Cursoring, err 
 // or stream entry is available return `true` if it is.
 // This method will call Adabas if no entry is available and reads new entries
 // using Multifetch or partial LOB.
+// If an error during processing occurs, the function will return an false and
+// you need to check with cursor Error() methods
 func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 	if cursor == nil || cursor.empty {
 		return false

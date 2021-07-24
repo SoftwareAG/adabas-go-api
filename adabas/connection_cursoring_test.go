@@ -258,6 +258,72 @@ func TestReadLogicalWithCursoring(t *testing.T) {
 		}
 		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
 	}
+	if !assert.Nil(t, col.Error(), fmt.Sprintf("Error: %v", col.Error())) {
+		return
+	}
+	assert.Equal(t, 1107, counter)
+	fmt.Println("Last cursor record read")
+
+}
+
+func TestReadLogicalByCursoring(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection_cursoring.log")
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasModDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		fmt.Println("Error creating new connection", cerr)
+		return
+	}
+	defer connection.Close()
+	request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error creating map read request", rerr)
+		return
+	}
+	fmt.Println("Limit query data:")
+	rerr = request.QueryFields("NAME,PERSONNEL-ID")
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	request.Limit = 0
+	fmt.Println("Init cursor data...")
+	col, cerr := request.ReadLogicalByCursoring("PERSONNEL-ID")
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error reading logical with using cursoring", cerr)
+		return
+	}
+	fmt.Println("Read next cursor record...")
+	counter := 0
+	for col.HasNextRecord() {
+		record, rerr := col.NextRecord()
+		if record == nil {
+			fmt.Println("Record nil received")
+			return
+		}
+		counter++
+		if !assert.NoError(t, rerr) {
+			fmt.Println("Error reading logical with using cursoring", rerr)
+			return
+		}
+		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
+		switch counter {
+		case 1:
+			assert.Equal(t, "11100102", record.Value[0].String())
+		case 100:
+			assert.Equal(t, "11400305", record.Value[0].String())
+		case 200:
+			assert.Equal(t, "11700325", record.Value[0].String())
+		case 1005:
+			assert.Equal(t, "50025500", record.Value[0].String())
+		default:
+		}
+	}
+	if !assert.Nil(t, col.Error(), fmt.Sprintf("Error: %v", col.Error())) {
+		return
+	}
 	assert.Equal(t, 1107, counter)
 	fmt.Println("Last cursor record read")
 
@@ -321,6 +387,9 @@ func TestSearchAndReadWithCursoring(t *testing.T) {
 			assert.Equal(t, "WORTH               ", record.HashFields["NAME"].String())
 		}
 		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
+	}
+	if !assert.Nil(t, col.Error(), fmt.Sprintf("Error: %v", col.Error())) {
+		return
 	}
 	assert.Equal(t, 807, counter)
 	fmt.Println("Last cursor record read")
@@ -389,6 +458,9 @@ func TestSearchAndReadWithCursoringEmplStruct(t *testing.T) {
 		}
 		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
 	}
+	if !assert.Nil(t, col.Error(), fmt.Sprintf("Error: %v", col.Error())) {
+		return
+	}
 	assert.Equal(t, 5, counter)
 	assert.Nil(t, col.Error())
 	fmt.Println("Last cursor record read")
@@ -456,6 +528,9 @@ func TestSearchAndReadWithCursoringEmplStructEmptyFile(t *testing.T) {
 		}
 		adatypes.Central.Log.Debugf("Read next cursor record...%d", counter)
 	}
+	if !assert.Nil(t, col.Error(), fmt.Sprintf("Error: %v", col.Error())) {
+		return
+	}
 	assert.Equal(t, 0, counter)
 	assert.Nil(t, col.Error())
 	fmt.Println("Last cursor record read")
@@ -513,6 +588,9 @@ func TestHistogramWithCursoring(t *testing.T) {
 			assert.Equal(t, "BURKNER             ", record.HashFields["NAME"].String())
 			assert.Equal(t, uint64(1), record.Quantity)
 		}
+	}
+	if !assert.Nil(t, col.Error(), fmt.Sprintf("Error: %v", col.Error())) {
+		return
 	}
 	assert.Equal(t, 115, counter)
 	assert.Nil(t, col.Error())
@@ -576,6 +654,9 @@ func TestPhysicalWithCursoring(t *testing.T) {
 			assert.Equal(t, "YALCIN              ", record.HashFields["NAME"].String())
 			assert.Equal(t, adatypes.Isn(0x12c), record.Isn)
 		}
+	}
+	if !assert.Nil(t, col.Error(), fmt.Sprintf("Error: %v", col.Error())) {
+		return
 	}
 	assert.Equal(t, 1107, counter)
 	assert.Nil(t, col.Error())

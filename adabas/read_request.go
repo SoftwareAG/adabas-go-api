@@ -30,7 +30,7 @@ import (
 
 const (
 	maxReadRecordLimit = 20
-	defaultBlockSize   = 64000
+	defaultBlockSize   = adatypes.PartialLobSize
 )
 
 type queryField struct {
@@ -54,6 +54,7 @@ type ReadRequest struct {
 	HoldRecords       adatypes.HoldType
 	queryFunction     func(string, string) (*Response, error)
 	cursoring         *Cursoring
+	PartialRead       bool
 	BlockSize         uint32
 }
 
@@ -137,7 +138,7 @@ func NewReadRequest(param ...interface{}) (request *ReadRequest, err error) {
 
 // NewReadRequestCommon create a request defined by another request (not even ReadRequest required)
 func createNewReadRequestCommon(commonRequest *commonRequest) (*ReadRequest, error) {
-	request := &ReadRequest{HoldRecords: adatypes.HoldNone, BlockSize: defaultBlockSize}
+	request := &ReadRequest{HoldRecords: adatypes.HoldNone, PartialRead: false, BlockSize: defaultBlockSize}
 	request.commonRequest = *commonRequest
 	request.commonRequest.adabasMap = nil
 	request.commonRequest.MapName = ""
@@ -164,7 +165,7 @@ func createNewMapReadRequestRepo(mapName string, adabas *Adabas, repository *Rep
 	}
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
 	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
-		BlockSize: defaultBlockSize,
+		BlockSize: defaultBlockSize, PartialRead: false,
 		commonRequest: commonRequest{MapName: mapName, adabas: dataAdabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
@@ -187,7 +188,7 @@ func createNewMapReadRequest(mapName string, adabas *Adabas) (request *ReadReque
 
 	dataRepository := NewMapRepository(adabas.URL, adabasMap.Data.Fnr)
 	request = &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
-		BlockSize: defaultBlockSize,
+		BlockSize: defaultBlockSize, PartialRead: false,
 		commonRequest: commonRequest{MapName: mapName, adabas: adabas, adabasMap: adabasMap,
 			repository: dataRepository}}
 	return
@@ -217,7 +218,7 @@ func createNewReadRequestAdabas(adabas *Adabas, fnr Fnr) *ReadRequest {
 	clonedAdabas := NewClonedAdabas(adabas)
 
 	return &ReadRequest{HoldRecords: adatypes.HoldNone, Limit: maxReadRecordLimit, Multifetch: adatypes.DefaultMultifetchLimit,
-		BlockSize: defaultBlockSize,
+		BlockSize: defaultBlockSize, PartialRead: false,
 		commonRequest: commonRequest{adabas: clonedAdabas,
 			repository: &Repository{DatabaseURL: DatabaseURL{Fnr: fnr}}}}
 }
@@ -242,14 +243,19 @@ func (request *ReadRequest) prepareRequest(descriptorRead bool) (adabasRequest *
 			}
 		}
 	}
-	parameter := &adatypes.AdabasRequestParameter{Store: false, DescriptorRead: descriptorRead, SecondCall: 0, Mainframe: request.adabas.status.platform.IsMainframe()}
+	parameter := &adatypes.AdabasRequestParameter{Store: false,
+		DescriptorRead: descriptorRead, SecondCall: 0,
+		Mainframe: request.adabas.status.platform.IsMainframe(),
+		BlockSize: request.BlockSize, PartialRead: request.PartialRead}
 	adabasRequest, err = request.definition.CreateAdabasRequest(parameter)
 	if err != nil {
 		return
 	}
 	adatypes.Central.Log.Debugf("Prepare decriptor read %v", descriptorRead)
 	adabasRequest.Definition = request.definition
+	adabasRequest.PartialLobSize = request.BlockSize
 	adabasRequest.RecordBufferShift = request.RecordBufferShift
+	adatypes.Central.Log.Debugf("Partial LOB size: %d", adabasRequest.PartialLobSize)
 	adatypes.Central.Log.Debugf("Record shift set to: %d", adabasRequest.RecordBufferShift)
 	adabasRequest.HoldRecords = request.HoldRecords
 	adabasRequest.Multifetch = request.Multifetch
@@ -536,6 +542,10 @@ func (request *ReadRequest) readLogicalWith(search, descriptors string) (result 
 	return request.ReadLogicalWith(search)
 }
 
+func (request *ReadRequest) readLogicalBy(search, descriptors string) (result *Response, err error) {
+	return request.ReadLogicalBy(descriptors)
+}
+
 // ReadByISN read records with a logical order given by a ISN sequence.
 // The ISN is to be set by the `Start` `ReadRequest` parameter.
 func (request *ReadRequest) ReadByISN() (result *Response, err error) {
@@ -678,41 +688,49 @@ func (request *ReadRequest) ReadLogicalByStream(descriptor string, streamFunctio
 
 // ReadLogicalByWithParser read in logical order given by the descriptor argument
 func (request *ReadRequest) ReadLogicalByWithParser(descriptors string, resultParser adatypes.RequestParser, x interface{}) (err error) {
-	_, err = request.Open()
-	if err != nil {
-		return
-	}
-	if x == nil {
-		err = adatypes.NewGenericError(23)
-		return
-	}
-	adatypes.Central.Log.Debugf("Prepare read logical by request ... %s", descriptors)
-	adabasRequest, prepareErr := request.prepareRequest(false)
-	if prepareErr != nil {
-		err = prepareErr
-		return
-	}
-	adabasRequest.Multifetch = request.Multifetch
-	if request.Limit != 0 && request.Limit < uint64(request.Multifetch) {
-		adabasRequest.Multifetch = uint32(request.Limit)
-	}
-	switch {
-	case resultParser != nil:
-		adabasRequest.Parser = resultParser
-	case adabasRequest.DataType != nil:
-		adabasRequest.Parser = parseReadToInterface
-	default:
-		adabasRequest.Parser = parseReadToRecord
-	}
-	adabasRequest.Limit = request.Limit
-	adabasRequest.Descriptors, err = request.definition.Descriptors(descriptors)
-	if err != nil {
-		return
-	}
-	adabasRequest.Parameter = request.adabasMap
+	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
+		_, err = request.Open()
+		if err != nil {
+			return
+		}
+		if x == nil {
+			err = adatypes.NewGenericError(23)
+			return
+		}
+		adatypes.Central.Log.Debugf("Prepare read logical by request ... %s", descriptors)
+		adabasRequest, prepareErr := request.prepareRequest(false)
+		if prepareErr != nil {
+			err = prepareErr
+			return
+		}
+		adabasRequest.Multifetch = request.Multifetch
+		if request.Limit != 0 && request.Limit < uint64(request.Multifetch) {
+			adabasRequest.Multifetch = uint32(request.Limit)
+		}
+		switch {
+		case resultParser != nil:
+			adabasRequest.Parser = resultParser
+		case adabasRequest.DataType != nil:
+			adabasRequest.Parser = parseReadToInterface
+		default:
+			adabasRequest.Parser = parseReadToRecord
+		}
+		adabasRequest.Limit = request.Limit
+		adabasRequest.Descriptors, err = request.definition.Descriptors(descriptors)
+		if err != nil {
+			return
+		}
+		adabasRequest.Parameter = request.adabasMap
+		if request.cursoring != nil {
+			request.cursoring.adabasRequest = adabasRequest
+		}
 
-	adatypes.Central.Log.Debugf("Read logical by ...%d", request.repository.Fnr)
-	err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, x)
+		adatypes.Central.Log.Debugf("Read logical by ...%d", request.repository.Fnr)
+		err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, x)
+	} else {
+		adatypes.Central.Log.Debugf("read logical by ...cursoring")
+		err = request.adabas.loopCall(request.cursoring.adabasRequest, x)
+	}
 	return
 }
 
@@ -1030,23 +1048,32 @@ func initFieldSubTypes(st *adatypes.StructureType, queryFields map[string]*query
 
 }
 
+// traverseFieldMap traverse through field ,aps checking sub types
 func traverseFieldMap(adaType adatypes.IAdaType, parentType adatypes.IAdaType, level int, x interface{}) error {
 	ev := x.(*evaluateFieldMap)
 	s := adaType.Name()
-	adatypes.Central.Log.Debugf("Traverse field map, search: %s", s)
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Traverse field map, search: %s", s)
+	}
 	if index, ok := ev.fields[s]; ok {
 		if _, okq := ev.queryFields[s]; !okq {
-			adatypes.Central.Log.Debugf("Check field map, search: %s", s)
+			if adatypes.Central.IsDebugLevel() {
+				adatypes.Central.Log.Debugf("Check field map, search: %s", s)
+			}
 			switch {
 			case adaType.Type() == adatypes.FieldTypeSuperDesc:
-				adatypes.Central.Log.Debugf("Adapt subtypes: %s", s)
+				if adatypes.Central.IsDebugLevel() {
+					adatypes.Central.Log.Debugf("Adapt subtypes: %s", s)
+				}
 				superType := adaType.(*adatypes.AdaSuperType)
 				err := superType.InitSubTypes(ev.definition)
 				if err != nil {
 					return err
 				}
 			case adaType.IsStructure() && adaType.Type() != adatypes.FieldTypeRedefinition:
-				adatypes.Central.Log.Debugf("Adapt subtypes: %s", s)
+				if adatypes.Central.IsDebugLevel() {
+					adatypes.Central.Log.Debugf("Adapt subtypes: %s", s)
+				}
 				st := adaType.(*adatypes.StructureType)
 				current := index
 				initFieldSubTypes(st, ev.queryFields, &current)
@@ -1056,7 +1083,9 @@ func traverseFieldMap(adaType adatypes.IAdaType, parentType adatypes.IAdaType, l
 						if i > index {
 							ev.fields[s] = i + d
 						}
-						adatypes.Central.Log.Debugf("New order %s -> %d", s, ev.fields[s])
+						if adatypes.Central.IsDebugLevel() {
+							adatypes.Central.Log.Debugf("New order %s -> %d", s, ev.fields[s])
+						}
 					}
 				}
 			default:

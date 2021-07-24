@@ -94,10 +94,12 @@ type Request struct {
 	CbIsn              Isn
 	Isn                Isn
 	IsnQuantity        uint64
+	IsnLowerLimit      uint64
 	Option             *BufferOption
 	Parameter          interface{}
 	Reference          string
 	DataType           *DynamicInterface
+	PartialLobSize     uint32
 }
 
 // func (adabasRequest *Request) reset() {
@@ -294,6 +296,7 @@ func generateFormatBufferField(adabasRequest *Request, adaType IAdaType) {
 			Central.Log.Debugf(" PE: %v", adaType.HasFlagSet(FlagOptionPE))
 			Central.Log.Debugf(" AtomicFB: %v", adaType.HasFlagSet(FlagOptionAtomicFB))
 			Central.Log.Debugf(" Part: %v", adaType.HasFlagSet(FlagOptionPart))
+			Central.Log.Debugf(" PartialRead: %v", adabasRequest.Option.PartialRead)
 			if !adaType.HasFlagSet(FlagOptionMUGhost) && (!adaType.HasFlagSet(FlagOptionPE) ||
 				(adaType.HasFlagSet(FlagOptionPE) && (adaType.HasFlagSet(FlagOptionAtomicFB) || adaType.HasFlagSet(FlagOptionPart)))) {
 				if buffer.Len() > 0 {
@@ -319,9 +322,14 @@ func generateFormatBufferField(adabasRequest *Request, adaType IAdaType) {
 							t := genType.(*AdaType)
 							fieldIndex = t.peRange.FormatBuffer()
 						}
-						buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(1,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
-							PartialLobSize))
-						adabasRequest.RecordBufferLength += (4 + PartialLobSize)
+						if adabasRequest.Option.PartialRead {
+							buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(*,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
+								adabasRequest.PartialLobSize))
+						} else {
+							buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(1,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
+								adabasRequest.PartialLobSize))
+						}
+						adabasRequest.RecordBufferLength += (4 + adabasRequest.PartialLobSize)
 					}
 				} else {
 					if genType.HasFlagSet(FlagOptionPE) {
@@ -402,6 +410,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 	if Central.IsDebugLevel() {
 		buffer := &(adabasRequest.FormatBuffer)
 		Central.Log.Debugf("Final type generated Format Buffer : %s", buffer.String())
+		//debug.PrintStack()
 		Central.Log.Debugf("Final Record Buffer length : %d", adabasRequest.RecordBufferLength)
 	}
 	return nil
@@ -411,15 +420,18 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 type AdabasRequestParameter struct {
 	Store          bool
 	DescriptorRead bool
+	PartialRead    bool
 	SecondCall     uint32
 	Mainframe      bool
+	BlockSize      uint32
 }
 
 // CreateAdabasRequest creates format buffer out of defined metadata tree
 func (def *Definition) CreateAdabasRequest(parameter *AdabasRequestParameter) (adabasRequest *Request, err error) {
 	adabasRequest = &Request{FormatBuffer: bytes.Buffer{}, Option: NewBufferOption3(parameter.Store, parameter.SecondCall, parameter.Mainframe),
-		Multifetch: DefaultMultifetchLimit, DescriptorRead: parameter.DescriptorRead}
+		Multifetch: DefaultMultifetchLimit, DescriptorRead: parameter.DescriptorRead, PartialLobSize: parameter.BlockSize}
 	adabasRequest.Option.DescriptorRead = parameter.DescriptorRead
+	adabasRequest.Option.PartialRead = parameter.PartialRead
 
 	Central.Log.Debugf("Create format buffer. Init Buffer: %s second=%v", adabasRequest.FormatBuffer.String(), parameter.SecondCall)
 	if parameter.Store || parameter.SecondCall > 0 {
@@ -483,6 +495,7 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 			}
 
 			Central.Log.Debugf("Parse Buffer .... values avail.=%v", (adabasRequest.Definition.Values != nil))
+			adabasRequest.Option.LowerLimit = adabasRequest.IsnLowerLimit
 			// Parse the received request
 			prefix := fmt.Sprintf("/image/%s/%d/", adabasRequest.Reference, adabasRequest.Isn)
 			_, err = adabasRequest.Definition.ParseBuffer(adabasRequest.RecordBuffer, adabasRequest.Option, prefix)

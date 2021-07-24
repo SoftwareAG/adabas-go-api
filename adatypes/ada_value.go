@@ -49,13 +49,14 @@ type BufferOption struct {
 	StoreCall      bool
 	NeedSecondCall SecondCall
 	ExchangeRecord bool
-	PartialLobSize bool
 	Ascending      bool
 	Mainframe      bool
 	DescriptorRead bool
 	multipleSize   uint32
 	StreamCursor   uint8
+	LowerLimit     uint64
 	SecondCall     uint32
+	PartialRead    bool
 }
 
 // NewBufferOption create option to parse the buffer
@@ -67,7 +68,7 @@ func NewBufferOption(store bool, secondCall uint32) *BufferOption {
 func NewBufferOption3(store bool, secondCall uint32, mainframe bool) *BufferOption {
 	return &BufferOption{MultifetchCall: false, StoreCall: store,
 		ExchangeRecord: false, SecondCall: secondCall, NeedSecondCall: NoneSecond,
-		multipleSize: defaultMultipleSize, Ascending: true, Mainframe: mainframe}
+		multipleSize: defaultMultipleSize, Ascending: true, Mainframe: mainframe, PartialRead: false}
 }
 
 // IAdaValue defines standard interface for all values
@@ -98,6 +99,13 @@ type IAdaValue interface {
 	Int64() (int64, error)
 	UInt64() (uint64, error)
 	Float() (float64, error)
+}
+
+// ILob LOB extended parameters
+type ILob interface {
+	LobBlockSize() uint64
+	SetLobBlockSize(uint64)
+	SetLobPartRead(bool)
 }
 
 type adaValue struct {
