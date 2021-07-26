@@ -1750,4 +1750,5 @@ var staticMessages = []struct {
 	{"ADG0000180", "en", "Internal error: field Range not defined"},
 	{"ADG0000181", "en", "Too many occurrence entries"},
 	{"ADG0000182", "en", "Occurence for {0} exceed to {1}"},
+	{"ADG0000183", "en", "Searched LOB entry not found"},
 }

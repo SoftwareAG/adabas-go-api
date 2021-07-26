@@ -250,7 +250,7 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 	} else {
 		partial := value.Type().PartialRange()
 		if partial != nil {
-			Central.Log.Debugf("Generate partial format buffer")
+			Central.Log.Debugf("Generate partial format buffer %d,%d", partial.from, partial.to)
 			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), partial.from, partial.to))
 			recLength = uint32(partial.to)
 		} else {
