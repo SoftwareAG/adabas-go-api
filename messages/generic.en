@@ -163,3 +163,4 @@ ADG0000179=Format map not initialized
 ADG0000180=Internal error: field Range not defined
 ADG0000181=Too many occurrence entries
 ADG0000182=Occurence for {0} exceed to {1}
+ADG0000183=Searched LOB entry not found

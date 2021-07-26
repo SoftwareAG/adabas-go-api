@@ -224,12 +224,64 @@ func TestLOBSegment(t *testing.T) {
 		fmt.Println("Error read LOB segment", derr)
 		return
 	}
-	assert.NotNil(t, data)
-	assert.True(t, len(data) == 8096, fmt.Sprintf("Invalid len = %d", len(data)))
-	data2, derr2 := request.ReadLOBSegment(4, "Picture", 8096)
-	if !assert.NoError(t, derr2) {
+	counter := 1
+	dataRead := len(data)
+	for {
+		assert.NotNil(t, data)
+		assert.True(t, len(data) == 8096, fmt.Sprintf("Invalid len = %d", len(data)))
+		data2, derr2 := request.ReadLOBSegment(4, "Picture", 8096)
+		if !assert.NoError(t, derr2) {
+			fmt.Println("Error read LOB segment", derr)
+			return
+		}
+		assert.NotEqual(t, data, data2)
+		counter++
+		dataRead += len(data2)
+		if len(data2) < 8096 {
+			break
+		}
+	}
+	fmt.Println("Called LOB data with ", counter, "segments, read data", dataRead)
+}
+
+func TestFitLOBSegment(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "stream.log")
+
+	connection, cerr := NewConnection("acj;map;config=[" + adabasStatDBIDs + ",4]")
+	if !assert.NoError(t, cerr) {
+		fmt.Println("Error creating new connection", cerr)
+		return
+	}
+	defer connection.Close()
+	request, rerr := connection.CreateMapReadRequest("LOBPICTURE")
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error creating map read request", rerr)
+		return
+	}
+	data, derr := request.ReadLOBSegment(4, "Picture", 35512)
+	if !assert.NoError(t, derr) {
 		fmt.Println("Error read LOB segment", derr)
 		return
 	}
-	assert.NotEqual(t, data, data2)
+	counter := 1
+	dataRead := len(data)
+	for {
+		assert.NotNil(t, data)
+		assert.True(t, len(data) == 35512, fmt.Sprintf("Invalid len = %d", len(data)))
+		data2, derr2 := request.ReadLOBSegment(4, "Picture", 35512)
+		if !assert.NoError(t, derr2) {
+			fmt.Println("Error read LOB segment", derr)
+			return
+		}
+		assert.NotEqual(t, data, data2)
+		counter++
+		dataRead += len(data2)
+		if len(data2) < 35512 {
+			break
+		}
+	}
+	fmt.Println("Called LOB data with ", counter, "segments, read data", dataRead)
 }

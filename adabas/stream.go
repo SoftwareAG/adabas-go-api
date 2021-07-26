@@ -77,19 +77,22 @@ func (request *ReadRequest) ReadLobStream(search, field string) (cursor *Cursori
 // Important parameter is the blocksize in the `ReadRequest` which
 // defines the size of one block to be read
 func (request *ReadRequest) ReadLOBSegment(isn adatypes.Isn, field string, blocksize uint64) (segment []byte, err error) {
-	segment = make([]byte, 0)
 	result, err := request.ReadLOBRecord(isn, field, blocksize)
 	if err != nil {
 		return nil, err
 	}
+	// If last segment is reached and EOF is received, record is not available
 	if result.NrRecords() != 1 {
-		err = adatypes.NewGenericError(0)
+		segment = make([]byte, 0)
 		return
 	}
+	// Search record containing the segment
 	v, found := result.Values[0].searchValue(field)
 	if found {
 		segment = v.Bytes()
+		return
 	}
+	err = adatypes.NewGenericError(183)
 	return
 }
 
@@ -183,6 +186,9 @@ func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocks
 			adatypes.Central.Log.Debugf("Call next LOB read %v/%d", request.cursoring.adabasRequest.Option.PartialRead, request.BlockSize)
 		}
 		err = request.adabas.loopCall(request.cursoring.adabasRequest, result)
+	}
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Error reading %v", err)
 	}
 
 	return result, err
