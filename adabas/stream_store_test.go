@@ -38,7 +38,8 @@ func TestStreamStore(t *testing.T) {
 	initTestLogWithFile(t, "stream_store.log")
 
 	adatypes.Central.Log.Infof("TEST: %s", t.Name())
-	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
+	//	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
+	connection, err := NewConnection("acj;target=adatcp://localhost:600" + adabasModDBIDs)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -85,7 +86,7 @@ func TestStreamStore(t *testing.T) {
 	for {
 		// fmt.Println(from, from+blocksize, "Store", len(data))
 		err = storeRequest.UpdateLOBRecord(adatypes.Isn(lobEntry.Index), "DC", from, data[from:int(from+blocksize)])
-		if !assert.NoError(t, err) {
+		if !assert.NoError(t, err, fmt.Sprintf("Error on offset %d", from)) {
 			return
 		}
 		from += blocksize
