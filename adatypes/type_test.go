@@ -40,8 +40,10 @@ func TestTypeOptions(t *testing.T) {
 	adaType.AddOption(FieldOptionDE)
 	assert.Equal(t, "DE", adaType.Option())
 	adaType.AddOption(FieldOptionUQ)
+	assert.Equal(t, "UQ DE", adaType.Option())
 	adaType.AddOption(FieldOptionNU)
 	adaType.AddOption(FieldOptionNB)
+	assert.Equal(t, "UQ NU DE NB", adaType.Option())
 	adaType.AddOption(FieldOptionHF)
 	adaType.ClearOption(FieldOptionDE)
 	assert.Equal(t, "UQ NU HF NB", adaType.Option())
@@ -53,6 +55,9 @@ func TestTypeOptions(t *testing.T) {
 	assert.Equal(t, " 1, AB, 20, B ,UQ,NU,HF,NB ; AB", adaType.String())
 	adaType.fieldType = FieldTypeInt2
 	assert.Equal(t, " 1, AB, 20, F ,UQ,NU,HF,NB ; AB", adaType.String())
+	adaType.fieldType = FieldTypeLBString
+	assert.Equal(t, " 1, AB, 20, A ,UQ,NU,HF,NB,LB ; AB", adaType.String())
+	assert.Equal(t, "UQ NU HF NB LB", adaType.Option())
 
 }
 
