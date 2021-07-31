@@ -195,13 +195,6 @@ func (adaType *AdaType) String() string {
 	if options != "" {
 		options = "," + strings.Replace(options, " ", ",", -1)
 	}
-	switch {
-	case adaType.Type() == FieldTypeLBString:
-		options += ",LB"
-	case adaType.Type() == FieldTypeLAString:
-		options += ",LA"
-	default:
-	}
 	fmt.Fprintf(&b, "%d, %s, %d, %s %s ; %s", adaType.level, adaType.shortName, adaType.length,
 		adaType.fieldType.FormatCharacter(), options, adaType.name)
 	return b.String()
@@ -388,6 +381,19 @@ func (adaType *AdaType) Option() string {
 			}
 			buffer.WriteString(fieldOptions[i])
 		}
+	}
+	switch {
+	case adaType.Type() == FieldTypeLBString:
+		if buffer.Len() > 0 {
+			buffer.WriteString(" ")
+		}
+		buffer.WriteString("LB")
+	case adaType.Type() == FieldTypeLAString:
+		if buffer.Len() > 0 {
+			buffer.WriteString(" ")
+		}
+		buffer.WriteString("LA")
+	default:
 	}
 	if adaType.fieldType == FieldTypeMultiplefield {
 		if buffer.Len() > 0 {

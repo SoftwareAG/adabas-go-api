@@ -412,7 +412,7 @@ func ExampleAdabas_readFileDefinition9() {
 	//   1, S0 ,PE ; S0
 	//     2, SA, 80, W ,NU ; SA
 	//     2, SB, 3, A ,NU ; SB
-	//     2, SC, 0, A ,NU,NV,NB,MU; SC
+	//     2, SC, 0, A ,NU,NV,NB,MU,LB; SC
 	//       3, SC, 0, A ,NU,NV,NB,MU,LB ; SC
 	//   1, TC, 20, U ,SY=TIME,DT=E(TIMESTAMP) ; TC
 	//   1, TU, 20, U ,MU,SY=TIME,DT=E(TIMESTAMP); TU

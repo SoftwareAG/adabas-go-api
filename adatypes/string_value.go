@@ -405,6 +405,7 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 		len(value.value), value.lobSize, helper.offset, helper.offset, option.PartialRead, option.SecondCall)
 	if value.adatype.Type() == FieldTypeLBString && value.adatype.PartialRange() != nil {
 		partialRange := value.adatype.PartialRange()
+		Central.Log.Debugf("Read only to range %d bytes", partialRange.to)
 		// Read only the partial lob info
 		value.value, err = helper.ReceiveBytes(uint32(partialRange.to))
 		if err != nil {
@@ -466,11 +467,11 @@ func (value *stringValue) parseBuffer(helper *BufferHelper, option *BufferOption
 				return
 			}
 			Central.Log.Debugf("Use subset of lob partial: %d of %d", value.lobSize, len(value.value))
-			if value.lobSize > 4 {
-				value.value = value.value[:value.lobSize]
-			} else {
-				value.value = make([]byte, 0)
-			}
+			//if value.lobSize > 4 {
+			value.value = value.value[:value.lobSize]
+			//} else {
+			//	value.value = make([]byte, 0)
+			//}
 		case option.PartialRead:
 			partSize := uint32(0)
 			if option.LowerLimit < uint64(value.lobSize) {
