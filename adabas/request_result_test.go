@@ -94,6 +94,8 @@ func generateDefinitionTest() *adatypes.Definition {
 		adatypes.NewType(adatypes.FieldTypeCharacter, "G1"),
 		adatypes.NewType(adatypes.FieldTypeString, "GX"),
 		adatypes.NewType(adatypes.FieldTypePacked, "PA"),
+		adatypes.NewTypeWithLength(adatypes.FieldTypeByteArray, "BB", 4),
+		adatypes.NewTypeWithLength(adatypes.FieldTypeByteArray, "BR", 0),
 	}
 	layout := []adatypes.IAdaType{
 		adatypes.NewType(adatypes.FieldTypeUInt4, "AA"),
@@ -196,6 +198,16 @@ func generateResult() *Response {
 		fmt.Println("Error setting value PA record", err)
 		return nil
 	}
+	err = record.SetValue("BB", []byte{1, 2, 3})
+	if err != nil {
+		fmt.Println("Error setting value BB record", err)
+		return nil
+	}
+	err = record.SetValue("BR", []byte{1, 2, 3, 4, 5})
+	if err != nil {
+		fmt.Println("Error setting value BR record", err)
+		return nil
+	}
 	result.Values = append(result.Values, record)
 	record, err = NewRecord(d)
 	if err != nil {
@@ -232,7 +244,18 @@ func ExampleResponse_jsonMarshal() {
 		return
 	}
 	fmt.Println(string(res))
-	// Output: {"Records":[{"AA":10,"B1":0,"GR":{"G1":"0","GX":"","PA":9},"I2":0,"I8":0,"ISN":10,"U8":0,"UB":0},{"AA":20,"B1":0,"GR":{"G1":"0","GX":"","PA":3},"I2":0,"I8":0,"ISN":11,"U8":0,"UB":0}]}
+	// Output: {"Records":[{"AA":10,"B1":0,"GR":{"BB":[0,1,2,3],"BR":[0,1,2,3,4],"G1":"0","GX":"","PA":9},"I2":0,"I8":0,"ISN":10,"U8":0,"UB":0},{"AA":20,"B1":0,"GR":{"BB":[0,1,2,3],"BR":[],"G1":"0","GX":"","PA":3},"I2":0,"I8":0,"ISN":11,"U8":0,"UB":0}]}
+}
+
+func TestResponse_xmlMarshal(t *testing.T) {
+	initTestLogWithFile(t, "Response.log")
+	result := generateResult()
+	res, err := json.Marshal(result)
+	if !assert.NoError(t, err) {
+		fmt.Println("Error generating JSON", err)
+		return
+	}
+	assert.Equal(t, `{"Records":[{"AA":10,"B1":0,"GR":{"BB":[0,1,2,3],"BR":[0,1,2,3,4],"G1":"0","GX":"","PA":9},"I2":0,"I8":0,"ISN":10,"U8":0,"UB":0},{"AA":20,"B1":0,"GR":{"BB":[0,1,2,3],"BR":[],"G1":"0","GX":"","PA":3},"I2":0,"I8":0,"ISN":11,"U8":0,"UB":0}]}`, string(res))
 }
 
 func ExampleResponse_xmlMarshal() {

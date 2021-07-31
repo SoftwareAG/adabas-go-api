@@ -290,7 +290,17 @@ func evaluateValue(adaValue adatypes.IAdaValue) (interface{}, error) {
 			return adatypes.EndTraverser, err
 		}
 		return v, nil
+	case adatypes.FieldTypeByteArray:
+		b := adaValue.Value().([]byte)
+		x := make([]int, 0)
+		for i := range b {
+			x = append(x, i)
+		}
+		return x, nil
 	default:
+	}
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Evaluate to string value: %s", strings.Trim(adaValue.String(), " "))
 	}
 	return strings.Trim(adaValue.String(), " "), nil
 }
