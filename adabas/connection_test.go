@@ -2516,3 +2516,37 @@ func TestConnectionSimpleSearchNoDesc(t *testing.T) {
 	// result.DumpValues()
 	assert.Equal(t, 740, result.NrRecords())
 }
+
+func TestConnectionLobCorrectRead(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("ada;target=" + adabasModDBIDs)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	readRequest, rErr := connection.CreateFileReadRequest(270)
+	assert.NoError(t, rErr)
+	rErr = readRequest.QueryFields("AB")
+	assert.NoError(t, rErr)
+	readRequest.Limit = 0
+	assert.False(t, readRequest.HoldRecords.IsHold())
+
+	result, rErr := readRequest.ReadISN(1)
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	assert.False(t, readRequest.HoldRecords.IsHold())
+
+	if !assert.Len(t, result.Values, 1) {
+		return
+	}
+	v, vErr := result.Values[0].SearchValue("AB")
+	assert.NoError(t, vErr)
+	assert.Equal(t, "1", v.String())
+	assert.Equal(t, 1, result.NrRecords())
+}
