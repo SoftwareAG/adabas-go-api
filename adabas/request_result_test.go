@@ -290,7 +290,7 @@ func TestRequestResult(t *testing.T) {
 	assert.Equal(t, `{"Records":[{"AA":10,"B1":0,"GR":{"BB":[0,1,2,3],"BR":[0,1,2,3,4],"G1":"0","GX":"","PA":9},"I2":0,"I8":0,"ISN":10,"U8":0,"UB":0},{"AA":20,"B1":0,"GR":{"BB":[0,1,2,3],"BR":[],"G1":"0","GX":"","PA":3},"I2":0,"I8":0,"ISN":11,"U8":0,"UB":0}]}`, string(j))
 	x, err := xml.Marshal(result)
 	assert.NoError(t, err)
-	assert.Equal(t, "<Response><Record ISN=\"10\"><AA>10</AA><B1>0</B1><UB>0</UB><I2>0</I2><U8>0</U8><GR><G1>0</G1><GX> </GX><PA>9</PA><BB>[1 2 3 0]</BB><BR>[1 2 3 4 5]</BR></GR><I8>0</I8></Record><Record ISN="11"><AA>20</AA><B1>0</B1><UB>0</UB><I2>0</I2><U8>0</U8><GR><G1>0</G1><GX> </GX><PA>3</PA><BB>[0 0 0 0]</BB><BR>]</BR></GR><I8>0</I8></Record></Response>", string(x))
+	assert.Equal(t, "<Response><Record ISN=\"10\"><AA>10</AA><B1>0</B1><UB>0</UB><I2>0</I2><U8>0</U8><GR><G1>0</G1><GX> </GX><PA>9</PA><BB>[1 2 3 0]</BB><BR>[1 2 3 4 5]</BR></GR><I8>0</I8></Record><Record ISN=\"11\"><AA>20</AA><B1>0</B1><UB>0</UB><I2>0</I2><U8>0</U8><GR><G1>0</G1><GX> </GX><PA>3</PA><BB>[0 0 0 0]</BB><BR>]</BR></GR><I8>0</I8></Record></Response>", string(x))
 }
 
 func TestRequestResultWithMU(t *testing.T) {
