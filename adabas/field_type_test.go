@@ -356,7 +356,7 @@ func jsonOutput(r *Record) error {
 // 	return adatypes.Continue, nil
 // }
 
-func TestConnection_fieldType(t *testing.T) {
+func TestFieldType(t *testing.T) {
 	err := initLogWithFile("field_type.log")
 	if err != nil {
 		fmt.Println(err)
