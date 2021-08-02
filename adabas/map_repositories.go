@@ -247,7 +247,11 @@ func (repository *Repository) SearchMap(adabas *Adabas, mapName string) (adabasM
 	}
 
 	adatypes.Central.Log.Debugf("Not found in cache read map: %s", mapName)
+	isOpen := adabas.ID.isOpen(adabas.URL.String())
 	request, _ := NewReadRequest(adabas, repository.Fnr)
+	if !isOpen {
+		defer request.Close()
+	}
 	request.Limit = 0
 	err = request.ReadLogicalWithWithParser(mapFieldName.fieldName()+"="+mapName, parseMaps, repository)
 	if err != nil {
