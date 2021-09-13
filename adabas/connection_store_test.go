@@ -164,3 +164,76 @@ func TestConnectionStoreRestrictedCopy(t *testing.T) {
 	}
 	checkContent(t, "checkTestRestrictedCopy", adabasModDBIDs, 16)
 }
+
+func TestConnectionStoreSQL(t *testing.T) {
+	initTestLogWithFile(t, "connection_store.log")
+
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+
+	storeRequest, serr := connection.CreateStoreRequest(17)
+	if !assert.NoError(t, serr) {
+		return
+	}
+	err = storeRequest.StoreFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	record, rerr := storeRequest.CreateRecord()
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	err = record.SetValue("AA", "PEMU")
+	assert.NoError(t, err)
+	err = record.SetValue("AE", "XNAME")
+	assert.NoError(t, err)
+	err = record.SetValue("LB[1]", 123)
+	assert.NoError(t, err)
+	err = record.SetValue("LB[1]", "223")
+	assert.NoError(t, err)
+	err = record.SetValue("LC[1,1]", 323)
+	assert.NoError(t, err)
+	err = record.SetValue("LC[1][2]", 456)
+	assert.NoError(t, err)
+	adatypes.Central.Log.Debugf("Set SA[1]")
+	err = record.SetValue("SA[1]", "123")
+	assert.NoError(t, err)
+	adatypes.Central.Log.Debugf("Set SA[2]")
+	err = record.SetValue("SA[2]", "999")
+	assert.NoError(t, err)
+	adatypes.Central.Log.Debugf("AZ set")
+	//record.DumpValues()
+	err = storeRequest.Store(record)
+	assert.NoError(t, err)
+}
+
+func TestConnectionStoreAnalytics(t *testing.T) {
+	initTestLogWithFile(t, "connection_store.log")
+
+	connection, err := NewConnection("acj;target=" + adabasModDBIDs)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+
+	storeRequest, serr := connection.CreateStoreRequest(23)
+	if !assert.NoError(t, serr) {
+		return
+	}
+	err = storeRequest.StoreFields("*")
+	if !assert.NoError(t, err) {
+		return
+	}
+	record, rerr := storeRequest.CreateRecord()
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	err = record.SetValue("AA", "PEMU")
+	assert.NoError(t, err)
+	record.DumpValues()
+	err = storeRequest.Store(record)
+	assert.NoError(t, err)
+}

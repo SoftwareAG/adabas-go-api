@@ -197,7 +197,10 @@ func (connection *AdaTCP) Send(adabas *Adabas) (err error) {
 		adatypes.Central.Log.Debugf("Buffer transmit preparation error ", err)
 		return
 	}
-	adatypes.Central.Log.Debugf("Send buffer of length=%d lenBuffer=%d", buffer.Len(), len(adabas.AdabasBuffers))
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Send buffer of length=%d lenBuffer=%d", buffer.Len(), len(adabas.AdabasBuffers))
+		adatypes.LogMultiLineString(true, adabas.Acbx.String())
+	}
 	err = connection.SendData(buffer, uint32(len(adabas.AdabasBuffers)))
 	if err != nil {
 		adatypes.Central.Log.Debugf("Transmit Adabas call error: %v", err)
@@ -230,8 +233,11 @@ func (connection *AdaTCP) Send(adabas *Adabas) (err error) {
 	if connection.clusterNodes != nil {
 		adabas.transactions.clusterNodes = connection.clusterNodes
 	}
-	adatypes.Central.Log.Debugf("Got context for %s %p ", adabas.String(),
-		adabas.transactions.connection)
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Got context for %s %p ", adabas.String(),
+			adabas.transactions.connection)
+		adatypes.LogMultiLineString(true, adabas.Acbx.String())
+	}
 	return
 }
 
