@@ -1,3 +1,4 @@
+//go:build adalnk && cgo
 // +build adalnk,cgo
 
 /*

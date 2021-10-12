@@ -1,4 +1,6 @@
+//go:build (!adalnk || !cgo) && !windows
 // +build !adalnk !cgo
+// +build !windows
 
 /*
 * Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors

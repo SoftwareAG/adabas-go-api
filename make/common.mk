@@ -19,9 +19,15 @@
 PKGS            = $(or $(PKG),$(shell cd $(CURDIR) && env GOPATH=$(GOPATH) $(GO) list ./... | grep -v "^vendor/"))
 TESTPKGS        = $(shell env GOPATH=$(GOPATH) $(GO) list -f '{{ if or .TestGoFiles .XTestGoFiles }}{{ .ImportPath }}{{ end }}' $(PKGS))
 CGO_CFLAGS      = $(if $(ACLDIR),-I$(ACLDIR)/inc,)
+#ifeq ($(GOOS),windows)
+CGO_LDFLAGS     =
+CGO_EXT_LDFLAGS =
+GO_TAGS         = $(if $(ACLDIR),"release adalnk","release")
+#else
 CGO_LDFLAGS     = $(if $(ACLDIR),-L$(ACLDIR)/lib -ladalnkx,)
 CGO_EXT_LDFLAGS = $(if $(ACLDIR),-lsagsmp2 -lsagxts3 -ladazbuf,)
-GO_TAGS         = $(if $(ACLDIR),"release adalnk","release")
+GO_TAGS         = release
+#endif
 GO_FLAGS        = $(if $(debug),"-x",) -tags $(GO_TAGS)
 BINTESTS        = $(CURDIR)/bin/tests/$(GOOS)_$(GOARCH)
 DYLD_LIBRARY_PATH = $(ACLDIR)/lib:/lib:/usr/lib:$(ACLDIR)/../common/security/openssl/lib
