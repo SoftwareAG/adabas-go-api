@@ -27,6 +27,7 @@ else
 CGO_LDFLAGS     = $(if $(ACLDIR),-L$(ACLDIR)/lib -ladalnkx,)
 CGO_EXT_LDFLAGS = $(if $(ACLDIR),-lsagsmp2 -lsagxts3 -ladazbuf,)
 GO_TAGS         = $(if $(ACLDIR),"release adalnk","release")
+#GO_TAGS         = release
 endif
 GO_FLAGS        = $(if $(debug),"-x",) -tags $(GO_TAGS)
 BINTESTS        = $(CURDIR)/bin/tests/$(GOOS)_$(GOARCH)
@@ -52,7 +53,7 @@ lib: $(LIBS) $(CEXEC)
 exec: $(EXECS)
 
 prepare: $(LOGPATH) $(BIN)
-	@echo "Build architecture ${GOARCH} $(GOOS) network=${WCPHOST} GOFLAGS=$(GO_FLAGS) GOTAGS=$(GO_TAGS)"
+	@echo "Build architecture ${GOARCH} ${GOOS} network=${WCPHOST} GOFLAGS=$(GO_FLAGS) GOTAGS=$(GO_TAGS)"
 
 $(LIBS): ; $(info $(M) building libraries…) @ ## Build program binary
 	$Q cd $(CURDIR) && \
