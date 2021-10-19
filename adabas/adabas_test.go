@@ -415,7 +415,7 @@ func ExampleAdabas_readFileDefinition9() {
 	//   1, TC, 20, U ,SY=TIME,DT=E(TIMESTAMP) ; TC
 	//   1, TU, 20, U ,MU,SY=TIME,DT=E(TIMESTAMP); TU
 	//     2, TU, 20, U ,MU,SY=TIME,DT=E(TIMESTAMP) ; TU
-	//  CN,HE=COLLATING(BC,'de@collation=phonebook',PRIMAR) ; CN
+	//  CN,HE=COLLATING(BC,'de@collation=phonebook',PRIMARY) ; CN
 	//  H1=NA(1,2),NB(1,3) ; H1
 	//  S1=JA(1,2) ; S1
 	//  S2=JA(1,6),BC(1,40) ; S2

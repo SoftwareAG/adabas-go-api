@@ -44,9 +44,13 @@ func NewSuperType(name string, option byte) *AdaSuperType {
 	superType := &AdaSuperType{CommonType: CommonType{fieldType: FieldTypeSuperDesc,
 		flags: uint32(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
 		name:  name, shortName: name}}
+	Central.Log.Debugf("Check super descriptor %s option %X", name, option)
 	if (option & 0x08) > 0 {
 		Central.Log.Debugf("%s super/sub descriptor found PE", name)
 		superType.AddOption(FieldOptionPE)
+	}
+	if (option & 0x10) > 0 {
+		superType.AddOption(FieldOptionNU)
 	}
 	if (option & 0x20) > 0 {
 		superType.AddOption(FieldOptionMU)
@@ -90,7 +94,16 @@ func (adaType *AdaSuperType) SetLength(length uint32) {
 
 // Option string representation of all option of Sub or super descriptors
 func (adaType *AdaSuperType) Option() string {
-	return ""
+	var buffer bytes.Buffer
+	for i := 0; i < len(fieldOptions); i++ {
+		if (adaType.options & (1 << uint(i))) > 0 {
+			if buffer.Len() > 0 {
+				buffer.WriteString(",")
+			}
+			buffer.WriteString(fieldOptions[i])
+		}
+	}
+	return buffer.String()
 }
 
 // SetFractional set fractional part
@@ -183,19 +196,18 @@ func (fieldType *AdaPhoneticType) String() string {
 // AdaCollationType data type structure for field types, no structures
 type AdaCollationType struct {
 	AdaType
-	length        uint16
-	parentName    [2]byte
-	collAttribute string
+	ParentName    [2]byte
+	CollAttribute string
 }
 
 // NewCollationType creates new collation type instance
 func NewCollationType(name string, length uint16, parentName string, collAttribute string) *AdaCollationType {
 	var code [2]byte
 	copy(code[:], parentName)
-	return &AdaCollationType{AdaType: AdaType{CommonType: CommonType{fieldType: FieldTypeCollation,
+	return &AdaCollationType{AdaType: AdaType{CommonType: CommonType{fieldType: FieldTypeCollation, length: uint32(length),
 		flags: uint32(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
-		name:  name, shortName: name}}, length: length,
-		parentName: code, collAttribute: collAttribute}
+		name:  name, shortName: name}},
+		ParentName: code, CollAttribute: collAttribute}
 }
 
 // String string representation of the collation type
@@ -214,8 +226,8 @@ func (fieldType *AdaCollationType) String() string {
 	if fieldType.IsOption(FieldOptionUQ) {
 		options = ",UQ"
 	}
-	return fmt.Sprintf("%s%s=COLLATING(%s,%s) ; %s", fieldType.shortName, options, fieldType.parentName,
-		fieldType.collAttribute, fieldType.name)
+	return fmt.Sprintf("%s%s=COLLATING(%s,%s) ; %s", fieldType.shortName, options, fieldType.ParentName,
+		fieldType.CollAttribute, fieldType.name)
 }
 
 // AdaHyperExitType data type structure for field types, no structures
