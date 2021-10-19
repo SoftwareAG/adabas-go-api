@@ -181,7 +181,7 @@ func NewTypeWithLength(fType FieldType, name string, length uint32) *AdaType {
 	return NewType(fType, name, length)
 }
 
-// NewTypeWithLength Definen new type
+// NewTypeWithFlag Define new type with flag
 func NewTypeWithFlag(fType FieldType, name string, flag FlagOption) *AdaType {
 	t := NewType(fType, name, 0)
 	t.AddFlag(flag)
