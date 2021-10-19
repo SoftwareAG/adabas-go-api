@@ -135,7 +135,7 @@ var fdt = []adatypes.IAdaType{
 	adatypes.NewType(adatypes.FieldTypeString, "colParentName"),
 	adatypes.NewType(adatypes.FieldTypeUInt2, "colInternalLength"),
 	adatypes.NewType(adatypes.FieldTypeUByte, "colOption2"),
-	adatypes.NewTypeWithLength(adatypes.FieldTypeString, "colAttribute", 0), // 25
+	adatypes.NewTypeWithFlag(adatypes.FieldTypeString, "colAttribute", adatypes.FlagOptionLengthNotIncluded), // 25
 	adatypes.NewType(adatypes.FieldTypeUInt2, "hyperLength"),
 	adatypes.NewType(adatypes.FieldTypeUByte, "hyperFExit"),
 	adatypes.NewType(adatypes.FieldTypeUByte, "hyperOption2"),
@@ -421,7 +421,6 @@ func createPhoneticType(fdt *adatypes.StructureValue, index int) (fieldType adat
 func createCollationType(fdt *adatypes.StructureValue, index int) (fieldType adatypes.IAdaType, err error) {
 	name := string(fdt.Get("fieldName", index).Value().([]byte))
 	length := fdt.Get("superLength", index).Value().(uint16)
-	//	fdtFormat := fdt.Get("fieldFormat", index).Value().(byte)
 	parentName := string(fdt.Get("parentName", index).Value().([]byte))
 	colAttribute := string(fdt.Get("colAttribute", index).Value().([]byte))
 	adatypes.Central.Log.Debugf("Collation attribute : %s", colAttribute)

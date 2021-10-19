@@ -187,3 +187,66 @@ func TestFdtStructureHyperExitEmployee(t *testing.T) {
 	assert.NoError(t, err)
 	fmt.Println("FDT TABLE: ", fdtTable)
 }
+
+func TestReadFDT(t *testing.T) {
+	initTestLogWithFile(t, "fdt.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("acj;target=" + adabasStatDBIDs)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+
+	def, err := connection.adabasToData.ReadFileDefinition(9)
+	if !assert.NoError(t, err) {
+		return
+	}
+	if connection.adabasToData.Acbx.Acbxrsp != 0 {
+		t.Fatal(connection.adabasToData.getAdabasMessage(), connection.adabasToData.Acbx.Acbxrsp)
+	}
+
+	def.DumpTypes(false, false, "ReadFDT")
+
+	col, serr := def.SearchType("CN")
+	assert.Equal(t, "CN", col.Name())
+	assert.NoError(t, serr)
+	assert.Equal(t, uint32(1144), col.Length())
+	colType := col.(*adatypes.AdaCollationType)
+	assert.Equal(t, "'de@collation=phonebook',PRIMARY", colType.CollAttribute)
+	assert.Equal(t, "BC", string(colType.ParentName[:]))
+	assert.Equal(t, " ", col.Type().FormatCharacter())
+
+	hy, herr := def.SearchType("H1")
+	assert.NoError(t, herr)
+	assert.Equal(t, uint32(5), hy.Length())
+	hyp := hy.(*adatypes.AdaSuperType)
+	assert.Equal(t, "H1", hy.Name())
+	assert.Equal(t, "B", string(hyp.FdtFormat))
+	assert.Equal(t, "NU", hy.Option())
+
+	s1, s1err := def.SearchType("S1")
+	assert.NoError(t, s1err)
+	assert.Equal(t, "S1", s1.Name())
+	assert.Equal(t, uint32(2), s1.Length())
+	s1t := s1.(*adatypes.AdaSuperType)
+	assert.Equal(t, "A", string(s1t.FdtFormat))
+	assert.Equal(t, "", s1.Option())
+
+	s2, s2err := def.SearchType("S2")
+	assert.NoError(t, s2err)
+	assert.Equal(t, "S2", s2.Name())
+	assert.Equal(t, uint32(46), s2.Length())
+	s2t := s2.(*adatypes.AdaSuperType)
+	assert.Equal(t, "A", string(s2t.FdtFormat))
+	assert.Equal(t, "NU,PE", s2.Option())
+
+	s3, s3err := def.SearchType("S3")
+	assert.NoError(t, s3err)
+	assert.Equal(t, "S3", s3.Name())
+	assert.Equal(t, uint32(9), s3.Length())
+	s3t := s3.(*adatypes.AdaSuperType)
+	assert.Equal(t, "A", string(s3t.FdtFormat))
+	assert.Equal(t, "NU,PE", s3.Option())
+
+}
