@@ -44,9 +44,13 @@ func NewSuperType(name string, option byte) *AdaSuperType {
 	superType := &AdaSuperType{CommonType: CommonType{fieldType: FieldTypeSuperDesc,
 		flags: uint32(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
 		name:  name, shortName: name}}
+	Central.Log.Debugf("Check super descriptor %s option %X", name, option)
 	if (option & 0x08) > 0 {
 		Central.Log.Debugf("%s super/sub descriptor found PE", name)
 		superType.AddOption(FieldOptionPE)
+	}
+	if (option & 0x10) > 0 {
+		superType.AddOption(FieldOptionNU)
 	}
 	if (option & 0x20) > 0 {
 		superType.AddOption(FieldOptionMU)
@@ -90,7 +94,16 @@ func (adaType *AdaSuperType) SetLength(length uint32) {
 
 // Option string representation of all option of Sub or super descriptors
 func (adaType *AdaSuperType) Option() string {
-	return ""
+	var buffer bytes.Buffer
+	for i := 0; i < len(fieldOptions); i++ {
+		if (adaType.options & (1 << uint(i))) > 0 {
+			if buffer.Len() > 0 {
+				buffer.WriteString(",")
+			}
+			buffer.WriteString(fieldOptions[i])
+		}
+	}
+	return buffer.String()
 }
 
 // SetFractional set fractional part

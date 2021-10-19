@@ -239,7 +239,7 @@ func TestReadFDT(t *testing.T) {
 	assert.Equal(t, uint32(46), s2.Length())
 	s2t := s2.(*adatypes.AdaSuperType)
 	assert.Equal(t, "A", string(s2t.FdtFormat))
-	assert.Equal(t, "NU,PE", s2.Option())
+	assert.Equal(t, "NU", s2.Option())
 
 	s3, s3err := def.SearchType("S3")
 	assert.NoError(t, s3err)
