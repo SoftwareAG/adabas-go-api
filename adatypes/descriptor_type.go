@@ -307,7 +307,7 @@ func (fieldType *AdaReferentialType) String() string {
 	return buffer.String()
 }
 
-// Type type of referential integrity
+// ReferentialType type of referential integrity
 func (fieldType *AdaReferentialType) ReferentialType() string {
 	switch fieldType.refType {
 	case 1:
