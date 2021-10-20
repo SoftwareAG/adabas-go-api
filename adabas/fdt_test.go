@@ -234,6 +234,7 @@ func TestReadFDT(t *testing.T) {
 	assert.Equal(t, "'de@collation=phonebook',PRIMARY", colType.CollAttribute)
 	assert.Equal(t, "BC", string(colType.ParentName[:]))
 	assert.Equal(t, " ", col.Type().FormatCharacter())
+	assert.Equal(t, "NU HE", col.Option())
 
 	hy, herr := def.SearchType("H1")
 	assert.NoError(t, herr)
