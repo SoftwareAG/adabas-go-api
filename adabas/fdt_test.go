@@ -198,7 +198,7 @@ func TestReadFDT(t *testing.T) {
 	}
 	defer connection.Close()
 
-	def, err := connection.adabasToData.ReadFileDefinition(9)
+	def, err := connection.adabasToData.ReadFileDefinition(11)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -206,7 +206,25 @@ func TestReadFDT(t *testing.T) {
 		t.Fatal(connection.adabasToData.getAdabasMessage(), connection.adabasToData.Acbx.Acbxrsp)
 	}
 
-	def.DumpTypes(false, false, "ReadFDT")
+	validateFile(t, "fdtTest11", []byte(def.String()), txtType)
+
+	ph, pherr := def.SearchType("PH")
+	assert.Equal(t, "PH", ph.Name())
+	assert.NoError(t, pherr)
+	assert.Equal(t, uint32(0), ph.Length())
+	phType := ph.(*adatypes.AdaPhoneticType)
+	assert.Equal(t, "AE", string(phType.ParentName[:]))
+	assert.Equal(t, uint16(0x14), phType.DescriptorLength)
+
+	def, err = connection.adabasToData.ReadFileDefinition(9)
+	if !assert.NoError(t, err) {
+		return
+	}
+	if connection.adabasToData.Acbx.Acbxrsp != 0 {
+		t.Fatal(connection.adabasToData.getAdabasMessage(), connection.adabasToData.Acbx.Acbxrsp)
+	}
+
+	validateFile(t, "fdtTest9", []byte(def.String()), txtType)
 
 	col, serr := def.SearchType("CN")
 	assert.Equal(t, "CN", col.Name())
@@ -248,5 +266,18 @@ func TestReadFDT(t *testing.T) {
 	s3t := s3.(*adatypes.AdaSuperType)
 	assert.Equal(t, "A", string(s3t.FdtFormat))
 	assert.Equal(t, "NU,PE", s3.Option())
+
+	ho, hoerr := def.SearchType("HO")
+	assert.NoError(t, hoerr)
+	assert.Equal(t, "HO=REFINT(AC,12,AA/DX,UX) ; HO", ho.String())
+	assert.Equal(t, "HO", ho.Name())
+	assert.Equal(t, uint32(0), ho.Length())
+	hot := ho.(*adatypes.AdaReferentialType)
+	assert.Equal(t, "PRIMARY", hot.ReferentialType())
+	assert.Equal(t, "DELETE_NOACTION", hot.DeleteAction())
+	assert.Equal(t, "UPDATE_NOACTION", hot.UpdateAction())
+	assert.Equal(t, "AA", hot.PrimaryKeyName())
+	assert.Equal(t, "AC", hot.ForeignKeyName())
+	assert.Equal(t, uint32(12), hot.ReferentialFile())
 
 }

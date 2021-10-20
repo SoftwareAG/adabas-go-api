@@ -174,8 +174,8 @@ func (adaType *AdaSuperType) InitSubTypes(definition *Definition) (err error) {
 // AdaPhoneticType data type phonetic descriptor for field types, no structures
 type AdaPhoneticType struct {
 	AdaType
-	descriptorLength uint16
-	parentName       [2]byte
+	DescriptorLength uint16
+	ParentName       [2]byte
 }
 
 // NewPhoneticType new phonetic descriptor type
@@ -185,12 +185,12 @@ func NewPhoneticType(name string, descriptorLength uint16, parentName string) *A
 	return &AdaPhoneticType{AdaType: AdaType{CommonType: CommonType{fieldType: FieldTypePhonetic, name: name,
 		flags:     uint32(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
 		shortName: name}},
-		descriptorLength: descriptorLength, parentName: code}
+		DescriptorLength: descriptorLength, ParentName: code}
 }
 
 // String string representation of the phonetic type
 func (fieldType *AdaPhoneticType) String() string {
-	return fmt.Sprintf("%s=PHON(%s) ; %s", fieldType.shortName, fieldType.parentName, fieldType.name)
+	return fmt.Sprintf("%s=PHON(%s) ; %s", fieldType.shortName, fieldType.ParentName, fieldType.name)
 }
 
 // AdaCollationType data type structure for field types, no structures
@@ -305,4 +305,55 @@ func (fieldType *AdaReferentialType) String() string {
 	buffer.WriteString(")")
 	buffer.WriteString(fmt.Sprintf(" ; %s", fieldType.name))
 	return buffer.String()
+}
+
+// Type type of referential integrity
+func (fieldType *AdaReferentialType) ReferentialType() string {
+	switch fieldType.refType {
+	case 1:
+		return "PRIMARY"
+	case 2:
+		return "FOREIGN"
+	}
+	return "UNKNOWN"
+}
+
+// ReferentialFile reference file of referential integrity
+func (fieldType *AdaReferentialType) ReferentialFile() uint32 {
+	return fieldType.refFile
+}
+
+// PrimaryKeyName primary key name of referential integrity
+func (fieldType *AdaReferentialType) PrimaryKeyName() string {
+	if fieldType.keys[0] == "" {
+		return "ISN"
+	}
+	return fieldType.keys[0]
+}
+
+// ForeignKeyName foreign key name of referential integrity
+func (fieldType *AdaReferentialType) ForeignKeyName() string {
+	return fieldType.keys[1]
+}
+
+// UpdateAction update action of referential integrity
+func (fieldType *AdaReferentialType) UpdateAction() string {
+	switch fieldType.refUpdateAction {
+	case 1:
+		return "UPDATE_CASCADE"
+	case 2:
+		return "UPDATE_NULL"
+	}
+	return "UPDATE_NOACTION"
+}
+
+// DeleteAction delete action of referential integrity
+func (fieldType *AdaReferentialType) DeleteAction() string {
+	switch fieldType.refDeleteAction {
+	case 1:
+		return "DELETE_CASCADE"
+	case 2:
+		return "DELETE_NULL"
+	}
+	return "DELETE_NOACTION"
 }
