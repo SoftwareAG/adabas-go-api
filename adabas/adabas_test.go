@@ -420,7 +420,7 @@ func ExampleAdabas_readFileDefinition9() {
 	//  S1=JA(1,2) ; S1
 	//  S2=JA(1,6),BC(1,40) ; S2
 	//  S3=LA(1,3),LB(1,6) ; S3
-	//  HO=REFINT(A,12,A/DC) ; HO
+	//  HO=REFINT(AC,12,AA/DX,UX) ; HO
 }
 
 func ExampleAdabas_readFileDefinition9RestrictF0() {
