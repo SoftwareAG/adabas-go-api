@@ -59,38 +59,37 @@ func traverseCacheCopy(adaType IAdaType, parentType IAdaType, level int, x inter
 	}
 
 	var newNode IAdaType
-	switch adaType.(type) {
+	switch t := adaType.(type) {
 	case *StructureType:
 		nst := &StructureType{}
-		ost := adaType.(*StructureType)
-		*nst = *ost
-		Central.Log.Debugf("------->>>>>> Range %s=%s%s -> %p", ost.name, ost.shortName, ost.peRange.FormatBuffer(), ost)
+		*nst = *t
+		Central.Log.Debugf("------->>>>>> Range %s=%s%s -> %p", t.name, t.shortName, t.peRange.FormatBuffer(), t)
 		//		nst.peRange = &AdaRange{}
-		nst.peRange = ost.peRange
+		nst.peRange = t.peRange
 		//nst.muRange = &AdaRange{}
-		nst.muRange = ost.muRange
+		nst.muRange = t.muRange
 		Central.Log.Debugf("------->>>>>> Range %s=%s%s %p", nst.name, nst.shortName, nst.peRange.FormatBuffer(), nst)
 		nst.SubTypes = make([]IAdaType, 0)
 		newNode = nst
 	case *AdaPhoneticType:
 		npt := &AdaPhoneticType{}
-		*npt = *(adaType.(*AdaPhoneticType))
+		*npt = *(t)
 		newNode = npt
 	case *AdaSuperType:
 		npt := &AdaSuperType{}
-		*npt = *(adaType.(*AdaSuperType))
+		*npt = *(t)
 		newNode = npt
 	case *AdaCollationType:
 		npt := &AdaCollationType{}
-		*npt = *(adaType.(*AdaCollationType))
+		*npt = *(t)
 		newNode = npt
 	case *RedefinitionType:
 		npt := &RedefinitionType{}
-		*npt = *(adaType.(*RedefinitionType))
+		*npt = *(t)
 		newNode = npt
 	case *AdaReferentialType:
 		npt := &AdaReferentialType{}
-		*npt = *(adaType.(*AdaReferentialType))
+		*npt = *(t)
 		newNode = npt
 	default:
 		nat := &AdaType{}
@@ -134,10 +133,15 @@ func CreateDefinitionByCache(reference string) *Definition {
 	definition.activeFieldTree = x
 	definition.activeFields = make(map[string]IAdaType)
 	t := TraverserMethods{EnterFunction: traverseCacheCopy}
-	e.fileFieldTree.Traverse(t, 0, definition)
+	err := e.fileFieldTree.Traverse(t, 0, definition)
+	if err != nil {
+		return nil
+	}
 	definition.fileFieldTree = definition.activeFieldTree
-	Central.Log.Debugf("ORIG %#v\n", e.fileFieldTree)
-	Central.Log.Debugf("COPY TO %#v\n", x)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("ORIG %#v\n", e.fileFieldTree)
+		Central.Log.Debugf("COPY TO %#v\n", x)
+	}
 	definition.InitReferences()
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Get copied cache entry: %s", reference)

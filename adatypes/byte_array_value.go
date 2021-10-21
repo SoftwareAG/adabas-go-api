@@ -116,17 +116,16 @@ func (value *byteArrayValue) SetStringValue(stValue string) {
 
 func (value *byteArrayValue) SetValue(v interface{}) error {
 	Central.Log.Debugf("Set value for %s using ... %T", value.Type().Name(), v)
-	switch v.(type) {
+	switch tv := v.(type) {
 	case []byte:
-		b := v.([]byte)
 		if value.Type().Length() == 0 {
-			value.value = b
+			value.value = tv
 		} else {
-			copy(value.value, b)
+			copy(value.value, tv)
 		}
 		return nil
 	case string:
-		value.value = []byte(v.(string))
+		value.value = []byte(tv)
 		return nil
 	}
 	return NewGenericError(100, fmt.Sprintf("%T", v), value.Type().Name(), fmt.Sprintf("%T", value))

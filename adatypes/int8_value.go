@@ -296,7 +296,10 @@ func (value *int64Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 				copy(v8[:rbLen], vba[:])
 			}
 			buf := bytes.NewBuffer(v8)
-			binary.Read(buf, helper.order, &value.value)
+			verr = binary.Read(buf, helper.order, &value.value)
+			if verr != nil {
+				return EndTraverser, verr
+			}
 		}
 	} else {
 		value.value, err = helper.ReceiveInt64()

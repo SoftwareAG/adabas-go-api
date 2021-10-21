@@ -63,7 +63,10 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 		} else {
 			name = name[1:]
 		}
-		adaValue.SetValue(parameter.prefix + name)
+		err = adaValue.SetValue(parameter.prefix + name)
+		if err != nil {
+			return EndTraverser, err
+		}
 		return Continue, nil
 	}
 
@@ -120,10 +123,10 @@ func (def *Definition) ParseBuffer(helper *BufferHelper, option *BufferOption, p
 func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{}, peIndex uint32) (adaValues []IAdaValue, err error) {
 	var parent *StructureType
 	var parentStructure *StructureValue
-	switch str.(type) {
+	switch st := str.(type) {
 	case *StructureType:
 		Central.Log.Debugf("Parent structure value not available")
-		parent = str.(*StructureType)
+		parent = st
 	default:
 		Central.Log.Debugf("Parent structure value available %T", str)
 		parentStructure = str.(*StructureValue)
@@ -268,7 +271,10 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 				return
 			}
 			value.setPeriodIndex(peIndex)
-			value.parseBuffer(helper, option)
+			_, err := value.parseBuffer(helper, option)
+			if err != nil {
+				return nil, err
+			}
 			if int(ref) == lengthFieldIndex {
 				lengthFieldValue := value.(*ubyteValue)
 				endOfBuffer += uint32(lengthFieldValue.ByteValue())
@@ -362,14 +368,13 @@ func adaptParentReference(adaType IAdaType, parentType IAdaType, level int, x in
 			p = p.GetParent()
 		}
 	}
-	adaptFlags(adaType, parentType, level, x)
-	return nil
+	return adaptFlags(adaType, parentType, level, x)
 }
 
 // InitReferences Temporary flag inherit on all tree nodes
 func (def *Definition) InitReferences() {
 	t := TraverserMethods{EnterFunction: adaptParentReference}
-	def.TraverseTypes(t, false, nil)
+	_ = def.TraverseTypes(t, false, nil)
 }
 
 // Traverse traverse through the tree of definition calling a callback method
@@ -411,7 +416,10 @@ func (def *Definition) String() string {
 		return nil
 	}}
 
-	def.TraverseTypes(t, true, nil)
+	err := def.TraverseTypes(t, true, nil)
+	if err != nil {
+		buffer.WriteString(fmt.Sprintf("\nError evaluating types: %v", err))
+	}
 	return buffer.String()
 }
 
@@ -429,7 +437,7 @@ func (def *Definition) Fieldnames() []string {
 		return nil
 	}}
 
-	def.TraverseTypes(t, true, typeList)
+	_ = def.TraverseTypes(t, true, typeList)
 	return typeList
 }
 
@@ -464,18 +472,18 @@ type stackParameter struct {
 	structureValue *StructureValue
 }
 
-func addValueToStructure(parameter *stackParameter, value IAdaValue) {
+func addValueToStructure(parameter *stackParameter, value IAdaValue) error {
 	Central.Log.Debugf("Add value for %s = %v -> %s", value.Type().Name(), value.String(), value.Type().Type().FormatCharacter())
 	if parameter.structureValue == nil {
 		Central.Log.Debugf("Add to main")
 		parameter.definition.Values = append(parameter.definition.Values, value)
 	} else {
 		if parameter.structureValue.Type().Type() == FieldTypePeriodGroup {
-			parameter.structureValue.addValue(value, 1)
-		} else {
-			parameter.structureValue.addValue(value, 0)
+			return parameter.structureValue.addValue(value, 1)
 		}
+		return parameter.structureValue.addValue(value, 0)
 	}
+	return nil
 }
 
 // create value function used in traverser to create a tree per type element
@@ -509,7 +517,10 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 			Central.Log.Debugf("Error %v", subErr)
 			return subErr
 		}
-		addValueToStructure(parameter, value)
+		subErr = addValueToStructure(parameter, value)
+		if subErr != nil {
+			return subErr
+		}
 		parameter.structureValue = value.(*StructureValue)
 	} else {
 		// Don't create Period group field elements
@@ -541,7 +552,10 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 					Central.Log.Debugf("Error %v", subErr)
 					return subErr
 				}
-				addValueToStructure(parameter, value)
+				subErr = addValueToStructure(parameter, value)
+				if subErr != nil {
+					return subErr
+				}
 			} else {
 				Central.Log.Debugf("Skip because already added")
 			}

@@ -168,6 +168,7 @@ func TestPackedCheckFractional(t *testing.T) {
 	assert.Equal(t, "10002423.00", pa.String())
 	var j json.Number
 	err = pa.SetValue(j)
+	assert.NoError(t, err)
 
 	f = 10002423.01
 	err = pa.SetValue(f)

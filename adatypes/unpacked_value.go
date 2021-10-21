@@ -92,9 +92,8 @@ func (value *unpackedValue) SetStringValue(stValue string) {
 func (value *unpackedValue) SetValue(v interface{}) error {
 	Central.Log.Debugf("Set packed value to %v", v)
 	iLen := value.Type().Length()
-	switch v.(type) {
+	switch bv := v.(type) {
 	case []byte:
-		bv := v.([]byte)
 		switch {
 		case iLen != 0 && uint32(len(bv)) > iLen:
 			return NewGenericError(59)

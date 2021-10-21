@@ -28,11 +28,7 @@ import (
 	"time"
 )
 
-const messagePrefix = "ADAGE"
-
 type errorCode int
-
-const messageFilePattern = `^\w+\.[a-zA-Z]{2}$`
 
 var locales map[string]map[string]string
 var once sync.Once

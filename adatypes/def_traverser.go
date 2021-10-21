@@ -157,12 +157,13 @@ func (def *Definition) DumpTypes(doLog bool, activeTree bool, msg ...string) {
 	}
 	if !doLog || Central.IsDebugLevel() {
 		t := TraverserMethods{EnterFunction: dumpTypeEnterTrav}
-		def.TraverseTypes(t, activeTree, &buffer)
+		err := def.TraverseTypes(t, activeTree, &buffer)
 		if doLog {
 			LogMultiLineString(true, buffer.String())
-			// Central.Log.Debugf("Dump all types: ", buffer.String())
+			Central.Log.Debugf("Dump error: %v", err)
 		} else {
 			fmt.Println(buffer.String())
+			fmt.Println("Error dump", err)
 		}
 	}
 }
@@ -196,7 +197,11 @@ func (def *Definition) DumpValues(doLog bool) {
 	var buffer bytes.Buffer
 	Central.Log.Debugf("Dump all values")
 	t := TraverserValuesMethods{EnterFunction: dumpValuesEnterTrav}
-	def.TraverseValues(t, &buffer)
+	_, err := def.TraverseValues(t, &buffer)
+	if err != nil {
+		Central.Log.Debugf("Dump values error: %v", err)
+		return
+	}
 	if doLog {
 		Central.Log.Debugf("Dump values : %s", buffer.String())
 	} else {

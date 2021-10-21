@@ -320,7 +320,7 @@ func (def *Definition) ResetRestrictToFields() {
 	def.activeFieldTree = x
 	def.activeFields = make(map[string]IAdaType)
 	t := TraverserMethods{EnterFunction: traverseCacheCopy}
-	def.fileFieldTree.Traverse(t, 0, def)
+	_ = def.fileFieldTree.Traverse(t, 0, def)
 }
 
 // ShouldRestrictToFields this method restrict the query to a given comma-separated list

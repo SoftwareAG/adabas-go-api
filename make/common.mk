@@ -219,13 +219,19 @@ lint: | $(GOLINT) ; $(info $(M) running golint…) @ ## Run golint
 	$Q cd $(CURDIR) && $(GOLINT) -set_exit_status ./...
 
 .PHONY: cilint
-cilint: | $(GOCILINT) ; $(info $(M) running golint…) @ ## Run golint
+cilint: | $(GOCILINT) ; $(info $(M) running golangci-lint...) @ ## Run golangci-lint
 	$Q cd $(CURDIR) && $(GOCILINT) run ./...
 
 .PHONY: fmt
 fmt: ; $(info $(M) running fmt…) @ ## Run go fmt on all source files
 	@ret=0 && for d in $$($(GO) list -f '{{.Dir}}' ./... | grep -v /vendor/); do \
 		$(GO) fmt  $$d/*.go || ret=$$? ; \
+	 done ; exit $$ret
+
+.PHONY: vet
+vet: ; $(info $(M) running vet) @ ## Run go vet on all source files
+	@ret=0 && for d in $$($(GO) list -f '{{.Dir}}' ./... | grep -v /vendor/); do \
+		$(GO) vet  $$d/*.go || ret=$$? ; \
 	 done ; exit $$ret
 
 # Dependency management

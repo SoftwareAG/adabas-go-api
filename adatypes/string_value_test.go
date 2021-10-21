@@ -99,18 +99,18 @@ func TestStringSpaces(t *testing.T) {
 	assert.Equal(t, v, adaValue.Value())
 	assert.Equal(t, "          ", adaValue.String())
 	assert.Equal(t, v, adaValue.Bytes())
-	adaValue.SetValue("ABC")
+	assert.NoError(t, adaValue.SetValue("ABC"))
 	v = []byte{0x41, 0x42, 0x43, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20}
 	assert.Equal(t, v, adaValue.Value())
 	assert.Equal(t, "ABC       ", adaValue.String())
-	adaValue.SetValue("äöüß")
+	assert.NoError(t, adaValue.SetValue("äöüß"))
 	v = []byte{0xc3, 0xa4, 0xc3, 0xb6, 0xc3, 0xbc, 0xc3, 0x9f, 0x20, 0x20}
 	assert.Equal(t, v, adaValue.Value())
 	assert.Equal(t, "äöüß  ", adaValue.String())
 	assert.Equal(t, v, adaValue.Bytes())
 	assert.Equal(t, byte(0xc3), adaValue.ByteValue())
 	v = []byte{0x41, 0x42, 0x43}
-	adaValue.SetValue(v)
+	assert.NoError(t, adaValue.SetValue(v))
 	v = []byte{0x41, 0x42, 0x43, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20}
 	assert.Equal(t, v, adaValue.Value())
 	assert.Equal(t, "ABC       ", adaValue.String())

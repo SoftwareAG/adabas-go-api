@@ -92,9 +92,7 @@ func (value *RedefinitionValue) StoreBuffer(helper *BufferHelper, option *Buffer
 			return err
 		}
 	}
-	helper.putBytes(subHelper.Buffer())
-	//value.mainValue.StoreBuffer(helper)
-	return nil
+	return helper.putBytes(subHelper.Buffer())
 }
 
 // parseBuffer parse buffer

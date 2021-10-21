@@ -1360,7 +1360,11 @@ func ExampleDefinition_treecopy() {
 	if testDefinition.activeFieldTree != testDefinition.fileFieldTree {
 		fmt.Println("ERROR equal")
 	}
-	testDefinition.copyActiveTree()
+	err = testDefinition.copyActiveTree()
+	if err != nil {
+		fmt.Println("ERROR copyActiveTree", err)
+		return
+	}
 	if testDefinition.activeFieldTree == testDefinition.fileFieldTree {
 		fmt.Println("ERROR equal")
 	}

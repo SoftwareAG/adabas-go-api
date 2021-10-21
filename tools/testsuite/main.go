@@ -53,40 +53,6 @@ var wg sync.WaitGroup
 var output = false
 var close = false
 
-func displayResult(isn adatypes.Isn, buffer []byte, received uint64) {
-	if !output {
-		return
-	}
-	helper := adatypes.NewHelper(buffer, int(received), adabas.Endian())
-	aa, err := helper.ReceiveString(8)
-	if err != nil {
-		fmt.Println("Error receiving AA", err)
-		return
-	}
-	ac, err := helper.ReceiveString(20)
-	if err != nil {
-		fmt.Println("Error receiving AC", err)
-		return
-	}
-	ad, err := helper.ReceiveString(20)
-	if err != nil {
-		fmt.Println("Error receiving AD", err)
-		return
-	}
-	ae, err := helper.ReceiveString(20)
-	if err != nil {
-		fmt.Println("Error receiving AE", err)
-		return
-	}
-	as, err := helper.ReceiveInt32()
-	if err != nil {
-		fmt.Println("Error receiving AS", err)
-		return
-	}
-
-	fmt.Printf("ISN=%-4d AA=%s AC=%s AD=%s AE=%s AS=%d\n", isn, aa, ac, ad, ae, as)
-}
-
 func (c caller) createConnection() (*adabas.Connection, error) {
 	connStr := fmt.Sprintf("acj;target=%s;auth=NONE,id=%d,user=user%04d", c.url, c.threadNr, c.threadNr)
 	connection, err := adabas.NewConnection(connStr)

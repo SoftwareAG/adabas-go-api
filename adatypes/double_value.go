@@ -116,8 +116,7 @@ func (value *doubleValue) StoreBuffer(helper *BufferHelper, option *BufferOption
 	if option != nil && option.SecondCall > 0 {
 		return nil
 	}
-	helper.putBytes(value.value)
-	return nil
+	return helper.putBytes(value.value)
 }
 
 func (value *doubleValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
