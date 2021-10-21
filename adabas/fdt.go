@@ -143,8 +143,8 @@ var fdt = []adatypes.IAdaType{
 	adatypes.NewStructureList(adatypes.FieldTypeStructure, "hyperList",
 		adatypes.OccByte, fdtHyperFieldEntry), // 30
 	adatypes.NewType(adatypes.FieldTypeUInt4, "refFile"),
-	adatypes.NewType(adatypes.FieldTypeString, "refPrimaryKey"),
-	adatypes.NewType(adatypes.FieldTypeString, "refForeignKey"),
+	adatypes.NewTypeWithLength(adatypes.FieldTypeString, "refPrimaryKey", fieldNameLength),
+	adatypes.NewTypeWithLength(adatypes.FieldTypeString, "refForeignKey", fieldNameLength),
 	adatypes.NewType(adatypes.FieldTypeUByte, "refType"),
 	adatypes.NewType(adatypes.FieldTypeUByte, "refUpdateAction"), // 35
 	adatypes.NewType(adatypes.FieldTypeUByte, "refDeleteAction"),

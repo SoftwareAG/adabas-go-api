@@ -40,6 +40,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type referenceType byte
+
+const (
+	jsonType referenceType = iota
+	txtType
+)
+
 func initTestLogWithFile(t *testing.T, fileName string) {
 	err := initLogWithFile(fileName)
 	if err != nil {
@@ -1904,10 +1911,22 @@ func validateResult(t *testing.T, search string, result *Response) error {
 		return fmt.Errorf("Result zero")
 	}
 
-	// fmt.Println(string(resultJSON))
+	return validateFile(t, search, resultJSON, jsonType)
+}
+
+// validateFile validate file to reference stored
+func validateFile(t *testing.T, search string, data []byte, dataType referenceType) (err error) {
 	rw := os.Getenv("REFERENCES")
 	doWrite := os.Getenv("REFERENCE_WRITE")
-	destinationFile := rw + string(os.PathSeparator) + search + ".json"
+	destinationFile := rw + string(os.PathSeparator) + search
+	switch dataType {
+	case jsonType:
+		destinationFile += ".json"
+	case txtType:
+		destinationFile += ".txt"
+	default:
+		destinationFile += ".unknown"
+	}
 	if _, err := os.Stat(destinationFile); os.IsNotExist(err) {
 		doWrite = "1"
 	}
@@ -1918,11 +1937,11 @@ func validateResult(t *testing.T, search string, result *Response) error {
 			return err
 		}
 		fmt.Println("Compare reference with result")
-		assert.Equal(t, referenceJSON, resultJSON, "Reference not equal result")
+		assert.Equal(t, referenceJSON, data, "Reference not equal result")
 	} else {
 		fmt.Println("Write reference check to", destinationFile)
 		os.Remove(destinationFile)
-		err = ioutil.WriteFile(destinationFile, resultJSON, 0644)
+		err = ioutil.WriteFile(destinationFile, data, 0644)
 		if !assert.NoError(t, err) {
 			return err
 		}

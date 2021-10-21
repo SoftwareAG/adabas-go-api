@@ -19,7 +19,7 @@
 PKGS            = $(or $(PKG),$(shell cd $(CURDIR) && env GOPATH=$(GOPATH) $(GO) list ./... | grep -v "^vendor/"))
 TESTPKGS        = $(shell env GOPATH=$(GOPATH) $(GO) list -f '{{ if or .TestGoFiles .XTestGoFiles }}{{ .ImportPath }}{{ end }}' $(PKGS))
 CGO_CFLAGS      = $(if $(ACLDIR),-I$(ACLDIR)/inc,)
-ifeq ($(GOOS),windows)
+ifeq ($(shell go env GOOS),windows)
 CGO_LDFLAGS     =
 CGO_EXT_LDFLAGS =
 GO_TAGS         = release
