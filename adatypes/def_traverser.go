@@ -163,7 +163,9 @@ func (def *Definition) DumpTypes(doLog bool, activeTree bool, msg ...string) {
 			Central.Log.Debugf("Dump error: %v", err)
 		} else {
 			fmt.Println(buffer.String())
-			fmt.Println("Error dump", err)
+			if err != nil {
+				fmt.Println("Error dump types tree:", err)
+			}
 		}
 	}
 }
@@ -206,5 +208,8 @@ func (def *Definition) DumpValues(doLog bool) {
 		Central.Log.Debugf("Dump values : %s", buffer.String())
 	} else {
 		fmt.Println("Dump values : ", buffer.String())
+		if err != nil {
+			fmt.Println("Error dump value tree:", err)
+		}
 	}
 }
