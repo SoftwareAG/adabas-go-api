@@ -59,13 +59,13 @@ CREDENTIAL *create_credentials(char *user,char* pwd) {
 	CREDENTIAL *credential = malloc(SIZEOF_CREDENTIAL);
 	credential->user = user;
 	credential->pwd = pwd;
-#if 1
+#if defined(ADA_MEM_TRACE)
 	fprintf(stdout,"Create credentials %p (%p,%p)\n",credential,user,pwd);
 #endif
 	return credential;
 }
 void release_credentials(CREDENTIAL* credential) {
-#if 1
+#if defined(ADA_MEM_TRACE)
 	fprintf(stdout,"Free credentials %p\n",credential);
 #endif
 	free(credential->user);
@@ -77,7 +77,7 @@ PABD *create_abd(int num_abd)
 {
 	int i;
 	PABD *pabd = (PABD *)malloc(num_abd * sizeof(PABD *));
-#if 1
+#if defined(ADA_MEM_TRACE)
 	fprintf(stdout,"Alloc ABD %p\n",pabd);
 #endif
 	for (i = 0; i < num_abd; i++)
@@ -97,15 +97,26 @@ void destroy_abd(PABD *pabd, int num_abd)
 		{
 			if (pabd[i]->abdaddr != NULL)
 			{
+#if defined(ADA_MEM_TRACE)
+			fprintf(stdout,"Free %i. ABD buffer %p\n",i,pabd[i]->abdaddr);
+#endif
 				free(pabd[i]->abdaddr);
+			} else {
+#if defined(ADA_MEM_TRACE)
+				fprintf(stdout,"Free %i. ABD buffer NULL!!!!\n",i);
+#endif
 			}
-#if 1
-			fprintf(stdout,"Free ABD %p\n",pabd[i]);
+#if defined(ADA_MEM_TRACE)
+			fprintf(stdout,"Free %i. ABD %p\n",i,pabd[i]);
 #endif
 			free(pabd[i]);
+		} else {
+#if defined(ADA_MEM_TRACE)
+			fprintf(stdout,"Free %i. ABD NULL!!!!\n",i);
+#endif
 		}
 	}
-#if 1
+#if defined(ADA_MEM_TRACE)
 	fprintf(stdout,"Free ABD %p\n",pabd);
 #endif
 	free(pabd);
@@ -125,8 +136,10 @@ int go_eadabasx(ADAID_T *adabas_id, PACBX acbx, int num_abd, PABD *abd, CREDENTI
 	{
 		lnk_set_adabas_id((unsigned char *)(adabas_id));
 		if ((c!=NULL)&&(c->user!=NULL)) {
+#if defined(ADA_MEM_TRACE)
 			fprintf(stdout,"%c%c %p User: %s PWD: %s\n",acbx->acbxcmd[0],acbx->acbxcmd[1],
 			   c,c->user,c->pwd);
+#endif
 #if 0
 			fprintf(stdout,"user %p %s\n",c->user,c->user);
 			fprintf(stdout,"pwd  %p\n",c->pwd);
@@ -134,7 +147,7 @@ int go_eadabasx(ADAID_T *adabas_id, PACBX acbx, int num_abd, PABD *abd, CREDENTI
 			lnk_set_uid_pw(acbx->acbxdbid, c->user, c->pwd);
 		}
 		rsp = adabasx(acbx, num_abd, abd);
-#if 0
+#if defined(ADA_MEM_TRACE)
 		fprintf(stdout,"%c%c rsp: %d rsp: %d ID:%s/%d/%lu\n",acbx->acbxcmd[0],acbx->acbxcmd[1],
 		       rsp,acbx->acbxrsp,adabas_id->s_user,adabas_id->s_pid,adabas_id->s_timestamp);
 #endif
@@ -146,7 +159,9 @@ int go_eadabasx(ADAID_T *adabas_id, PACBX acbx, int num_abd, PABD *abd, CREDENTI
 void copy_to_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
 {
 	PABD dest_pabd = pabd[index] = malloc(L_ABD);
+#if defined(ADA_MEM_TRACE)
 	fprintf(stdout,"Alloc %d. ABD %p\n",index,dest_pabd);
+#endif
 	if (dest_pabd == NULL)
 	{
 		exit(10);
@@ -180,9 +195,15 @@ void copy_from_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
 	}
 	if (dest_pabd->abdaddr != NULL)
 	{
+#if defined(ADA_MEM_TRACE)
+		fprintf(stdout,"Free %d ABD buffer %p\n",index,dest_pabd->abdaddr);
+#endif
 		free(dest_pabd->abdaddr);
 		dest_pabd->abdaddr = NULL;
 	}
+#if defined(ADA_MEM_TRACE)
+		fprintf(stdout,"Free %d ABD %p\n",index,pabd[index]);
+#endif
 	free(pabd[index]);
 	pabd[index] = NULL;
 }
