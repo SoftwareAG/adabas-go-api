@@ -60,13 +60,13 @@ CREDENTIAL *create_credentials(char *user,char* pwd) {
 	credential->user = user;
 	credential->pwd = pwd;
 #if defined(ADA_MEM_TRACE)
-	fprintf(stdout,"Create credentials %p (%p,%p)\n",credential,user,pwd);
+	fprintf(stdout,"Create credentials %p (%p,%p) (size=%lu)\n",credential,user,pwd,SIZEOF_CREDENTIAL);
 #endif
 	return credential;
 }
 void release_credentials(CREDENTIAL* credential) {
 #if defined(ADA_MEM_TRACE)
-	fprintf(stdout,"Free credentials %p\n",credential);
+	fprintf(stdout,"Free credentials %p (%p,%p)\n",credential,credential->user,credential->pwd);
 #endif
 	free(credential->user);
 	free(credential->pwd);
@@ -198,7 +198,7 @@ void copy_from_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
 	if ((data != NULL) && (dest_pabd->abdrecv > 0))
 	{
 #if defined(ADA_MEM_TRACE)
-		fprintf(stdout,"Recopy %d.ABD %d(%d)\n",size,dest_pabd->abdrecv);
+		fprintf(stdout,"Recopy %d.ABD %u(%lu)\n",index,size,dest_pabd->abdrecv);
 #endif
 		memcpy(data, dest_pabd->abdaddr, size);
 	}
