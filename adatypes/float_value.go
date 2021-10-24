@@ -86,21 +86,19 @@ func (value *floatValue) SetStringValue(stValue string) {
 }
 
 func (value *floatValue) SetValue(v interface{}) error {
-	switch v.(type) {
+	switch tv := v.(type) {
 	case float32:
-		value.value = float32ToByte(v.(float32))
+		value.value = float32ToByte(tv)
 	case float64:
-		f := float32(v.(float64))
+		f := float32(tv)
 		value.value = float32ToByte(f)
 	case string:
-		vs := v.(string)
-		value.SetStringValue(vs)
+		value.SetStringValue(tv)
 	case []byte:
-		bv := v.([]byte)
-		if uint32(len(bv)) > value.Type().Length() {
-			return NewGenericError(104, len(bv), value.Type().Name())
+		if uint32(len(tv)) > value.Type().Length() {
+			return NewGenericError(104, len(tv), value.Type().Name())
 		}
-		copy(value.value[:len(bv)], bv[:])
+		copy(value.value[:len(tv)], tv[:])
 		// value.value = bv
 	default:
 		i, err := value.commonInt64Convert(v)
@@ -122,8 +120,7 @@ func (value *floatValue) StoreBuffer(helper *BufferHelper, option *BufferOption)
 	if option != nil && option.SecondCall > 0 {
 		return nil
 	}
-	helper.putBytes(value.value)
-	return nil
+	return helper.putBytes(value.value)
 }
 
 func (value *floatValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {

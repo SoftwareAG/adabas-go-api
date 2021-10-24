@@ -87,23 +87,21 @@ func (value *unicodeValue) SetStringValue(stValue string) {
 }
 
 func (value *unicodeValue) SetValue(v interface{}) error {
-	switch v.(type) {
+	switch tv := v.(type) {
 	case string:
-		sv := v.(string)
-		value.setStringWithSize(sv)
+		value.setStringWithSize(tv)
 		Central.Log.Debugf("Set value to >%s<", value.value)
 	case []byte:
 		if value.Type().Length() == 0 {
-			value.value = v.([]byte)
+			value.value = tv
 		} else {
-			val := v.([]byte)
 			value.value = []byte(strings.Repeat(" ", int(value.Type().Length())))
 			//make([]byte, value.Type().Length())
-			length := len(val)
+			length := len(tv)
 			if length > int(value.Type().Length()) {
 				length = int(value.Type().Length())
 			}
-			copy(value.value, val[:length])
+			copy(value.value, tv[:length])
 		}
 	default:
 		return NewGenericError(103, fmt.Sprintf("%T", v), value.Type().Name())

@@ -388,10 +388,11 @@ func TestUInt8Variable(t *testing.T) {
 
 func checkValueUInt64(t *testing.T, up IAdaValue, input []byte, expect uint64) {
 	helper := NewDynamicHelper(binary.LittleEndian)
-	helper.putBytes(input)
+	perr := helper.putBytes(input)
+	assert.NoError(t, perr)
 	helper.offset = 0
 	option := &BufferOption{}
-	_, perr := up.parseBuffer(helper, option)
+	_, perr = up.parseBuffer(helper, option)
 	assert.NoError(t, perr)
 	v, err := up.UInt64()
 	assert.NoError(t, err)

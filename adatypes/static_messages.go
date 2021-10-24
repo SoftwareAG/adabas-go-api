@@ -1375,6 +1375,7 @@ var staticMessages = []struct {
 	{"ADAGEC7000", "en", "Inconsistency in inverted list during update"},
 	{"ADAGEC8000", "en", "Security violation"},
 	{"ADAGEC801F", "en", "Security violation: Authentication error"},
+	{"ADAGEC8091", "en", "Security violation: no RBAC permission"},
 	{"ADAGEC9000", "en", "Invalid password"},
 	{"ADAGEC9001", "en", "Invalid password"},
 	{"ADAGECA000", "en", "Invalid password for used file"},

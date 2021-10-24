@@ -205,9 +205,8 @@ func (value *ubyteValue) SetStringValue(stValue string) {
 
 func (value *ubyteValue) SetValue(v interface{}) error {
 	if value.Type().Type() == FieldTypeCharacter {
-		switch v.(type) {
+		switch s := v.(type) {
 		case string:
-			s := v.(string)
 			sb := []byte(s)
 			if len(sb) > 1 {
 				return NewGenericError(108)

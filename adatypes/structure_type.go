@@ -280,7 +280,8 @@ func travereAdaptPartOption(adaType IAdaType, parentType IAdaType, level int, x 
 func (adaType *StructureType) addPart() {
 	adaType.AddFlag(FlagOptionPart)
 	t := TraverserMethods{EnterFunction: travereAdaptPartOption}
-	adaType.Traverse(t, 0, nil)
+	err := adaType.Traverse(t, 0, nil)
+	Central.Log.Debugf("adPart error %v", err)
 }
 
 // RemoveField remote field of the structure type

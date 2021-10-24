@@ -130,39 +130,36 @@ func (value *stringValue) SetStringValue(stValue string) {
 }
 
 func (value *stringValue) SetValue(v interface{}) error {
-	switch v.(type) {
+	switch tv := v.(type) {
 	case string:
-		sv := v.(string)
-		if value.Type().Length() > 0 && uint32(len(sv)) > value.Type().Length() {
-			return NewGenericError(77, len(sv), value.Type().Length())
+		if value.Type().Length() > 0 && uint32(len(tv)) > value.Type().Length() {
+			return NewGenericError(77, len(tv), value.Type().Length())
 		}
-		value.setStringWithSize(sv)
+		value.setStringWithSize(tv)
 		Central.Log.Debugf("Set value to >%s<", value.value)
 	case []byte:
 		if value.Type().Length() == 0 {
-			value.value = v.([]byte)
+			value.value = tv
 			Central.Log.Debugf("Set dynamic content with len=%d", len(value.value))
 		} else {
 			Central.Log.Debugf("Set static at value of len=%d\n", value.Type().Length())
 
-			val := v.([]byte)
 			value.value = []byte(strings.Repeat(" ", int(value.Type().Length())))
-			length := len(val)
+			length := len(tv)
 			if length > int(value.Type().Length()) {
 				length = int(value.Type().Length())
 			}
-			copy(value.value, val[:length])
+			copy(value.value, tv[:length])
 		}
 	case byte:
 		if value.Type().Length() == 0 {
-			value.value = []byte{v.(byte)}
+			value.value = []byte{tv}
 		} else {
 			value.value = []byte(strings.Repeat(" ", int(value.Type().Length())))
-			value.value[0] = v.(byte)
+			value.value[0] = tv
 		}
 	case reflect.Value:
-		vv := v.(reflect.Value)
-		value.setStringWithSize(vv.String())
+		value.setStringWithSize(tv.String())
 	default:
 		switch reflect.TypeOf(v).Kind() {
 		case reflect.String:
@@ -312,11 +309,12 @@ func (value *stringValue) StoreBuffer(helper *BufferHelper, option *BufferOption
 		if end > uint32(len(value.value)) {
 			end = uint32(len(value.value))
 		}
-		helper.putBytes(value.value[start:end])
+		err := helper.putBytes(value.value[start:end])
 		if Central.IsDebugLevel() {
-			Central.Log.Debugf("Partial buffer added to size = %d (chunk=%d) offset = %d", len(helper.buffer), PartialStoreLobSizeChunks, helper.offset)
+			Central.Log.Debugf("Partial buffer added to size = %d (chunk=%d) offset = %d (%v)",
+				len(helper.buffer), PartialStoreLobSizeChunks, helper.offset, err)
 		}
-		return nil
+		return err
 	}
 	// Skip normal fields in second call
 	if option != nil && option.SecondCall > 0 {
@@ -324,7 +322,7 @@ func (value *stringValue) StoreBuffer(helper *BufferHelper, option *BufferOption
 	}
 	wrBytes := []byte(value.value)
 	if stringLen == 0 {
-		stringLen = 1
+		//stringLen = 1
 		wrBytes = []byte{' '}
 	}
 	// if value.Type().Length() == 0 {
@@ -343,7 +341,10 @@ func (value *stringValue) StoreBuffer(helper *BufferHelper, option *BufferOption
 			wrBytes = append(wrBytes, ' ')
 		}
 	}
-	helper.putBytes(wrBytes)
+	err := helper.putBytes(wrBytes)
+	if err != nil {
+		return err
+	}
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("All data buffer size = %d written %d", len(helper.buffer), len(wrBytes))
 		Central.Log.Debugf("Done store string %s at %d", value.Type().Name(), len(helper.buffer))

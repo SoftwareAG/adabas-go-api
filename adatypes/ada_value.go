@@ -240,6 +240,9 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 	switch reflect.TypeOf(x).Kind() {
 	case reflect.String:
 		v := reflect.ValueOf(x).String()
+		if v == "" {
+			return 0, NewGenericError(101, fmt.Sprintf("empty string (%T,%s)", x, v))
+		}
 		sval, err := strconv.Atoi(v)
 		if err != nil {
 			return 0, err

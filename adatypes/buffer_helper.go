@@ -175,8 +175,7 @@ func (helper *BufferHelper) ReceiveUInt8() (res uint8, err error) {
 func (helper *BufferHelper) PutUInt8(data uint8) (err error) {
 	tmp := make([]byte, 0)
 	tmp = append(tmp, data)
-	helper.putBytes(tmp)
-	return
+	return helper.putBytes(tmp)
 }
 
 // ReceiveUInt16 receive 2-byte  unsigned integer
@@ -194,15 +193,17 @@ func (helper *BufferHelper) ReceiveUInt16() (res uint16, err error) {
 func (helper *BufferHelper) PutUInt16(data uint16) (err error) {
 	tmp := make([]byte, 2)
 	helper.order.PutUint16(tmp, data)
-	helper.putBytes(tmp)
-	return
+	return helper.putBytes(tmp)
 }
 
 // ReceiveInt16 receive 2-byte integer
 func (helper *BufferHelper) ReceiveInt16() (res int16, err error) {
 	if (helper.offset + 2) <= uint32(len(helper.buffer)) {
 		buf := bytes.NewBuffer(helper.buffer[helper.offset : helper.offset+2])
-		binary.Read(buf, helper.order, &res)
+		err = binary.Read(buf, helper.order, &res)
+		if err != nil {
+			return 0, err
+		}
 		helper.offset += 2
 		return
 	}
@@ -218,8 +219,7 @@ func (helper *BufferHelper) PutInt16(data int16) (err error) {
 	} else {
 		tmp[0], tmp[1] = uint8(data>>8), uint8(data&0xff)
 	}
-	helper.putBytes(tmp)
-	return
+	return helper.putBytes(tmp)
 }
 
 // ReceiveUInt32 receive 4-byte unsigned integer
@@ -237,15 +237,17 @@ func (helper *BufferHelper) ReceiveUInt32() (res uint32, err error) {
 func (helper *BufferHelper) PutUInt32(data uint32) (err error) {
 	tmp := make([]byte, 4)
 	helper.order.PutUint32(tmp, data)
-	helper.putBytes(tmp)
-	return
+	return helper.putBytes(tmp)
 }
 
 // ReceiveInt32 reveive 4-byte integer
 func (helper *BufferHelper) ReceiveInt32() (res int32, err error) {
 	if (helper.offset + 4) <= uint32(len(helper.buffer)) {
 		buf := bytes.NewBuffer(helper.buffer[helper.offset : helper.offset+4])
-		binary.Read(buf, helper.order, &res)
+		err = binary.Read(buf, helper.order, &res)
+		if err != nil {
+			return 0, err
+		}
 		helper.offset += 4
 		return
 	}
@@ -263,8 +265,7 @@ func (helper *BufferHelper) PutInt32(data int32) (err error) {
 	} else {
 		tmp[0], tmp[1], tmp[2], tmp[3] = uint8(data>>24), uint8(data>>16&0xff), uint8(data>>8&0xff), uint8(data&0xff)
 	}
-	helper.putBytes(tmp)
-	return
+	return helper.putBytes(tmp)
 }
 
 // ReceiveUInt64 reveive 8-byte unsigned integer
@@ -282,15 +283,17 @@ func (helper *BufferHelper) ReceiveUInt64() (res uint64, err error) {
 func (helper *BufferHelper) PutUInt64(data uint64) (err error) {
 	tmp := make([]byte, 8)
 	helper.order.PutUint64(tmp, data)
-	helper.putBytes(tmp)
-	return
+	return helper.putBytes(tmp)
 }
 
 // ReceiveInt64 reveive 8-byte integer
 func (helper *BufferHelper) ReceiveInt64() (res int64, err error) {
 	if (helper.offset + 8) <= uint32(len(helper.buffer)) {
 		buf := bytes.NewBuffer(helper.buffer[helper.offset : helper.offset+8])
-		binary.Read(buf, helper.order, &res)
+		err = binary.Read(buf, helper.order, &res)
+		if err != nil {
+			return 0, err
+		}
 		helper.offset += 8
 		return
 	}
@@ -310,6 +313,5 @@ func (helper *BufferHelper) PutInt64(data int64) (err error) {
 		tmp[0], tmp[1], tmp[2], tmp[3] = uint8(data>>56&0xff), uint8(data>>48&0xff), uint8(data>>40&0xff), uint8(data>>32&0xff)
 		tmp[4], tmp[5], tmp[6], tmp[7] = uint8(data>>24), uint8(data>>16&0xff), uint8(data>>8&0xff), uint8(data&0xff)
 	}
-	helper.putBytes(tmp)
-	return
+	return helper.putBytes(tmp)
 }

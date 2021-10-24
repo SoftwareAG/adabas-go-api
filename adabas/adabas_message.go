@@ -112,7 +112,9 @@ func (e Error) Error() string {
 func (e Error) Translate(lang string) string {
 	msg := adatypes.Translate(lang, e.Code)
 	if msg == "" && e.Acbx.Acbxerrc > 0 {
-		msg = adatypes.Translate(lang, e.Code)
+		// Scan for base message error code
+		msgCode := e.Code[:len(e.Code)-3] + "000"
+		msg = adatypes.Translate(lang, msgCode)
 	}
 	suffix := acbxSuffix(&e.URL, &e.Acbx)
 	if msg == "" {

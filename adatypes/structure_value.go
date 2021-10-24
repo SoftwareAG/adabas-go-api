@@ -94,7 +94,11 @@ func (value *StructureValue) initMultipleSubValues(index uint32, peIndex uint32,
 			Central.Log.Debugf("Add to %s[%d,%d] element %s[%d,%d] --> index=%d", value.Type().Name(), value.PeriodIndex(),
 				value.MultipleIndex(), stv.Type().Name(),
 				stv.PeriodIndex(), stv.MultipleIndex(), peIndex)
-			value.addValue(stv, index)
+			err = value.addValue(stv, index)
+			if err != nil {
+				Central.Log.Debugf("Error (addValue) %v", err)
+				return
+			}
 			if stv.Type().IsStructure() {
 				stv.(*StructureValue).initSubValues(index, peIndex, false)
 			}

@@ -109,7 +109,7 @@ func TestSearchSecondTreeBigNumber(t *testing.T) {
 	assert.NoError(t, xerr)
 	tree := &SearchTree{platform: searchInfo.platform}
 	fields := make(map[string]bool)
-	searchInfo.extractBinding(tree, searchInfo.search, fields)
+	assert.NoError(t, searchInfo.extractBinding(tree, searchInfo.search, fields))
 	Central.Log.Debugf(tree.String())
 	assert.Equal(t, "U4,4,B,EQ,D,SA,3,A,EQ.", tree.SearchBuffer())
 	var buffer bytes.Buffer
@@ -130,7 +130,7 @@ func TestSearchExtractAndBinding(t *testing.T) {
 	searchInfo.Definition = tDefinition()
 	tree := &SearchTree{platform: searchInfo.platform}
 	fields := make(map[string]bool)
-	searchInfo.extractBinding(tree, searchInfo.search, fields)
+	assert.NoError(t, searchInfo.extractBinding(tree, searchInfo.search, fields))
 	Central.Log.Debugf(tree.String())
 	assert.Equal(t, "AA,8,B,EQ,D,BC,1,B,EQ.", tree.SearchBuffer())
 	//assert.True(t, searchInfo.NeedSearch)
@@ -149,7 +149,7 @@ func TestSearchEqualValue(t *testing.T) {
 	searchInfo.Definition = tDefinition()
 	tree := &SearchTree{platform: searchInfo.platform}
 	fields := make(map[string]bool)
-	searchInfo.extractBinding(tree, searchInfo.search, fields)
+	assert.NoError(t, searchInfo.extractBinding(tree, searchInfo.search, fields))
 	Central.Log.Debugf(tree.String())
 	assert.Equal(t, "SA,1,A,EQ.", tree.SearchBuffer())
 	assert.False(t, searchInfo.NeedSearch)

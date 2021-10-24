@@ -504,6 +504,17 @@ func (adabas *Adabas) ReadPhysical(fileNr Fnr, adabasRequest *adatypes.Request, 
 
 // read a specific ISN out of Adabas file
 func (adabas *Adabas) readISN(fileNr Fnr, adabasRequest *adatypes.Request, x interface{}) (err error) {
+	err = adabas.Open()
+	if err != nil {
+		return
+	}
+	adabas.lock.Lock()
+	defer adabas.lock.Unlock()
+	return adabas.readISNLocked(fileNr, adabasRequest, x)
+}
+
+// read a specific ISN out of Adabas file
+func (adabas *Adabas) readISNLocked(fileNr Fnr, adabasRequest *adatypes.Request, x interface{}) (err error) {
 	if adabasRequest.HoldRecords.IsHold() {
 		adatypes.Central.Log.Debugf("Read ISN %d ... %s dbid=%d fnr=%d", adabasRequest.Isn, l4.command(), adabas.Acbx.Acbxdbid, fileNr)
 		adabas.Acbx.Acbxcmd = l4.code()
@@ -853,7 +864,7 @@ func (adabas *Adabas) SendSecondCall(adabasRequest *adatypes.Request, x interfac
 		tmpAdabasRequest.Multifetch = 1
 		tmpAdabasRequest.Option.SecondCall = 1
 		adatypes.Central.Log.Debugf("Call second request to ISN=%d only", tmpAdabasRequest.Isn)
-		err = adabas.readISN(adabas.Acbx.Acbxfnr, tmpAdabasRequest, x)
+		err = adabas.readISNLocked(adabas.Acbx.Acbxfnr, tmpAdabasRequest, x)
 		if err != nil {
 			return
 		}

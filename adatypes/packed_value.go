@@ -155,16 +155,15 @@ func (value *packedValue) SetValue(v interface{}) (err error) {
 	Central.Log.Debugf("Set packed value to %v", v)
 	iLen := value.Type().Length()
 	var v64 int64
-	switch v.(type) {
+	switch tv := v.(type) {
 	case []byte:
-		bv := v.([]byte)
 		switch {
-		case iLen != 0 && uint32(len(bv)) > iLen:
+		case iLen != 0 && uint32(len(tv)) > iLen:
 			return NewGenericError(59)
-		case uint32(len(bv)) < iLen:
-			copy(value.value, bv)
+		case uint32(len(tv)) < iLen:
+			copy(value.value, tv)
 		default:
-			value.value = bv
+			value.value = tv
 		}
 		Central.Log.Debugf("Use byte array")
 		return nil
@@ -431,11 +430,11 @@ func (value *packedValue) Float() (float64, error) {
 }
 
 func (value *packedValue) packedToLong() int64 {
-	Central.Log.Debugf("Packed %v", value.value)
-
 	if value == nil {
 		return 0
 	}
+	Central.Log.Debugf("Packed %v", value.value)
+
 	base := int64(1)
 	longValue := int64(0)
 	sign := int64(1)

@@ -19,10 +19,10 @@
 
 package adatypes
 
-func (def *Definition) copyActiveTree() {
+func (def *Definition) copyActiveTree() error {
 	x := &StructureType{fieldMap: make(map[string]IAdaType)}
 	def.activeFieldTree = x
 	def.activeFields = make(map[string]IAdaType)
 	t := TraverserMethods{EnterFunction: traverseCacheCopy}
-	def.fileFieldTree.Traverse(t, 0, def)
+	return def.fileFieldTree.Traverse(t, 0, def)
 }

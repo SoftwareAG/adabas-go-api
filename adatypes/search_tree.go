@@ -160,7 +160,7 @@ func (tree *SearchTree) ValueBuffer(buffer *bytes.Buffer) {
 	Central.Log.Debugf("Tree value value buffer %s", tree.value.value.String())
 	tree.value.value.StoreBuffer(helper, nil)
 	if tree.platform.IsMainframe() && tree.value.comp == EQ {
-		tree.value.value.StoreBuffer(helper, nil)
+		_ = tree.value.value.StoreBuffer(helper, nil)
 	}
 	buffer.Write(helper.buffer)
 	//buffer.Write(tree.value.value.Bytes())
@@ -302,9 +302,11 @@ func (node *SearchNode) valueBuffer(buffer *bytes.Buffer) {
 		helper := NewHelper(intBuffer, math.MaxInt8, endian())
 		helper.search = true
 		Central.Log.Debugf("Tree value value buffer %s", v.value.String())
-		v.value.StoreBuffer(helper, nil)
+		err := v.value.StoreBuffer(helper, nil)
+		Central.Log.Debugf("Error store buffer: %v", err)
 		if node.platform.IsMainframe() && v.comp == EQ {
-			v.value.StoreBuffer(helper, nil)
+			err = v.value.StoreBuffer(helper, nil)
+			Central.Log.Debugf("Error store buffer (MF): %v", err)
 		}
 		buffer.Write(helper.buffer)
 		Central.Log.Debugf("%d Len buffer %d", i, buffer.Len())
@@ -669,14 +671,12 @@ func (searchInfo *SearchInfo) searchFieldValue(searchValue *SearchValue, value s
 		Central.Log.Debugf("Search error: %v", err)
 		return xerr
 	}
-	switch adaType.(type) {
+	switch t := adaType.(type) {
 	case *AdaType:
-		t := adaType.(*AdaType)
 		var xType AdaType
 		xType = *t
 		searchValue.adaType = &xType
 	case *AdaSuperType:
-		t := adaType.(*AdaSuperType)
 		var xType AdaSuperType
 		xType = *t
 		searchValue.adaType = &xType

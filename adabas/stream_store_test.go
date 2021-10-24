@@ -116,6 +116,7 @@ func TestStreamStoreNoET(t *testing.T) {
 	}
 	assert.Equal(t, 1, record.NrRecords())
 	refValue, err := record.Values[0].SearchValue("DC")
+	assert.NoError(t, err)
 	refData := refValue.Bytes()
 	assert.Equal(t, 1386643, len(refData))
 	md5sum = fmt.Sprintf("%X", md5.Sum(refData))
@@ -213,6 +214,7 @@ func TestStreamStoreWithET(t *testing.T) {
 	}
 	assert.Equal(t, 1, record.NrRecords())
 	refValue, err := record.Values[0].SearchValue("DC")
+	assert.NoError(t, err)
 	refData := refValue.Bytes()
 	assert.Equal(t, 1386643, len(refData))
 	md5sum = fmt.Sprintf("%X", md5.Sum(refData))

@@ -202,7 +202,10 @@ func (value *int32Value) Value() interface{} {
 
 func (value *int32Value) Bytes() []byte {
 	var buffer bytes.Buffer
-	binary.Write(&buffer, endian(), value.value)
+	err := binary.Write(&buffer, endian(), value.value)
+	if err != nil {
+		return make([]byte, 0)
+	}
 	return buffer.Bytes()
 }
 
@@ -273,7 +276,10 @@ func (value *int32Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 				copy(v4[:rbLen], vba[:])
 			}
 			buf := bytes.NewBuffer(v4)
-			binary.Read(buf, helper.order, &value.value)
+			verr = binary.Read(buf, helper.order, &value.value)
+			if verr != nil {
+				return EndTraverser, verr
+			}
 		}
 	} else {
 		value.value, err = helper.ReceiveInt32()

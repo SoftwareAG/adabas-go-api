@@ -477,7 +477,7 @@ type RedefinitionType struct {
 	CommonType
 	MainType IAdaType
 	SubTypes []IAdaType
-	fieldMap map[string]IAdaType
+	// fieldMap map[string]IAdaType
 }
 
 // NewRedefinitionType Creates a new object of redefootopm types
