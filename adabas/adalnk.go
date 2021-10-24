@@ -77,6 +77,9 @@ PABD *create_abd(int num_abd)
 {
 	int i;
 	PABD *pabd = (PABD *)malloc(num_abd * sizeof(PABD *));
+#if 1
+	fprintf(stdout,"Alloc ABD %p\n",pabd);
+#endif
 	for (i = 0; i < num_abd; i++)
 	{
 		pabd[i] = NULL;
@@ -96,9 +99,15 @@ void destroy_abd(PABD *pabd, int num_abd)
 			{
 				free(pabd[i]->abdaddr);
 			}
+#if 1
+			fprintf(stdout,"Free ABD %p\n",pabd[i]);
+#endif
 			free(pabd[i]);
 		}
 	}
+#if 1
+	fprintf(stdout,"Free ABD %p\n",pabd);
+#endif
 	free(pabd);
 }
 
@@ -137,6 +146,7 @@ int go_eadabasx(ADAID_T *adabas_id, PACBX acbx, int num_abd, PABD *abd, CREDENTI
 void copy_to_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
 {
 	PABD dest_pabd = pabd[index] = malloc(L_ABD);
+	fprintf(stdout,"Alloc %d. ABD %p\n",index,dest_pabd);
 	if (dest_pabd == NULL)
 	{
 		exit(10);
