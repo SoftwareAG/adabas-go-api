@@ -53,7 +53,25 @@ typedef struct credential {
   char *user;
   char *pwd;
 } CREDENTIAL;
+#define SIZEOF_CREDENTIAL (sizeof(CREDENTIAL))
 
+CREDENTIAL *create_credentials(char *user,char* pwd) {
+	CREDENTIAL *credential = malloc(SIZEOF_CREDENTIAL);
+	credential->user = user;
+	credential->pwd = pwd;
+#if 0
+	fprintf(stdout,"Create credentials %p\n",credential);
+#endif
+	return credential;
+}
+void release_credentials(CREDENTIAL* credential) {
+#if 0
+	fprintf(stdout,"Free credentials %p\n",credential);
+#endif
+	free(credential->user);
+	free(credential->pwd);
+	free(credential);
+}
 // Initialize ABD array with number of ABD
 PABD *create_abd(int num_abd)
 {
@@ -94,17 +112,20 @@ int go_eadabasx(ADAID_T *adabas_id, PACBX acbx, int num_abd, PABD *abd, CREDENTI
 	uint32_t timeOut;
 	char user[9];
 	char node[9];
-#if 0
-	fprintf(stdout,"user %p %s\n",c->user,c->user);
-	fprintf(stdout,"pwd  %p\n",c->pwd);
-#endif
 	// Here I call the ACBX enabled Adabas function of adabasx
 	{
 		lnk_set_adabas_id((unsigned char *)(adabas_id));
-		if (c->user!=NULL) {
+		if ((c!=NULL)&&(c->user!=NULL)) {
+#if 0
+			fprintf(stdout,"%c%c User: %s PWD: %s\n",acbx->acbxcmd[0],acbx->acbxcmd[1],c->user,c->pwd);
+	fprintf(stdout,"user %p %s\n",c->user,c->user);
+	fprintf(stdout,"pwd  %p\n",c->pwd);
+#endif
 			lnk_set_uid_pw(acbx->acbxdbid, c->user, c->pwd);
 		}
 		rsp = adabasx(acbx, num_abd, abd);
+		fprintf(stdout,"%c%c rsp: %d rsp: %d ID:%s/%d/%lu\n",acbx->acbxcmd[0],acbx->acbxcmd[1],
+		       rsp,acbx->acbxrsp,adabas_id->s_user,adabas_id->s_pid,adabas_id->s_timestamp);
 	}
 	return (rsp);
 }
@@ -171,17 +192,20 @@ func (ipc *AdaIPC) Send(adabas *Adabas) (err error) {
 		adabas.AdabasBuffers[index].abd.Abdrecv = adabas.AdabasBuffers[index].abd.Abdsize
 		adabas.AdabasBuffers[index].createCAbd(pabdArray, index)
 	}
-	x := &C.CREDENTIAL{}
+	x := (*C.CREDENTIAL)(unsafe.Pointer(C.NULL))
+	//CreateCredentials()
+	// &C.CREDENTIAL{user: nil, pwd: nil}
 	/* For OP calls, initialize the security layer setting the password. The corresponding
 	 * Security buffer (Z-Buffer) are generated inside the Adabas client layer.
 	 * Under the hood the Z-Buffer will generate one time passwords send with the next call
 	 * after OP. */
 	if adabas.ID.pwd != "" && adabas.Acbx.Acbxcmd == op.code() {
 		adatypes.Central.Log.Debugf("Set user %s password credentials", adabas.ID.user)
-		cUser := C.CString(adabas.ID.user)
+		x = C.create_credentials(C.CString(adabas.ID.user), C.CString(adabas.ID.pwd))
+		/*cUser := C.CString(adabas.ID.user)
 		cPassword := C.CString(adabas.ID.pwd)
 		x.user = cUser
-		x.pwd = cPassword
+		x.pwd = cPassword*/
 	}
 	ret := int(C.go_eadabasx((*C.ADAID_T)(unsafe.Pointer(adabas.ID.AdaID)),
 		(*C.ACBX)(unsafe.Pointer(adabas.Acbx)), C.int(len(adabas.AdabasBuffers)), pabdArray, x))
@@ -195,8 +219,9 @@ func (ipc *AdaIPC) Send(adabas *Adabas) (err error) {
 
 	// Free the corresponding C based memory
 	if adabas.ID.pwd != "" && adabas.Acbx.Acbxcmd == op.code() {
-		C.free(unsafe.Pointer(x.user))
-		C.free(unsafe.Pointer(x.pwd))
+		C.release_credentials(x)
+		/*C.free(unsafe.Pointer(x.user))
+		C.free(unsafe.Pointer(x.pwd))*/
 	}
 	for index := range adabas.AdabasBuffers {
 		//	adatypes.Central.Log.Debugf(index, ".ABD out : ", adabas.AdabasBuffers[index].abd.Abdsize)
