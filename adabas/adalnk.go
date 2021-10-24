@@ -118,14 +118,16 @@ int go_eadabasx(ADAID_T *adabas_id, PACBX acbx, int num_abd, PABD *abd, CREDENTI
 		if ((c!=NULL)&&(c->user!=NULL)) {
 #if 0
 			fprintf(stdout,"%c%c User: %s PWD: %s\n",acbx->acbxcmd[0],acbx->acbxcmd[1],c->user,c->pwd);
-	fprintf(stdout,"user %p %s\n",c->user,c->user);
-	fprintf(stdout,"pwd  %p\n",c->pwd);
+			fprintf(stdout,"user %p %s\n",c->user,c->user);
+			fprintf(stdout,"pwd  %p\n",c->pwd);
 #endif
 			lnk_set_uid_pw(acbx->acbxdbid, c->user, c->pwd);
 		}
 		rsp = adabasx(acbx, num_abd, abd);
+#if 0
 		fprintf(stdout,"%c%c rsp: %d rsp: %d ID:%s/%d/%lu\n",acbx->acbxcmd[0],acbx->acbxcmd[1],
 		       rsp,acbx->acbxrsp,adabas_id->s_user,adabas_id->s_pid,adabas_id->s_timestamp);
+#endif
 	}
 	return (rsp);
 }
