@@ -506,6 +506,7 @@ ADAGEC6003=Unique descriptor insert failed; value in use by another user on anot
 ADAGEC7000=Inconsistency in inverted list during update
 ADAGEC8000=Security violation
 ADAGEC801F=Security violation: Authentication error
+ADAGEC8091=Security violation: no RBAC permission
 ADAGEC9000=Invalid password
 ADAGEC9001=Invalid password
 ADAGECA000=Invalid password for used file

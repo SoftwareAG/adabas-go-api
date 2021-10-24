@@ -67,6 +67,9 @@ func TestAdabasMessageError(t *testing.T) {
 	assert.Equal(t, "ADAGE11000: Invalid or unauthorized file number (rsp=17,subrsp=0,dbid=21,file=0)", NewError(ada).Error())
 	ada.Acbx.Acbxerrc = AdaISNNotSorted
 	assert.Equal(t, "ADAGE11001: The program tried to access system file 1 or 2, and no OP command was issued. (rsp=17,subrsp=1,dbid=21,file=0)", NewError(ada).Error())
+	ada.Acbx.Acbxrsp = 200
+	ada.Acbx.Acbxerrc = 199
+	assert.Equal(t, "ADAGEC80C7: Security violation (rsp=200,subrsp=199,dbid=21,file=0)", NewError(ada).Error())
 	ada.Acbx.Acbxrsp = 120
 	ada.Acbx.Acbxerrc = 0
 	assert.Equal(t, "ADAGE78000: Unknown response and subcode (rsp=120,subrsp=0,dbid=21,file=0)", NewError(ada).Error())
