@@ -175,7 +175,8 @@ void copy_to_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
 	{
 		dest_pabd->abdaddr = malloc(size);
 #if defined(ADA_MEM_TRACE)
-	fprintf(stdout,"Alloc %d. ABD buffer %p\n",index,dest_pabd->abdaddr);
+	fprintf(stdout,"Alloc %d. ABD buffer %p (%u,%lu)\n",index,dest_pabd->abdaddr,
+	     size,dest_pabd->abdsend);
 #endif
 		memcpy(dest_pabd->abdaddr, data, size);
 		dest_pabd->abdsize = size;
@@ -200,7 +201,7 @@ void copy_from_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
 #if defined(ADA_MEM_TRACE)
 		fprintf(stdout,"Recopy %d.ABD %u(%lu)\n",index,size,dest_pabd->abdrecv);
 #endif
-		memcpy(data, dest_pabd->abdaddr, size);
+		memcpy(data, dest_pabd->abdaddr, dest_pabd->abdrecv);
 	}
 	if (dest_pabd->abdaddr != NULL)
 	{

@@ -190,22 +190,22 @@ func NewAdaTCP(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 }
 
 // Send Send the TCP/IP request to remote Adabas database
-func (connection *AdaTCP) Send(adabas *Adabas) (err error) {
+func (connection *AdaTCP) Send(adaInstance *Adabas) (err error) {
 	var buffer bytes.Buffer
-	err = adabas.WriteBuffer(&buffer, Endian(), false)
+	err = adaInstance.WriteBuffer(&buffer, Endian(), false)
 	if err != nil {
 		adatypes.Central.Log.Debugf("Buffer transmit preparation error ", err)
 		return
 	}
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.Central.Log.Debugf("Send buffer of length=%d lenBuffer=%d", buffer.Len(), len(adabas.AdabasBuffers))
-		adatypes.LogMultiLineString(true, adabas.Acbx.String())
+		adatypes.Central.Log.Debugf("Send buffer of length=%d lenBuffer=%d", buffer.Len(), len(adaInstance.AdabasBuffers))
+		adatypes.LogMultiLineString(true, adaInstance.Acbx.String())
 	}
-	err = connection.SendData(buffer, uint32(len(adabas.AdabasBuffers)))
+	err = connection.SendData(buffer, uint32(len(adaInstance.AdabasBuffers)))
 	if err != nil {
 		adatypes.Central.Log.Debugf("Transmit Adabas call error: %v", err)
 		_ = connection.Disconnect()
-		adabas.transactions.connection = nil
+		adaInstance.transactions.connection = nil
 		return
 	}
 	buffer.Reset()
@@ -215,7 +215,7 @@ func (connection *AdaTCP) Send(adabas *Adabas) (err error) {
 		adatypes.Central.Log.Debugf("Receive Adabas call error: %v", err)
 		return
 	}
-	err = adabas.ReadBuffer(&buffer, Endian(), nrAbdBuffers, false)
+	err = adaInstance.ReadBuffer(&buffer, Endian(), nrAbdBuffers, false)
 	if err != nil {
 		adatypes.Central.Log.Debugf("Read buffer error, destroy context ... %v", err)
 		_ = connection.Disconnect()
@@ -223,20 +223,20 @@ func (connection *AdaTCP) Send(adabas *Adabas) (err error) {
 	}
 
 	adatypes.Central.Log.Debugf("Remote Adabas call returns successfully")
-	if adabas.Acbx.Acbxcmd == cl.code() {
+	if adaInstance.Acbx.Acbxcmd == cl.code() {
 		adatypes.Central.Log.Debugf("Close called, destroy context ...")
 		if connection != nil {
 			_ = connection.Disconnect()
-			adabas.transactions.connection = nil
+			adaInstance.transactions.connection = nil
 		}
 	}
 	if connection.clusterNodes != nil {
-		adabas.transactions.clusterNodes = connection.clusterNodes
+		adaInstance.transactions.clusterNodes = connection.clusterNodes
 	}
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.Central.Log.Debugf("Got context for %s %p ", adabas.String(),
-			adabas.transactions.connection)
-		adatypes.LogMultiLineString(true, adabas.Acbx.String())
+		adatypes.Central.Log.Debugf("Got context for %s %p ", adaInstance.String(),
+			adaInstance.transactions.connection)
+		adatypes.LogMultiLineString(true, adaInstance.Acbx.String())
 	}
 	return
 }
