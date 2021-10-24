@@ -53,33 +53,12 @@ typedef struct credential {
   char *user;
   char *pwd;
 } CREDENTIAL;
-#define SIZEOF_CREDENTIAL (sizeof(CREDENTIAL))
 
-CREDENTIAL *create_credentials(char *user,char* pwd) {
-	CREDENTIAL *credential = malloc(SIZEOF_CREDENTIAL);
-	credential->user = user;
-	credential->pwd = pwd;
-#if defined(ADA_MEM_TRACE)
-	fprintf(stdout,"Create credentials %p (%p,%p) (size=%lu)\n",credential,user,pwd,SIZEOF_CREDENTIAL);
-#endif
-	return credential;
-}
-void release_credentials(CREDENTIAL* credential) {
-#if defined(ADA_MEM_TRACE)
-	fprintf(stdout,"Free credentials %p (%p,%p)\n",credential,credential->user,credential->pwd);
-#endif
-	free(credential->user);
-	free(credential->pwd);
-	free(credential);
-}
 // Initialize ABD array with number of ABD
 PABD *create_abd(int num_abd)
 {
 	int i;
 	PABD *pabd = (PABD *)malloc(num_abd * sizeof(PABD *));
-#if defined(ADA_MEM_TRACE)
-	fprintf(stdout,"Alloc ABD %p\n",pabd);
-#endif
 	for (i = 0; i < num_abd; i++)
 	{
 		pabd[i] = NULL;
@@ -97,28 +76,11 @@ void destroy_abd(PABD *pabd, int num_abd)
 		{
 			if (pabd[i]->abdaddr != NULL)
 			{
-#if defined(ADA_MEM_TRACE)
-				fprintf(stdout,"Free %i. ABD buffer %p\n",i,pabd[i]->abdaddr);
-#endif
 				free(pabd[i]->abdaddr);
-			} else {
-#if defined(ADA_MEM_TRACE)
-				fprintf(stdout,"Free %i. ABD buffer NULL!!!!\n",i);
-#endif
 			}
-#if defined(ADA_MEM_TRACE)
-			fprintf(stdout,"Free %i. ABD %p\n",i,pabd[i]);
-#endif
 			free(pabd[i]);
-		} else {
-#if defined(ADA_MEM_TRACE)
-			fprintf(stdout,"Free %i. ABD NULL!!!!\n",i);
-#endif
 		}
 	}
-#if defined(ADA_MEM_TRACE)
-	fprintf(stdout,"Free ABD %p\n",pabd);
-#endif
 	free(pabd);
 }
 
@@ -132,25 +94,17 @@ int go_eadabasx(ADAID_T *adabas_id, PACBX acbx, int num_abd, PABD *abd, CREDENTI
 	uint32_t timeOut;
 	char user[9];
 	char node[9];
+#if 0
+	fprintf(stdout,"user %p %s\n",c->user,c->user);
+	fprintf(stdout,"pwd  %p\n",c->pwd);
+#endif
 	// Here I call the ACBX enabled Adabas function of adabasx
 	{
 		lnk_set_adabas_id((unsigned char *)(adabas_id));
-		if ((c!=NULL)&&(c->user!=NULL)) {
-#if defined(ADA_MEM_TRACE)
-			fprintf(stdout,"%c%c %p User: %s PWD: %s\n",acbx->acbxcmd[0],acbx->acbxcmd[1],
-			   c,c->user,c->pwd);
-#endif
-#if 0
-			fprintf(stdout,"user %p %s\n",c->user,c->user);
-			fprintf(stdout,"pwd  %p\n",c->pwd);
-#endif
+		if (c->user!=NULL) {
 			lnk_set_uid_pw(acbx->acbxdbid, c->user, c->pwd);
 		}
 		rsp = adabasx(acbx, num_abd, abd);
-#if defined(ADA_MEM_TRACE)
-		fprintf(stdout,"%c%c rsp: %d rsp: %d ID:%s/%d/%lu\n",acbx->acbxcmd[0],acbx->acbxcmd[1],
-		       rsp,acbx->acbxrsp,adabas_id->s_user,adabas_id->s_pid,adabas_id->s_timestamp);
-#endif
 	}
 	return (rsp);
 }
@@ -159,9 +113,6 @@ int go_eadabasx(ADAID_T *adabas_id, PACBX acbx, int num_abd, PABD *abd, CREDENTI
 void copy_to_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
 {
 	PABD dest_pabd = pabd[index] = malloc(L_ABD);
-#if defined(ADA_MEM_TRACE)
-	fprintf(stdout,"Alloc %d. ABD %p\n",index,dest_pabd);
-#endif
 	if (dest_pabd == NULL)
 	{
 		exit(10);
@@ -174,10 +125,6 @@ void copy_to_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
 	if (data != NULL)
 	{
 		dest_pabd->abdaddr = malloc(size);
-#if defined(ADA_MEM_TRACE)
-	fprintf(stdout,"Alloc %d. ABD buffer %p (%u,%lu)\n",index,dest_pabd->abdaddr,
-	     size,dest_pabd->abdsend);
-#endif
 		memcpy(dest_pabd->abdaddr, data, size);
 		dest_pabd->abdsize = size;
 	}
@@ -185,9 +132,6 @@ void copy_to_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
 	{
 		dest_pabd->abdsize = 0;
 		dest_pabd->abdaddr = NULL;
-#if defined(ADA_MEM_TRACE)
-	fprintf(stdout,"Alloc %d. ABD buffer empty\n",index);
-#endif
 	}
 }
 
@@ -198,22 +142,13 @@ void copy_from_abd(PABD *pabd, int index, PABD x, char *data, uint32_t size)
 	memcpy(x, dest_pabd, L_ABD);
 	if ((data != NULL) && (dest_pabd->abdrecv > 0))
 	{
-#if defined(ADA_MEM_TRACE)
-		fprintf(stdout,"Recopy %d.ABD %u(%lu)\n",index,size,dest_pabd->abdrecv);
-#endif
-		memcpy(data, dest_pabd->abdaddr, dest_pabd->abdrecv);
+		memcpy(data, dest_pabd->abdaddr, size);
 	}
 	if (dest_pabd->abdaddr != NULL)
 	{
-#if defined(ADA_MEM_TRACE)
-		fprintf(stdout,"Free %d ABD buffer %p\n",index,dest_pabd->abdaddr);
-#endif
 		free(dest_pabd->abdaddr);
 		dest_pabd->abdaddr = NULL;
 	}
-#if defined(ADA_MEM_TRACE)
-		fprintf(stdout,"Free %d ABD %p\n",index,pabd[index]);
-#endif
 	free(pabd[index]);
 	pabd[index] = NULL;
 }
@@ -236,20 +171,17 @@ func (ipc *AdaIPC) Send(adabas *Adabas) (err error) {
 		adabas.AdabasBuffers[index].abd.Abdrecv = adabas.AdabasBuffers[index].abd.Abdsize
 		adabas.AdabasBuffers[index].createCAbd(pabdArray, index)
 	}
-	x := (*C.CREDENTIAL)(unsafe.Pointer(C.NULL))
-	//CreateCredentials()
-	// &C.CREDENTIAL{user: nil, pwd: nil}
+	x := &C.CREDENTIAL{}
 	/* For OP calls, initialize the security layer setting the password. The corresponding
 	 * Security buffer (Z-Buffer) are generated inside the Adabas client layer.
 	 * Under the hood the Z-Buffer will generate one time passwords send with the next call
 	 * after OP. */
 	if adabas.ID.pwd != "" && adabas.Acbx.Acbxcmd == op.code() {
 		adatypes.Central.Log.Debugf("Set user %s password credentials", adabas.ID.user)
-		x = C.create_credentials(C.CString(adabas.ID.user), C.CString(adabas.ID.pwd))
-		/*cUser := C.CString(adabas.ID.user)
+		cUser := C.CString(adabas.ID.user)
 		cPassword := C.CString(adabas.ID.pwd)
 		x.user = cUser
-		x.pwd = cPassword*/
+		x.pwd = cPassword
 	}
 	ret := int(C.go_eadabasx((*C.ADAID_T)(unsafe.Pointer(adabas.ID.AdaID)),
 		(*C.ACBX)(unsafe.Pointer(adabas.Acbx)), C.int(len(adabas.AdabasBuffers)), pabdArray, x))
@@ -263,9 +195,8 @@ func (ipc *AdaIPC) Send(adabas *Adabas) (err error) {
 
 	// Free the corresponding C based memory
 	if adabas.ID.pwd != "" && adabas.Acbx.Acbxcmd == op.code() {
-		C.release_credentials(x)
-		/*C.free(unsafe.Pointer(x.user))
-		C.free(unsafe.Pointer(x.pwd))*/
+		C.free(unsafe.Pointer(x.user))
+		C.free(unsafe.Pointer(x.pwd))
 	}
 	for index := range adabas.AdabasBuffers {
 		//	adatypes.Central.Log.Debugf(index, ".ABD out : ", adabas.AdabasBuffers[index].abd.Abdsize)
