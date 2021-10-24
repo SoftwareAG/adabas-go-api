@@ -59,13 +59,13 @@ CREDENTIAL *create_credentials(char *user,char* pwd) {
 	CREDENTIAL *credential = malloc(SIZEOF_CREDENTIAL);
 	credential->user = user;
 	credential->pwd = pwd;
-#if 0
-	fprintf(stdout,"Create credentials %p\n",credential);
+#if 1
+	fprintf(stdout,"Create credentials %p (%p,%p)\n",credential,user,pwd);
 #endif
 	return credential;
 }
 void release_credentials(CREDENTIAL* credential) {
-#if 0
+#if 1
 	fprintf(stdout,"Free credentials %p\n",credential);
 #endif
 	free(credential->user);
@@ -116,8 +116,9 @@ int go_eadabasx(ADAID_T *adabas_id, PACBX acbx, int num_abd, PABD *abd, CREDENTI
 	{
 		lnk_set_adabas_id((unsigned char *)(adabas_id));
 		if ((c!=NULL)&&(c->user!=NULL)) {
+			fprintf(stdout,"%c%c %p User: %s PWD: %s\n",acbx->acbxcmd[0],acbx->acbxcmd[1],
+			   c,c->user,c->pwd);
 #if 0
-			fprintf(stdout,"%c%c User: %s PWD: %s\n",acbx->acbxcmd[0],acbx->acbxcmd[1],c->user,c->pwd);
 			fprintf(stdout,"user %p %s\n",c->user,c->user);
 			fprintf(stdout,"pwd  %p\n",c->pwd);
 #endif
