@@ -22,6 +22,8 @@ package adabas
 import (
 	"bytes"
 	"fmt"
+	"sync/atomic"
+	"time"
 	"unsafe"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
@@ -172,6 +174,18 @@ type ID struct {
 	AdaID         *AID
 	user          string
 	pwd           string
+}
+
+func (adaid *ID) Clone() *ID {
+	AdaID := AID{level: 3, size: adabasIDSize}
+	aid := ID{AdaID: &AdaID, connectionMap: make(map[string]*Status),
+		user: adaid.user, pwd: adaid.pwd}
+	copy(AdaID.User[:], adaid.AdaID.User[:])
+	copy(AdaID.Node[:], adaid.AdaID.Node[:])
+	id := atomic.AddUint32(&idCounter, 1)
+	AdaID.Timestamp = uint64(time.Now().UnixNano() / 1000)
+	AdaID.Pid = uint32((AdaID.Timestamp - (AdaID.Timestamp % 100)) + uint64(id))
+	return &aid
 }
 
 // SetUser set the user id name into the ID, prepare byte array correctly
