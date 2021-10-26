@@ -611,6 +611,11 @@ func (connection *Connection) CreateMapStoreRequest(param ...interface{}) (reque
 				request.repository.Fnr = t
 			}
 		} else {
+			if request.adabasMap == nil || request.adabasMap.Data == nil ||
+				request.adabasMap.Data.Fnr == 0 {
+				err = adatypes.NewGenericError(83)
+				return
+			}
 			connection.fnr = request.adabasMap.Data.Fnr
 		}
 		connection.adabasMap = request.adabasMap

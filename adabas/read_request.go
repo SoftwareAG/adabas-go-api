@@ -843,6 +843,7 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 		}
 		fields := tree.SearchFields()
 		if len(fields) != 1 {
+			adatypes.Central.Log.Debugf("Fields: %v", fields)
 			err = adatypes.NewGenericError(24, len(fields))
 			return
 		}

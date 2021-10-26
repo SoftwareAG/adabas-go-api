@@ -1034,6 +1034,7 @@ func (adabas *Adabas) SetURL(URL *URL) {
 		return
 	}
 	adabas.Close()
+	adabas.ID.clearTransactions(adabas.URL.String())
 	adabas.Acbx.Acbxdbid = URL.Dbid
 	adabas.URL = URL
 	// Different adabas instance, need to update status
