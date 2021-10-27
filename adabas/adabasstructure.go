@@ -176,6 +176,9 @@ type ID struct {
 	pwd           string
 }
 
+// Clone use base parameter of ID and create new one
+// Base parameters are: User, Node
+// Dynamic paramters are: Pid, Timestamps
 func (adaid *ID) Clone() *ID {
 	AdaID := AID{level: 3, size: adabasIDSize}
 	aid := ID{AdaID: &AdaID, connectionMap: make(map[string]*Status),
