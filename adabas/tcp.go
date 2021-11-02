@@ -192,6 +192,7 @@ func NewAdaTCP(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 // Send Send the TCP/IP request to remote Adabas database
 func (connection *AdaTCP) Send(adaInstance *Adabas) (err error) {
 	var buffer bytes.Buffer
+	adatypes.Central.Log.Debugf("Call Adabas using ADATCP")
 	err = adaInstance.WriteBuffer(&buffer, Endian(), false)
 	if err != nil {
 		adatypes.Central.Log.Debugf("Buffer transmit preparation error ", err)

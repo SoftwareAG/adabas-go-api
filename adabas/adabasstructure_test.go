@@ -40,3 +40,14 @@ func TestAID(t *testing.T) {
 	fmt.Println(aid)
 	aid.isOpen("abc")
 }
+
+func TestAIDClone(t *testing.T) {
+	aid := NewAdabasID()
+	aid.AddCredential("abc", "def")
+	caid := aid.Clone()
+	assert.Equal(t, caid.user, aid.user)
+	assert.Equal(t, caid.pwd, aid.pwd)
+	assert.Equal(t, caid.AdaID.User, aid.AdaID.User)
+	assert.NotEqual(t, caid.AdaID.Pid, aid.AdaID.Pid)
+	assert.NotEqual(t, caid.AdaID.Timestamp, aid.AdaID.Timestamp)
+}
