@@ -392,8 +392,12 @@ const (
 	empty commandCode = iota
 	op
 	cl
+	c1
+	c3
+	c5
 	bt
 	et
+	la
 	lf
 	l1
 	l2
@@ -408,16 +412,25 @@ const (
 	s1
 	s2
 	s3
+	s4
+	s5
+	s8
+	s9
 	e1
+	u0
 	u1
 	u2
 	u3
 	rc
 	ri
+	hi
+	mc
+	re
+	v3
 )
 
-var commandCodes = []string{"  ", "OP", "CL", "BT", "ET", "LF", "L1", "L2", "L3", "L4", "L5", "L6", "L9",
-	"N1", "N2", "A1", "S1", "S2", "S3", "E1", "U1", "U2", "U3", "RC", "RI"}
+var commandCodes = []string{"  ", "OP", "CL", "C1", "C3", "C5", "BT", "ET", "LA", "LF", "L1", "L2", "L3", "L4", "L5", "L6", "L9",
+	"N1", "N2", "A1", "S1", "S2", "S3", "S4", "S5", "S8", "S9", "E1", "U0", "U1", "U2", "U3", "RC", "RI", "HI", "MC", "RE", "V3"}
 
 func (cc commandCode) code() [2]byte {
 	var code [2]byte
