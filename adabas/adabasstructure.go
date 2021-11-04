@@ -131,7 +131,7 @@ func (acbx *Acbx) resetAcbx() {
 func (acbx *Acbx) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString(fmt.Sprintf("ACBX:\n  CmdCode: %c%c", acbx.Acbxcmd[0], acbx.Acbxcmd[1]))
-	buffer.WriteString(fmt.Sprintf("  CmdId: %X\n", acbx.Acbxcid))
+	buffer.WriteString(adatypes.FormatBytes("  CmdId: ", acbx.Acbxcid[:], len(acbx.Acbxcid[:]), 1, -1, false))
 
 	buffer.WriteString(fmt.Sprintf("  Dbid: %d  Filenr: %d", acbx.Acbxdbid, acbx.Acbxfnr))
 	buffer.WriteString(fmt.Sprintf("  Responsecode: %d Subcode: %d\n", acbx.Acbxrsp, acbx.Acbxerrc))
