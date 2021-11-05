@@ -30,9 +30,9 @@ func TestAcbx(t *testing.T) {
 	acbx := newAcbx(1)
 	assert.Equal(t, Dbid(1), acbx.Acbxdbid)
 	acbx.Acbxcid = [4]byte{'A', 'B', 'x', 'n'}
-	acbx.Acbxcop = [8]byte{'I', 'J', 0, 0, 0, 0, 0xff}
+	acbx.Acbxcop = [8]byte{'I', 'J', 0, 0, 0, 0, 0xff, 0x1}
 	acbx.Acbxisn = 1234543
-	assert.Equal(t, "ACBX:\n  CmdCode:     CmdId: 41 42 78 6e  [ABxn] [...>]\n  Dbid: 1  Filenr: 0  Responsecode: 148 Subcode: 0\n  Isn:  1234543  ISN Lower Limit:  0 ISN Quantity:  0\n  CmdOption: 49 4a 00 00 00 00 ff 00  [IJ....ÿ.] [........]\n  Add1: 20 20 20 20 20 20 20 20  [        ] [........]\n  Add2: 20 20 20 20  [    ] [....]\n  Add3: 00 00 00 00 00 00 00 00  [........] [........]\n  Add4: 00 00 00 00 00 00 00 00  [........] [........]\n  Add5: 00 00 00 00 00 00 00 00  [........] [........]\n  Add6: 00 00 00 00 00 00 00 00  [........] [........]\n  User Area: 00000000000000000000000000000000 [................] [................]\n", acbx.String())
+	assert.Equal(t, "ACBX:\n  CmdCode:     CmdId: 41 42 78 6e  [ABxn] [...>]\n  Dbid: 1  Filenr: 0  Responsecode: 148 Subcode: 0\n  Isn:  1234543  ISN Lower Limit:  0 ISN Quantity:  0\n  CmdOption: 49 4a 00 00 00 00 ff 01  [IJ....ÿ.] [........]\n  Add1: 20 20 20 20 20 20 20 20  [        ] [........]\n  Add2: 20 20 20 20  [    ] [....]\n  Add3: 00 00 00 00 00 00 00 00  [........] [........]\n  Add4: 00 00 00 00 00 00 00 00  [........] [........]\n  Add5: 00 00 00 00 00 00 00 00  [........] [........]\n  Add6: 00 00 00 00 00 00 00 00  [........] [........]\n  User Area: 00000000000000000000000000000000 [................] [................]\n", acbx.String())
 	acbx.resetCop()
 	acbx.Acbxrsp = AdaSECUR
 	assert.Equal(t, "ACBX:\n  CmdCode:     CmdId: 41 42 78 6e  [ABxn] [...>]\n  Dbid: 1  Filenr: 0  Responsecode: 200 Subcode: 0\n  Isn:  1234543  ISN Lower Limit:  0 ISN Quantity:  0\n  CmdOption: 20 20 20 20 20 20 20 20  [        ] [........]\n  Add1: 20 20 20 20 20 20 20 20  [        ] [........]\n  Add2: 20 20 20 20  [    ] [....]\n  Add3: 00 00 00 00 00 00 00 00  [........] [........]\n  Add4: 00 00 00 00 00 00 00 00  [........] [........]\n  Add5: 00 00 00 00 00 00 00 00  [........] [........]\n  Add6: 00 00 00 00 00 00 00 00  [........] [........]\n  User Area: 00000000000000000000000000000000 [................] [................]\n", acbx.String())

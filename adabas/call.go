@@ -115,6 +115,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 		}
 	}
 
+	// Clear transactions if response code != EOF or ADANORMAL
 	switch adabas.Acbx.Acbxrsp {
 	case AdaAnact, AdaTransactionAborted, AdaSysCe:
 		adabas.ID.clearTransactions(adabas.URL.String())
