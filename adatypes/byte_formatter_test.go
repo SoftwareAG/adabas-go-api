@@ -37,11 +37,11 @@ func ExampleFormatBytes() {
 	e := [5]byte{0x81, 0x82, 0xc3, 0xc4, 0x86}
 	fmt.Println(FormatBytes("EBCDIC : ", e[:], len(e[:]), 5, -1, false))
 	// Output:
-	// XXX : 172C0C21 2D [.,.!-] [.....]
+	// XXX : 172c0c21 2d [.,.!-] [.....]
 	//
 	// ABC : 41424344454647484943 [ABCDEFGHIC] [..........]
 	//
-	// EBCDIC : 8182C3C486  [ÃÄ] [abCDf]
+	// EBCDIC : 8182c3c486  [ÃÄ] [abCDf]
 	//
 }
 
@@ -57,7 +57,7 @@ func ExampleFormatBytes_x() {
 	// Output:
 	// ABC :
 	// 0000 41424344 45464748  [ABCDEFGH] [........]
-	// 0008 494A4B4C 4D4E4F50  [IJKLMNOP] [...<(+|&]
+	// 0008 494a4b4c 4d4e4f50  [IJKLMNOP] [...<(+|&]
 	// 0010 51525354 55565758  [QRSTUVWX] [........]
 	// 0018 5954               [YT      ] [..      ]
 }

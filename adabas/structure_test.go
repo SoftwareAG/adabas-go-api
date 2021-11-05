@@ -62,7 +62,7 @@ func ExampleAdabas_resetAcbx() {
 	fmt.Println(acbx.String())
 	// Output:
 	// ACBX:
-	//   CmdCode: ET  CmdId: 00000000
+	//   CmdCode: ET  CmdId: 00 00 00 00  [....] [....]
 	//   Dbid: 0  Filenr: 0  Responsecode: 148 Subcode: 0
 	//   Isn:  0  ISN Lower Limit:  0 ISN Quantity:  0
 	//   CmdOption: 20 20 20 20 20 20 20 20  [        ] [........]
