@@ -27,7 +27,9 @@ import (
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
-type createTypeInterface struct {
+// createTypeInterface structure used to traverse through the field tree and create list of
+// dynamic interface fields types
+type traverseCreateDynamicTypeFields struct {
 	fields     []reflect.StructField
 	fieldHash  map[string]bool
 	fieldNames map[string][]string
@@ -35,7 +37,7 @@ type createTypeInterface struct {
 
 // traverseCreateTypeInterface traverser method create type interface
 func traverseCreateTypeInterface(adaType adatypes.IAdaType, parentType adatypes.IAdaType, level int, x interface{}) error {
-	cti := x.(*createTypeInterface)
+	cti := x.(*traverseCreateDynamicTypeFields)
 	name := strings.ReplaceAll(adaType.Name(), "-", "")
 	adatypes.Central.Log.Debugf("Add field %s/%s of %v", adaType.Name(), name, cti.fieldHash[name])
 	cti.fieldNames[name] = []string{adaType.Name()}
@@ -71,6 +73,7 @@ func traverseCreateTypeInterface(adaType adatypes.IAdaType, parentType adatypes.
 	return nil
 }
 
+// createDynamic create the dynamic interface needed for usage of dynamic
 func (request *commonRequest) createDynamic(i interface{}) {
 	request.dynamic = adatypes.CreateDynamicInterface(i)
 }
@@ -88,7 +91,7 @@ func (request *ReadRequest) createInterface(fieldList string) (err error) {
 
 	var structType reflect.Type
 	tm := adatypes.NewTraverserMethods(traverseCreateTypeInterface)
-	cti := createTypeInterface{fields: make([]reflect.StructField, 0), fieldNames: make(map[string][]string)}
+	cti := traverseCreateDynamicTypeFields{fields: make([]reflect.StructField, 0), fieldNames: make(map[string][]string)}
 	isnField := reflect.StructField{Name: "ISN",
 		Type: reflect.TypeOf(uint64(0))}
 	cti.fields = append(cti.fields, isnField)
