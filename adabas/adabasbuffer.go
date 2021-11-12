@@ -22,6 +22,7 @@ package adabas
 import (
 	"bytes"
 	"fmt"
+	"io"
 
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
@@ -169,7 +170,7 @@ func (adabasBuffer *Buffer) Bytes() []byte {
 }
 
 // Position offset to another position in the buffer
-func (adabasBuffer *Buffer) position(pos int) int {
+func (adabasBuffer *Buffer) Position(pos int) int {
 	switch {
 	case pos < 0:
 		adabasBuffer.offset = 0
@@ -240,6 +241,7 @@ func ValueAdabasBuffer(tree *adatypes.SearchTree) *Buffer {
 	return adabasBuffer
 }
 
+// resetSendSize reset send size to 0
 func (adabasBuffer *Buffer) resetSendSize() {
 	switch adabasBuffer.abd.Abdid {
 	case AbdAQFb:
@@ -249,4 +251,36 @@ func (adabasBuffer *Buffer) resetSendSize() {
 		adabasBuffer.abd.Abdsend = 0
 	default:
 	}
+}
+
+// Read io.Read interface implementation
+func (adabasBuffer *Buffer) Read(p []byte) (n int, err error) {
+	if uint64(adabasBuffer.offset) >= adabasBuffer.abd.Abdsize {
+		return 0, io.EOF
+	}
+	s := len(p)
+	rest := int(adabasBuffer.abd.Abdsize - uint64(adabasBuffer.offset))
+	if rest < s {
+		s = rest
+		err = io.EOF
+	}
+	copy(p[:s], adabasBuffer.buffer[adabasBuffer.offset:adabasBuffer.offset+s])
+	adabasBuffer.offset += s
+	return s, err
+}
+
+// Write io.Write interface implementation
+func (adabasBuffer *Buffer) Write(p []byte) (n int, err error) {
+	if uint64(adabasBuffer.offset) >= adabasBuffer.abd.Abdsize {
+		return 0, io.EOF
+	}
+	s := len(p)
+	rest := int(adabasBuffer.abd.Abdsize - uint64(adabasBuffer.offset))
+	if rest < s {
+		err = io.EOF
+		return
+	}
+	copy(adabasBuffer.buffer[adabasBuffer.offset:adabasBuffer.offset+s], p[:s])
+	adabasBuffer.offset += s
+	return s, err
 }
