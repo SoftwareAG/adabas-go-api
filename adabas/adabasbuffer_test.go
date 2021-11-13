@@ -49,5 +49,5 @@ func TestAdabasBufferSize(t *testing.T) {
 	a.extend(50)
 	assert.Len(t, a.Bytes(), 200)
 	assert.Equal(t, uint64(200), a.Size())
-	assert.Equal(t, 5, a.position(5))
+	assert.Equal(t, 5, a.Position(5))
 }

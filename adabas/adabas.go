@@ -330,7 +330,7 @@ func (adabas *Adabas) callAdabasDriver() (err error) {
 		adatypes.Central.Log.Debugf("Use context for %p %p ", adabas, adabas.transactions.connection)
 		driver = adabas.transactions.connection
 	}
-	adatypes.Central.Log.Debugf("Call remote via driver url: %s", adabas.URL)
+	adatypes.Central.Log.Debugf("Call %T driver url: %s", driver, adabas.URL)
 	if driver == nil {
 		return adatypes.NewGenericError(68)
 	}

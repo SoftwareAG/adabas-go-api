@@ -196,10 +196,10 @@ func FormatBytes(header string, b []byte, bufferLength int, modSpace int, max in
 
 		for j := 0; j < lineCr; j++ {
 			if max > -1 && j == 0 {
-				buffer.WriteString(fmt.Sprintf("%04X ", offset+j))
+				buffer.WriteString(fmt.Sprintf("%04x ", offset+j))
 			}
 			if formatLength > (offset + j) {
-				buffer.WriteString(fmt.Sprintf("%02X", b[offset+j]))
+				buffer.WriteString(fmt.Sprintf("%02x", b[offset+j]))
 			} else {
 				buffer.WriteString("  ")
 			}

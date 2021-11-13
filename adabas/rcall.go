@@ -74,7 +74,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 		adatypes.Central.Log.Debugf("Call Adabas (local disabled) adabasp=%p  %s\n%v", adabas, adabas.URL.String(), adabas.ID.String())
 		adatypes.LogMultiLineString(true, adabas.Acbx.String())
 	}
-
+	// check sending Adabas call
 	if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
 		return adatypes.NewGenericError(2, string(adabas.Acbx.Acbxcmd[:]))
 	}
@@ -98,6 +98,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 				}
 			}
 		}
+		// check received Adabas call
 		if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
 			adatypes.Central.Log.Debugf("Invalid Adabas command received: %s", string(adabas.Acbx.Acbxcmd[:]))
 			return adatypes.NewGenericError(3, string(adabas.Acbx.Acbxcmd[:]))

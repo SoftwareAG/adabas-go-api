@@ -76,7 +76,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 			adabas, adabas.URL.String(), adabas.ID.String())
 		adatypes.LogMultiLineString(true, adabas.Acbx.String())
 	}
-
+	// check sending Adabas call
 	if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
 		return adatypes.NewGenericError(2, string(adabas.Acbx.Acbxcmd[:]))
 	}
@@ -84,6 +84,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 	adabas.Acbx.Acbxerrc = 0
 	adatypes.Central.Log.Debugf("Input Adabas response = %d", adabas.Acbx.Acbxrsp)
 	recordBufferResize := uint8(5)
+	// Loop and increase if Record Buffer size is too small
 	for {
 		err = adabas.callAdabasDriver()
 		if err != nil {
@@ -100,6 +101,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 				}
 			}
 		}
+		// check received Adabas call
 		if !validAcbxCommand(adabas.Acbx.Acbxcmd) {
 			adatypes.Central.Log.Debugf("Invalid Adabas command received: %s", string(adabas.Acbx.Acbxcmd[:]))
 			return adatypes.NewGenericError(3, string(adabas.Acbx.Acbxcmd[:]))
@@ -115,6 +117,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 		}
 	}
 
+	// Clear transactions if response code != EOF or ADANORMAL
 	switch adabas.Acbx.Acbxrsp {
 	case AdaAnact, AdaTransactionAborted, AdaSysCe:
 		adabas.ID.clearTransactions(adabas.URL.String())
