@@ -166,6 +166,7 @@ type Status struct {
 	openTransactions uint32
 	platform         *adatypes.Platform
 	adabas           *Adabas
+	version          string
 }
 
 // ID Adabas Id

@@ -20,6 +20,7 @@
 package adatypes
 
 import (
+	"bytes"
 	"encoding/binary"
 
 	"golang.org/x/text/encoding"
@@ -70,4 +71,22 @@ func NewPlatform(arch byte) *Platform {
 func (platform *Platform) IsMainframe() bool {
 	platformIdentifier := platform.architecture & 0xF0
 	return platformIdentifier == PlatformMainframe
+}
+
+// String representation of platform identifier
+func (platform *Platform) String() string {
+	var buffer bytes.Buffer
+	if platform.architecture == PlatformMainframe {
+		buffer.WriteString("Mainframe")
+	} else {
+		buffer.WriteString("Open System")
+	}
+	buffer.WriteRune(',')
+	if platform.order == binary.LittleEndian {
+		buffer.WriteString("Low Order")
+	} else {
+		buffer.WriteString("High Order")
+	}
+
+	return buffer.String()
 }

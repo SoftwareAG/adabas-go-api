@@ -59,3 +59,11 @@ func TestAIDClone(t *testing.T) {
 	assert.NotEqual(t, caid.AdaID.Pid, aid.AdaID.Pid)
 	assert.NotEqual(t, caid.AdaID.Timestamp, aid.AdaID.Timestamp)
 }
+
+func TestAdabasOpenParameter(t *testing.T) {
+	isq := uint64(101122305)
+	assert.Equal(t, "6.7.1.1", parseVersion(isq))
+	isq = uint64(101122305)
+	assert.Equal(t, "6.7.1.1", parseVersion(isq))
+
+}

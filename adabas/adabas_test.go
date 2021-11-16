@@ -814,6 +814,8 @@ func TestAdabasOpenUser(t *testing.T) {
 	adabas, _ := NewAdabas(adabasStatDBID)
 	defer adabas.Close()
 
+	assert.Empty(t, adabas.Version())
+	assert.Empty(t, adabas.Platform())
 	err := adabas.OpenUser("ABC")
 	assert.NoError(t, err)
 	assert.Equal(t, "ABC     ", string(adabas.Acbx.Acbxadd1[:]))
@@ -821,6 +823,9 @@ func TestAdabasOpenUser(t *testing.T) {
 	err = adabas.OpenUser("ABCDEFGHIJK")
 	assert.NoError(t, err)
 	assert.Equal(t, "ABCDEFGH", string(adabas.Acbx.Acbxadd1[:]))
+	assert.NotEmpty(t, adabas.Version())
+	assert.NotEmpty(t, adabas.Platform())
+	fmt.Printf("Call Adabas to Adabas version %s on %s\n", adabas.Version(), adabas.Platform())
 
 	// time.Sleep(time.Minute * 1)
 }
