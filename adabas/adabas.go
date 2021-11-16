@@ -172,6 +172,24 @@ func newStatistics() *Statistics {
 	return nil
 }
 
+// Version Adabas version defined after first OP
+// contains referenced Adabas version
+func (adabas *Adabas) Version() string {
+	if adabas.status == nil {
+		return ""
+	}
+	return adabas.status.version
+}
+
+// Platform Adabas platform defined after first OP
+// contains referenced Adabas platform
+func (adabas *Adabas) Platform() string {
+	if adabas.status == nil || adabas.status.platform == nil {
+		return ""
+	}
+	return adabas.status.platform.String()
+}
+
 // DumpStatistics dump statistics of service
 func (adabas *Adabas) DumpStatistics() {
 	if adabas.statistics != nil {
@@ -236,6 +254,7 @@ func (adabas *Adabas) OpenUser(user string) (err error) {
 		adabas.ID.changeOpenState(adabas.URL.String(), true)
 		adabas.status.open = true
 		adabas.status.platform = adatypes.NewPlatformIsl(adabas.Acbx.Acbxisl)
+		adabas.status.version = parseVersion(adabas.Acbx.Acbxisq)
 	} else {
 		err = NewError(adabas)
 		adatypes.Central.Log.Debugf("Error calling open", err)
@@ -243,6 +262,14 @@ func (adabas *Adabas) OpenUser(user string) (err error) {
 		adabas.ID.changeOpenState(adabas.URL.String(), false)
 	}
 	return err
+}
+
+func parseVersion(isq uint64) string {
+	major := (isq >> 24) & 0xff
+	minor := (isq >> 16) & 0xff
+	smLevel := (isq >> 8) & 0xff
+	patchLevel := isq & 0xff
+	return fmt.Sprintf("%d.%d.%d.%d", major, minor, smLevel, patchLevel)
 }
 
 // Close A session to the database will be closed
