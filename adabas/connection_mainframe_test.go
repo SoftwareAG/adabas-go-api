@@ -309,9 +309,13 @@ func TestConnectionMfTestSuiteSalary(t *testing.T) {
 		return
 	}
 	defer connection.Close()
-	fmt.Println(connection)
 	openErr := connection.Open()
-	assert.NoError(t, openErr)
+	if !assert.NoError(t, openErr) {
+		return
+	}
+	fmt.Println("Adabas connection opened to ", connection.GetAdabasInformation())
+	assert.Contains(t, "Mainframe,High Order", connection.GetAdabasInformation())
+
 	request, err := connection.CreateFileReadRequest(1)
 	if !assert.NoError(t, err) {
 		return

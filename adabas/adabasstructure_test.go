@@ -22,6 +22,7 @@ package adabas
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -52,6 +53,7 @@ func TestAID(t *testing.T) {
 func TestAIDClone(t *testing.T) {
 	aid := NewAdabasID()
 	aid.AddCredential("abc", "def")
+	time.Sleep(10 * time.Second)
 	caid := aid.Clone()
 	assert.Equal(t, caid.user, aid.user)
 	assert.Equal(t, caid.pwd, aid.pwd)
