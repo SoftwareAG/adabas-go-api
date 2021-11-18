@@ -79,10 +79,15 @@ func TestAdabasMessageError(t *testing.T) {
 	ada.Acbx.Acbxerrc = 0
 	ada.Acbx.Acbxerrc = 0
 
-	ada.status.platform = adatypes.NewPlatformIsl(553779200)
 	ada.status.version = "6.1.1.1"
 	assert.Equal(t, "6.1.1.1", ada.Version())
+
+	ada.status.platform = adatypes.NewPlatformIsl(553779200)
 	assert.Equal(t, "Open System,Low Order", ada.Platform())
+
+	ada.status.platform = adatypes.NewPlatformIsl(67108864)
+	assert.Equal(t, "Mainframe,High Order", ada.Platform())
+
 }
 
 func TestAdabasMessageTranslate(t *testing.T) {
