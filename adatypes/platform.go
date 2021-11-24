@@ -76,7 +76,7 @@ func (platform *Platform) IsMainframe() bool {
 // String representation of platform identifier
 func (platform *Platform) String() string {
 	var buffer bytes.Buffer
-	if platform.architecture == PlatformMainframe {
+	if platform.IsMainframe() {
 		buffer.WriteString("Mainframe")
 	} else {
 		buffer.WriteString("Open System")

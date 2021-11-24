@@ -729,3 +729,12 @@ func (connection *Connection) GetClusterNodes() []*URL {
 	}
 	return make([]*URL, 0)
 }
+
+// GetAdabasInformation get Adabas information
+func (connection *Connection) GetAdabasInformation() string {
+	if connection.adabasToData == nil {
+		return ""
+	}
+	return "v" + connection.adabasToData.Version() + "," +
+		connection.adabasToData.Platform()
+}
