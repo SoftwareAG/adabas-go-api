@@ -208,31 +208,31 @@ func createFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatyp
 			}
 			adatypes.Central.Log.Debugf("Found normal field %s level=%d fieldType=%v", fieldType.Name(), fieldType.Level(), fieldType.Type())
 		case fieldIdentifierSub.code(), fieldIdentifierSuper.code():
-			adatypes.Central.Log.Debugf("Found Super/Sub field %c\n", value.Value().(byte))
+			adatypes.Central.Log.Debugf("Found Super/Sub field %c", value.Value().(byte))
 			fieldType, err = createSubSuperDescriptorType(fdt, index)
 			if err != nil {
 				return
 			}
 		case fieldIdentifierPhonetic.code():
-			adatypes.Central.Log.Debugf("Found Super/Sub field %c\n", value.Value().(byte))
+			adatypes.Central.Log.Debugf("Found Super/Sub field %c", value.Value().(byte))
 			fieldType, err = createPhoneticType(fdt, index)
 			if err != nil {
 				return
 			}
 		case fieldIdentifierCollation.code():
-			adatypes.Central.Log.Debugf("Found Collation field %c\n", value.Value().(byte))
+			adatypes.Central.Log.Debugf("Found Collation field %c", value.Value().(byte))
 			fieldType, err = createCollationType(fdt, index)
 			if err != nil {
 				return
 			}
 		case fieldIdentifierHyperexit.code():
-			adatypes.Central.Log.Debugf("Found HyperExit field %c\n", value.Value().(byte))
+			adatypes.Central.Log.Debugf("Found HyperExit field %c", value.Value().(byte))
 			fieldType, err = createHyperExitType(fdt, index)
 			if err != nil {
 				return
 			}
 		case fieldIdentifierReferential.code():
-			adatypes.Central.Log.Debugf("Found Referential field %c\n", value.Value().(byte))
+			adatypes.Central.Log.Debugf("Found Referential field %c", value.Value().(byte))
 			fieldType, err = createReferential(fdt, index)
 			if err != nil {
 				return
@@ -532,7 +532,7 @@ func evaluateOption(fieldType *adatypes.AdaType, option uint8, option2 uint8) {
 	flags2 := [...]int{fdtFlagOption2NC.iv(), fdtFlagOption2NN.iv(), fdtFlagOption2HF.iv(), fdtFlagOption2NV.iv(), fdtFlagOption2NB.iv()}
 	optionFlags2 := []adatypes.FieldOption{adatypes.FieldOptionNC, adatypes.FieldOptionNN, adatypes.FieldOptionHF, adatypes.FieldOptionNV, adatypes.FieldOptionNB}
 
-	adatypes.Central.Log.Debugf("Evaluate Options %x\n", option)
+	adatypes.Central.Log.Debugf("Evaluate Options %x", option)
 	for i := 0; i < len(flags); i++ {
 		if (option & (1 << uint32(flags[i]))) > 0 {
 			adatypes.Central.Log.Debugf("%s Option %d", fieldType.String(), i)

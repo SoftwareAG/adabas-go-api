@@ -62,7 +62,7 @@ func TestMapFields(t *testing.T) {
 	defer adabas.Close()
 
 	mr := NewMapRepository(adabas, 4)
-	adatypes.Central.Log.Debugf("Repository %#v\n", mr)
+	adatypes.Central.Log.Debugf("Repository %#v", mr)
 	m, err := mr.readAdabasMap(adabas, "EMPLOYEES-NAT-DDM")
 	if !assert.NoError(t, err) {
 		fmt.Println("Error found", err)
@@ -164,7 +164,7 @@ func TestMapFieldsMainframe(t *testing.T) {
 	defer adabas.Close()
 
 	mr := NewMapRepository(adabas, 4)
-	adatypes.Central.Log.Debugf("Repository %#v\n", mr)
+	adatypes.Central.Log.Debugf("Repository %#v", mr)
 	m, err := mr.readAdabasMap(adabas, "EMPLOYEES-NAT-MF")
 	if !assert.NoError(t, err) {
 		fmt.Println("Error found", err)

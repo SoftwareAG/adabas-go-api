@@ -153,7 +153,7 @@ func (repository *Repository) SearchMapInRepository(adabas *Adabas, mapName stri
 	adatypes.Central.Log.Debugf("Load repository of %s/%d", repository.URL.String(), repository.Fnr)
 	err = repository.LoadMapRepository(adabas)
 	if err != nil {
-		adatypes.Central.Log.Debugf("Error loading repository %v\n", err)
+		adatypes.Central.Log.Debugf("Error loading repository %v", err)
 		return
 	}
 	adatypes.Central.Log.Debugf("Read map in repository of %s/%d", repository.URL.String(), repository.Fnr)
@@ -173,7 +173,7 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 		err = adatypes.NewGenericError(5)
 		return
 	}
-	adatypes.Central.Log.Debugf("Before Prepare Repository %#v\n", repository)
+	adatypes.Central.Log.Debugf("Before Prepare Repository %#v", repository)
 	url := repository.DatabaseURL
 	adabasMap = NewAdabasMap(&repository.DatabaseURL, &url)
 	request, _ := NewReadRequest(commonRequest)
@@ -194,7 +194,7 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 	adabasMap.createFieldMap()
 	repository.AddMapToCache(name, adabasMap)
 	var dbid Dbid
-	adatypes.Central.Log.Debugf("After Repository %#v\n", repository)
+	adatypes.Central.Log.Debugf("After Repository %#v", repository)
 	if adabasMap.Repository.URL.Dbid == 0 {
 		err = adatypes.NewGenericError(18)
 		return
@@ -214,7 +214,7 @@ func (repository *Repository) readAdabasMapWithRequest(commonRequest *commonRequ
 // readAdabasMap read Adabas map defined by repository and name
 func (repository *Repository) readAdabasMap(adabas *Adabas, name string) (adabasMap *Map, err error) {
 	request, _ := NewReadRequest(adabas, repository.Fnr)
-	adatypes.Central.Log.Debugf("Read map %s in repository %#v\n", name, repository)
+	adatypes.Central.Log.Debugf("Read map %s in repository %#v", name, repository)
 	adabasMap, err = repository.readAdabasMapWithRequest(&request.commonRequest, name)
 	return
 }
@@ -374,7 +374,7 @@ func (repository *Repository) LoadMapRepository(adabas *Adabas) (err error) {
 	// }
 	repository.mapNames = make(map[string]*mapNameFlags)
 	adabas.SetURL(&repository.DatabaseURL.URL)
-	adatypes.Central.Log.Debugf("Read all data from dbid=%d(%s) of %s/%d\n",
+	adatypes.Central.Log.Debugf("Read all data from dbid=%d(%s) of %s/%d",
 		adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.DatabaseURL.URL.String(), repository.Fnr)
 	//	adabas.Acbx.Acbxdbid = repository.DatabaseURL.URL.Dbid
 	request, _ := NewReadRequest(adabas, repository.Fnr)
@@ -382,16 +382,16 @@ func (repository *Repository) LoadMapRepository(adabas *Adabas) (err error) {
 	err = request.QueryFields(mapFieldName.fieldName())
 	if err != nil {
 		repository.online = false
-		adatypes.Central.Log.Debugf("Err %v query fields dbid=%d(%s) / %d\n", err, adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.Fnr)
+		adatypes.Central.Log.Debugf("Err %v query fields dbid=%d(%s) / %d", err, adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.Fnr)
 		return err
 	}
 	err = request.ReadLogicalByWithParser(mapFieldName.fieldName(), parseMapNames, repository)
 	if err != nil {
 		repository.online = false
-		adatypes.Central.Log.Debugf("Err %v Read all map names from dbid=%d(%s) / %d\n", err, adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.Fnr)
+		adatypes.Central.Log.Debugf("Err %v Read all map names from dbid=%d(%s) / %d", err, adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.Fnr)
 		return err
 	}
-	adatypes.Central.Log.Debugf("Done Read all map names from dbid=%d(%s) / %d\n", adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.Fnr)
+	adatypes.Central.Log.Debugf("Done Read all map names from dbid=%d(%s) / %d", adabas.Acbx.Acbxdbid, adabas.URL.String(), repository.Fnr)
 	repository.online = true
 
 	return
