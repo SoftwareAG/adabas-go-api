@@ -206,19 +206,19 @@ func (cursor *Cursoring) HasNextRecord() (hasNext bool) {
 	if cursor.offset+1 > uint32(cursor.result.NrRecords()) {
 		if cursor.adabasRequest == nil || (cursor.adabasRequest.Response != AdaNormal && cursor.adabasRequest.Option.StreamCursor == 0) {
 			if cursor.adabasRequest != nil {
-				adatypes.Central.Log.Debugf("Error adabas request empty of not normal response, may be EOF %#v\n", cursor.adabasRequest.Response)
+				adatypes.Central.Log.Debugf("Error adabas request empty of not normal response, may be EOF %#v", cursor.adabasRequest.Response)
 			} else {
-				adatypes.Central.Log.Debugf("Error adabas request empty %#v\n", cursor.adabasRequest)
+				adatypes.Central.Log.Debugf("Error adabas request empty %#v", cursor.adabasRequest)
 			}
 			return false
 		}
 
 		cursor.result, cursor.err = cursor.request.queryFunction(cursor.search, cursor.descriptors)
 		if cursor.err != nil || cursor.result == nil {
-			adatypes.Central.Log.Debugf("Error query function %v %#v\n", cursor.err, cursor.result)
+			adatypes.Central.Log.Debugf("Error query function %v %#v", cursor.err, cursor.result)
 			return false
 		}
-		adatypes.Central.Log.Debugf("Nr Records cursored %d\n", cursor.result.NrRecords())
+		adatypes.Central.Log.Debugf("Nr Records cursored %d", cursor.result.NrRecords())
 		hasNext = cursor.result.NrRecords() > 0
 		cursor.offset = 0
 	} else {
@@ -239,14 +239,14 @@ func (cursor *Cursoring) NextRecord() (record *Record, err error) {
 		adatypes.Central.Log.Debugf("Error next record: %v", err)
 		return nil, cursor.err
 	}
-	adatypes.Central.Log.Debugf("Get next record offset=%d/%d\n", cursor.offset, len(cursor.result.Values))
+	adatypes.Central.Log.Debugf("Get next record offset=%d/%d", cursor.offset, len(cursor.result.Values))
 	if cursor.offset+1 > uint32(cursor.result.NrRecords()) {
 		if !cursor.HasNextRecord() {
 			return nil, nil
 		}
 	}
 	cursor.offset++
-	adatypes.Central.Log.Debugf("ISN=%d ISN quantity=%d\n", cursor.result.Values[cursor.offset-1].Isn,
+	adatypes.Central.Log.Debugf("ISN=%d ISN quantity=%d", cursor.result.Values[cursor.offset-1].Isn,
 		cursor.result.Values[cursor.offset-1].Quantity)
 	if len(cursor.result.Data) > 0 {
 		return nil, adatypes.NewGenericError(139)
@@ -266,7 +266,7 @@ func (cursor *Cursoring) NextData() (record interface{}, err error) {
 		adatypes.Central.Log.Debugf("Error next data record: %v", err)
 		return nil, cursor.err
 	}
-	adatypes.Central.Log.Debugf("Get next data record offset=%d/%d\n", cursor.offset, len(cursor.result.Values))
+	adatypes.Central.Log.Debugf("Get next data record offset=%d/%d", cursor.offset, len(cursor.result.Values))
 	if cursor.offset+1 > uint32(cursor.result.NrRecords()) {
 		if !cursor.HasNextRecord() {
 			return nil, nil

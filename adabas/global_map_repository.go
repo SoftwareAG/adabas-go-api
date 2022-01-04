@@ -189,7 +189,7 @@ func AllGlobalMaps(adabas *Adabas) (maps []*Map, err error) {
 			adabas.URL.String(), mr.DatabaseURL.URL.String(), mr.Fnr, mn)
 		adabasMaps, serr := mr.LoadAllMaps(adabas)
 		if serr != nil {
-			adatypes.Central.Log.Debugf("Continue in next repository because of error %v\n", serr)
+			adatypes.Central.Log.Debugf("Continue in next repository because of error %v", serr)
 		} else {
 			for _, m := range adabasMaps {
 				if _, ok := mm[m.Name]; !ok {
@@ -277,7 +277,7 @@ func SearchMapRepository(adabasID *ID, mapName string) (adabasMap *Map, reposito
 			var serr error
 			adabasMap, serr = mr.SearchMapInRepository(ada, mapName)
 			if serr != nil {
-				adatypes.Central.Log.Debugf("Continue in next repository because of error %v\n", serr)
+				adatypes.Central.Log.Debugf("Continue in next repository because of error %v", serr)
 			} else {
 				if adabasMap != nil {
 					adatypes.Central.Log.Debugf("Result map found: %s", adabasMap.String())
@@ -293,7 +293,7 @@ func SearchMapRepository(adabasID *ID, mapName string) (adabasMap *Map, reposito
 			adatypes.Central.Log.Debugf("Repository offline: %s-%d", mr.DatabaseURL.URL.String(), mr.DatabaseURL.Fnr)
 		}
 	}
-	adatypes.Central.Log.Debugf("No map found error\n")
+	adatypes.Central.Log.Debugf("No map found error")
 	err = adatypes.NewGenericError(16, mapName)
 	return
 }

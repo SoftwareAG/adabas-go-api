@@ -447,22 +447,22 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.Request) {
 	adabas.AdabasBuffers[0].abd.Abdsize = uint64(adabasRequest.FormatBuffer.Len())
 	adabas.AdabasBuffers[0].abd.Abdsend = adabas.AdabasBuffers[0].abd.Abdsize
 	adabas.AdabasBuffers[0].abd.Abdrecv = 0
-	adatypes.Central.Log.Debugf("ABD init F send %d\n", adabas.AdabasBuffers[0].abd.Abdsend)
+	adatypes.Central.Log.Debugf("ABD init F send %d", adabas.AdabasBuffers[0].abd.Abdsend)
 
 	// Create record buffer for the call
 	adabas.AdabasBuffers[1] = NewBufferWithSize(AbdAQRb,
 		multifetch*(adabasRequest.RecordBufferLength+adabasRequest.RecordBufferShift))
 	adabas.AdabasBuffers[1].abd.Abdsend = 0
 	adabas.AdabasBuffers[1].abd.Abdrecv = adabas.AdabasBuffers[0].abd.Abdsize
-	adatypes.Central.Log.Debugf("ABD init R send %d buffer length %d\n", adabas.AdabasBuffers[1].abd.Abdsend, adabas.AdabasBuffers[1].abd.Abdsize)
+	adatypes.Central.Log.Debugf("ABD init R send %d buffer length %d", adabas.AdabasBuffers[1].abd.Abdsend, adabas.AdabasBuffers[1].abd.Abdsize)
 
 	// Define search and value buffer to search
 	if adabasRequest.SearchTree != nil {
 		adatypes.Central.Log.Debugf("Search logical added")
 		adabas.AdabasBuffers[2] = SearchAdabasBuffer(adabasRequest.SearchTree)
-		adatypes.Central.Log.Debugf("ABD init S send %d\n", adabas.AdabasBuffers[2].abd.Abdsend)
+		adatypes.Central.Log.Debugf("ABD init S send %d", adabas.AdabasBuffers[2].abd.Abdsend)
 		adabas.AdabasBuffers[3] = ValueAdabasBuffer(adabasRequest.SearchTree)
-		adatypes.Central.Log.Debugf("ABD init V send %d\n", adabas.AdabasBuffers[3].abd.Abdsend)
+		adatypes.Central.Log.Debugf("ABD init V send %d", adabas.AdabasBuffers[3].abd.Abdsend)
 	}
 	if adabasRequest.Multifetch > 1 {
 		adatypes.Central.Log.Debugf("Create multifetch buffer for %d multifetch entries", adabasRequest.Multifetch)
@@ -784,7 +784,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 	} else {
 		adabasMap := adabasRequest.Parameter.(*Map)
 		if adabasMap != nil {
-			adatypes.Central.Log.Debugf("%v -> %#v\n", adabasRequest.Parameter, adabasMap)
+			adatypes.Central.Log.Debugf("%v -> %#v", adabasRequest.Parameter, adabasMap)
 			adabasRequest.Reference = fmt.Sprintf("map/%s", adabasMap.Name)
 		}
 	}
@@ -1197,7 +1197,7 @@ func (adabas *Adabas) WriteBuffer(buffer *bytes.Buffer, order binary.ByteOrder, 
 		adatypes.Central.Log.Debugf("Add %d ABD header", index)
 
 		if abd.abd.Abdver[0] != 'G' {
-			adatypes.Central.Log.Debugf("ABD error %p\n", abd)
+			adatypes.Central.Log.Debugf("ABD error %p", abd)
 			return adatypes.NewGenericError(74, index)
 		}
 		err = binary.Write(&tempBuffer, Endian(), abd.abd)
@@ -1248,7 +1248,7 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 		return
 	}
 
-	adatypes.Central.Log.Debugf("Received ACBX rsp=%d cc=%c%c\n", adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxcmd[0], adabas.Acbx.Acbxcmd[1])
+	adatypes.Central.Log.Debugf("Received ACBX rsp=%d cc=%c%c", adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxcmd[0], adabas.Acbx.Acbxcmd[1])
 	adatypes.Central.Log.Debugf("Receive number of ABD: %d rsp=%d", nCalBuf, adabas.Acbx.Acbxrsp)
 	if serverMode || (adabas.Acbx.Acbxrsp <= 3 && nCalBuf > 0) {
 		if serverMode {
@@ -1267,7 +1267,7 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 		adatypes.Central.Log.Debugf("Got nCalBuf=%d Number of current ABDS=%d len=%d", nCalBuf, len(adabas.AdabasBuffers), buffer.Len())
 		for index, abd := range adabas.AdabasBuffers {
 			if adatypes.Central.IsDebugLevel() {
-				adatypes.Central.Log.Debugf("Parse %d.ABD got %c rest len=%d\n", index, abd.abd.Abdid, buffer.Len())
+				adatypes.Central.Log.Debugf("Parse %d.ABD got %c rest len=%d", index, abd.abd.Abdid, buffer.Len())
 				adatypes.LogMultiLineString(true, adatypes.FormatBytes("Rest ABD:", buffer.Bytes(), buffer.Len(), 8, 16, false))
 			}
 			err = binary.Read(buffer, Endian(), &abd.abd)
@@ -1280,7 +1280,7 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 				adatypes.LogMultiLineString(false, adatypes.FormatBytes("Rest ABD:", buffer.Bytes(), buffer.Len(), 8, 16, false))
 				return adatypes.NewGenericError(174)
 			}
-			adatypes.Central.Log.Debugf("%d.ABD got send=%d rcv=%d size=%d\n",
+			adatypes.Central.Log.Debugf("%d.ABD got send=%d rcv=%d size=%d",
 				index, abd.abd.Abdsend, abd.abd.Abdrecv, abd.abd.Abdsize)
 			if serverMode {
 				// Check if size is correct

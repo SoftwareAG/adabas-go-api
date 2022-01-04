@@ -361,12 +361,12 @@ func readLogicalIndexInterface(t *testing.T) error {
 	e := result.Data[0].(*EmployeesIndex)
 	fmt.Printf("Update record on ISN=%d with Id= %s and last name=%s\n",
 		e.Index, e.ID, e.LastName)
-	adatypes.Central.Log.Debugf("TEST: Update record on ISN=%d with Id= %s and last name=%s\n",
+	adatypes.Central.Log.Debugf("TEST: Update record on ISN=%d with Id= %s and last name=%s",
 		e.Index, e.ID, e.LastName)
 	e.LastName = "updateindexname"
 	err = storeRequest.UpdateData(e)
 	if assert.NoError(t, err) {
-		adatypes.Central.Log.Debugf("TEST: Update done on ISN=%d\n",
+		adatypes.Central.Log.Debugf("TEST: Update done on ISN=%d",
 			e.Index)
 		err = storeRequest.EndTransaction()
 		assert.NoError(t, err)

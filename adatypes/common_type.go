@@ -24,7 +24,7 @@ import (
 )
 
 // Version version of current build
-var Version = "v1.6.11"
+var Version = "v1.6.14"
 
 // FieldType indicate a field type of the field
 type FieldType uint

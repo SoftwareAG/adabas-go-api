@@ -165,7 +165,7 @@ func NewConnectionID(connectionString string, adabasID *ID) (connection *Connect
 
 	if len(repositoryParameter) > 0 {
 		for _, r := range repositoryParameter {
-			adatypes.Central.Log.Debugf("Add repository search of dbid=%s fnr=%s\n", r[0], r[1])
+			adatypes.Central.Log.Debugf("Add repository search of dbid=%s fnr=%s", r[0], r[1])
 			fnr, serr := strconv.Atoi(r[1])
 			if serr != nil {
 				return nil, serr
@@ -231,7 +231,7 @@ func (connection *Connection) searchRepository(adabasID *ID, repository *Reposit
 			return err
 		}
 	}
-	adatypes.Central.Log.Debugf("Found map %s\n", connection.adabasMap.Name)
+	adatypes.Central.Log.Debugf("Found map %s", connection.adabasMap.Name)
 	if connection.adabasMap.URL().String() != connection.adabasToMap.URL.String() {
 		connection.adabasToMap = connection.ID.getAdabas(connection.adabasMap.URL())
 	}

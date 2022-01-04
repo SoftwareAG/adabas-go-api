@@ -280,13 +280,13 @@ func (request *StoreRequest) StoreFields(param ...interface{}) (err error) {
 func (request *StoreRequest) CreateRecord() (record *Record, err error) {
 	err = request.definition.CreateValues(true)
 	if err != nil {
-		adatypes.Central.Log.Debugf("Error creating values %v\n", err)
+		adatypes.Central.Log.Debugf("Error creating values %v", err)
 		return
 	}
-	adatypes.Central.Log.Debugf("Create record Definitons %#v\n", request.definition)
+	adatypes.Central.Log.Debugf("Create record Definitons %#v", request.definition)
 	record, xerr := NewRecord(request.definition)
 	if xerr != nil {
-		adatypes.Central.Log.Debugf("Error creating record %v\n", xerr)
+		adatypes.Central.Log.Debugf("Error creating record %v", xerr)
 		err = adatypes.NewGenericError(27, xerr.Error())
 	}
 	return
@@ -578,7 +578,7 @@ func (request *StoreRequest) evaluateKeyIsn(record reflect.Value, storeRecord *R
 	if keyValue == "" {
 		adatypes.Central.Log.Debugf("Query temporary read ok %s", sn)
 		if adaValue, ok := storeRecord.searchValue(sn); ok {
-			adatypes.Central.Log.Debugf("Search key %s='%s'\n", sn, adaValue.String())
+			adatypes.Central.Log.Debugf("Search key %s='%s'", sn, adaValue.String())
 			keyValue = adaValue.String()
 		} else {
 			return adatypes.NewGenericError(96, sn)
