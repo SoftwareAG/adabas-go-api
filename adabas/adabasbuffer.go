@@ -108,6 +108,22 @@ func NewBufferWithSize(id byte, size uint32) *Buffer {
 	return b
 }
 
+// NewSendBuffer Create a new buffer with given id
+func NewSendBuffer(id byte, buffer []byte) *Buffer {
+	adaBuffer := NewBuffer(id)
+	adaBuffer.buffer = buffer
+	adaBuffer.abd.Abdsize = uint64(len(buffer))
+	adaBuffer.abd.Abdsend = adaBuffer.abd.Abdsize
+	return adaBuffer
+}
+
+// NewRcvBuffer Create a new buffer with given id
+func NewRcvBuffer(id byte, size uint32) *Buffer {
+	adaBuffer := NewBufferWithSize(id, size)
+	adaBuffer.abd.Abdrecv = adaBuffer.abd.Abdsize
+	return adaBuffer
+}
+
 // If needed, grow the buffer size to new size given
 func (adabasBuffer *Buffer) grow(newSize int) {
 	adatypes.Central.Log.Debugf("Current %c buffer to %d,%d", adabasBuffer.abd.Abdid, len(adabasBuffer.buffer), cap(adabasBuffer.buffer))
@@ -217,13 +233,9 @@ func (adabasBuffer *Buffer) String() string {
 
 // SearchAdabasBuffer returns search buffer of the search tree
 func SearchAdabasBuffer(tree *adatypes.SearchTree) *Buffer {
-	adabasBuffer := NewBuffer(AbdAQSb)
-	sb := tree.SearchBuffer()
-	adabasBuffer.buffer = []byte(sb)
-	adabasBuffer.abd.Abdsize = uint64(len(sb))
-	adabasBuffer.abd.Abdsend = adabasBuffer.abd.Abdsize
+	adabasBuffer := NewSendBuffer(AbdAQSb, tree.SearchBuffer())
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.Central.Log.Debugf("Search buffer created: %s", sb)
+		adatypes.Central.Log.Debugf("Search buffer created: %s", string(adabasBuffer.buffer))
 		adatypes.Central.Log.Debugf("Send search buffer of size %d -> send=%d", adabasBuffer.abd.Abdsize,
 			adabasBuffer.abd.Abdsend)
 	}
@@ -232,12 +244,9 @@ func SearchAdabasBuffer(tree *adatypes.SearchTree) *Buffer {
 
 // ValueAdabasBuffer returns value buffer of the search tree
 func ValueAdabasBuffer(tree *adatypes.SearchTree) *Buffer {
-	adabasBuffer := NewBuffer(AbdAQVb)
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
-	adabasBuffer.buffer = buffer.Bytes()
-	adabasBuffer.abd.Abdsize = uint64(buffer.Len())
-	adabasBuffer.abd.Abdsend = adabasBuffer.abd.Abdsize
+	adabasBuffer := NewSendBuffer(AbdAQVb, buffer.Bytes())
 	return adabasBuffer
 }
 

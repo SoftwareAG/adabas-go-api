@@ -136,7 +136,7 @@ func (tree *SearchTree) String() string {
 }
 
 // SearchBuffer returns search buffer of the search tree
-func (tree *SearchTree) SearchBuffer() string {
+func (tree *SearchTree) SearchBuffer() []byte {
 	Central.Log.Debugf("Create search buffer ...")
 	var buffer bytes.Buffer
 	if tree.node != nil {
@@ -145,7 +145,7 @@ func (tree *SearchTree) SearchBuffer() string {
 		tree.value.searchBuffer(&buffer)
 	}
 	buffer.WriteRune('.')
-	return buffer.String()
+	return buffer.Bytes()
 }
 
 // ValueBuffer returns value buffer of the search tree
