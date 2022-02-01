@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -90,7 +90,9 @@ func (value *unpackedValue) SetStringValue(stValue string) {
 
 // SetValue set the unpacked value
 func (value *unpackedValue) SetValue(v interface{}) error {
-	Central.Log.Debugf("Set packed value to %v", v)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Set packed value to %v", v)
+	}
 	iLen := value.Type().Length()
 	switch bv := v.(type) {
 	case []byte:
@@ -102,7 +104,9 @@ func (value *unpackedValue) SetValue(v interface{}) error {
 		default:
 			value.value = bv
 		}
-		Central.Log.Debugf("Use byte array")
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Use byte array")
+		}
 	default:
 		v, err := value.commonInt64Convert(v)
 		if err != nil {
@@ -118,7 +122,9 @@ func (value *unpackedValue) SetValue(v interface{}) error {
 		}
 
 		value.LongToUnpacked(v, int(iLen), false)
-		Central.Log.Debugf("Packed value %s", value.String())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Packed value %s", value.String())
+		}
 	}
 	return nil
 }
@@ -129,7 +135,9 @@ func (value *unpackedValue) checkValidValue(intValue int64, len uint32) error {
 		maxValue *= 10
 	}
 	absValue := int64(math.Abs(float64(intValue)))
-	Central.Log.Debugf("Check valid value absolute value %d < max %d", absValue, maxValue)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Check valid value absolute value %d < max %d", absValue, maxValue)
+	}
 	if absValue < maxValue {
 		return nil
 	}

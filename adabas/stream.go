@@ -1,5 +1,5 @@
 /*
-* Copyright © 2020-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2020-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -98,8 +98,9 @@ func (request *ReadRequest) ReadLOBSegment(isn adatypes.Isn, field string, block
 
 // ReadLOBRecord read lob records in an stream, repeated call will read next segment of LOB
 func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocksize uint64) (result *Response, err error) {
+	debug := adatypes.Central.IsDebugLevel()
 	if request.cursoring == nil || request.cursoring.adabasRequest == nil {
-		if adatypes.Central.IsDebugLevel() {
+		if debug {
 			adatypes.Central.Log.Debugf("Read LOB record initiated ...")
 		}
 		request.cursoring = &Cursoring{}
@@ -115,7 +116,7 @@ func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocks
 			adatypes.Central.Log.Debugf("Query fields error ...%#v", err)
 			return nil, err
 		}
-		if adatypes.Central.IsDebugLevel() {
+		if debug {
 			adatypes.Central.Log.Debugf("LOB Definition generated ...BlockSize=%d", request.BlockSize)
 		}
 		err = request.definition.CreateValues(false)
@@ -126,7 +127,7 @@ func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocks
 		lob := fieldValue.(adatypes.ILob)
 		lob.SetLobBlockSize(blocksize)
 		lob.SetLobPartRead(true)
-		if adatypes.Central.IsDebugLevel() {
+		if debug {
 			adatypes.Central.Log.Debugf("Read LOB with ...%#v", field)
 		}
 
@@ -138,7 +139,7 @@ func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocks
 		adabasRequest.Parser = parseReadToRecord
 		adabasRequest.Limit = 1
 		request.cursoring.adabasRequest = adabasRequest
-		if adatypes.Central.IsDebugLevel() {
+		if debug {
 			adatypes.Central.Log.Debugf("Query field LOB values ...%#v", field)
 			adatypes.Central.Log.Debugf("Create LOB values ...%#v", field)
 		}
@@ -153,7 +154,7 @@ func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocks
 		result = &Response{Definition: request.definition, fields: request.fields}
 		err = request.adabas.readISN(request.repository.Fnr, adabasRequest, result)
 	} else {
-		if adatypes.Central.IsDebugLevel() {
+		if debug {
 			adatypes.Central.Log.Debugf("Read next LOB segment with ...cursoring")
 		}
 		/*
@@ -182,12 +183,12 @@ func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocks
 			request.definition.DumpValues(false)
 		*/
 		result = &Response{Definition: request.definition, fields: request.fields}
-		if adatypes.Central.IsDebugLevel() {
+		if debug {
 			adatypes.Central.Log.Debugf("Call next LOB read %v/%d", request.cursoring.adabasRequest.Option.PartialRead, request.BlockSize)
 		}
 		err = request.adabas.loopCall(request.cursoring.adabasRequest, result)
 	}
-	if adatypes.Central.IsDebugLevel() {
+	if debug {
 		adatypes.Central.Log.Debugf("Error reading %v", err)
 	}
 

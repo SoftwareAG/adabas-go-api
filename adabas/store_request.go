@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -465,37 +465,40 @@ func (request *StoreRequest) storeValue(record reflect.Value, store, etData bool
 	if serr != nil {
 		return serr
 	}
-	if adatypes.Central.IsDebugLevel() {
+	debug := adatypes.Central.IsDebugLevel()
+	if debug {
 		for k, v := range request.dynamic.FieldNames {
 			adatypes.Central.Log.Debugf("FN: %s=%v", k, v)
 		}
 		adatypes.Central.Log.Debugf("Slice index: %v", record)
 		request.definition.DumpTypes(true, true, "Active store entries")
 	}
-	adatypes.Central.Log.Debugf("Put request dynamic field %v", request.dynamic.FieldNames)
+	if debug {
+		adatypes.Central.Log.Debugf("Put request dynamic field %v", request.dynamic.FieldNames)
+	}
 	for an, fn := range request.dynamic.FieldNames {
 		if !strings.HasPrefix(an, "#") && an != "" {
 			v, ok := searchDynamicValue(record, fn)
 			if ok { //&& v.IsValid() {
-				if adatypes.Central.IsDebugLevel() {
+				if debug {
 					adatypes.Central.Log.Debugf("Set dynamic value %v = %v", an, v.Interface())
 				}
 				err := storeRecord.SetValue(an, v.Interface())
 				if err != nil {
 					return adatypes.NewGenericError(52, err.Error())
 				}
-				if adatypes.Central.IsDebugLevel() {
+				if debug {
 					adatypes.Central.Log.Debugf("Set value %s: %s = %v", an, fn, v)
 				}
 			}
 		}
 	}
-	if adatypes.Central.IsDebugLevel() {
+	if debug {
 		adatypes.Central.Log.Debugf("store/update=%v record ADA: %s", store, storeRecord.String())
 	}
 	storeRecord.Isn = request.dynamic.ExtractIsnField(record)
 	storeRecord.LobEndTransaction = etData
-	if adatypes.Central.IsDebugLevel() {
+	if debug {
 		adatypes.Central.Log.Debugf("store/update to ISN=%d", storeRecord.Isn)
 	}
 	if store {
@@ -529,13 +532,16 @@ func (request *StoreRequest) storeValue(record reflect.Value, store, etData bool
 func (request *StoreRequest) evaluateKeyIsn(record reflect.Value, storeRecord *Record) error {
 	var sn string
 	var keyValue string
+	debug := adatypes.Central.IsDebugLevel()
 	if k, ok := request.dynamic.FieldNames["#key"]; ok {
 		adatypes.Central.Log.Debugf("Found Keyfield in hash: %v", k)
 		kf := request.dynamic.FieldNames[k[0]]
 		keyField := record.FieldByName(kf[0])
-		adatypes.Central.Log.Debugf("Check keyfield %v %v %s", k, keyField.IsValid(), record.String())
+		if debug {
+			adatypes.Central.Log.Debugf("Check keyfield %v %v %s", k, keyField.IsValid(), record.String())
+		}
 		if keyField.IsValid() {
-			if adatypes.Central.IsDebugLevel() {
+			if debug {
 				adatypes.Central.Log.Debugf("Keyfields: %v %v %s", k, keyField, keyField.String())
 				for k, v := range request.dynamic.FieldNames {
 					adatypes.Central.Log.Debugf("%s=%s", k, v)
@@ -545,7 +551,9 @@ func (request *StoreRequest) evaluateKeyIsn(record reflect.Value, storeRecord *R
 			keyValue = keyField.String()
 		}
 	} else {
-		adatypes.Central.Log.Debugf("Don't found Keyfield")
+		if debug {
+			adatypes.Central.Log.Debugf("Don't found Keyfield")
+		}
 		t := record.Type()
 		var st reflect.Type
 		for i := 0; i < t.NumField(); i++ {
@@ -576,15 +584,21 @@ func (request *StoreRequest) evaluateKeyIsn(record reflect.Value, storeRecord *R
 		return iErr
 	}
 	if keyValue == "" {
-		adatypes.Central.Log.Debugf("Query temporary read ok %s", sn)
+		if debug {
+			adatypes.Central.Log.Debugf("Query temporary read ok %s", sn)
+		}
 		if adaValue, ok := storeRecord.searchValue(sn); ok {
-			adatypes.Central.Log.Debugf("Search key %s='%s'", sn, adaValue.String())
+			if debug {
+				adatypes.Central.Log.Debugf("Search key %s='%s'", sn, adaValue.String())
+			}
 			keyValue = adaValue.String()
 		} else {
 			return adatypes.NewGenericError(96, sn)
 		}
 	}
-	adatypes.Central.Log.Debugf("Read logical ISN with %s=%s", sn, keyValue)
+	if debug {
+		adatypes.Central.Log.Debugf("Read logical ISN with %s=%s", sn, keyValue)
+	}
 	resultRead, rErr := iRequest.ReadLogicalWith(sn + "=" + keyValue)
 	if rErr != nil {
 		return rErr
@@ -593,7 +607,9 @@ func (request *StoreRequest) evaluateKeyIsn(record reflect.Value, storeRecord *R
 		return adatypes.NewGenericError(98, sn)
 	}
 	storeRecord.Isn = resultRead.Values[0].Isn
-	adatypes.Central.Log.Debugf("Update ISN", storeRecord.Isn)
+	if debug {
+		adatypes.Central.Log.Debugf("Update ISN", storeRecord.Isn)
+	}
 	return nil
 }
 
@@ -617,10 +633,15 @@ func (request *StoreRequest) UpdateData(data ...interface{}) error {
 
 // StoreData store interface data, either struct or array
 func (request *StoreRequest) modifyData(data interface{}, store, etData bool) error {
-	adatypes.Central.Log.Debugf("Store type = %T %v", data, reflect.TypeOf(data).Kind())
+	debug := adatypes.Central.IsDebugLevel()
+	if debug {
+		adatypes.Central.Log.Debugf("Store type = %T %v", data, reflect.TypeOf(data).Kind())
+	}
 	switch reflect.TypeOf(data).Kind() {
 	case reflect.Slice:
-		adatypes.Central.Log.Debugf("Work on slice")
+		if debug {
+			adatypes.Central.Log.Debugf("Work on slice")
+		}
 		s := reflect.ValueOf(data)
 		if s.Len() == 0 {
 			return adatypes.NewGenericError(54)
@@ -630,18 +651,24 @@ func (request *StoreRequest) modifyData(data interface{}, store, etData bool) er
 		}
 
 		for si := 0; si < s.Len(); si++ {
-			adatypes.Central.Log.Debugf("Store slice entry %d", si)
+			if debug {
+				adatypes.Central.Log.Debugf("Store slice entry %d", si)
+			}
 			err := request.storeValue(s.Index(si), store, etData)
 			if err != nil {
 				return err
 			}
 		}
-		adatypes.Central.Log.Debugf("Store all slice entries")
+		if debug {
+			adatypes.Central.Log.Debugf("Store all slice entries")
+		}
 	case reflect.Ptr:
 		if request.dynamic == nil {
 			request.createDynamic(data)
 		}
-		adatypes.Central.Log.Debugf("Type data %T", data)
+		if debug {
+			adatypes.Central.Log.Debugf("Type data %T", data)
+		}
 		ti := reflect.ValueOf(data).Elem()
 		err := request.storeValue(ti, store, etData)
 		if err != nil {
@@ -651,7 +678,9 @@ func (request *StoreRequest) modifyData(data interface{}, store, etData bool) er
 		if request.dynamic == nil {
 			request.createDynamic(data)
 		}
-		adatypes.Central.Log.Debugf("Type data %T", data)
+		if debug {
+			adatypes.Central.Log.Debugf("Type data %T", data)
+		}
 		ti := reflect.ValueOf(data)
 		err := request.storeValue(ti, store, etData)
 		if err != nil {

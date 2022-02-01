@@ -84,7 +84,9 @@ func (request *commonRequest) BackoutTransaction() error {
 // queue entry.
 func (request *commonRequest) commonOpen() (opened bool, err error) {
 	opened = false
-	adatypes.Central.Log.Debugf("Open read request")
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Open read request")
+	}
 	err = request.adabas.Open()
 	if err != nil {
 		return
@@ -93,7 +95,9 @@ func (request *commonRequest) commonOpen() (opened bool, err error) {
 		return
 	}
 	if request.MapName != "" && request.MapName != "<inmap>" {
-		adatypes.Central.Log.Debugf("Open Adabas with map %s for %d", request.MapName, request.repository.Fnr)
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Open Adabas with map %s for %d", request.MapName, request.repository.Fnr)
+		}
 		if request.adabasMap == nil {
 			request.adabasMap, err = request.repository.readAdabasMapWithRequest(request, request.MapName)
 			if err != nil {
@@ -110,9 +114,13 @@ func (request *commonRequest) commonOpen() (opened bool, err error) {
 			if err != nil {
 				return
 			}
-			adatypes.Central.Log.Debugf("Load definition on fnr=%d/%d for map %s", request.repository.Fnr, request.adabasMap.Repository.Fnr, request.adabasMap.Name)
+			if adatypes.Central.IsDebugLevel() {
+				adatypes.Central.Log.Debugf("Load definition on fnr=%d/%d for map %s", request.repository.Fnr, request.adabasMap.Repository.Fnr, request.adabasMap.Name)
+			}
 		}
-		adatypes.Central.Log.Debugf("Reset database to new database: %d current: %d", dbid, request.adabas.Acbx.Acbxdbid)
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Reset database to new database: %d current: %d", dbid, request.adabas.Acbx.Acbxdbid)
+		}
 		if dbid != 0 {
 			request.adabas.SetDbid(dbid)
 		}
@@ -135,7 +143,9 @@ func (request *commonRequest) commonOpen() (opened bool, err error) {
 			}
 		}
 	} else {
-		adatypes.Central.Log.Debugf("Open database without map")
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Open database without map")
+		}
 		err = request.loadDefinition()
 		if err != nil {
 			return

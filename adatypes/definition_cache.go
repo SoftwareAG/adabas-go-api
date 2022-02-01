@@ -124,10 +124,14 @@ func CreateDefinitionByCache(reference string) *Definition {
 	}
 	e, ok := definitionCache[reference]
 	if !ok {
-		Central.Log.Debugf("Mis cache entry: %s", reference)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("No cache entry for %s", reference)
+		}
 		return nil
 	}
-	Central.Log.Debugf("Get cache entry: %s", reference)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Found cache entry: %s", reference)
+	}
 	definition := NewDefinition()
 	x := &StructureType{fieldMap: make(map[string]IAdaType)}
 	definition.activeFieldTree = x
@@ -160,7 +164,9 @@ func (def *Definition) PutCache(reference string) {
 		def.DumpTypes(true, false, "put cache")
 	}
 	definitionCache[reference] = &cacheEntry{timestamp: time.Now(), fileFieldTree: def.fileFieldTree}
-	Central.Log.Debugf("Done put cache entry: %s", reference)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Done put cache entry: %s", reference)
+	}
 }
 
 func cacheClearer() {
@@ -174,7 +180,9 @@ func cacheClearer() {
 		for r, e := range definitionCache {
 			if e.timestamp.Before(last) {
 				delete(definitionCache, r)
-				Central.Log.Debugf("Remove cache entry: %s", r)
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("Remove cache entry: %s", r)
+				}
 			}
 		}
 		last = t

@@ -1,5 +1,5 @@
 /*
-* Copyright © 2019-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2019-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -34,7 +34,9 @@ type DynamicInterface struct {
 // generateFieldNames examine all 'adabas'-tags in the given structure and build up
 // field names map pointing to corresponding path with names of structures
 func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string) {
-	Central.Log.Debugf("Generate field names for %s %s", ri.Name(), ri.Kind())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Generate field names for %s %s", ri.Name(), ri.Kind())
+	}
 	if ri.Kind() != reflect.Struct {
 		return
 	}
@@ -43,7 +45,9 @@ func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string)
 		fieldName := ct.Name
 		adabasFieldName := fieldName
 		tag := ct.Tag.Get("adabas")
-		Central.Log.Debugf("fieldName=%s/%s -> tag=%s", adabasFieldName, fieldName, tag)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("fieldName=%s/%s -> tag=%s", adabasFieldName, fieldName, tag)
+		}
 		if tag != "" {
 			s := strings.Split(tag, ":")
 			if len(s) > 2 {
@@ -89,10 +93,14 @@ func generateFieldNames(ri reflect.Type, f map[string][]string, fields []string)
 		// Handle special case for pointer and slices
 		switch ct.Type.Kind() {
 		case reflect.Ptr:
-			Central.Log.Debugf("Pointer found %v %v", ct.Type.Name(), ct.Type.Elem().Name())
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Pointer found %v %v", ct.Type.Name(), ct.Type.Elem().Name())
+			}
 			generateFieldNames(ct.Type.Elem(), f, subFields)
 		case reflect.Slice:
-			Central.Log.Debugf("Slice found %v %v", ct.Type.Name(), ct.Type.Elem().Name())
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Slice found %v %v", ct.Type.Name(), ct.Type.Elem().Name())
+			}
 			sliceT := ct.Type.Elem()
 			if sliceT.Kind() == reflect.Ptr {
 				sliceT = sliceT.Elem()
@@ -127,14 +135,18 @@ func (dynamic *DynamicInterface) CreateQueryFields() string {
 		}
 		buffer.WriteString(fieldName)
 	}
-	Central.Log.Debugf("Create query fields: %s", buffer.String())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Create query fields: %s", buffer.String())
+	}
 
 	return buffer.String()
 }
 
 // ExamineIsnField set the interface Isn-tagged field with value for ISN
 func (dynamic *DynamicInterface) ExamineIsnField(value reflect.Value, isn Isn) error {
-	Central.Log.Debugf("Examine ISN field: %d", isn)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Examine ISN field: %d", isn)
+	}
 	v := value
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
@@ -144,11 +156,14 @@ func (dynamic *DynamicInterface) ExamineIsnField(value reflect.Value, isn Isn) e
 		if !isnField.IsValid() || isnField.Kind() != reflect.Uint64 {
 			return NewGenericError(113)
 		}
-		Central.Log.Debugf("Found isn %d", isn)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Found isn %d", isn)
+		}
 		isnField.SetUint(uint64(isn))
 	} else {
-		Central.Log.Debugf("No ISN field found")
-
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("No ISN field found")
+		}
 	}
 	return nil
 }
@@ -160,7 +175,9 @@ func (dynamic *DynamicInterface) ExtractIsnField(value reflect.Value) Isn {
 		v = v.Elem()
 	}
 	if k, ok := dynamic.FieldNames["#isn"]; ok {
-		Central.Log.Debugf("ISNfield: %v", k)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("ISNfield: %v", k)
+		}
 		keyField := v.FieldByName(k[0])
 		return Isn(keyField.Uint())
 	}
@@ -173,19 +190,27 @@ func (dynamic *DynamicInterface) PutIsnField(value reflect.Value, isn Isn) {
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
-	Central.Log.Debugf("Check FieldNames %v", dynamic.FieldNames)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Check FieldNames %v", dynamic.FieldNames)
+	}
 	if k, ok := dynamic.FieldNames["#isn"]; ok {
-		Central.Log.Debugf("Set ISN field: %s", k)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Set ISN field: %s", k)
+		}
 		for _, kisn := range k {
 			iv := v.FieldByName(kisn)
 			if iv.Kind() == reflect.Ptr {
 				iv = iv.Elem()
 			}
 			if iv.CanAddr() {
-				Central.Log.Debugf("Set ISN for %s to %d", kisn, isn)
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("Set ISN for %s to %d", kisn, isn)
+				}
 				iv.SetUint(uint64(isn))
 			} else {
-				Central.Log.Debugf("Cannot address ISN: %s", kisn)
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("Cannot address ISN: %s", kisn)
+				}
 			}
 		}
 	}

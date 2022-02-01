@@ -1,5 +1,5 @@
 /*
-* Copyright © 2019-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2019-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -46,18 +46,26 @@ type fieldMap struct {
 // evaluateTopLevelStructure evaluate the structure node which is responsible
 // for the given level.
 func (fieldMap *fieldMap) evaluateTopLevelStructure(level uint8) {
-	Central.Log.Debugf("%d check level %d", fieldMap.lastStructure.Level(), level)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("%d check level %d", fieldMap.lastStructure.Level(), level)
+	}
 	for fieldMap.lastStructure.Level() >= level {
 		popElement, _ := fieldMap.stackStructure.Pop()
 		if popElement == nil {
-			Central.Log.Debugf("No element in stack")
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("No element in stack")
+			}
 			fieldMap.lastStructure = fieldMap.parentStructure
-			Central.Log.Debugf("Set main structure parent to %v", fieldMap.lastStructure)
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Set main structure parent to %v", fieldMap.lastStructure)
+			}
 			break
 		}
 		fieldMap.lastStructure = popElement.(*StructureType)
-		Central.Log.Debugf("Set new structure parent to %v", fieldMap.lastStructure)
-		Central.Log.Debugf("%d check level %d", fieldMap.lastStructure.Level(), level)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Set new structure parent to %v", fieldMap.lastStructure)
+			Central.Log.Debugf("%d check level %d", fieldMap.lastStructure.Level(), level)
+		}
 	}
 
 }
@@ -75,8 +83,10 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 			if adaType.HasFlagSet(FlagOptionMUGhost) {
 				newStructure.peRange = *fq.fieldRange[0]
 				newStructure.muRange = *fq.fieldRange[1]
-				Central.Log.Debugf("-------<<<< PE/MU Range %s=[%s,%s]", adaType.Name(),
-					fq.fieldRange[0].FormatBuffer(), fq.fieldRange[1].FormatBuffer())
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("-------<<<< PE/MU Range %s=[%s,%s]", adaType.Name(),
+						fq.fieldRange[0].FormatBuffer(), fq.fieldRange[1].FormatBuffer())
+				}
 			} else {
 				if adaType.HasFlagSet(FlagOptionPE) {
 					newStructure.peRange = *fq.fieldRange[0]
@@ -87,15 +97,19 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 					st := newStructure.SubTypes[0].(*AdaType)
 					st.muRange = *fq.fieldRange[0]
 				}
-				Central.Log.Debugf("-------<<<< PE Range %s=%s -> %v", adaType.Name(), fq.fieldRange[0].FormatBuffer(),
-					adaType.HasFlagSet(FlagOptionPE))
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("-------<<<< PE Range %s=%s -> %v", adaType.Name(), fq.fieldRange[0].FormatBuffer(),
+						adaType.HasFlagSet(FlagOptionPE))
+				}
 				if len(fq.fieldRange) > 1 {
 					newStructure.peRange = *fq.fieldRange[0]
 					st := newStructure.SubTypes[0].(*AdaType)
 					st.peRange = *fq.fieldRange[0]
 					newStructure.muRange = *fq.fieldRange[1]
 					st.muRange = *fq.fieldRange[1]
-					Central.Log.Debugf("-------<<<< MU Range %s=%s", adaType.Name(), fq.fieldRange[1].FormatBuffer())
+					if Central.IsDebugLevel() {
+						Central.Log.Debugf("-------<<<< MU Range %s=%s", adaType.Name(), fq.fieldRange[1].FormatBuffer())
+					}
 				}
 			}
 		case FieldTypePeriodGroup:
@@ -104,26 +118,36 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 		default:
 		}
 	} else {
-		Central.Log.Debugf("-------<<<< Last Range %s=[%s->%s] last=%s pl=%v -> MU=%s %s", adaType.Name(),
-			fieldMap.lastStructure.peRange.FormatBuffer(),
-			newStructure.peRange.FormatBuffer(), fieldMap.lastStructure.Name(), parentLast,
-			newStructure.muRange.FormatBuffer(), fieldMap.lastStructure.muRange.FormatBuffer())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("-------<<<< Last Range %s=[%s->%s] last=%s pl=%v -> MU=%s %s", adaType.Name(),
+				fieldMap.lastStructure.peRange.FormatBuffer(),
+				newStructure.peRange.FormatBuffer(), fieldMap.lastStructure.Name(), parentLast,
+				newStructure.muRange.FormatBuffer(), fieldMap.lastStructure.muRange.FormatBuffer())
+		}
 		if parentLast {
 			newStructure.peRange = fieldMap.lastStructure.peRange
 			//newStructure.muRange = fieldMap.lastStructure.muRange
 		}
-		Central.Log.Debugf("-------<<<< Org. Range %s=%s %s", adaType.Name(), newStructure.peRange.FormatBuffer(),
-			newStructure.muRange.FormatBuffer())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("-------<<<< Org. Range %s=%s %s", adaType.Name(), newStructure.peRange.FormatBuffer(),
+				newStructure.muRange.FormatBuffer())
+		}
 	}
-	Central.Log.Debugf("%s current structure parent is %s (%v)", adaType.Name(),
-		fieldMap.lastStructure.Name(), fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("%s current structure parent is %s (%v)", adaType.Name(),
+			fieldMap.lastStructure.Name(), fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved))
+	}
 	newStructure.SubTypes = []IAdaType{}
 	fieldMap.evaluateTopLevelStructure(newStructure.Level())
 	fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newStructure)
-	Central.Log.Debugf("%s -> %s part flag %v", adaType.Name(), fieldMap.lastStructure.Name(), fieldMap.lastStructure.HasFlagSet(FlagOptionPart))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("%s -> %s part flag %v", adaType.Name(), fieldMap.lastStructure.Name(), fieldMap.lastStructure.HasFlagSet(FlagOptionPart))
+	}
 	if fieldMap.lastStructure.HasFlagSet(FlagOptionPart) {
 		newStructure.AddFlag(FlagOptionPart)
-		Central.Log.Debugf("Set %s part flag %v", newStructure.Name(), newStructure.HasFlagSet(FlagOptionPart))
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Set %s part flag %v", newStructure.Name(), newStructure.HasFlagSet(FlagOptionPart))
+		}
 	}
 	newStructure.SetParent(fieldMap.lastStructure)
 	if fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved) {
@@ -137,26 +161,31 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 	}
 	switch {
 	case newStructure.peRange.IsSingleIndex() && newStructure.HasFlagSet(FlagOptionPE):
-		Central.Log.Debugf("%s/%s: set single index due to PE range", newStructure.Name(), newStructure.ShortName())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("%s/%s: set single index due to PE range", newStructure.Name(), newStructure.ShortName())
+		}
 		newStructure.AddFlag(FlagOptionSingleIndex)
 	case newStructure.muRange.IsSingleIndex() && newStructure.Type() == FieldTypeMultiplefield:
-		Central.Log.Debugf("%s/%s: set single index due to MU range and Type MU", newStructure.Name(), newStructure.ShortName())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("%s/%s: set single index due to MU range and Type MU", newStructure.Name(), newStructure.ShortName())
+		}
 		newStructure.AddFlag(FlagOptionSingleIndex)
 	default:
 	}
-	//	if newStructure.peRange.IsSingleIndex() || newStructure.muRange.IsSingleIndex() {
-	Central.Log.Debugf("%s: set flag single index pe=%v(%s) mu=%v(%s)", adaType.Name(),
-		newStructure.peRange.IsSingleIndex(), newStructure.peRange.FormatBuffer(),
-		newStructure.muRange.IsSingleIndex(), newStructure.muRange.FormatBuffer())
-	//		newStructure.AddFlag(FlagOptionSingleIndex)
-	//	}
-	Central.Log.Debugf("Add structure for active tree %d >%s< remove=%v parent %d >%s<", newStructure.Level(),
-		adaType.Name(), newStructure.HasFlagSet(FlagOptionToBeRemoved), fieldMap.lastStructure.Level(), fieldMap.lastStructure.Name())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("%s: set flag single index pe=%v(%s) mu=%v(%s)", adaType.Name(),
+			newStructure.peRange.IsSingleIndex(), newStructure.peRange.FormatBuffer(),
+			newStructure.muRange.IsSingleIndex(), newStructure.muRange.FormatBuffer())
+		Central.Log.Debugf("Add structure for active tree %d >%s< remove=%v parent %d >%s<", newStructure.Level(),
+			adaType.Name(), newStructure.HasFlagSet(FlagOptionToBeRemoved), fieldMap.lastStructure.Level(), fieldMap.lastStructure.Name())
+	}
 	fieldMap.lastStructure = newStructure
 	fieldMap.stackStructure.Push(fieldMap.lastStructure)
 	fieldMap.strCount[adaType.Name()] = newStructure
-	Central.Log.Debugf("Create structure %s value=%p to %p parent=%p remove=%v", newStructure.Name(), newStructure,
-		fieldMap.lastStructure, newStructure.parentType, newStructure.HasFlagSet(FlagOptionToBeRemoved))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Create structure %s value=%p to %p parent=%p remove=%v", newStructure.Name(), newStructure,
+			fieldMap.lastStructure, newStructure.parentType, newStructure.HasFlagSet(FlagOptionToBeRemoved))
+	}
 
 }
 
@@ -165,7 +194,8 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 // In addition the range is set and additional single range flags are set
 func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
 	fieldMap := x.(*fieldMap)
-	if Central.IsDebugLevel() {
+	debug := Central.IsDebugLevel()
+	if debug {
 		Central.Log.Debugf("Check remove field on type %s with parent %s(parent remove=%v)", adaType.Name(), parentType.Name(),
 			parentType.HasFlagSet(FlagOptionToBeRemoved))
 	}
@@ -189,14 +219,14 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 		}
 	case adaType.IsStructure():
 		if adaType.Type() == FieldTypeMultiplefield && !ok && fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved) {
-			if Central.IsDebugLevel() {
+			if debug {
 				Central.Log.Debugf("Skip removing MU field %s", adaType.Name())
 			}
 			return nil
 		}
 		removeStructure(adaType, fieldMap, fq, ok, parentType.Name() != "" && fieldMap.lastStructure.Name() == parentType.Name())
 	default:
-		if Central.IsDebugLevel() {
+		if debug {
 			Central.Log.Debugf("Field %s in map=%v Level=%d < %d", adaType.Name(), ok, fieldMap.lastStructure.Level(),
 				adaType.Level())
 		}
@@ -235,11 +265,11 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 		if fieldMap.lastStructure.Name() == "" {
 			remove = true
 		}
-		if Central.IsDebugLevel() {
+		if debug {
 			Central.Log.Debugf("Parent node %s has %v", fieldMap.lastStructure.Name(), remove)
 		}
 		if !ok && remove {
-			if Central.IsDebugLevel() {
+			if debug {
 				Central.Log.Debugf("Skip copy to active field, because field %s is not part of map map=%v remove=%v",
 					adaType.Name(), ok, remove)
 			}
@@ -255,7 +285,7 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 				p.(*StructureType).addPart()
 			}
 		} else {
-			if Central.IsDebugLevel() {
+			if debug {
 				Central.Log.Debugf("Current parent %d %s -> %d %s map=%v remove=%v", fieldMap.lastStructure.Level(), fieldMap.lastStructure.Name(),
 					adaType.Level(), adaType.Name(), ok, remove)
 			}
@@ -299,7 +329,7 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 					Central.Log.Debugf("FB range for field=%s peRange=%s muRange=%s", newType.name, newType.peRange.FormatBuffer(), newType.muRange.FormatBuffer())
 				}
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
-				if Central.IsDebugLevel() {
+				if debug {
 					Central.Log.Debugf("Add type to %s value=%p count=%d", fieldMap.lastStructure.Name(), fieldMap.lastStructure, fieldMap.lastStructure.NrFields())
 					Central.Log.Debugf("Add type entry in structure %s", newType.Name())
 				}
@@ -489,10 +519,14 @@ func removeFromTree(value *StructureType) {
 		Central.Log.Debugf("Field %s already removed", value.Name())
 		return
 	}
-	Central.Log.Debugf("Remove empty nodes from value: %s len=%d", value.Name(), value.NrFields())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Remove empty nodes from value: %s len=%d", value.Name(), value.NrFields())
+	}
 	if value.NrFields() == 0 {
-		Central.Log.Debugf("No sub fields, remove value %s value=%p count=%d", value.Name(), value, value.NrFields())
-		Central.Log.Debugf("Remove value: %s fields=%d", value.Name(), value.NrFields())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("No sub fields, remove value %s value=%p count=%d", value.Name(), value, value.NrFields())
+			Central.Log.Debugf("Remove value: %s fields=%d", value.Name(), value.NrFields())
+		}
 		if value.parentType != nil {
 			parent := value.parentType.(*StructureType)
 			parent.RemoveField(&value.CommonType)
@@ -503,7 +537,9 @@ func removeFromTree(value *StructureType) {
 			}
 		}
 	} else {
-		Central.Log.Debugf("Value %s value=%p count=%d contains >0 entries:", value.Name(), value, value.NrFields())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Value %s value=%p count=%d contains >0 entries:", value.Name(), value, value.NrFields())
+		}
 		for _, t := range value.SubTypes {
 			Central.Log.Debugf("Contains %s", t.Name())
 		}
@@ -513,7 +549,9 @@ func removeFromTree(value *StructureType) {
 // SetValueData dependent to the struct interface field the corresponding
 // reflection struct the value will be set with the struct value.
 func SetValueData(s reflect.Value, v IAdaValue) error {
-	Central.Log.Debugf("%s = %s", v.Type().Name(), s.Type().Name())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("%s = %s", v.Type().Name(), s.Type().Name())
+	}
 	switch s.Interface().(type) {
 	case *int, *int8, *int16, *int32, *int64:
 		vi, err := v.Int64()
@@ -544,7 +582,9 @@ func SetValueData(s reflect.Value, v IAdaValue) error {
 	case *string:
 		s.Elem().SetString(v.String())
 	default:
-		Central.Log.Errorf("Unknown conversion %s/%s", s.Type().String(), v.Type().Name())
+		if Central.IsDebugLevel() {
+			Central.Log.Errorf("Unknown conversion %s/%s", s.Type().String(), v.Type().Name())
+		}
 		return NewGenericError(80, s.Type(), v.Type().Name())
 	}
 	return nil

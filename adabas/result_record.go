@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -97,7 +97,9 @@ func NewRecordIsn(isn adatypes.Isn, isnQuantity uint64, definition *adatypes.Def
 	}
 	record.Isn = isn
 	record.Quantity = isnQuantity
-	adatypes.Central.Log.Debugf("New record with ISN=%d and ISN quantity=%d", isn, isnQuantity)
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("New record with ISN=%d and ISN quantity=%d", isn, isnQuantity)
+	}
 
 	return record, nil
 }
@@ -115,7 +117,9 @@ func (record *Record) createRecordBuffer(helper *adatypes.BufferHelper, option *
 	t := adatypes.TraverserValuesMethods{EnterFunction: createStoreRecordBuffer}
 	stRecTraverser := &storeRecordTraverserStructure{record: record, helper: helper, option: option}
 	_, err = record.Traverse(t, stRecTraverser)
-	adatypes.Central.Log.Debugf("Create record buffer done len=%d", len(helper.Buffer()))
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Create record buffer done len=%d", len(helper.Buffer()))
+	}
 	return
 }
 
@@ -133,11 +137,15 @@ func (record *Record) Traverse(t adatypes.TraverserValuesMethods, x interface{})
 	if record == nil {
 		return adatypes.EndTraverser, adatypes.NewGenericError(33)
 	}
-
+	debug := adatypes.Central.IsDebugLevel()
 	for _, value := range record.Value {
-		adatypes.Central.Log.Debugf("Go through value %s %d", value.Type().Name(), value.Type().Type())
+		if debug {
+			adatypes.Central.Log.Debugf("Go through value %s %d", value.Type().Name(), value.Type().Type())
+		}
 		if t.EnterFunction != nil {
-			adatypes.Central.Log.Debugf("Enter field=%s Type=%d", value.Type().Name(), value.Type().Type())
+			if debug {
+				adatypes.Central.Log.Debugf("Enter field=%s Type=%d", value.Type().Name(), value.Type().Type())
+			}
 			ret, err = t.EnterFunction(value, x)
 			if err != nil {
 				return
@@ -147,21 +155,27 @@ func (record *Record) Traverse(t adatypes.TraverserValuesMethods, x interface{})
 			}
 		}
 		if value.Type().IsStructure() {
-			adatypes.Central.Log.Debugf("Go through structure %s %d", value.Type().Name(), value.Type().Type())
+			if debug {
+				adatypes.Central.Log.Debugf("Go through structure %s %d", value.Type().Name(), value.Type().Type())
+			}
 			ret, err = value.(adatypes.StructureValueTraverser).Traverse(t, x)
 			if err != nil || ret == adatypes.EndTraverser {
 				return
 			}
 		}
 		if t.LeaveFunction != nil {
-			adatypes.Central.Log.Debugf("Leave %s %d", value.Type().Name(), value.Type().Type())
+			if debug {
+				adatypes.Central.Log.Debugf("Leave %s %d", value.Type().Name(), value.Type().Type())
+			}
 			ret, err = t.LeaveFunction(value, x)
 			if err != nil || ret == adatypes.EndTraverser {
 				return
 			}
 		}
 	}
-	adatypes.Central.Log.Debugf("Traverse ended")
+	if debug {
+		adatypes.Central.Log.Debugf("Traverse ended")
+	}
 	return
 }
 
@@ -378,7 +392,10 @@ func (record *Record) ValueQuantity(param ...interface{}) int32 {
 
 	var index []uint32
 	fieldName := param[0].(string)
-	adatypes.Central.Log.Debugf("Field name: %s", fieldName)
+	debug := adatypes.Central.IsDebugLevel()
+	if debug {
+		adatypes.Central.Log.Debugf("Field name: %s", fieldName)
+	}
 
 	if strings.ContainsRune(fieldName, '[') {
 		index = extractIndex(fieldName)
@@ -394,17 +411,23 @@ func (record *Record) ValueQuantity(param ...interface{}) int32 {
 			}
 		}
 	}
-	adatypes.Central.Log.Debugf("Index from parser %#v", index)
+	if debug {
+		adatypes.Central.Log.Debugf("Index from parser %#v", index)
+	}
 	if v, ok := record.HashFields[fieldName]; ok {
 		if v.Type().HasFlagSet(adatypes.FlagOptionPE) {
-			adatypes.Central.Log.Debugf("Quantity of %s PE", v.Type().Name())
+			if debug {
+				adatypes.Central.Log.Debugf("Quantity of %s PE", v.Type().Name())
+			}
 			if len(index) < 1 {
 				p := PeriodGroup(v)
 				pv := p.(*adatypes.StructureValue)
 				return int32(pv.NrElements())
 			}
 			var err error
-			adatypes.Central.Log.Debugf("Search index of PE %s", v.Type().Name())
+			if debug {
+				adatypes.Central.Log.Debugf("Search index of PE %s", v.Type().Name())
+			}
 			v, err = record.SearchValueIndex(fieldName, index)
 			if err != nil {
 				adatypes.Central.Log.Debugf("Error %s/%v: %v", fieldName, index, err)
@@ -417,7 +440,9 @@ func (record *Record) ValueQuantity(param ...interface{}) int32 {
 			}
 		}
 		if v.Type().Type() == adatypes.FieldTypeMultiplefield {
-			adatypes.Central.Log.Debugf("Quantity of %s MU elements", v.Type().Name())
+			if debug {
+				adatypes.Central.Log.Debugf("Quantity of %s MU elements", v.Type().Name())
+			}
 			mv := v.(*adatypes.StructureValue)
 			return int32(mv.NrElements())
 		}
@@ -428,13 +453,20 @@ func (record *Record) ValueQuantity(param ...interface{}) int32 {
 
 // Scan scan for different field entries
 func (record *Record) Scan(dest ...interface{}) (err error) {
-	adatypes.Central.Log.Debugf("Scan Record %#v", record.fields)
+	debug := adatypes.Central.IsDebugLevel()
+	if debug {
+		adatypes.Central.Log.Debugf("Scan Record %#v", record.fields)
+	}
 	if f, ok := record.fields["#isn"]; ok {
-		adatypes.Central.Log.Debugf("Fill Record ISN=%d", record.Isn)
+		if debug {
+			adatypes.Central.Log.Debugf("Fill Record ISN=%d", record.Isn)
+		}
 		*(dest[f.index].(*int)) = int(record.Isn)
 	}
 	if f, ok := record.fields["#isnquantity"]; ok {
-		adatypes.Central.Log.Debugf("Fill Record ISN quantity=%d", record.Quantity)
+		if debug {
+			adatypes.Central.Log.Debugf("Fill Record ISN quantity=%d", record.Quantity)
+		}
 		*(dest[f.index].(*int)) = int(record.Quantity)
 	}
 	// Traverse to current entries

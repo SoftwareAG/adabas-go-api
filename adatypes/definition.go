@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -53,7 +53,9 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 	parameter := x.(*parserBufferTr)
 
 	if adaValue.Type().HasFlagSet(FlagOptionReference) {
-		Central.Log.Debugf("Skip parsing value .... %s", adaValue.Type().Name())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Skip parsing value .... %s", adaValue.Type().Name())
+		}
 		name := adaValue.Type().Name()
 		if name[0] != '@' {
 			adaType := adaValue.Type().(*AdaType)
@@ -70,20 +72,26 @@ func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult
 		return Continue, nil
 	}
 
-	Central.Log.Debugf("Start parsing value .... %s offset=%d/%X type=%s", adaValue.Type().Name(),
-		parameter.helper.offset, parameter.helper.offset, adaValue.Type().Type().name())
-	Central.Log.Debugf("Parse value %s/%s .... second=%v need second=%v pe=%v", adaValue.Type().ShortName(), adaValue.Type().Name(),
-		parameter.option.SecondCall, parameter.option.NeedSecondCall, adaValue.Type().HasFlagSet(FlagOptionPE))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Start parsing value .... %s offset=%d/%X type=%s", adaValue.Type().Name(),
+			parameter.helper.offset, parameter.helper.offset, adaValue.Type().Type().name())
+		Central.Log.Debugf("Parse value %s/%s .... second=%v need second=%v pe=%v", adaValue.Type().ShortName(), adaValue.Type().Name(),
+			parameter.option.SecondCall, parameter.option.NeedSecondCall, adaValue.Type().HasFlagSet(FlagOptionPE))
+	}
 	// On second call, to collect MU fields in an PE group, skip all other parser tasks
 	if !(adaValue.Type().HasFlagSet(FlagOptionPE) && adaValue.Type().Type() == FieldTypeMultiplefield) {
 		if parameter.option.SecondCall > 0 && !adaValue.Type().HasFlagSet(FlagOptionMUGhost) && adaValue.Type().Type() != FieldTypeLBString {
-			Central.Log.Debugf("Second call skip parsing %s", adaValue.Type().Name())
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Second call skip parsing %s", adaValue.Type().Name())
+			}
 			return Continue, nil
 		}
 	}
 	result, err = adaValue.parseBuffer(parameter.helper, parameter.option)
-	Central.Log.Debugf("End Parseing value .... %s pos=%d need second=%v",
-		adaValue.Type().Name(), parameter.helper.offset, parameter.option.NeedSecondCall)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("End Parseing value .... %s pos=%d need second=%v",
+			adaValue.Type().Name(), parameter.helper.offset, parameter.option.NeedSecondCall)
+	}
 	return
 }
 
@@ -98,7 +106,9 @@ func (def *Definition) Register(t IAdaType) {
 // Values may be available if second call is done or other means.
 func (def *Definition) ParseBuffer(helper *BufferHelper, option *BufferOption, prefix string) (res TraverseResult, err error) {
 	if def.Values == nil {
-		Central.Log.Debugf("Parse buffer types...")
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Parse buffer types...")
+		}
 		def.Values, err = parseBufferTypes(helper, option, def.activeFieldTree, 0)
 	} else {
 		if Central.IsDebugLevel() {
@@ -113,7 +123,9 @@ func (def *Definition) ParseBuffer(helper *BufferHelper, option *BufferOption, p
 			Central.Log.Debugf("Error parsing buffer values... %v", err)
 			return
 		}
-		Central.Log.Debugf("End parse buffer values... %p avail.=%v", def, (def.Values != nil))
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("End parse buffer values... %p avail.=%v", def, (def.Values != nil))
+		}
 	}
 
 	return
@@ -381,14 +393,18 @@ func (def *Definition) InitReferences() {
 func adaptFlags(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
 	if parentType != nil {
 		if parentType.HasFlagSet(FlagOptionPE) {
-			Central.Log.Debugf("%s: Set PE flag", adaType.Name())
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("%s: Set PE flag", adaType.Name())
+			}
 			adaType.AddFlag(FlagOptionPE)
 		}
 		if adaType.Type() == FieldTypeMultiplefield {
 			currentType := parentType
 			for currentType != nil {
-				Central.Log.Debugf("%s: Set MU flag", currentType.Name())
-				Central.Log.Debugf("Adapt parent field flags for %s, need atomic FB", currentType.ShortName())
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("%s: Set MU flag", currentType.Name())
+					Central.Log.Debugf("Adapt parent field flags for %s, need atomic FB", currentType.ShortName())
+				}
 				currentType.AddFlag(FlagOptionAtomicFB)
 				// TODO Adapt current type to adapt parent information
 				currentType = currentType.GetParent()
@@ -396,7 +412,9 @@ func adaptFlags(adaType IAdaType, parentType IAdaType, level int, x interface{})
 		}
 		if adaType.HasFlagSet(FlagOptionAtomicFB) && adaType.IsStructure() {
 			structureType := adaType.(*StructureType)
-			Central.Log.Debugf("Adapt sub field flags for %s, need atomic FB", adaType.ShortName())
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Adapt sub field flags for %s, need atomic FB", adaType.ShortName())
+			}
 			for _, t := range structureType.SubTypes {
 				t.AddFlag(FlagOptionAtomicFB)
 			}
@@ -449,8 +467,10 @@ func (def *Definition) CheckField(name string) bool {
 
 // AdaptName adapt new name to an definition entry
 func (def *Definition) AdaptName(adaType IAdaType, newName string) error {
-	Central.Log.Debugf("Adapt new name %s to %s/%s ", newName,
-		adaType.Name(), adaType.ShortName())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Adapt new name %s to %s/%s ", newName,
+			adaType.Name(), adaType.ShortName())
+	}
 	delete(def.fileFields, adaType.Name())
 	def.fileFields[newName] = adaType
 	if def.activeFields == nil {
@@ -473,9 +493,13 @@ type stackParameter struct {
 }
 
 func addValueToStructure(parameter *stackParameter, value IAdaValue) error {
-	Central.Log.Debugf("Add value for %s = %v -> %s", value.Type().Name(), value.String(), value.Type().Type().FormatCharacter())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Add value for %s = %v -> %s", value.Type().Name(), value.String(), value.Type().Type().FormatCharacter())
+	}
 	if parameter.structureValue == nil {
-		Central.Log.Debugf("Add to main")
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Add to main")
+		}
 		parameter.definition.Values = append(parameter.definition.Values, value)
 	} else {
 		if parameter.structureValue.Type().Type() == FieldTypePeriodGroup {
@@ -489,29 +513,40 @@ func addValueToStructure(parameter *stackParameter, value IAdaValue) error {
 // create value function used in traverser to create a tree per type element
 func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
 	parameter := x.(*stackParameter)
+	debug := Central.IsDebugLevel()
 	if parameter.structureValue != nil {
-		Central.Log.Debugf("parent is %s %d for %d", parameter.structureValue.Type().Name(), parameter.structureValue.Type().Level(), adaType.Level())
+		if debug {
+			Central.Log.Debugf("parent is %s %d for %d", parameter.structureValue.Type().Name(), parameter.structureValue.Type().Level(), adaType.Level())
+		}
 		for parameter.structureValue != nil && parameter.structureValue.Type().Level() != (adaType.Level()-1) {
 			element, _ := parameter.stack.Pop()
 			parameter.structureValue = element.(*StructureValue)
-			if parameter.structureValue == nil {
-				Central.Log.Debugf("Top received")
-			} else {
-				Central.Log.Debugf("Check parent is %s %d", parameter.structureValue.Type().Name(), parameter.structureValue.Type().Level())
+			if debug {
+				if parameter.structureValue == nil {
+					Central.Log.Debugf("Top received")
+				} else {
+					Central.Log.Debugf("Check parent is %s %d", parameter.structureValue.Type().Name(), parameter.structureValue.Type().Level())
+				}
 			}
 		}
 	}
 	if parameter.forStoring && adaType.IsSpecialDescriptor() {
-		Central.Log.Debugf("For storing or is descriptor, skip creating value")
+		if debug {
+			Central.Log.Debugf("For storing or is descriptor, skip creating value")
+		}
 		return nil
 	}
-	Central.Log.Debugf("Create value for level=%d %s -> %d", level, adaType.Name(), adaType.Level())
+	if debug {
+		Central.Log.Debugf("Create value for level=%d %s -> %d", level, adaType.Name(), adaType.Level())
+	}
 	if adaType.IsStructure() && adaType.Type() != FieldTypeRedefinition {
 		if adaType.Type() != FieldTypePeriodGroup && adaType.HasFlagSet(FlagOptionPE) {
 			return nil
 		}
 		parameter.stack.Push(parameter.structureValue)
-		Central.Log.Debugf("Create structure value for %s", adaType.Name())
+		if debug {
+			Central.Log.Debugf("Create structure value for %s", adaType.Name())
+		}
 		value, subErr := adaType.Value()
 		if subErr != nil {
 			Central.Log.Debugf("Error %v", subErr)
@@ -532,7 +567,9 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 			return nil
 		}
 		if parameter.structureValue == nil {
-			Central.Log.Debugf("Add node value %s to main", adaType.Name())
+			if debug {
+				Central.Log.Debugf("Add node value %s to main", adaType.Name())
+			}
 			value, subErr := adaType.Value()
 			if subErr != nil {
 				Central.Log.Debugf("Error %v", subErr)
@@ -546,7 +583,9 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 				_, ok = parameter.structureValue.Elements[0].valueMap[adaType.Name()]
 			}
 			if !ok {
-				Central.Log.Debugf("Add node value %s to structure", adaType.Name())
+				if debug {
+					Central.Log.Debugf("Add node value %s to structure", adaType.Name())
+				}
 				value, subErr := adaType.Value()
 				if subErr != nil {
 					Central.Log.Debugf("Error %v", subErr)
@@ -557,23 +596,31 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 					return subErr
 				}
 			} else {
-				Central.Log.Debugf("Skip because already added")
+				if debug {
+					Central.Log.Debugf("Skip because already added")
+				}
 			}
 		}
 	}
-	Central.Log.Debugf("Finished creating value level=%d name=%s", adaType.Level(), adaType.Name())
+	if debug {
+		Central.Log.Debugf("Finished creating value level=%d name=%s", adaType.Level(), adaType.Name())
+	}
 	return nil
 }
 
 // CreateValues Create new value tree
 func (def *Definition) CreateValues(forStoring bool) (err error) {
 	def.Values = nil
-	Central.Log.Debugf("Create values from types for storing=%v -> %#v", forStoring, def.activeFieldTree)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Create values from types for storing=%v -> %#v", forStoring, def.activeFieldTree)
+	}
 	parameter := &stackParameter{definition: def, forStoring: forStoring, stack: NewStack()}
 	t := TraverserMethods{EnterFunction: traverserCreateValue}
 	err = def.TraverseTypes(t, true, parameter)
-	Central.Log.Debugf("Done creating values ... %v", err)
-	Central.Log.Debugf("Created %d values", len(def.Values))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Done creating values ... %v", err)
+		Central.Log.Debugf("Created %d values", len(def.Values))
+	}
 	return
 }
 
@@ -587,7 +634,9 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 	if len(index) == 2 && typ.Type() != FieldTypeMultiplefield && index[1] > 0 {
 		return NewGenericError(62)
 	}
-	Central.Log.Debugf("Set value %s with index=%#v value=%v", name, index, x)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Set value %s with index=%#v value=%v", name, index, x)
+	}
 	var val IAdaValue
 	if !typ.HasFlagSet(FlagOptionPE) {
 		Central.Log.Debugf("Search name ....%s", name)
@@ -605,8 +654,10 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 			return NewGenericError(127, name)
 		}
 	}
-	Central.Log.Debugf("Found value to add to %s[%d,%d] type=%v %T %T", val.Type().Name(),
-		val.PeriodIndex(), val.MultipleIndex(), val.Type().Type().name(), val, val.Type())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Found value to add to %s[%d,%d] type=%v %T %T", val.Type().Name(),
+			val.PeriodIndex(), val.MultipleIndex(), val.Type().Type().name(), val, val.Type())
+	}
 	switch val.Type().Type() {
 	case FieldTypeMultiplefield:
 		sv := val.(*StructureValue)
@@ -635,7 +686,9 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 		// subValue.setMultipleIndex(index[0])
 		// sv.Elements[0].Values = append(sv.Elements[0].Values, subValue)
 		// }
-		Central.Log.Debugf("Add Multiple field, elements=%d", len(sv.Elements))
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Add Multiple field, elements=%d", len(sv.Elements))
+		}
 	default:
 		err = val.SetValue(x)
 	}
@@ -657,6 +710,8 @@ func (def *Definition) Descriptors(descriptors string) (desc []string, err error
 		}
 		desc = append(desc, adaType.ShortName())
 	}
-	Central.Log.Debugf("Descriptors: %v", desc)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Descriptors: %v", desc)
+	}
 	return
 }

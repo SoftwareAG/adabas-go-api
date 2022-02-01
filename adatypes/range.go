@@ -53,7 +53,9 @@ func NewRangeParser(r string) *AdaRange {
 		return nil
 	}
 
-	Central.Log.Debugf("Got matches %s->%s,%s", r, match[1], match[1])
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Got matches %s->%s,%s", r, match[1], match[1])
+	}
 	from := 0
 	to := 0
 	var err error
@@ -78,18 +80,24 @@ func NewRangeParser(r string) *AdaRange {
 			}
 			to, err = strconv.Atoi(match[2])
 			if err != nil {
-				Central.Log.Debugf("Integer error: %s -> %s", r, match[2])
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("Integer error: %s -> %s", r, match[2])
+				}
 				return nil
 			}
 		}
 	}
 	if to < from {
 		if to != lastEntry {
-			Central.Log.Debugf("Last entry error: %s -> %d < %d", r, to, lastEntry)
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Last entry error: %s -> %d < %d", r, to, lastEntry)
+			}
 			return nil
 		}
 	}
-	Central.Log.Debugf("Create new range %d-%d", from, to)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Create new range %d-%d", from, to)
+	}
 	return &AdaRange{from: from, to: to}
 }
 

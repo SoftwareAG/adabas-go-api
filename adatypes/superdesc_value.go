@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -105,7 +105,9 @@ func (value *superDescValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 	if value.adatype.IsOption(FieldOptionPE) {
 		return 0
 	}
-	Central.Log.Debugf("Write super descriptor FB part of %s", value.adatype.Name())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Write super descriptor FB part of %s", value.adatype.Name())
+	}
 	if buffer.Len() > 0 {
 		buffer.WriteString(",")
 	}

@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -443,7 +443,7 @@ func ExampleAdabas_readFileDefinition9RestrictF0() {
 	var definition *adatypes.Definition
 	definition, err = adabas.ReadFileDefinition(9)
 	if adabas.Acbx.Acbxrsp != 0 {
-		fmt.Println("Resonse code : ", adabas.Acbx.Acbxrsp)
+		fmt.Println("Response code : ", adabas.Acbx.Acbxrsp)
 		return
 	}
 	if err != nil {

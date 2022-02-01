@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -136,7 +136,9 @@ func endian() binary.ByteOrder {
 // commonFormatBuffer common format buffer generation defined by the value type
 func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *BufferOption, storeSize uint32) uint32 {
 	if option.SecondCall > 0 {
-		Central.Log.Debugf("Work on %s -> second=%v\n", adavalue.Type().Name(), adavalue.Type().HasFlagSet(FlagOptionSecondCall))
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Work on %s -> second=%v\n", adavalue.Type().Name(), adavalue.Type().HasFlagSet(FlagOptionSecondCall))
+		}
 		if adavalue.Type().HasFlagSet(FlagOptionSecondCall) {
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")

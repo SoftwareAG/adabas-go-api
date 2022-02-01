@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -69,7 +69,10 @@ func structParser(adabasRequest *adatypes.Request, x interface{}) error {
 
 // ReflectSearch search in map using a interface type given and a search query
 func (connection *Connection) ReflectSearch(mapName string, t reflect.Type, search string) ([]interface{}, error) {
-	adatypes.Central.Log.Debugf("Structured call, %s - %d", t.Name(), t.NumField())
+	debug := adatypes.Central.IsDebugLevel()
+	if debug {
+		adatypes.Central.Log.Debugf("Structured call, %s - %d", t.Name(), t.NumField())
+	}
 	var buffer bytes.Buffer
 	for i := 0; i < t.NumField(); i++ {
 		if i > 0 {
@@ -89,12 +92,16 @@ func (connection *Connection) ReflectSearch(mapName string, t reflect.Type, sear
 			}
 		}
 		if doAdd {
-			adatypes.Central.Log.Debugf("Add to query %s", t.Field(i).Name)
+			if debug {
+				adatypes.Central.Log.Debugf("Add to query %s", t.Field(i).Name)
+			}
 			buffer.WriteString(ft.Name)
 		}
 	}
 
-	adatypes.Central.Log.Debugf("Add connection with: %s", buffer.String())
+	if debug {
+		adatypes.Central.Log.Debugf("Add connection with: %s", buffer.String())
+	}
 
 	request, err := connection.CreateMapReadRequest(mapName)
 	if err != nil {
@@ -105,18 +112,25 @@ func (connection *Connection) ReflectSearch(mapName string, t reflect.Type, sear
 		return nil, qErr
 	}
 	structResult := &structure{structType: t}
-	adatypes.Central.Log.Debugf("Read logical with search=%s", search)
+	if debug {
+		adatypes.Central.Log.Debugf("Read logical with search=%s", search)
+	}
 	if err = request.ReadLogicalWithWithParser(search, structParser, structResult); err != nil {
 		return nil, err
 	}
-	adatypes.Central.Log.Debugf("Return result entries")
+	if debug {
+		adatypes.Central.Log.Debugf("Return result entries")
+	}
 	return structResult.entries, nil
 }
 
 // ReflectStore use reflect map to store data with a dynamic interface and Adabas Map name
 func (connection *Connection) ReflectStore(entries interface{}, mapName string) error {
+	debug := adatypes.Central.IsDebugLevel()
 	t := reflect.TypeOf(entries)
-	adatypes.Central.Log.Debugf("Store type = %s", t.String())
+	if debug {
+		adatypes.Central.Log.Debugf("Store type = %s", t.String())
+	}
 	switch reflect.TypeOf(entries).Kind() {
 	case reflect.Slice:
 		s := reflect.ValueOf(entries)
@@ -138,7 +152,9 @@ func (connection *Connection) ReflectStore(entries interface{}, mapName string) 
 			fieldName := ri.Field(fi).Name
 			adabasFieldName := fieldName
 			tag := ri.Field(fi).Tag.Get("adabas")
-			adatypes.Central.Log.Debugf("Adabas tag: %s", tag)
+			if debug {
+				adatypes.Central.Log.Debugf("Adabas tag: %s", tag)
+			}
 			if strings.HasPrefix(tag, "#") {
 				switch strings.ToLower(tag) {
 				case "#isn":
@@ -150,7 +166,9 @@ func (connection *Connection) ReflectStore(entries interface{}, mapName string) 
 					s := strings.Split(tag, ":")
 					adabasFieldName = s[0]
 				}
-				adatypes.Central.Log.Debugf("Hash field %s=%s", adabasFieldName, fieldName)
+				if debug {
+					adatypes.Central.Log.Debugf("Hash field %s=%s", adabasFieldName, fieldName)
+				}
 				fieldNames[adabasFieldName] = fieldName
 				buffer.WriteString(ri.Field(fi).Name)
 			}
@@ -170,7 +188,9 @@ func (connection *Connection) ReflectStore(entries interface{}, mapName string) 
 			}
 			index := s.Index(si)
 			ti := reflect.TypeOf(entries).Elem()
-			adatypes.Central.Log.Debugf("Index: %v %v %v", index, ti, ri)
+			if debug {
+				adatypes.Central.Log.Debugf("Index: %v %v %v", index, ti, ri)
+			}
 			for an, fn := range fieldNames {
 				if !strings.HasPrefix(an, "#") {
 					v := record.FieldByName(fn)
@@ -178,10 +198,14 @@ func (connection *Connection) ReflectStore(entries interface{}, mapName string) 
 					if err != nil {
 						return adatypes.NewGenericError(52, err.Error())
 					}
-					adatypes.Central.Log.Debugf("%s: %s = %v", an, fn, "=", v)
+					if debug {
+						adatypes.Central.Log.Debugf("%s: %s = %v", an, fn, "=", v)
+					}
 				}
 			}
-			adatypes.Central.Log.Debugf("Reflect store record: %s", storeRecord.String())
+			if debug {
+				adatypes.Central.Log.Debugf("Reflect store record: %s", storeRecord.String())
+			}
 			err = storeRequest.Store(storeRecord)
 			if err != nil {
 				return adatypes.NewGenericError(53, err.Error())

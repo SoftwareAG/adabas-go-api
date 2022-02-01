@@ -1,5 +1,5 @@
 /*
-* Copyright © 2019-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2019-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -39,7 +39,9 @@ type StructureType struct {
 
 // NewStructure Creates a new object of structured list types
 func NewStructure() *StructureType {
-	Central.Log.Debugf("Create structure list")
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Create structure list")
+	}
 	return &StructureType{
 		CommonType: CommonType{
 			flags: uint32(1 << FlagOptionToBeRemoved),
@@ -51,7 +53,9 @@ func NewStructure() *StructureType {
 // NewStructureEmpty Creates a new object of structured list types
 func NewStructureEmpty(fType FieldType, name string, occByteShort int16,
 	level uint8) *StructureType {
-	Central.Log.Debugf("Create empty structure list %s with type %d ", name, fType)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Create empty structure list %s with type %d ", name, fType)
+	}
 	var pr *AdaRange
 	var mr *AdaRange
 	switch fType {
@@ -80,13 +84,17 @@ func NewStructureEmpty(fType FieldType, name string, occByteShort int16,
 		condition: NewFieldCondition(),
 	}
 	st.adaptSubFields()
-	Central.Log.Debugf("Got structure list Range [%s,%s]", st.peRange.FormatBuffer(), st.muRange.FormatBuffer())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Got structure list Range [%s,%s]", st.peRange.FormatBuffer(), st.muRange.FormatBuffer())
+	}
 	return st
 }
 
 // NewStructureList Creates a new object of structured list types
 func NewStructureList(fType FieldType, name string, occByteShort int16, subFields []IAdaType) *StructureType {
-	Central.Log.Debugf("Create new structure list %s types=%d type=%s", name, len(subFields), fType.name())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Create new structure list %s types=%d type=%s", name, len(subFields), fType.name())
+	}
 	st := &StructureType{
 		CommonType: CommonType{fieldType: fType,
 			name:      name,
@@ -121,7 +129,9 @@ func NewLongNameStructureList(fType FieldType, name string, shortName string, oc
 
 // NewStructureCondition Creates a new object of structured list types
 func NewStructureCondition(fType FieldType, name string, subFields []IAdaType, condition FieldCondition) *StructureType {
-	Central.Log.Debugf("Create new structure with condition %s types=%d type=%d", name, len(subFields), fType)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Create new structure with condition %s types=%d type=%d", name, len(subFields), fType)
+	}
 	for _, t := range subFields {
 		t.SetLevel(2)
 	}
@@ -140,13 +150,17 @@ func NewStructureCondition(fType FieldType, name string, subFields []IAdaType, c
 
 func (adaType *StructureType) adaptSubFields() {
 	if adaType.Type() == FieldTypePeriodGroup {
-		Central.Log.Debugf("%s: set PE flag", adaType.Name())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("%s: set PE flag", adaType.Name())
+		}
 		adaType.AddFlag(FlagOptionPE)
 		adaType.occ = OccCapacity
 	}
 	if adaType.Type() == FieldTypeMultiplefield {
-		Central.Log.Debugf("%s: set MU flag", adaType.Name())
-		Central.Log.Debugf("Adapt sub fields %s is PE field, need atomic FB", adaType.shortName)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("%s: set MU flag", adaType.Name())
+			Central.Log.Debugf("Adapt sub fields %s is PE field, need atomic FB", adaType.shortName)
+		}
 		adaType.AddFlag(FlagOptionAtomicFB)
 		adaType.occ = OccCapacity
 	}
@@ -249,13 +263,19 @@ func (adaType *StructureType) Traverse(t TraverserMethods, level int, x interfac
 
 // AddField add a new field type into the structure type
 func (adaType *StructureType) AddField(fieldType IAdaType) {
-	Central.Log.Debugf("Add sub field %s on parent %s", fieldType.Name(), adaType.Name())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Add sub field %s on parent %s", fieldType.Name(), adaType.Name())
+	}
 	fieldType.SetLevel(adaType.level + 1)
 	fieldType.SetParent(adaType)
 	fieldType.SetRange(&adaType.peRange)
-	Central.Log.Debugf("Parent of %s is %s ", fieldType.Name(), fieldType.GetParent())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Parent of %s is %s ", fieldType.Name(), fieldType.GetParent())
+	}
 	if adaType.HasFlagSet(FlagOptionPE) {
-		Central.Log.Debugf("Add sub field PE of parent %s field %s", adaType.Name(), fieldType.Name())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Add sub field PE of parent %s field %s", adaType.Name(), fieldType.Name())
+		}
 		fieldType.AddFlag(FlagOptionPE)
 	}
 	adaType.SubTypes = append(adaType.SubTypes, fieldType)
@@ -281,13 +301,17 @@ func (adaType *StructureType) addPart() {
 	adaType.AddFlag(FlagOptionPart)
 	t := TraverserMethods{EnterFunction: travereAdaptPartOption}
 	err := adaType.Traverse(t, 0, nil)
-	Central.Log.Debugf("adPart error %v", err)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("adPart error %v", err)
+	}
 }
 
 // RemoveField remote field of the structure type
 func (adaType *StructureType) RemoveField(fieldType *CommonType) {
-	Central.Log.Debugf("Remove field %s out of %s nrFields=%d", fieldType.Name(), adaType.Name(), adaType.NrFields())
-	Central.Log.Debugf("Rearrange, left=%d", adaType.NrFields())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Remove field %s out of %s nrFields=%d", fieldType.Name(), adaType.Name(), adaType.NrFields())
+		Central.Log.Debugf("Rearrange, left=%d", adaType.NrFields())
+	}
 	var newTypes []IAdaType
 	for _, t := range adaType.SubTypes {
 		if t.Name() != fieldType.Name() {
@@ -342,7 +366,9 @@ func (adaType *StructureType) SetFormatLength(x uint32) {
 
 // Value return type specific value structure object
 func (adaType *StructureType) Value() (adaValue IAdaValue, err error) {
-	Central.Log.Debugf("Create structure type of %v", adaType.fieldType.name())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Create structure type of %v", adaType.fieldType.name())
+	}
 	switch adaType.fieldType {
 	case FieldTypeStructure, FieldTypeGroup, FieldTypePeriodGroup, FieldTypeMultiplefield:
 		Central.Log.Debugf("Return Structure value")
@@ -352,7 +378,9 @@ func (adaType *StructureType) Value() (adaValue IAdaValue, err error) {
 		adaValue = newRedefinition(adaType)
 		return
 	}
-	Central.Log.Debugf("Return nil structure", adaType.String())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Return nil structure", adaType.String())
+	}
 	err = NewGenericError(104, adaType.String())
 	return
 }
