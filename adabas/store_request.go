@@ -95,7 +95,7 @@ func NewStoreRequest(param ...interface{}) (*StoreRequest, error) {
 				return nil, errors.New("not enough parameters for NewStoreRequest")
 			}
 			var request *StoreRequest
-			ada := NewClonedAdabas(param[1].(*Adabas))
+			ada := param[1].(*Adabas)
 			if len(param) == 2 {
 				adabasMap, _, err := SearchMapRepository(ada.ID, mapName)
 				if err != nil {

@@ -43,7 +43,7 @@ type InterfaceFunction func(data interface{}, x interface{}) error
 func (request *commonRequest) loadDefinition() (err error) {
 	if request.definition == nil {
 		adatypes.Central.Log.Debugf("Load file Definition ....%d", request.repository.Fnr)
-		request.definition, err = request.adabas.ReadFileDefinitionUnlocked(request.repository.Fnr)
+		request.definition, err = request.adabas.ReadFileDefinition(request.repository.Fnr)
 		if err != nil {
 			return
 		}
@@ -107,12 +107,9 @@ func (request *commonRequest) commonOpen() (opened bool, err error) {
 			// request.dynamic = request.adabasMap.dynamic
 		}
 		var dbid Dbid
-		var url *URL
 		if request.adabasMap.Repository == nil {
 			dbid = request.adabasMap.URL().Dbid
-			url = request.adabasMap.URL()
 		} else {
-			url = &request.adabasMap.Repository.URL
 			dbid, err = request.adabasMap.Repository.dbid()
 			if err != nil {
 				return
@@ -125,8 +122,7 @@ func (request *commonRequest) commonOpen() (opened bool, err error) {
 			adatypes.Central.Log.Debugf("Reset database to new database: %d current: %d", dbid, request.adabas.Acbx.Acbxdbid)
 		}
 		if dbid != 0 {
-			// request.adabas.SetDbid(dbid)
-			request.adabas.SetURL(url)
+			request.adabas.SetDbid(dbid)
 		}
 		// TODO remove if move succeeed
 		err = request.loadDefinition()
