@@ -572,7 +572,7 @@ func (connection *Connection) CreateMapStoreRequest(param ...interface{}) (reque
 				if err != nil {
 					return nil, err
 				}
-				request, err = NewStoreRequest(NewClonedAdabas(connection.adabasToData), connection.adabasMap)
+				request, err = NewStoreRequest(connection.adabasToData, connection.adabasMap)
 				if err != nil {
 					return
 				}

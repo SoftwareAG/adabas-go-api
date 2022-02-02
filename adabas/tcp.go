@@ -242,7 +242,7 @@ func (connection *AdaTCP) Send(adaInstance *Adabas) (err error) {
 		adaInstance.transactions.clusterNodes = connection.clusterNodes
 	}
 	if debug {
-		adatypes.Central.Log.Debugf("Got context for %s %p", adaInstance.String(),
+		adatypes.Central.Log.Debugf("Got context for %s %p ", adaInstance.String(),
 			adaInstance.transactions.connection)
 		adatypes.LogMultiLineString(true, adaInstance.Acbx.String())
 	}
