@@ -241,6 +241,7 @@ func (adabas *Adabas) OpenUser(user string) (err error) {
 	}
 
 	// Create default buffers to open with able to update records in all files
+	adabas.AdabasBuffers = nil
 	adabas.AdabasBuffers = append(adabas.AdabasBuffers, NewBufferWithSize(AbdAQFb, 1))
 	adabas.AdabasBuffers = append(adabas.AdabasBuffers, NewSendBuffer(AbdAQRb, []byte("UPD.")))
 
