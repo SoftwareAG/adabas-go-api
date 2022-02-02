@@ -1,5 +1,5 @@
 /*
-* Copyright © 2019-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2019-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -44,9 +44,13 @@ func NewSuperType(name string, option byte) *AdaSuperType {
 	superType := &AdaSuperType{CommonType: CommonType{fieldType: FieldTypeSuperDesc,
 		flags: uint32(1<<FlagOptionToBeRemoved | 1<<FlagOptionReadOnly),
 		name:  name, shortName: name}}
-	Central.Log.Debugf("Check super descriptor %s option %X", name, option)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Check super descriptor %s option %X", name, option)
+	}
 	if (option & 0x08) > 0 {
-		Central.Log.Debugf("%s super/sub descriptor found PE", name)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("%s super/sub descriptor found PE", name)
+		}
 		superType.AddOption(FieldOptionPE)
 	}
 	if (option & 0x10) > 0 {
@@ -75,11 +79,15 @@ func (adaType *AdaSuperType) AddSubEntry(name string, from uint16, to uint16) {
 func (adaType *AdaSuperType) calcLength() {
 	len := uint32(0)
 	for _, entry := range adaType.Entries {
-		Central.Log.Debugf("%s: super descriptor entry %s len=%d add [%d:%d] -> %d", adaType.name, entry.Name,
-			len, entry.From, entry.To, uint32(entry.To-entry.From+1))
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("%s: super descriptor entry %s len=%d add [%d:%d] -> %d", adaType.name, entry.Name,
+				len, entry.From, entry.To, uint32(entry.To-entry.From+1))
+		}
 		len += uint32(entry.To - entry.From + 1)
 	}
-	Central.Log.Debugf("len=%d", len)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("len=%d", len)
+	}
 	adaType.length = len
 }
 
@@ -152,14 +160,18 @@ func (adaType *AdaSuperType) String() string {
 
 // Value value of the sub or super descriptor
 func (adaType *AdaSuperType) Value() (adaValue IAdaValue, err error) {
-	Central.Log.Debugf("Return super descriptor value")
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Return super descriptor value")
+	}
 	adaValue = newSuperDescriptorValue(adaType)
 	return
 }
 
 // InitSubTypes init Adabas super/sub types with adabas definition
 func (adaType *AdaSuperType) InitSubTypes(definition *Definition) (err error) {
-	Central.Log.Debugf("Init super descriptor types of %s", adaType.name)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Init super descriptor types of %s", adaType.name)
+	}
 	for _, s := range adaType.Entries {
 		v := definition.fileShortFields[string(s.Name[:])]
 		if v == nil {

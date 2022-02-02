@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -192,13 +192,16 @@ func NewAdaTCP(URL *URL, order binary.ByteOrder, user [8]byte, node [8]byte,
 // Send Send the TCP/IP request to remote Adabas database
 func (connection *AdaTCP) Send(adaInstance *Adabas) (err error) {
 	var buffer bytes.Buffer
-	adatypes.Central.Log.Debugf("Call Adabas using ADATCP")
+	debug := adatypes.Central.IsDebugLevel()
+	if debug {
+		adatypes.Central.Log.Debugf("Call Adabas using ADATCP")
+	}
 	err = adaInstance.WriteBuffer(&buffer, Endian(), false)
 	if err != nil {
 		adatypes.Central.Log.Debugf("Buffer transmit preparation error ", err)
 		return
 	}
-	if adatypes.Central.IsDebugLevel() {
+	if debug {
 		adatypes.Central.Log.Debugf("Send buffer of length=%d lenBuffer=%d", buffer.Len(), len(adaInstance.AdabasBuffers))
 		adatypes.LogMultiLineString(true, adaInstance.Acbx.String())
 	}
@@ -223,9 +226,13 @@ func (connection *AdaTCP) Send(adaInstance *Adabas) (err error) {
 		return
 	}
 
-	adatypes.Central.Log.Debugf("Remote Adabas call returns successfully")
+	if debug {
+		adatypes.Central.Log.Debugf("Remote Adabas call returns successfully")
+	}
 	if adaInstance.Acbx.Acbxcmd == cl.code() {
-		adatypes.Central.Log.Debugf("Close called, destroy context ...")
+		if debug {
+			adatypes.Central.Log.Debugf("Close called, destroy context ...")
+		}
 		if connection != nil {
 			_ = connection.Disconnect()
 			adaInstance.transactions.connection = nil
@@ -234,7 +241,7 @@ func (connection *AdaTCP) Send(adaInstance *Adabas) (err error) {
 	if connection.clusterNodes != nil {
 		adaInstance.transactions.clusterNodes = connection.clusterNodes
 	}
-	if adatypes.Central.IsDebugLevel() {
+	if debug {
 		adatypes.Central.Log.Debugf("Got context for %s %p ", adaInstance.String(),
 			adaInstance.transactions.connection)
 		adatypes.LogMultiLineString(true, adaInstance.Acbx.String())
@@ -251,7 +258,10 @@ func (connection *AdaTCP) Connect(adabas *Adabas) (err error) {
 // tcpConnect establish connection to ADATCP server
 func (connection *AdaTCP) tcpConnect() (err error) {
 	url := fmt.Sprintf("%s:%d", connection.URL.Host, connection.URL.Port)
-	adatypes.Central.Log.Debugf("Open/Connect TCP connection to %s", url)
+	debug := adatypes.Central.IsDebugLevel()
+	if debug {
+		adatypes.Central.Log.Debugf("Open/Connect TCP connection to %s", url)
+	}
 	addr, _ := net.ResolveTCPAddr("tcp", url)
 
 	switch connection.URL.Driver {
@@ -265,7 +275,9 @@ func (connection *AdaTCP) tcpConnect() (err error) {
 		if connection.stats != nil {
 			connection.stats.remote++
 		}
-		adatypes.Central.Log.Debugf("Connect dial passed ...")
+		if debug {
+			adatypes.Central.Log.Debugf("Connect dial passed ...")
+		}
 		connection.connection = tcpConn
 		_ = tcpConn.SetNoDelay(true)
 	case "adatcps":
@@ -294,13 +306,19 @@ func (connection *AdaTCP) tcpConnect() (err error) {
 		return
 	}
 	if bigEndian() {
-		adatypes.Central.Log.Debugf("Write TCP payload for big endian")
+		if debug {
+			adatypes.Central.Log.Debugf("Write TCP payload for big endian")
+		}
 		payload.Endianness = adatcpBigEndian
 	} else {
-		adatypes.Central.Log.Debugf("Write TCP payload for little endian")
+		if debug {
+			adatypes.Central.Log.Debugf("Write TCP payload for little endian")
+		}
 		payload.Endianness = adatcpLittleEndian
 	}
-	adatypes.Central.Log.Debugf("Buffer size after header=%d", buffer.Len())
+	if debug {
+		adatypes.Central.Log.Debugf("Buffer size after header=%d", buffer.Len())
+	}
 
 	// Send payload in big endian needed until remote knows the endianess of the client
 	err = binary.Write(&buffer, binary.BigEndian, payload)
@@ -310,10 +328,12 @@ func (connection *AdaTCP) tcpConnect() (err error) {
 		connection.connection = nil
 		return
 	}
-	adatypes.Central.Log.Debugf("Buffer size after payload=%d", buffer.Len())
+	if debug {
+		adatypes.Central.Log.Debugf("Buffer size after payload=%d", buffer.Len())
+	}
 
 	send := buffer.Bytes()
-	if adatypes.Central.IsDebugLevel() {
+	if debug {
 		adatypes.LogMultiLineString(true, adatypes.FormatBytes("Connect PAYLOAD:", send, len(send), 8, 16, true))
 	}
 	_, err = connection.connection.Write(send)
@@ -333,7 +353,7 @@ func (connection *AdaTCP) tcpConnect() (err error) {
 		return
 	}
 
-	if adatypes.Central.IsDebugLevel() {
+	if debug {
 		adatypes.LogMultiLineString(true, adatypes.FormatBytes("RCV Reply PAYLOAD:", rcvBuffer, len(rcvBuffer), 8, 16, true))
 	}
 

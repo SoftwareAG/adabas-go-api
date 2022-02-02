@@ -53,7 +53,9 @@ func (helper *BufferHelper) Shrink(length uint32) (err error) {
 }
 
 func (helper *BufferHelper) position(pos uint32) (newPos int, err error) {
-	Central.Log.Debugf("Position to be set %v offset=%v max=%v", pos, helper.offset, helper.max)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Position to be set %v offset=%v max=%v", pos, helper.offset, helper.max)
+	}
 	if helper.max >= int(pos) {
 		helper.offset = uint32(pos)
 	} else {

@@ -111,7 +111,9 @@ func NewFieldCondition(param ...interface{}) FieldCondition {
 		refField = param[1].(int)
 		conditionMatrix = param[2].(map[byte][]byte)
 	}
-	Central.Log.Debugf("New field condition lengthFieldIndex=%d refField=%d", lengthFieldIndex, refField)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("New field condition lengthFieldIndex=%d refField=%d", lengthFieldIndex, refField)
+	}
 	return FieldCondition{
 		lengthFieldIndex: lengthFieldIndex,
 		refField:         refField,
@@ -140,7 +142,9 @@ func NewType(param ...interface{}) *AdaType {
 			case string:
 				longName = p
 			default:
-				Central.Log.Debugf("Unknown parameter type %T", param[2])
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("Unknown parameter type %T", param[2])
+				}
 				//panic("Error for type parameter")
 				return nil
 			}
@@ -220,12 +224,16 @@ func (adaType *AdaType) SetLength(length uint32) {
 	if (adaType.fieldType != FieldTypeFloat && adaType.fieldType != FieldTypeDouble) || length > 0 {
 		if adaType.HasFlagSet(FlagOptionPE) {
 			// Period length change, CANNNOT use collected FB entry!!!!
-			Central.Log.Debugf("Length not default and field %s is PE field, need atomic FB", adaType.shortName)
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Length not default and field %s is PE field, need atomic FB", adaType.shortName)
+			}
 			adaType.AddFlag(FlagOptionAtomicFB)
 		}
 		adaType.length = length
 	} else {
-		Central.Log.Debugf("Skip float or double to %d", adaType.length)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Skip float or double to %d", adaType.length)
+		}
 	}
 }
 
@@ -300,7 +308,6 @@ func (adaType *AdaType) Value() (adaValue IAdaValue, err error) {
 			return nil, NewGenericError(111, adaType.length, "large object alpha", adaType.Name())
 		}
 		adaValue = newStringValue(adaType)
-		Central.Log.Debugf("String value %p", adaValue)
 		return
 	case FieldTypeUnicode:
 		if adaType.length > 253 {

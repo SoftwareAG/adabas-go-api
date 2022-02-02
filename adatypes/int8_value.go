@@ -258,7 +258,9 @@ func (value *int64Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 			return EndTraverser, lerr
 		}
 		rbLen--
-		Central.Log.Debugf("Buffer get variable length=%d", rbLen)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Buffer get variable length=%d", rbLen)
+		}
 		switch rbLen {
 		case 1:
 			vba, verr := helper.ReceiveInt8()
@@ -304,7 +306,9 @@ func (value *int64Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 	} else {
 		value.value, err = helper.ReceiveInt64()
 	}
-	Central.Log.Debugf("Buffer get int8 %d", helper.offset)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Buffer get int8 %d", helper.offset)
+	}
 	return
 }
 

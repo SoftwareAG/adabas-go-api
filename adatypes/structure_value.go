@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -722,17 +722,23 @@ func (value *StructureValue) SetValue(v interface{}) error {
 				ti = ti.Elem()
 			}
 			jsonV, _ := json.Marshal(v)
-			Central.Log.Debugf("Work on group entry %s -> %s", ti.Name(), string(jsonV))
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Work on group entry %s -> %s", ti.Name(), string(jsonV))
+			}
 			for i := 0; i < vi.Len(); i++ {
 				value.initMultipleSubValues(uint32(i), uint32(i+1), 0, false)
-				Central.Log.Debugf("%d. Element len is %d", i, len(value.Elements))
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("%d. Element len is %d", i, len(value.Elements))
+				}
 				iv := vi.Index(i)
 				if iv.Kind() == reflect.Ptr {
 					iv = iv.Elem()
 				}
 				ti = reflect.TypeOf(iv.Interface())
 				for j, x := range value.Elements[i].Values {
-					Central.Log.Debugf("Try setting element %d/%d -> %s", i, j, x.Type().Name())
+					if Central.IsDebugLevel() {
+						Central.Log.Debugf("Try setting element %d/%d -> %s", i, j, x.Type().Name())
+					}
 
 					s := iv.FieldByName(x.Type().Name())
 					if s.IsValid() {
@@ -742,7 +748,9 @@ func (value *StructureValue) SetValue(v interface{}) error {
 							return err
 						}
 					} else {
-						Central.Log.Debugf("Try search tag of number of fields %d", ti.NumField())
+						if Central.IsDebugLevel() {
+							Central.Log.Debugf("Try search tag of number of fields %d", ti.NumField())
+						}
 						sn := extractAdabasTagShortName(ti, x.Type().Name())
 						s := iv.FieldByName(sn)
 						if s.IsValid() {
@@ -753,7 +761,9 @@ func (value *StructureValue) SetValue(v interface{}) error {
 							}
 							// return nil
 						} else {
-							Central.Log.Errorf("Invalid or missing field for %s", x.Type().Name())
+							if Central.IsDebugLevel() {
+								Central.Log.Errorf("Invalid or missing field for %s", x.Type().Name())
+							}
 						}
 					}
 				}
@@ -768,7 +778,9 @@ func (value *StructureValue) SetValue(v interface{}) error {
 			Central.Log.Debugf("Check struct possible")
 		}
 	default:
-		Central.Log.Debugf("Structure set interface, not implement yet %s -> %v", value.Type().Name(), v)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Structure set interface, not implement yet %s -> %v", value.Type().Name(), v)
+		}
 	}
 	return nil
 }
@@ -813,7 +825,9 @@ func (value *StructureValue) formatBufferSecondCall(buffer *bytes.Buffer, option
 		// buffer.WriteString(fmt.Sprintf("%s%dC,4,B,%s%d(%s),%d",
 		// 	value.Type().ShortName(), x, value.Type().ShortName(), x, r, structureType.SubTypes[0].Length()))
 
-		Central.Log.Debugf("FB of second call %s", buffer.String())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("FB of second call %s", buffer.String())
+		}
 		return 4 + structureType.SubTypes[0].Length()
 	}
 	if Central.IsDebugLevel() {
@@ -875,10 +889,14 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 				if !value.Type().HasFlagSet(FlagOptionSingleIndex) {
 					buffer.WriteString(value.Type().ShortName() + "C,4,B")
 				}
-				Central.Log.Debugf("%s Flag option %d %v %d", structureType.Name(), structureType.flags, structureType.HasFlagSet(FlagOptionPart), FlagOptionPart)
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("%s Flag option %d %v %d", structureType.Name(), structureType.flags, structureType.HasFlagSet(FlagOptionPart), FlagOptionPart)
+				}
 				if !value.Type().HasFlagSet(FlagOptionAtomicFB) && !value.Type().HasFlagSet(FlagOptionPart) {
 					r := structureType.peRange.FormatBuffer()
-					Central.Log.Debugf("Add generic format buffer field with range %s", r)
+					if Central.IsDebugLevel() {
+						Central.Log.Debugf("Add generic format buffer field with range %s", r)
+					}
 					buffer.WriteString("," + value.Type().ShortName() + r)
 				}
 				recordBufferLength += option.multipleSize
@@ -886,13 +904,17 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 		default:
 		}
 	}
-	Central.Log.Debugf("Final structure RB FormatBuffer for %s: %s", value.Type().Name(), buffer.String())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Final structure RB FormatBuffer for %s: %s", value.Type().Name(), buffer.String())
+	}
 	return recordBufferLength
 }
 
 // StoreBuffer generate store buffer
 func (value *StructureValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {
-	Central.Log.Debugf("Skip store structured record buffer for %s at %d", value.Type().Name(), len(helper.buffer))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Skip store structured record buffer for %s at %d", value.Type().Name(), len(helper.buffer))
+	}
 	return nil
 }
 
@@ -1037,11 +1059,15 @@ func (value *StructureValue) Float() (float64, error) {
 }
 
 func (value *StructureValue) setPeriodIndex(index uint32) {
-	Central.Log.Debugf("Set %s structure period index = %d -> %d", value.Type().Name(), value.PeriodIndex(), index)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Set %s structure period index = %d -> %d", value.Type().Name(), value.PeriodIndex(), index)
+	}
 	value.peIndex = index
 	for _, val := range value.Elements {
 		for _, v := range val.Values {
-			Central.Log.Debugf("Set %s period index in structure %d -> %d", v.Type().Name(), v.PeriodIndex(), index)
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Set %s period index in structure %d -> %d", v.Type().Name(), v.PeriodIndex(), index)
+			}
 			v.setPeriodIndex(1)
 		}
 	}

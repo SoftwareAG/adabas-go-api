@@ -173,12 +173,16 @@ func (Response *Response) DumpData() (err error) {
 
 // TraverseValues traverse through the tree of values calling a callback method
 func (Response *Response) TraverseValues(t adatypes.TraverserValuesMethods, x interface{}) (ret adatypes.TraverseResult, err error) {
-	adatypes.Central.Log.Debugf("Traverse result values")
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Traverse result values")
+	}
 	if Response == nil || Response.Values == nil {
 		// err = adatypes.NewGenericError(81)
 		return
 	}
-	adatypes.Central.Log.Debugf("Go through records -> %d", len(Response.Values))
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Go through records -> %d", len(Response.Values))
+	}
 	var tr adatypes.TraverseResult
 	for _, record := range Response.Values {
 		if t.PrepareFunction != nil {
@@ -193,7 +197,9 @@ func (Response *Response) TraverseValues(t adatypes.TraverserValuesMethods, x in
 		}
 	}
 
-	adatypes.Central.Log.Debugf("Ready traverse values")
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Ready traverse values")
+	}
 	return
 }
 
@@ -232,7 +238,9 @@ func (Response *Response) MarshalXML(e *xml.Encoder, start xml.StartElement) err
 	x := xml.StartElement{Name: xml.Name{Local: "Response"}}
 	_ = e.EncodeToken(x)
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalXML, LeaveFunction: traverseMarshalXMLEnd}
-	adatypes.Central.Log.Debugf("Go through records -> %d", len(Response.Values))
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Go through records -> %d", len(Response.Values))
+	}
 	if Response.Values != nil {
 		for _, record := range Response.Values {
 			rec := xml.StartElement{Name: xml.Name{Local: "Record"}}
@@ -308,9 +316,11 @@ func evaluateValue(adaValue adatypes.IAdaValue) (interface{}, error) {
 func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	req := x.(*responseJSON)
 	if !adaValue.Type().IsSpecialDescriptor() && !adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost) {
-		adatypes.Central.Log.Debugf("Marshal JSON level=%d %s -> type=%T MU ghost=%v", adaValue.Type().Level(),
-			adaValue.Type().Name(), adaValue, adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost))
-		adatypes.Central.Log.Debugf("JSON stack size for %s->%d %T", adaValue.Type().Name(), req.stack.Size, adaValue)
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Marshal JSON level=%d %s -> type=%T MU ghost=%v", adaValue.Type().Level(),
+				adaValue.Type().Name(), adaValue, adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost))
+			adatypes.Central.Log.Debugf("JSON stack size for %s->%d %T", adaValue.Type().Name(), req.stack.Size, adaValue)
+		}
 		if adaValue.Type().IsStructure() {
 			adatypes.Central.Log.Debugf("Structure Marshal JSON %s", adaValue.Type().Name())
 			switch adaValue.Type().Type() {
@@ -327,7 +337,9 @@ func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 					}
 				}
 				(*req.dataMap)[adaValue.Type().Name()] = sa
-				adatypes.Central.Log.Debugf("Skip rest of MU Marshal JSON %s", adaValue.Type().Name())
+				if adatypes.Central.IsDebugLevel() {
+					adatypes.Central.Log.Debugf("Skip rest of MU Marshal JSON %s", adaValue.Type().Name())
+				}
 				return adatypes.SkipTree, nil
 			case adatypes.FieldTypePeriodGroup:
 				// var sa []interface{}
@@ -355,7 +367,9 @@ func traverseMarshalJSON(adaValue adatypes.IAdaValue, x interface{}) (adatypes.T
 			(*req.dataMap)[adaValue.Type().Name()] = v
 		}
 	} else {
-		adatypes.Central.Log.Debugf("Special descriptor Marshal JSON %s add=%v", adaValue.Type().Name(), req.special)
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Special descriptor Marshal JSON %s add=%v", adaValue.Type().Name(), req.special)
+		}
 		if req.special && !adaValue.Type().HasFlagSet(adatypes.FlagOptionMUGhost) {
 			v, err := evaluateValue(adaValue)
 			if err != nil {
@@ -384,7 +398,9 @@ func traverseElementMarshalJSON(adaValue adatypes.IAdaValue, nr, max int, x inte
 func traverseMarshalJSONEnd(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	if adaValue.Type().Type() == adatypes.FieldTypeRedefinition {
 		// TODO handle redefinition in JSON marshal
-		adatypes.Central.Log.Debugf("TODO need handle redefinitions")
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Infof("TODO need handle redefinitions")
+		}
 	} else if adaValue.Type().IsStructure() && adaValue.Type().Type() != adatypes.FieldTypeMultiplefield {
 		sv := adaValue.(*adatypes.StructureValue)
 		req := x.(*responseJSON)
@@ -407,7 +423,9 @@ func traverseMarshalJSONEnd(adaValue adatypes.IAdaValue, x interface{}) (adatype
 				req.structureArray = nil
 			}
 		}
-		adatypes.Central.Log.Debugf("JSON end stack size for %s->%d", adaValue.Type().Name(), req.stack.Size)
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("JSON end stack size for %s->%d", adaValue.Type().Name(), req.stack.Size)
+		}
 	}
 	return adatypes.Continue, nil
 }
@@ -415,7 +433,9 @@ func traverseMarshalJSONEnd(adaValue adatypes.IAdaValue, x interface{}) (adatype
 // MarshalJSON provide JSON Marshaller of the response
 func (Response *Response) MarshalJSON() ([]byte, error) {
 	req := &responseJSON{special: true}
-	adatypes.Central.Log.Debugf("Marshal JSON go through records -> %d", len(Response.Values))
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Marshal JSON go through records -> %d", len(Response.Values))
+	}
 	tm := adatypes.TraverserValuesMethods{EnterFunction: traverseMarshalJSON, LeaveFunction: traverseMarshalJSONEnd,
 		ElementFunction: traverseElementMarshalJSON}
 	req.stack = adatypes.NewStack()

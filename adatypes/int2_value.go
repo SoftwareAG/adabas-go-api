@@ -240,7 +240,9 @@ func (value *int16Value) parseBuffer(helper *BufferHelper, option *BufferOption)
 	} else {
 		value.value, err = helper.ReceiveInt16()
 	}
-	Central.Log.Debugf("Buffer get int2 offset=%d %s", helper.offset, value.Type().String())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Buffer get int2 offset=%d %s", helper.offset, value.Type().String())
+	}
 	return
 }
 

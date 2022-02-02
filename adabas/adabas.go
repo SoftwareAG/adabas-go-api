@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -225,9 +225,9 @@ func (adabas *Adabas) OpenUser(user string) (err error) {
 	}
 	adabas.lock.Lock()
 	defer adabas.lock.Unlock()
-	adatypes.Central.Log.Debugf("Open database %d %s", adabas.Acbx.Acbxdbid, adabas.ID.String())
-	adabas.AdabasBuffers = append(adabas.AdabasBuffers, NewBuffer(AbdAQFb))
-	adabas.AdabasBuffers = append(adabas.AdabasBuffers, NewBuffer(AbdAQRb))
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Open database %d %s", adabas.Acbx.Acbxdbid, adabas.ID.String())
+	}
 
 	adabas.Acbx.Acbxcmd = op.code()
 	copy(adabas.Acbx.Acbxcop[:], []byte{0, 0, 0, 0, 0, 0, 0, 0})
@@ -240,9 +240,10 @@ func (adabas *Adabas) OpenUser(user string) (err error) {
 		copy(adabas.Acbx.Acbxadd1[:l], user[:l])
 	}
 
-	adabas.AdabasBuffers[0].WriteString(" ")
-	adabas.AdabasBuffers[1].WriteString("UPD.")
-	adabas.AdabasBuffers[1].abd.Abdsend = adabas.AdabasBuffers[1].abd.Abdsize
+	// Create default buffers to open with able to update records in all files
+	adabas.AdabasBuffers = nil
+	adabas.AdabasBuffers = append(adabas.AdabasBuffers, NewBufferWithSize(AbdAQFb, 1))
+	adabas.AdabasBuffers = append(adabas.AdabasBuffers, NewSendBuffer(AbdAQRb, []byte("UPD.")))
 
 	err = adabas.CallAdabas()
 	if err != nil {
@@ -250,7 +251,9 @@ func (adabas *Adabas) OpenUser(user string) (err error) {
 		return
 	}
 	if adabas.Acbx.Acbxrsp == AdaNormal {
-		adatypes.Central.Log.Debugf("Open call response success")
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Open call response success")
+		}
 		adabas.ID.changeOpenState(adabas.URL.String(), true)
 		adabas.status.open = true
 		adabas.status.platform = adatypes.NewPlatformIsl(adabas.Acbx.Acbxisl)
@@ -378,7 +381,10 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 	}
 	adabas.lock.Lock()
 	defer adabas.lock.Unlock()
-	adatypes.Central.Log.Debugf("Read file definition with %s", lf.command())
+	debug := adatypes.Central.IsDebugLevel()
+	if debug {
+		adatypes.Central.Log.Debugf("Read file definition with %s", lf.command())
+	}
 	adabas.Acbx.Acbxcmd = lf.code()
 	adabas.Acbx.resetCop()
 	adabas.Acbx.Acbxcop[0] = adaEmptOpt
@@ -389,12 +395,13 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 	adabas.AdabasBuffers = make([]*Buffer, 2)
 	adabas.AdabasBuffers[0] = NewBuffer(AbdAQFb)
 	adabas.AdabasBuffers[1] = NewBufferWithSize(AbdAQRb, 4096*2)
-
 	adabas.AdabasBuffers[0].WriteString(".")
 
 	adabas.Acbx.Acbxfnr = fileNr
 	err = adabas.CallAdabas()
-	adatypes.Central.Log.Debugf("Read file definition error=%v rsp=%d", err, adabas.Acbx.Acbxrsp)
+	if debug {
+		adatypes.Central.Log.Debugf("Read file definition error=%v rsp=%d", err, adabas.Acbx.Acbxrsp)
+	}
 	if err == nil {
 		/* Create new helper to parse returned buffer */
 		helper := adatypes.NewHelper(adabas.AdabasBuffers[1].buffer, int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())
@@ -405,17 +412,19 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 			adatypes.Central.Log.Debugf("ERROR parse FDT: %v", err)
 			return
 		}
-		adatypes.Central.Log.Debugf("Format read field definition")
+		if debug {
+			adatypes.Central.Log.Debugf("Format read field definition")
+		}
 		definition, err = createFieldDefinitionTable(fdtDefinition)
 		if err != nil {
 			adatypes.Central.Log.Debugf("ERROR create FDT: %v", err)
 			return
 		}
 		definition.PutCache(cacheName)
-		if adatypes.Central.IsDebugLevel() {
+		if debug {
 			definition.DumpTypes(true, true, "FDT read")
+			adatypes.Central.Log.Debugf("Ready parse Format read field definition")
 		}
-		adatypes.Central.Log.Debugf("Ready parse Format read field definition")
 	}
 	// Check response to indicate error reading field definition
 	if adabas.Acbx.Acbxrsp != 0 {
@@ -441,31 +450,35 @@ func (adabas *Adabas) prepareBuffers(adabasRequest *adatypes.Request) {
 	}
 
 	adabas.AdabasBuffers = make([]*Buffer, bufferCount)
+	debug := adatypes.Central.IsDebugLevel()
 	// Create format buffer for the call
-	adabas.AdabasBuffers[0] = NewBuffer(AbdAQFb)
-	adabas.AdabasBuffers[0].buffer = adabasRequest.FormatBuffer.Bytes()
-	adabas.AdabasBuffers[0].abd.Abdsize = uint64(adabasRequest.FormatBuffer.Len())
-	adabas.AdabasBuffers[0].abd.Abdsend = adabas.AdabasBuffers[0].abd.Abdsize
-	adabas.AdabasBuffers[0].abd.Abdrecv = 0
-	adatypes.Central.Log.Debugf("ABD init F send %d", adabas.AdabasBuffers[0].abd.Abdsend)
+	adabas.AdabasBuffers[0] = NewSendBuffer(AbdAQFb, adabasRequest.FormatBuffer.Bytes())
+	if debug {
+		adatypes.Central.Log.Debugf("ABD init F send %d", adabas.AdabasBuffers[0].abd.Abdsend)
+	}
 
 	// Create record buffer for the call
-	adabas.AdabasBuffers[1] = NewBufferWithSize(AbdAQRb,
+	adabas.AdabasBuffers[1] = NewRcvBuffer(AbdAQRb,
 		multifetch*(adabasRequest.RecordBufferLength+adabasRequest.RecordBufferShift))
-	adabas.AdabasBuffers[1].abd.Abdsend = 0
-	adabas.AdabasBuffers[1].abd.Abdrecv = adabas.AdabasBuffers[0].abd.Abdsize
-	adatypes.Central.Log.Debugf("ABD init R send %d buffer length %d", adabas.AdabasBuffers[1].abd.Abdsend, adabas.AdabasBuffers[1].abd.Abdsize)
+	if debug {
+		adatypes.Central.Log.Debugf("ABD init R send %d buffer length %d",
+			adabas.AdabasBuffers[1].abd.Abdsend, adabas.AdabasBuffers[1].abd.Abdsize)
+	}
 
 	// Define search and value buffer to search
 	if adabasRequest.SearchTree != nil {
-		adatypes.Central.Log.Debugf("Search logical added")
 		adabas.AdabasBuffers[2] = SearchAdabasBuffer(adabasRequest.SearchTree)
-		adatypes.Central.Log.Debugf("ABD init S send %d", adabas.AdabasBuffers[2].abd.Abdsend)
 		adabas.AdabasBuffers[3] = ValueAdabasBuffer(adabasRequest.SearchTree)
-		adatypes.Central.Log.Debugf("ABD init V send %d", adabas.AdabasBuffers[3].abd.Abdsend)
+		if debug {
+			adatypes.Central.Log.Debugf("Search logical added")
+			adatypes.Central.Log.Debugf("ABD init S send %d", adabas.AdabasBuffers[2].abd.Abdsend)
+			adatypes.Central.Log.Debugf("ABD init V send %d", adabas.AdabasBuffers[3].abd.Abdsend)
+		}
 	}
 	if adabasRequest.Multifetch > 1 {
-		adatypes.Central.Log.Debugf("Create multifetch buffer for %d multifetch entries", adabasRequest.Multifetch)
+		if debug {
+			adatypes.Central.Log.Debugf("Create multifetch buffer for %d multifetch entries", adabasRequest.Multifetch)
+		}
 		index := len(adabas.AdabasBuffers) - 1
 		adabas.AdabasBuffers[index] = NewBufferWithSize(AbdAQMb, 4+(adabasRequest.Multifetch*16))
 	}
@@ -511,15 +524,10 @@ func (adabas *Adabas) ReadPhysical(fileNr Fnr, adabasRequest *adatypes.Request, 
 	}
 
 	adabas.AdabasBuffers = make([]*Buffer, nrMultifetch)
-	adabas.AdabasBuffers[0] = NewBuffer(AbdAQFb)
-	adabas.AdabasBuffers[0].buffer = adabasRequest.FormatBuffer.Bytes()
-	adabas.AdabasBuffers[0].abd.Abdsize = uint64(adabasRequest.FormatBuffer.Len())
-	adabas.AdabasBuffers[0].abd.Abdsend = adabas.AdabasBuffers[0].abd.Abdsize
-	adabas.AdabasBuffers[1] = NewBuffer(AbdAQRb)
-	adabas.AdabasBuffers[1].Allocate(multifetch * adabasRequest.RecordBufferLength)
+	adabas.AdabasBuffers[0] = NewSendBuffer(AbdAQFb, adabasRequest.FormatBuffer.Bytes())
+	adabas.AdabasBuffers[1] = NewBufferWithSize(AbdAQRb, multifetch*adabasRequest.RecordBufferLength)
 	if multifetch > 1 {
-		adabas.AdabasBuffers[2] = NewBuffer(AbdAQMb)
-		adabas.AdabasBuffers[2].Allocate(multifetch * 32)
+		adabas.AdabasBuffers[2] = NewBufferWithSize(AbdAQMb, multifetch*32)
 		adabas.Acbx.Acbxisl = uint64(multifetch)
 	}
 
@@ -765,7 +773,10 @@ func (adabas *Adabas) SearchLogicalWith(fileNr Fnr, adabasRequest *adatypes.Requ
 
 // Loop call used to read a sequence of records
 func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (err error) {
-	adatypes.Central.Log.Debugf("Loop call records avail.=%v", (adabasRequest.Definition.Values != nil))
+	debug := adatypes.Central.IsDebugLevel()
+	if debug {
+		adatypes.Central.Log.Debugf("Loop call records avail.=%v", (adabasRequest.Definition.Values != nil))
+	}
 	count := uint64(0)
 	adabasRequest.CmdCode = adabas.Acbx.Acbxcmd
 	switch adabas.Acbx.Acbxcmd {
@@ -784,7 +795,9 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 	} else {
 		adabasMap := adabasRequest.Parameter.(*Map)
 		if adabasMap != nil {
-			adatypes.Central.Log.Debugf("%v -> %#v", adabasRequest.Parameter, adabasMap)
+			if debug {
+				adatypes.Central.Log.Debugf("%v -> %#v", adabasRequest.Parameter, adabasMap)
+			}
 			adabasRequest.Reference = fmt.Sprintf("map/%s", adabasMap.Name)
 		}
 	}
@@ -793,7 +806,9 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 		if !adabasRequest.Option.PartialRead && !(adabasRequest.Option.SecondCall > 0 || adabasRequest.Option.StreamCursor > 0) {
 			err = adabasRequest.Definition.CreateValues(false)
 			if err != nil {
-				adatypes.Central.Log.Debugf("Error creating values: %v", err)
+				if debug {
+					adatypes.Central.Log.Debugf("Error creating values: %v", err)
+				}
 				return
 			}
 		}
@@ -801,10 +816,14 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 		// if adabas.Acbx.Acbxcop[0] == 'M' {
 		// 	adabas.Acbx.Acbxisl = 0
 		// }
-		adatypes.Central.Log.Debugf("Send call avail.=%v", (adabasRequest.Definition.Values != nil))
+		if debug {
+			adatypes.Central.Log.Debugf("Send call avail.=%v", (adabasRequest.Definition.Values != nil))
+		}
 		// Call Adabas
 		err = adabas.CallAdabas()
-		adatypes.Central.Log.Debugf("Received call response ret=%v", err)
+		if debug {
+			adatypes.Central.Log.Debugf("Received call response ret=%v", err)
+		}
 		if err != nil {
 			return
 		}
@@ -814,20 +833,26 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 
 		// End of file reached
 		if adabas.Acbx.Acbxrsp == AdaEOF {
-			adatypes.Central.Log.Debugf("Adabas AdaEOF=%d", AdaEOF)
+			if debug {
+				adatypes.Central.Log.Debugf("Adabas AdaEOF=%d", AdaEOF)
+			}
 			return
 		}
 		// Error received from Adabas
 		if adabas.Acbx.Acbxrsp != AdaNormal {
-			adatypes.Central.Log.Errorf("Error reading data: %s", adabas.getAdabasMessage())
+			if debug {
+				adatypes.Central.Log.Errorf("Error reading data: %s", adabas.getAdabasMessage())
+			}
 			err = NewError(adabas)
 			return
 		}
 		adabasRequest.Isn = adatypes.Isn(adabas.Acbx.Acbxisn)
 		adabasRequest.IsnQuantity = adabas.Acbx.Acbxisq
 		adabasRequest.IsnLowerLimit = adabas.Acbx.Acbxisl
-		adatypes.Central.Log.Debugf("ISN= %d ISN quantity=%d multifetch=%d", adabasRequest.Isn, adabasRequest.IsnQuantity,
-			adabasRequest.Multifetch)
+		if debug {
+			adatypes.Central.Log.Debugf("ISN= %d ISN quantity=%d multifetch=%d", adabasRequest.Isn, adabasRequest.IsnQuantity,
+				adabasRequest.Multifetch)
+		}
 
 		adabasRequest.RecordBuffer = adatypes.NewHelper(adabas.AdabasBuffers[1].buffer,
 			int(adabas.AdabasBuffers[1].abd.Abdrecv), Endian())
@@ -850,17 +875,23 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			return
 		}
 		adabas.Acbx.Acbxisn = adabasRequest.CbIsn
-		adatypes.Central.Log.Debugf("Loop step ended Limit=%d count=%d", adabasRequest.Limit, count)
+		if debug {
+			adatypes.Central.Log.Debugf("Loop step ended Limit=%d count=%d", adabasRequest.Limit, count)
+		}
 		if (adabasRequest.Limit > 0) && (count >= adabasRequest.Limit) {
 			adatypes.Central.Log.Debugf("Limit reached")
 			break
 		}
 		if adabasRequest.Multifetch > 1 && adabasRequest.Limit-count < uint64(adabasRequest.Multifetch) {
 			adabas.Acbx.Acbxisl = adabasRequest.Limit - count
-			adatypes.Central.Log.Debugf("Limit ISL to %d", adabas.Acbx.Acbxisl)
+			if debug {
+				adatypes.Central.Log.Debugf("Limit ISL to %d", adabas.Acbx.Acbxisl)
+			}
 		}
 	}
-	adatypes.Central.Log.Debugf("Loop call ended count=%d", count)
+	if debug {
+		adatypes.Central.Log.Debugf("Loop call ended count=%d", count)
+	}
 
 	return
 }
@@ -873,9 +904,14 @@ func (adabas *Adabas) resetSendSize() {
 
 // SendSecondCall do second call reading lob data or multiple fields of the period group
 func (adabas *Adabas) SendSecondCall(adabasRequest *adatypes.Request, x interface{}) (err error) {
-	adatypes.Central.Log.Debugf("Check second call .... values avail.=%v", (adabasRequest.Definition.Values == nil))
+	debug := adatypes.Central.IsDebugLevel()
+	if debug {
+		adatypes.Central.Log.Debugf("Check second call .... values avail.=%v", (adabasRequest.Definition.Values == nil))
+	}
 	if adabasRequest.Option.NeedSecondCall != adatypes.NoneSecond {
-		adatypes.Central.Log.Debugf("Need second call %v", adabasRequest.Option.NeedSecondCall)
+		if debug {
+			adatypes.Central.Log.Debugf("Need second call %v", adabasRequest.Option.NeedSecondCall)
+		}
 		parameter := &adatypes.AdabasRequestParameter{Store: false, SecondCall: 1,
 			Mainframe: adabas.status.platform.IsMainframe(), PartialRead: adabasRequest.Option.PartialRead}
 		tmpAdabasRequest, err2 := adabasRequest.Definition.CreateAdabasRequest(parameter)
@@ -890,18 +926,24 @@ func (adabas *Adabas) SendSecondCall(adabasRequest *adatypes.Request, x interfac
 		tmpAdabasRequest.RecordBufferShift = adabasRequest.RecordBufferShift
 		tmpAdabasRequest.Multifetch = 1
 		tmpAdabasRequest.Option.SecondCall = 1
-		adatypes.Central.Log.Debugf("Call second request to ISN=%d only", tmpAdabasRequest.Isn)
+		if debug {
+			adatypes.Central.Log.Debugf("Call second request to ISN=%d only", tmpAdabasRequest.Isn)
+		}
 		err = adabas.readISNLocked(adabas.Acbx.Acbxfnr, tmpAdabasRequest, x)
 		if err != nil {
 			return
 		}
-		adatypes.Central.Log.Debugf("Read ISN done, parse buffer of second call")
+		if debug {
+			adatypes.Central.Log.Debugf("Read ISN done, parse buffer of second call")
+		}
 		_, err = tmpAdabasRequest.Definition.ParseBuffer(tmpAdabasRequest.RecordBuffer, tmpAdabasRequest.Option, "")
 		if err != nil {
 			adatypes.Central.Log.Debugf("Parse buffer of second call  with error: ", err)
 			return
 		}
-		adatypes.Central.Log.Debugf("Parse buffer of second call ended, reset to old adabas request")
+		if debug {
+			adatypes.Central.Log.Debugf("Parse buffer of second call ended, reset to old adabas request")
+		}
 		*adabas.Acbx = acbx
 		adabas.AdabasBuffers = abd
 		adatypes.Central.Log.Debugf("Second call done")
@@ -957,14 +999,21 @@ func (adabas *Adabas) Store(fileNr Fnr, adabasRequest *adatypes.Request) (err er
 	}
 	adabas.lock.Lock()
 	defer adabas.lock.Unlock()
-	adatypes.Central.Log.Debugf("Call store, pending transactions=%d adabas=%p",
-		adabas.ID.transactions(adabas.URL.String()), adabas)
+	debug := adatypes.Central.IsDebugLevel()
+	if debug {
+		adatypes.Central.Log.Debugf("Call store, pending transactions=%d adabas=%p",
+			adabas.ID.transactions(adabas.URL.String()), adabas)
+	}
 	if adabasRequest.Isn != 0 {
-		adatypes.Central.Log.Debugf("Store specific ISN ... %s", n2.command())
+		if debug {
+			adatypes.Central.Log.Debugf("Store specific ISN ... %s", n2.command())
+		}
 		adabas.Acbx.Acbxcmd = n2.code()
 		adabas.Acbx.Acbxisn = adabasRequest.Isn
 	} else {
-		adatypes.Central.Log.Debugf("Store data ... %s", n1.command())
+		if debug {
+			adatypes.Central.Log.Debugf("Store data ... %s", n1.command())
+		}
 		adabas.Acbx.Acbxcmd = n1.code()
 		adabas.Acbx.Acbxisn = 0
 	}
@@ -975,21 +1024,19 @@ func (adabas *Adabas) Store(fileNr Fnr, adabasRequest *adatypes.Request) (err er
 	adabas.Acbx.Acbxfnr = fileNr
 
 	adabas.AdabasBuffers = make([]*Buffer, 2)
-	adabas.AdabasBuffers[0] = NewBuffer(AbdAQFb)
-	adabas.AdabasBuffers[0].buffer = adabasRequest.FormatBuffer.Bytes()
-	adabas.AdabasBuffers[0].abd.Abdsize = uint64(adabasRequest.FormatBuffer.Len())
-	adabas.AdabasBuffers[0].abd.Abdsend = adabas.AdabasBuffers[0].abd.Abdsize
-	adabas.AdabasBuffers[1] = NewBuffer(AbdAQRb)
-	adabas.AdabasBuffers[1].buffer = adabasRequest.RecordBuffer.Buffer()
-	adabas.AdabasBuffers[1].abd.Abdsize = uint64(len(adabas.AdabasBuffers[1].buffer))
-	adabas.AdabasBuffers[1].abd.Abdsend = adabas.AdabasBuffers[1].abd.Abdsize
+	adabas.AdabasBuffers[0] = NewSendBuffer(AbdAQFb, adabasRequest.FormatBuffer.Bytes())
+	adabas.AdabasBuffers[1] = NewSendBuffer(AbdAQRb, adabasRequest.RecordBuffer.Buffer())
 
 	err = adabas.CallAdabas()
-	adatypes.Central.Log.Debugf("Store call response ret=%v", err)
+	if debug {
+		adatypes.Central.Log.Debugf("Store call response ret=%v", err)
+	}
 	if err != nil {
 		return
 	}
-	adatypes.Central.Log.Debugf("Store ISN rsp=%d ... ISN=%d", adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxisn)
+	if debug {
+		adatypes.Central.Log.Debugf("Store ISN rsp=%d ... ISN=%d", adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxisn)
+	}
 	// Error received from Adabas
 	if adabas.Acbx.Acbxrsp != AdaNormal {
 		adatypes.Central.Log.Errorf("Error storing data: %s", adabas.getAdabasMessage())
@@ -1028,14 +1075,8 @@ func (adabas *Adabas) Update(fileNr Fnr, adabasRequest *adatypes.Request) (err e
 	adabas.Acbx.Acbxfnr = fileNr
 
 	adabas.AdabasBuffers = make([]*Buffer, 2)
-	adabas.AdabasBuffers[0] = NewBuffer(AbdAQFb)
-	adabas.AdabasBuffers[0].buffer = adabasRequest.FormatBuffer.Bytes()
-	adabas.AdabasBuffers[0].abd.Abdsize = uint64(adabasRequest.FormatBuffer.Len())
-	adabas.AdabasBuffers[0].abd.Abdsend = adabas.AdabasBuffers[0].abd.Abdsize
-	adabas.AdabasBuffers[1] = NewBuffer(AbdAQRb)
-	adabas.AdabasBuffers[1].buffer = adabasRequest.RecordBuffer.Buffer()
-	adabas.AdabasBuffers[1].abd.Abdsize = uint64(len(adabas.AdabasBuffers[1].buffer))
-	adabas.AdabasBuffers[1].abd.Abdsend = adabas.AdabasBuffers[1].abd.Abdsize
+	adabas.AdabasBuffers[0] = NewSendBuffer(AbdAQFb, adabasRequest.FormatBuffer.Bytes())
+	adabas.AdabasBuffers[1] = NewSendBuffer(AbdAQRb, adabasRequest.RecordBuffer.Buffer())
 
 	err = adabas.CallAdabas()
 	adatypes.Central.Log.Debugf("Update call response ret=%v", err)
@@ -1088,9 +1129,12 @@ func (adabas *Adabas) DeleteIsn(fileNr Fnr, isn adatypes.Isn) (err error) {
 	}
 	adabas.lock.Lock()
 	defer adabas.lock.Unlock()
-	adatypes.Central.Log.Debugf("Delete ISN transactions=%d adabas=%p", adabas.ID.transactions(adabas.URL.String()),
-		adabas)
-	adatypes.Central.Log.Debugf("Delete Isn ...%s on dbid %d and file %d", e1.command(), adabas.Acbx.Acbxdbid, fileNr)
+	debug := adatypes.Central.IsDebugLevel()
+	if debug {
+		adatypes.Central.Log.Debugf("Delete ISN transactions=%d adabas=%p", adabas.ID.transactions(adabas.URL.String()),
+			adabas)
+		adatypes.Central.Log.Debugf("Delete Isn ...%s on dbid %d and file %d", e1.command(), adabas.Acbx.Acbxdbid, fileNr)
+	}
 	adabas.Acbx.Acbxcmd = e1.code()
 	adabas.Acbx.Acbxisn = isn
 	adabas.Acbx.Acbxfnr = fileNr
@@ -1101,11 +1145,13 @@ func (adabas *Adabas) DeleteIsn(fileNr Fnr, isn adatypes.Isn) (err error) {
 		return
 	}
 	adabas.ID.incTransactions(adabas.URL.String())
-	adatypes.Central.Log.Debugf("Delete ISN error ...%d transactions=%d adabas=%p", adabas.Acbx.Acbxrsp,
-		adabas.ID.transactions(adabas.URL.String()), adabas)
+	if debug {
+		adatypes.Central.Log.Debugf("Delete ISN error ...%d transactions=%d adabas=%p", adabas.Acbx.Acbxrsp,
+			adabas.ID.transactions(adabas.URL.String()), adabas)
+	}
 	// Error received from Adabas
 	if adabas.Acbx.Acbxrsp != AdaNormal {
-		adatypes.Central.Log.Errorf("Error reading data: %s", adabas.getAdabasMessage())
+		adatypes.Central.Log.Errorf("Error delete Isn: %s", adabas.getAdabasMessage())
 		adatypes.Central.Log.Errorf("CB: %s", adabas.Acbx.String())
 		err = NewError(adabas)
 		return
@@ -1187,8 +1233,10 @@ func (adabas *Adabas) WriteBuffer(buffer *bytes.Buffer, order binary.ByteOrder, 
 		adatypes.Central.Log.Debugf("Write ACBX in buffer error %v", err)
 		return
 	}
-	adatypes.Central.Log.Debugf("Create ADABAS ABD %d", len(adabas.AdabasBuffers))
-	adatypes.Central.Log.Debugf("Buffer len= %d", buffer.Len())
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Create ADABAS ABD %d", len(adabas.AdabasBuffers))
+		adatypes.Central.Log.Debugf("Buffer len= %d", buffer.Len())
+	}
 	for index, abd := range adabas.AdabasBuffers {
 		var tempBuffer bytes.Buffer
 		if !serverMode {
@@ -1241,32 +1289,46 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 		err = adatypes.NewGenericError(4)
 		return
 	}
-	adatypes.Central.Log.Debugf("Read buffer, read  ACBX: ")
+	debug := adatypes.Central.IsDebugLevel()
+
+	if debug {
+		adatypes.Central.Log.Debugf("Read buffer, read  ACBX: ")
+	}
 	err = binary.Read(buffer, Endian(), adabas.Acbx)
 	if err != nil {
 		adatypes.Central.Log.Debugf("ACBX read error : %v", err)
 		return
 	}
 
-	adatypes.Central.Log.Debugf("Received ACBX rsp=%d cc=%c%c", adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxcmd[0], adabas.Acbx.Acbxcmd[1])
-	adatypes.Central.Log.Debugf("Receive number of ABD: %d rsp=%d", nCalBuf, adabas.Acbx.Acbxrsp)
+	if debug {
+		adatypes.Central.Log.Debugf("Received ACBX rsp=%d cc=%c%c", adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxcmd[0], adabas.Acbx.Acbxcmd[1])
+		adatypes.Central.Log.Debugf("Receive number of ABD: %d rsp=%d", nCalBuf, adabas.Acbx.Acbxrsp)
+	}
 	if serverMode || (adabas.Acbx.Acbxrsp <= 3 && nCalBuf > 0) {
 		if serverMode {
-			adatypes.Central.Log.Debugf("Check nr ABDs current=%d should=%d", len(adabas.AdabasBuffers), nCalBuf)
+			if debug {
+				adatypes.Central.Log.Debugf("Check nr ABDs current=%d should=%d", len(adabas.AdabasBuffers), nCalBuf)
+			}
 			if nCalBuf < uint32(len(adabas.AdabasBuffers)) {
-				adatypes.Central.Log.Debugf("Reduce number buffers from %d / %d", len(adabas.AdabasBuffers), nCalBuf)
+				if debug {
+					adatypes.Central.Log.Debugf("Reduce number buffers from %d / %d", len(adabas.AdabasBuffers), nCalBuf)
+				}
 				adabas.AdabasBuffers = adabas.AdabasBuffers[:nCalBuf]
 			} else if nCalBuf > uint32(len(adabas.AdabasBuffers)) {
-				adatypes.Central.Log.Debugf("Init number buffers to %d", nCalBuf)
+				if debug {
+					adatypes.Central.Log.Debugf("Init number buffers to %d", nCalBuf)
+				}
 				for i := uint32(len(adabas.AdabasBuffers)); i < nCalBuf; i++ {
 					abd := NewBuffer(0)
 					adabas.AdabasBuffers = append(adabas.AdabasBuffers, abd)
 				}
 			}
 		}
-		adatypes.Central.Log.Debugf("Got nCalBuf=%d Number of current ABDS=%d len=%d", nCalBuf, len(adabas.AdabasBuffers), buffer.Len())
+		if debug {
+			adatypes.Central.Log.Debugf("Got nCalBuf=%d Number of current ABDS=%d len=%d", nCalBuf, len(adabas.AdabasBuffers), buffer.Len())
+		}
 		for index, abd := range adabas.AdabasBuffers {
-			if adatypes.Central.IsDebugLevel() {
+			if debug {
 				adatypes.Central.Log.Debugf("Parse %d.ABD got %c rest len=%d", index, abd.abd.Abdid, buffer.Len())
 				adatypes.LogMultiLineString(true, adatypes.FormatBytes("Rest ABD:", buffer.Bytes(), buffer.Len(), 8, 16, false))
 			}
@@ -1276,18 +1338,24 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 				return
 			}
 			if abd.abd.Abdver[0] != 'G' {
-				adatypes.Central.Log.Errorf("ABD error %p\n", abd)
+				if debug {
+					adatypes.Central.Log.Errorf("ABD error %p\n", abd)
+				}
 				adatypes.LogMultiLineString(false, adatypes.FormatBytes("Rest ABD:", buffer.Bytes(), buffer.Len(), 8, 16, false))
 				return adatypes.NewGenericError(174)
 			}
-			adatypes.Central.Log.Debugf("%d.ABD got send=%d rcv=%d size=%d",
-				index, abd.abd.Abdsend, abd.abd.Abdrecv, abd.abd.Abdsize)
+			if debug {
+				adatypes.Central.Log.Debugf("%d.ABD got send=%d rcv=%d size=%d",
+					index, abd.abd.Abdsend, abd.abd.Abdrecv, abd.abd.Abdsize)
+			}
 			if serverMode {
 				// Check if size is correct
 				abd.Allocate(uint32(abd.abd.Abdsize))
 			}
 		}
-		adatypes.Central.Log.Debugf("Parse ABD buffer data")
+		if debug {
+			adatypes.Central.Log.Debugf("Parse ABD buffer data")
+		}
 		for index, abd := range adabas.AdabasBuffers {
 			var transferSize uint64
 			if serverMode {
@@ -1309,7 +1377,7 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 						return
 					}
 				}
-				if adatypes.Central.IsDebugLevel() {
+				if debug {
 					adatypes.LogMultiLineString(true, adatypes.FormatBytes(fmt.Sprintf("Got data of ABD %d :", index), abd.buffer, len(abd.buffer), 8, 16, false))
 				}
 			}
@@ -1317,7 +1385,9 @@ func (adabas *Adabas) ReadBuffer(buffer *bytes.Buffer, order binary.ByteOrder, n
 	} else {
 		adatypes.Central.Log.Debugf("Skip parse ABD buffers")
 	}
-	adatypes.Central.Log.Debugf("Got adabas call " + string(adabas.Acbx.Acbxcmd[:]))
+	if debug {
+		adatypes.Central.Log.Debugf("Got adabas call " + string(adabas.Acbx.Acbxcmd[:]))
+	}
 	return
 }
 

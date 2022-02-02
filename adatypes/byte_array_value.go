@@ -115,7 +115,9 @@ func (value *byteArrayValue) SetStringValue(stValue string) {
 }
 
 func (value *byteArrayValue) SetValue(v interface{}) error {
-	Central.Log.Debugf("Set value for %s using ... %T", value.Type().Name(), v)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Set value for %s using ... %T", value.Type().Name(), v)
+	}
 	switch tv := v.(type) {
 	case []byte:
 		if value.Type().Length() == 0 {
@@ -178,7 +180,9 @@ func (value *byteArrayValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 		len--
 	}
 	value.value, err = helper.ReceiveBytes(uint32(len))
-	Central.Log.Debugf("Byte array parse bytes offset=%X len=%d value=%#v", helper.offset, len, value.value)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Byte array parse bytes offset=%X len=%d value=%#v", helper.offset, len, value.value)
+	}
 	return
 }
 

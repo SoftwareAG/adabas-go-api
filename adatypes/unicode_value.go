@@ -60,10 +60,16 @@ func (value *unicodeValue) Value() interface{} {
 }
 
 func (value *unicodeValue) setStringWithSize(sv string) {
-	Central.Log.Debugf("Set spaces for len %d and sv len %d", int(value.adatype.Length()), len(sv))
+	debug := Central.IsDebugLevel()
+
+	if debug {
+		Central.Log.Debugf("Set spaces for len %d and sv len %d", int(value.adatype.Length()), len(sv))
+	}
 	addSpaces := int(value.adatype.Length()) - len(sv)
 	y := ""
-	Central.Log.Debugf("Set value and add %d spaces", addSpaces)
+	if debug {
+		Central.Log.Debugf("Set value and add %d spaces", addSpaces)
+	}
 	if addSpaces < 0 {
 		if value.adatype.Length() > 0 {
 			value.value = []byte(sv[:value.adatype.Length()])
@@ -74,7 +80,9 @@ func (value *unicodeValue) setStringWithSize(sv string) {
 		y = strings.Repeat(" ", addSpaces)
 		value.value = []byte(sv + y)
 	}
-	Central.Log.Debugf("Set value to >%s<", value.value)
+	if debug {
+		Central.Log.Debugf("Set value to >%s<", value.value)
+	}
 }
 
 func (value *unicodeValue) Bytes() []byte {
@@ -112,7 +120,10 @@ func (value *unicodeValue) SetValue(v interface{}) error {
 // FormatBuffer generates format buffer part of this value
 func (value *unicodeValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOption) uint32 {
 	len := uint32(0)
-	Central.Log.Debugf("Generate FormatBuffer %s of length=%d and storeCall=%v", value.adatype.Type().name(), value.adatype.Length(), option.StoreCall)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Generate FormatBuffer %s of length=%d and storeCall=%v",
+			value.adatype.Type().name(), value.adatype.Length(), option.StoreCall)
+	}
 	if value.adatype.Type() == FieldTypeLBUnicode && value.adatype.Length() == 0 && !option.StoreCall {
 		// If LOB field is read, use part
 		if option.SecondCall > 0 {
@@ -138,7 +149,9 @@ func (value *unicodeValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOpti
 			}
 		}
 	}
-	Central.Log.Debugf("Record buffer size %d", len)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Record buffer size %d", len)
+	}
 	return len
 }
 
@@ -147,9 +160,14 @@ func (value *unicodeValue) StoreBuffer(helper *BufferHelper, option *BufferOptio
 	if option != nil && option.SecondCall > 0 {
 		return nil
 	}
-	Central.Log.Debugf("Store unicode %s at %d len=%d", value.Type().Name(), len(helper.buffer), value.Type().Length())
+	debug := Central.IsDebugLevel()
+	if debug {
+		Central.Log.Debugf("Store unicode %s at %d len=%d", value.Type().Name(), len(helper.buffer), value.Type().Length())
+	}
 	if value.Type().Length() == 0 {
-		Central.Log.Debugf("Add length to buffer ...%d", len(value.value))
+		if debug {
+			Central.Log.Debugf("Add length to buffer ...%d", len(value.value))
+		}
 		switch value.adatype.Type() {
 		case FieldTypeLAUnicode:
 			helper.PutUInt16(uint16(len(value.value)) + 2)
@@ -159,17 +177,24 @@ func (value *unicodeValue) StoreBuffer(helper *BufferHelper, option *BufferOptio
 			helper.PutUInt8(uint8(len(value.value)) + 1)
 		}
 	}
-	Central.Log.Debugf("Current buffer size = %d", len(helper.buffer))
+	if debug {
+		Central.Log.Debugf("Current buffer size = %d", len(helper.buffer))
+	}
 	helper.putBytes([]byte(value.value))
-	Central.Log.Debugf("All data buffer size = %d", len(helper.buffer))
-	Central.Log.Debugf("Done store unicode %s at %d", value.Type().Name(), len(helper.buffer))
+	if debug {
+		Central.Log.Debugf("All data buffer size = %d", len(helper.buffer))
+		Central.Log.Debugf("Done store unicode %s at %d", value.Type().Name(), len(helper.buffer))
+	}
 	return nil
 }
 
 func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 
+	debug := Central.IsDebugLevel()
 	if option.SecondCall > 0 {
-		Central.Log.Debugf("Old size of lob data %d of %d", len(value.value), value.lobSize)
+		if debug {
+			Central.Log.Debugf("Old size of lob data %d of %d", len(value.value), value.lobSize)
+		}
 		if value.Type().Type() == FieldTypeLBUnicode && uint32(len(value.value)) < value.lobSize {
 			data, rErr := helper.ReceiveBytes(value.lobSize - uint32(len(value.value)))
 			if rErr != nil {
@@ -177,7 +202,7 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 				return EndTraverser, err
 			}
 			value.value = append(value.value, data...)
-			if Central.IsDebugLevel() {
+			if debug {
 				LogMultiLineString(true, FormatByteBuffer("(2)LOB Buffer: ", value.value))
 				Central.Log.Debugf("New size of lob data %d", len(value.value))
 			}
@@ -187,12 +212,16 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 			return
 		}
 	}
-	Central.Log.Debugf("Start parsing value unicode .... %s offset=%d/%X type=%s", value.Type().Name(),
-		helper.offset, helper.offset, value.Type().Type().name())
+	if debug {
+		Central.Log.Debugf("Start parsing value unicode .... %s offset=%d/%X type=%s", value.Type().Name(),
+			helper.offset, helper.offset, value.Type().Type().name())
+	}
 
 	fieldLength := value.adatype.Length()
 	if fieldLength == 0 {
-		Central.Log.Debugf("Field length dynamic")
+		if debug {
+			Central.Log.Debugf("Field length dynamic")
+		}
 
 		switch value.adatype.Type() {
 		case FieldTypeLAUnicode:
@@ -201,25 +230,33 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 				return EndTraverser, errh
 			}
 			fieldLength = uint32(length - 2)
-			Central.Log.Debugf("Take field length 16 =%d", fieldLength)
+			if debug {
+				Central.Log.Debugf("Take field length 16 =%d", fieldLength)
+			}
 		case FieldTypeLBUnicode:
 			value.lobSize, err = helper.ReceiveUInt32()
 			if err != nil {
 				return EndTraverser, err
 			}
-			Central.Log.Debugf("Got lobSize=%d", value.lobSize)
+			if debug {
+				Central.Log.Debugf("Got lobSize=%d", value.lobSize)
+			}
 			fieldLength = uint32(value.lobSize - 4)
-			Central.Log.Debugf("Take partial buffer .... of size=%d offset=%d", PartialLobSize, helper.offset)
+			if debug {
+				Central.Log.Debugf("Take partial buffer .... of size=%d offset=%d", PartialLobSize, helper.offset)
+			}
 		default:
 			length, errh := helper.ReceiveUInt8()
 			if errh != nil {
 				return EndTraverser, errh
 			}
 			fieldLength = uint32(length - 1)
-			Central.Log.Debugf("Take field length 8 =%d", fieldLength)
+			if debug {
+				Central.Log.Debugf("Take field length 8 =%d", fieldLength)
+			}
 		}
 	}
-	if Central.IsDebugLevel() {
+	if debug {
 		Central.Log.Debugf("%s length set to %d", value.Type().Name(), fieldLength)
 	}
 
@@ -227,23 +264,29 @@ func (value *unicodeValue) parseBuffer(helper *BufferHelper, option *BufferOptio
 	if value.adatype.Type() == FieldTypeLBUnicode && option.PartialRead {
 		switch {
 		case value.lobSize < PartialLobSize:
-			Central.Log.Debugf("Due to Unicode LOB lobSize is smaller then partial size for %s", value.Type().Name())
+			if debug {
+				Central.Log.Debugf("Due to Unicode LOB lobSize is smaller then partial size for %s", value.Type().Name())
+			}
 			value.value = value.value[:value.lobSize]
 		case value.lobSize > PartialLobSize:
-			Central.Log.Debugf("Due to Unicode LOB lobSize is bigger then partial size, need second call (lob) for %s", value.Type().Name())
+			if debug {
+				Central.Log.Debugf("Due to Unicode LOB lobSize is bigger then partial size, need second call (lob) for %s", value.Type().Name())
+			}
 			if option.NeedSecondCall = ReadSecond; option.StoreCall {
 				option.NeedSecondCall = StoreSecond
 			}
-			Central.Log.Debugf("Unicode LOB: need second call %d", option.NeedSecondCall)
+			if debug {
+				Central.Log.Debugf("Unicode LOB: need second call %d", option.NeedSecondCall)
+			}
 		default:
 		}
-		if Central.IsDebugLevel() {
+		if debug {
 			Central.Log.Debugf("Buffer get lob string offset=%d %s size=%d/%d", helper.offset, value.Type().Name(), len(value.value), value.lobSize)
 			LogMultiLineString(true, FormatByteBuffer("LOB Buffer: ", value.value))
 		}
 
 	} else {
-		if Central.IsDebugLevel() {
+		if debug {
 			Central.Log.Debugf("Buffer get string offset=%d %s:%s size=%d", helper.offset, value.Type().Name(), value.value, len(value.value))
 		}
 	}

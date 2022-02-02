@@ -108,14 +108,34 @@ func NewBufferWithSize(id byte, size uint32) *Buffer {
 	return b
 }
 
+// NewSendBuffer Create a new buffer with given id
+func NewSendBuffer(id byte, buffer []byte) *Buffer {
+	adaBuffer := NewBuffer(id)
+	adaBuffer.buffer = buffer
+	adaBuffer.abd.Abdsize = uint64(len(buffer))
+	adaBuffer.abd.Abdsend = adaBuffer.abd.Abdsize
+	return adaBuffer
+}
+
+// NewRcvBuffer Create a new buffer with given id
+func NewRcvBuffer(id byte, size uint32) *Buffer {
+	adaBuffer := NewBufferWithSize(id, size)
+	adaBuffer.abd.Abdrecv = adaBuffer.abd.Abdsize
+	return adaBuffer
+}
+
 // If needed, grow the buffer size to new size given
 func (adabasBuffer *Buffer) grow(newSize int) {
-	adatypes.Central.Log.Debugf("Current %c buffer to %d,%d", adabasBuffer.abd.Abdid, len(adabasBuffer.buffer), cap(adabasBuffer.buffer))
-	adatypes.Central.Log.Debugf("Resize buffer to %d", newSize)
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Current %c buffer to %d,%d", adabasBuffer.abd.Abdid, len(adabasBuffer.buffer), cap(adabasBuffer.buffer))
+		adatypes.Central.Log.Debugf("Resize buffer to %d", newSize)
+	}
 	newBuffer := make([]byte, newSize)
 	copy(newBuffer, adabasBuffer.buffer)
 	adabasBuffer.buffer = newBuffer
-	adatypes.Central.Log.Debugf("Growed buffer len=%d cap=%d", len(adabasBuffer.buffer), cap(adabasBuffer.buffer))
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Growed buffer len=%d cap=%d", len(adabasBuffer.buffer), cap(adabasBuffer.buffer))
+	}
 	adabasBuffer.abd.Abdsize = uint64(len(adabasBuffer.buffer))
 }
 
@@ -142,7 +162,9 @@ func (adabasBuffer *Buffer) WriteString(content string) {
 
 // WriteBinary write a binary slice into the buffer
 func (adabasBuffer *Buffer) WriteBinary(content []byte) {
-	adatypes.Central.Log.Debugf("Write binary in adabas buffer")
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Write binary in adabas buffer")
+	}
 	end := adabasBuffer.offset + len(content)
 	if adabasBuffer.offset+len(content) > cap(adabasBuffer.buffer) {
 		adabasBuffer.grow(end)
@@ -150,7 +172,10 @@ func (adabasBuffer *Buffer) WriteBinary(content []byte) {
 	}
 
 	// Copy content into buffer
-	adatypes.Central.Log.Debugf("Copy to range offset=%d end=%d len=%d cap=%d", adabasBuffer.offset, end, len(adabasBuffer.buffer), cap(adabasBuffer.buffer))
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Copy to range offset=%d end=%d len=%d cap=%d",
+			adabasBuffer.offset, end, len(adabasBuffer.buffer), cap(adabasBuffer.buffer))
+	}
 	copy(adabasBuffer.buffer[adabasBuffer.offset:], content[:])
 	adabasBuffer.offset += len(content)
 	adabasBuffer.abd.Abdsend = uint64(adabasBuffer.offset)
@@ -217,13 +242,9 @@ func (adabasBuffer *Buffer) String() string {
 
 // SearchAdabasBuffer returns search buffer of the search tree
 func SearchAdabasBuffer(tree *adatypes.SearchTree) *Buffer {
-	adabasBuffer := NewBuffer(AbdAQSb)
-	sb := tree.SearchBuffer()
-	adabasBuffer.buffer = []byte(sb)
-	adabasBuffer.abd.Abdsize = uint64(len(sb))
-	adabasBuffer.abd.Abdsend = adabasBuffer.abd.Abdsize
+	adabasBuffer := NewSendBuffer(AbdAQSb, tree.SearchBuffer())
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.Central.Log.Debugf("Search buffer created: %s", sb)
+		adatypes.Central.Log.Debugf("Search buffer created: %s", string(adabasBuffer.buffer))
 		adatypes.Central.Log.Debugf("Send search buffer of size %d -> send=%d", adabasBuffer.abd.Abdsize,
 			adabasBuffer.abd.Abdsend)
 	}
@@ -232,12 +253,9 @@ func SearchAdabasBuffer(tree *adatypes.SearchTree) *Buffer {
 
 // ValueAdabasBuffer returns value buffer of the search tree
 func ValueAdabasBuffer(tree *adatypes.SearchTree) *Buffer {
-	adabasBuffer := NewBuffer(AbdAQVb)
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
-	adabasBuffer.buffer = buffer.Bytes()
-	adabasBuffer.abd.Abdsize = uint64(buffer.Len())
-	adabasBuffer.abd.Abdsend = adabasBuffer.abd.Abdsize
+	adabasBuffer := NewSendBuffer(AbdAQVb, buffer.Bytes())
 	return adabasBuffer
 }
 

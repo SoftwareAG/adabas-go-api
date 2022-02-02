@@ -56,9 +56,13 @@ func (value *packedValue) ByteValue() byte {
 
 // String return the string representation
 func (value *packedValue) String() string {
-	Central.Log.Debugf("Generate packed string for %s, use format type %c", value.Type().Name(), value.Type().FormatType())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Generate packed string for %s, use format type %c", value.Type().Name(), value.Type().FormatType())
+	}
 	packedInt := value.packedToLong()
-	Central.Log.Debugf("Got int packed value %d", packedInt)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Got int packed value %d", packedInt)
+	}
 	var sv string
 	switch value.Type().FormatType() {
 	case 'D':
@@ -67,10 +71,14 @@ func (value *packedValue) String() string {
 		sv = natTimeToString(packedInt)
 	default:
 		sv = strconv.FormatInt(packedInt, 10)
-		Central.Log.Debugf("In-between packed value %s fractional=%d", sv, value.Type().Fractional())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("In-between packed value %s fractional=%d", sv, value.Type().Fractional())
+		}
 		if value.Type().Fractional() > 0 {
 			l := uint32(len(sv))
-			Central.Log.Debugf("Fractional packed value %s", sv)
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Fractional packed value %s", sv)
+			}
 			if l <= value.Type().Fractional() {
 				var buffer bytes.Buffer
 				buffer.WriteString("0.")
@@ -84,7 +92,9 @@ func (value *packedValue) String() string {
 			}
 		}
 	}
-	Central.Log.Debugf("Return packed value %s", sv)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Return packed value %s", sv)
+	}
 	return sv
 }
 
@@ -152,7 +162,9 @@ func (value *packedValue) SetStringValue(stValue string) {
 
 // SetValue set the packed value by the given interface value
 func (value *packedValue) SetValue(v interface{}) (err error) {
-	Central.Log.Debugf("Set packed value to %v", v)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Set packed value to %v", v)
+	}
 	iLen := value.Type().Length()
 	var v64 int64
 	switch tv := v.(type) {
@@ -165,10 +177,14 @@ func (value *packedValue) SetValue(v interface{}) (err error) {
 		default:
 			value.value = tv
 		}
-		Central.Log.Debugf("Use byte array")
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Use byte array")
+		}
 		return nil
 	case string:
-		Central.Log.Debugf("String parse format type %v", value.Type().FormatType())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("String parse format type %v", value.Type().FormatType())
+		}
 		switch value.Type().FormatType() {
 		case 'T':
 			v64, err = parseDateTime(v)
@@ -186,7 +202,9 @@ func (value *packedValue) SetValue(v interface{}) (err error) {
 				return err
 			}
 		}
-		Central.Log.Debugf("String parse got %v", v64)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("String parse got %v", v64)
+		}
 	default:
 		v64, err = value.commonInt64Convert(v)
 		if err != nil {
@@ -203,7 +221,9 @@ func (value *packedValue) SetValue(v interface{}) (err error) {
 	}
 
 	value.LongToPacked(v64, iLen)
-	Central.Log.Debugf("Packed value %s", value.String())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Packed value %s", value.String())
+	}
 	return nil
 }
 
@@ -226,7 +246,9 @@ func parseDate(v interface{}) (int64, error) {
 	if derr != nil {
 		return 0, derr
 	}
-	Central.Log.Debugf("day=%d,month=%d,year=%d", d, m, y)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("day=%d,month=%d,year=%d", d, m, y)
+	}
 	return convertDate2NatDate(d, m, y), nil
 }
 
@@ -242,7 +264,9 @@ func convertDate2NatDate(d, m, y int) int64 {
 	ya := int64(y) - 100*c
 	j := 146097*c/4 + 1461*ya/4 + (153*int64(m)+2)/5 + int64(d) + 1721119
 	result := j - ratadie + 365
-	Central.Log.Debugf("result->%d", result)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("result->%d", result)
+	}
 	return result
 }
 
@@ -255,7 +279,9 @@ func (value *packedValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 }
 
 func parseDateTime(v interface{}) (res int64, err error) {
-	Central.Log.Debugf("Parse data time %v", v)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Parse data time %v", v)
+	}
 	var re = regexp.MustCompile(`(?m)(\d+)/(\d\d?)/(\d\d?) (\d\d?):(\d\d?):?(\d\d?)?\.?(\d*)?`)
 	match := re.FindAllStringSubmatch(v.(string), -1)
 	//fmt.Println(match)
@@ -300,7 +326,9 @@ func parseDateTime(v interface{}) (res int64, err error) {
 			return 0, err
 		}
 	}
-	Central.Log.Debugf("Evaluated %d.%d.%d %d:%d:%d.%d", d, m, y, hour, minute, seconds, microsec)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Evaluated %d.%d.%d %d:%d:%d.%d", d, m, y, hour, minute, seconds, microsec)
+	}
 	days := convertDate2NatDate(d, m, y)
 	nattime := int64(microsec) + int64(math.Pow(10, 6))*(int64(seconds)+60*int64(minute+60*hour)+int64(days)*daysecs)
 	res = (nattime / int64(math.Pow(10, 5))) // + 365 * DAYSECS * 10);
@@ -317,7 +345,9 @@ func (value *packedValue) StoreBuffer(helper *BufferHelper, option *BufferOption
 		if vlen == 0 {
 			return helper.putBytes([]byte{2, positivePackedIndicator()})
 		}
-		Central.Log.Debugf("Create variable len=%d", vlen)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Create variable len=%d", vlen)
+		}
 		err := helper.putByte(byte(vlen + 1))
 		if err != nil {
 			return err
@@ -328,7 +358,9 @@ func (value *packedValue) StoreBuffer(helper *BufferHelper, option *BufferOption
 
 func (value *packedValue) parseBuffer(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 	if option.SecondCall > 0 && !value.Type().HasFlagSet(FlagOptionSecondCall) {
-		Central.Log.Debugf("Skip parsing packed %s offset=%d, not needed at second call", value.Type().Name(), helper.offset)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Skip parsing packed %s offset=%d, not needed at second call", value.Type().Name(), helper.offset)
+		}
 		return
 	}
 	if value.Type().Length() == 0 {
@@ -345,7 +377,9 @@ func (value *packedValue) parseBuffer(helper *BufferHelper, option *BufferOption
 	if err != nil {
 		return
 	}
-	Central.Log.Debugf("Buffer get packed %s -> offset=%d/%X(%d)", value.adatype.Name(), helper.offset, helper.offset, len(value.value))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Buffer get packed %s -> offset=%d/%X(%d)", value.adatype.Name(), helper.offset, helper.offset, len(value.value))
+	}
 	return
 }
 
@@ -433,7 +467,9 @@ func (value *packedValue) packedToLong() int64 {
 	if value == nil {
 		return 0
 	}
-	Central.Log.Debugf("Packed %v", value.value)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Packed %v", value.value)
+	}
 
 	base := int64(1)
 	longValue := int64(0)
@@ -455,7 +491,9 @@ func (value *packedValue) packedToLong() int64 {
 		base *= 10
 	}
 	longValue *= sign
-	Central.Log.Debugf("packed to long conversion to %d", longValue)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("packed to long conversion to %d", longValue)
+	}
 
 	return longValue
 }
@@ -466,7 +504,9 @@ func (value *packedValue) checkValidValue(intValue int64, len uint32) error {
 		maxValue *= 10
 	}
 	absValue := uint64(math.Abs(float64(intValue)))
-	Central.Log.Debugf("Check valid value absolute value %d < max %d", absValue, maxValue)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Check valid value absolute value %d < max %d", absValue, maxValue)
+	}
 	if absValue < maxValue {
 		return nil
 	}
@@ -482,13 +522,17 @@ func (value *packedValue) createLength(v int64) uint32 {
 	}
 	cipher = (cipher + 1) / 2
 	value.value = make([]byte, cipher)
-	Central.Log.Debugf("Create size of %d for %d", cipher, v)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Create size of %d for %d", cipher, v)
+	}
 	return cipher
 }
 
 // LongToPacked convert long values (int64) to packed values
 func (value *packedValue) LongToPacked(intValue int64, len uint32) {
-	Central.Log.Debugf("Convert int64=%d of len=%d to packed", intValue, len)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Convert int64=%d of len=%d to packed", intValue, len)
+	}
 	b := make([]byte, len)
 	var v int64
 	if intValue < 0 {
@@ -499,7 +543,9 @@ func (value *packedValue) LongToPacked(intValue int64, len uint32) {
 	var x int64
 	start := int64(len) - 2
 	if start < -1 {
-		Central.Log.Debugf("Start negative %d", start)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Start negative %d", start)
+		}
 		return
 	}
 	if intValue > 0 {
@@ -510,17 +556,23 @@ func (value *packedValue) LongToPacked(intValue int64, len uint32) {
 	x = int64(v % 10)
 	v = (v - x) / 10
 	b[len-1] |= uint8(x << 4)
-	Central.Log.Debugf("len=%d start=%d", len, start)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("len=%d start=%d", len, start)
+	}
 	for i := start; i >= 0; i-- {
 		x = int64(v % 10)
 		v = (v - x) / 10
-		Central.Log.Debugf("index=%d start=%d", i, start)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("index=%d start=%d", i, start)
+		}
 		b[i] = uint8(x)
 		x = int64(v % 10)
 		v = (v - x) / 10
 		b[i] |= uint8(x << 4)
 	}
-	Central.Log.Debugf("Final value converted %v 0x%X", b, b)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Final value converted %v 0x%X", b, b)
+	}
 
 	value.value = b
 }

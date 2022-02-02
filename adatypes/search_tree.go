@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -136,8 +136,10 @@ func (tree *SearchTree) String() string {
 }
 
 // SearchBuffer returns search buffer of the search tree
-func (tree *SearchTree) SearchBuffer() string {
-	Central.Log.Debugf("Create search buffer ...")
+func (tree *SearchTree) SearchBuffer() []byte {
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Create search buffer ...")
+	}
 	var buffer bytes.Buffer
 	if tree.node != nil {
 		tree.node.searchBuffer(&buffer)
@@ -145,7 +147,7 @@ func (tree *SearchTree) SearchBuffer() string {
 		tree.value.searchBuffer(&buffer)
 	}
 	buffer.WriteRune('.')
-	return buffer.String()
+	return buffer.Bytes()
 }
 
 // ValueBuffer returns value buffer of the search tree
@@ -157,7 +159,9 @@ func (tree *SearchTree) ValueBuffer(buffer *bytes.Buffer) {
 	var intBuffer []byte
 	helper := NewHelper(intBuffer, math.MaxInt8, endian())
 	helper.search = true
-	Central.Log.Debugf("Tree value value buffer %s", tree.value.value.String())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Tree value value buffer %s", tree.value.value.String())
+	}
 	tree.value.value.StoreBuffer(helper, nil)
 	if tree.platform.IsMainframe() && tree.value.comp == EQ {
 		_ = tree.value.value.StoreBuffer(helper, nil)
@@ -182,7 +186,9 @@ func (tree *SearchTree) OrderBy() []string {
 }
 
 func (tree *SearchTree) evaluateDescriptors(fields map[string]bool) bool {
-	Central.Log.Debugf("Evaluate node descriptors")
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Evaluate node descriptors")
+	}
 	needSearch := false
 	for k, v := range fields {
 		if v {
@@ -269,7 +275,9 @@ func (node *SearchNode) String() string {
 }
 
 func (node *SearchNode) searchBuffer(buffer *bytes.Buffer) {
-	Central.Log.Debugf("Before node %s in %s", buffer.String(), node.logic.String())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Before node %s in %s", buffer.String(), node.logic.String())
+	}
 
 	if len(node.nodes) > 0 && (node.logic == AND || node.logic == OR) {
 		node.nodes[0].searchBuffer(buffer)
@@ -288,12 +296,16 @@ func (node *SearchNode) searchBuffer(buffer *bytes.Buffer) {
 			n.searchBuffer(buffer)
 		}
 	}
-	Central.Log.Debugf("After node %s in %s", buffer.String(), node.logic.String())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("After node %s in %s", buffer.String(), node.logic.String())
+	}
 }
 
 func (node *SearchNode) valueBuffer(buffer *bytes.Buffer) {
-	Central.Log.Debugf("Tree Node value buffer")
-	Central.Log.Debugf("Values %d", len(node.values))
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Tree Node value buffer")
+		Central.Log.Debugf("Values %d", len(node.values))
+	}
 	if len(node.nodes) > 0 && (node.logic == AND || node.logic == OR) {
 		node.nodes[0].valueBuffer(buffer)
 	}
@@ -301,15 +313,23 @@ func (node *SearchNode) valueBuffer(buffer *bytes.Buffer) {
 		var intBuffer []byte
 		helper := NewHelper(intBuffer, math.MaxInt8, endian())
 		helper.search = true
-		Central.Log.Debugf("Tree value value buffer %s", v.value.String())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Tree value value buffer %s", v.value.String())
+		}
 		err := v.value.StoreBuffer(helper, nil)
-		Central.Log.Debugf("Error store buffer: %v", err)
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Error store buffer: %v", err)
+		}
 		if node.platform.IsMainframe() && v.comp == EQ {
 			err = v.value.StoreBuffer(helper, nil)
-			Central.Log.Debugf("Error store buffer (MF): %v", err)
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Error store buffer (MF): %v", err)
+			}
 		}
 		buffer.Write(helper.buffer)
-		Central.Log.Debugf("%d Len buffer %d", i, buffer.Len())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("%d Len buffer %d", i, buffer.Len())
+		}
 	}
 	for i, n := range node.nodes {
 		if i > 0 || !(node.logic == AND || node.logic == OR) {
@@ -365,12 +385,18 @@ func (value *SearchValue) Platform() *Platform {
 }
 
 func (value *SearchValue) orderBy() string {
-	Central.Log.Debugf("Order by %s", value.adaType.Name())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Order by %s", value.adaType.Name())
+	}
 	if value.value.Type().IsOption(FieldOptionDE) || value.value.Type().IsSpecialDescriptor() {
-		Central.Log.Debugf("Found descriptor %s", value.adaType.Name())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Found descriptor %s", value.adaType.Name())
+		}
 		return value.value.Type().Name()
 	}
-	Central.Log.Debugf("Not a descriptor %s %T", value.adaType.Name(), value.value)
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Not a descriptor %s %T", value.adaType.Name(), value.value)
+	}
 	return ""
 }
 
@@ -379,7 +405,9 @@ func (value *SearchValue) searchFields() string {
 }
 
 func (value *SearchValue) searchBuffer(buffer *bytes.Buffer) {
-	Central.Log.Debugf("Before value %s", buffer.String())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Before value %s", buffer.String())
+	}
 	curLen := buffer.Len()
 	if curLen > 0 {
 		curLen++
@@ -393,7 +421,9 @@ func (value *SearchValue) searchBuffer(buffer *bytes.Buffer) {
 			buffer.WriteString(value.comp.String())
 		}
 	}
-	Central.Log.Debugf("After value %s", buffer.String())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("After value %s", buffer.String())
+	}
 }
 
 func checkComparator(comp string) comparator {
@@ -421,7 +451,10 @@ func NewSearchInfo(platform *Platform, search string) *SearchInfo {
 	searchInfo := SearchInfo{platform: platform, NeedSearch: false}
 	searchString := search
 	searchWithConstants := searchString
-	Central.Log.Debugf("Search constants: %s", searchWithConstants)
+	debug := Central.IsDebugLevel()
+	if debug {
+		Central.Log.Debugf("Search constants: %s", searchWithConstants)
+	}
 	index := 1
 	startConstants := strings.IndexByte(searchWithConstants, '\'')
 
@@ -434,13 +467,17 @@ func NewSearchInfo(platform *Platform, search string) *SearchInfo {
 		endConstants := startConstants
 		partStartConstants := startConstants
 		searchWithConstants = searchString[partStartConstants+1:]
-		Central.Log.Debugf("for: %s", searchWithConstants)
+		if debug {
+			Central.Log.Debugf("for: %s", searchWithConstants)
+		}
 		for {
-			Central.Log.Debugf("loop: %s", searchWithConstants)
+			if debug {
+				Central.Log.Debugf("loop: %s", searchWithConstants)
+			}
 			endConstants = partStartConstants + strings.IndexByte(searchWithConstants, '\'') + 1
 			searchWithConstants = searchWithConstants[endConstants-startConstants:]
 			partStartConstants = endConstants
-			if Central.IsDebugLevel() {
+			if debug {
 				Central.Log.Debugf("start: %d end:%d rest=%s", startConstants, endConstants, searchWithConstants)
 				Central.Log.Debugf("Check %d", endConstants-startConstants-1)
 			}
@@ -448,31 +485,41 @@ func NewSearchInfo(platform *Platform, search string) *SearchInfo {
 				break
 			}
 		}
-		if Central.IsDebugLevel() {
+		if debug {
 			Central.Log.Debugf("after for: %s", searchWithConstants)
 			Central.Log.Debugf("[%d,%d]",
 				startConstants, endConstants)
 		}
 		searchWithConstants = searchString
-		Central.Log.Debugf("Constant %s [%d,%d]", searchWithConstants[startConstants+1:endConstants],
-			startConstants, endConstants)
+		if debug {
+			Central.Log.Debugf("Constant %s [%d,%d]", searchWithConstants[startConstants+1:endConstants],
+				startConstants, endConstants)
+		}
 		constant := searchString[startConstants+1 : endConstants]
 		constant = strings.Replace(constant, "\\\\", "", -1)
-		Central.Log.Debugf("Register constant: %s", constant)
+		if debug {
+			Central.Log.Debugf("Register constant: %s", constant)
+		}
 		searchInfo.constants = append(searchInfo.constants, constant)
 		searchString = searchWithConstants[0:startConstants] + ConstantIndicator + "{" + strconv.Itoa(index) + "}" + searchWithConstants[endConstants+1:]
-		Central.Log.Debugf("New search constants: %s", searchString)
+		if debug {
+			Central.Log.Debugf("New search constants: %s", searchString)
+		}
 		index++
 		for {
 			startConstants = strings.IndexByte(searchString, '\'')
-			Central.Log.Debugf("Current index: %d", startConstants)
+			if debug {
+				Central.Log.Debugf("Current index: %d", startConstants)
+			}
 			if !(startConstants > 0 && searchString[startConstants-1] == '\\') {
 				break
 			}
 		}
 	}
 	searchInfo.search = searchString
-	Central.Log.Debugf("Result search formel: %s and %#v", searchString, searchInfo)
+	if debug {
+		Central.Log.Debugf("Result search formel: %s and %#v", searchString, searchInfo)
+	}
 	//        return new SearchInfo(searchWithConstants,
 	//            constants.toArray(new String[0]))
 	return &searchInfo
@@ -684,7 +731,9 @@ func (searchInfo *SearchInfo) searchFieldValue(searchValue *SearchValue, value s
 		return NewGenericError(0)
 	}
 
-	Central.Log.Debugf("Search value type: %T (length=%d)", searchValue.adaType, searchValue.adaType.Length())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Search value type: %T (length=%d)", searchValue.adaType, searchValue.adaType.Length())
+	}
 	searchValue.value, err = searchValue.adaType.Value()
 	if err != nil {
 		return
@@ -698,7 +747,10 @@ func (searchInfo *SearchInfo) searchFieldValue(searchValue *SearchValue, value s
 }
 
 func (searchInfo *SearchInfo) expandConstants(searchValue *SearchValue, value string) (err error) {
-	Central.Log.Debugf("Expand constants %s", value)
+	debug := Central.IsDebugLevel()
+	if debug {
+		Central.Log.Debugf("Expand constants %s", value)
+	}
 	expandedValue := value
 	var buffer bytes.Buffer
 	posIndicator := 0
@@ -709,39 +761,55 @@ func (searchInfo *SearchInfo) expandConstants(searchValue *SearchValue, value st
 	}
 	numPart := false
 	for strings.Contains(expandedValue, ConstantIndicator) {
-		Central.Log.Debugf("Work on expanded value %s", expandedValue)
+		if debug {
+			Central.Log.Debugf("Work on expanded value %s", expandedValue)
+		}
 		posIndicator = strings.Index(expandedValue, ConstantIndicator+"{")
 		//posIndicator = strings.IndexByte(expandedValue, ConstantIndicator[0])
 		constantString := expandedValue[posIndicator+2:]
-		Central.Log.Debugf("Constant without indicator id: %s", constantString)
+		if debug {
+			Central.Log.Debugf("Constant without indicator id: %s", constantString)
+		}
 		constantString = regexp.MustCompile("}.*").ReplaceAllString(constantString, "")
 		postIndicator = strings.IndexByte(expandedValue, '}') + 1
-		Central.Log.Debugf("Constant id: %s pos=%d post=%d", constantString, posIndicator, postIndicator)
+		if debug {
+			Central.Log.Debugf("Constant id: %s pos=%d post=%d", constantString, posIndicator, postIndicator)
+		}
 		index, error := strconv.Atoi(constantString)
 		if error != nil {
 			err = error
 			return
 		}
 		if posIndicator > 0 {
-			Central.Log.Debugf("Check numeric value %s", expandedValue[:posIndicator])
+			if debug {
+				Central.Log.Debugf("Check numeric value %s", expandedValue[:posIndicator])
+			}
 			appendNumericValue(&buffer, expandedValue[:posIndicator])
 			numPart = true
 		}
 		expandedValue = expandedValue[postIndicator:]
 		buffer.WriteString(searchInfo.constants[index-1])
-		Central.Log.Debugf("Expand end=%s", expandedValue)
+		if debug {
+			Central.Log.Debugf("Expand end=%s", expandedValue)
+		}
 	}
-	Central.Log.Debugf("Rest value=%s", value[postIndicator:])
+	if debug {
+		Central.Log.Debugf("Rest value=%s", value[postIndicator:])
+	}
 	if expandedValue != "" {
 		appendNumericValue(&buffer, expandedValue)
 		numPart = true
 	}
 	if numPart {
-		Central.Log.Debugf("Numeric part available ....")
+		if debug {
+			Central.Log.Debugf("Numeric part available ....")
+		}
 		searchValue.value.Type().SetLength(uint32(buffer.Len()))
 		err = searchValue.value.SetValue(buffer.Bytes())
 	} else {
-		Central.Log.Debugf("No Numeric part available ....%s", string(expandedValue))
+		if debug {
+			Central.Log.Debugf("No Numeric part available ....%s", string(expandedValue))
+		}
 		searchValue.value.Type().SetLength(uint32(buffer.Len()))
 		searchValue.value.SetStringValue(buffer.String())
 	}

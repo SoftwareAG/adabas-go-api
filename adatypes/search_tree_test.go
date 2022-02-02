@@ -111,7 +111,7 @@ func TestSearchSecondTreeBigNumber(t *testing.T) {
 	fields := make(map[string]bool)
 	assert.NoError(t, searchInfo.extractBinding(tree, searchInfo.search, fields))
 	Central.Log.Debugf(tree.String())
-	assert.Equal(t, "U4,4,B,EQ,D,SA,3,A,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "U4,4,B,EQ,D,SA,3,A,EQ.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
@@ -132,7 +132,7 @@ func TestSearchExtractAndBinding(t *testing.T) {
 	fields := make(map[string]bool)
 	assert.NoError(t, searchInfo.extractBinding(tree, searchInfo.search, fields))
 	Central.Log.Debugf(tree.String())
-	assert.Equal(t, "AA,8,B,EQ,D,BC,1,B,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "AA,8,B,EQ,D,BC,1,B,EQ.", string(tree.SearchBuffer()))
 	//assert.True(t, searchInfo.NeedSearch)
 
 }
@@ -151,7 +151,7 @@ func TestSearchEqualValue(t *testing.T) {
 	fields := make(map[string]bool)
 	assert.NoError(t, searchInfo.extractBinding(tree, searchInfo.search, fields))
 	Central.Log.Debugf(tree.String())
-	assert.Equal(t, "SA,1,A,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "SA,1,A,EQ.", string(tree.SearchBuffer()))
 	assert.False(t, searchInfo.NeedSearch)
 
 }
@@ -170,7 +170,7 @@ func TestSearchNotEqualValue(t *testing.T) {
 	fields := make(map[string]bool)
 	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	Central.Log.Debugf(tree.String())
-	assert.Equal(t, "SA,1,A,NE.", tree.SearchBuffer())
+	assert.Equal(t, "SA,1,A,NE.", string(tree.SearchBuffer()))
 	assert.True(t, searchInfo.NeedSearch)
 
 }
@@ -189,7 +189,7 @@ func TestSearchExtractOrBinding(t *testing.T) {
 	fields := make(map[string]bool)
 	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	Central.Log.Debugf(tree.String())
-	assert.Equal(t, "AA,8,B,EQ,R,BC,1,B,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "AA,8,B,EQ,R,BC,1,B,EQ.", string(tree.SearchBuffer()))
 	//assert.True(t, searchInfo.NeedSearch)
 
 }
@@ -207,7 +207,7 @@ func TestSearchStringValue(t *testing.T) {
 	tree := &SearchTree{platform: searchInfo.platform}
 	fields := make(map[string]bool)
 	searchInfo.extractBinding(tree, searchInfo.search, fields)
-	assert.Equal(t, "AD,6,A,EQ,D,BC,1,B,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "AD,6,A,EQ,D,BC,1,B,EQ.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
@@ -232,7 +232,7 @@ func TestSearchVarStringValue(t *testing.T) {
 	tree := &SearchTree{platform: searchInfo.platform}
 	fields := make(map[string]bool)
 	searchInfo.extractBinding(tree, searchInfo.search, fields)
-	assert.Equal(t, "AD,6,A,EQ,D,BC,1,B,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "AD,6,A,EQ,D,BC,1,B,EQ.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
@@ -258,7 +258,7 @@ func TestSearchTwoStringValue(t *testing.T) {
 	fields := make(map[string]bool)
 	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	assert.Equal(t, 2, len(fields))
-	assert.Equal(t, "AE,6,A,EQ,D,AD,4,A,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "AE,6,A,EQ,D,AD,4,A,EQ.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
@@ -301,7 +301,7 @@ func TestSearchRange(t *testing.T) {
 	fields := make(map[string]bool)
 	searchInfo.extractBinding(tree, searchInfo.search, fields)
 	assert.NotNil(t, tree.platform)
-	assert.Equal(t, "AA,8,B,GE,S,AA,8,B,LE.", tree.SearchBuffer())
+	assert.Equal(t, "AA,8,B,GE,S,AA,8,B,LE.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
@@ -332,7 +332,7 @@ func TestSearchRangeMf(t *testing.T) {
 	tree := &SearchTree{platform: searchInfo.platform}
 	fields := make(map[string]bool)
 	searchInfo.extractBinding(tree, searchInfo.search, fields)
-	assert.Equal(t, "AA,8,B,S,AA,8,B.", tree.SearchBuffer())
+	assert.Equal(t, "AA,8,B,S,AA,8,B.", string(tree.SearchBuffer()))
 	assert.Equal(t, 1, len(fields))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
@@ -367,7 +367,7 @@ func TestSearchRangeMfNoLower(t *testing.T) {
 	tree := &SearchTree{platform: searchInfo.platform}
 	fields := make(map[string]bool)
 	searchInfo.extractBinding(tree, searchInfo.search, fields)
-	assert.Equal(t, "AA,8,B,S,AA,8,B,N,AA,8,B.", tree.SearchBuffer())
+	assert.Equal(t, "AA,8,B,S,AA,8,B,N,AA,8,B.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
@@ -403,7 +403,7 @@ func TestSearchRangeMfNoHigher(t *testing.T) {
 	tree := &SearchTree{platform: searchInfo.platform}
 	fields := make(map[string]bool)
 	searchInfo.extractBinding(tree, searchInfo.search, fields)
-	assert.Equal(t, "AA,8,B,S,AA,8,B,N,AA,8,B.", tree.SearchBuffer())
+	assert.Equal(t, "AA,8,B,S,AA,8,B,N,AA,8,B.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
@@ -439,7 +439,7 @@ func TestSearchRangeAlpha(t *testing.T) {
 	tree := &SearchTree{platform: searchInfo.platform}
 	fields := make(map[string]bool)
 	searchInfo.extractBinding(tree, searchInfo.search, fields)
-	assert.Equal(t, "SA,8,A,GE,S,SA,8,A,LE.", tree.SearchBuffer())
+	assert.Equal(t, "SA,8,A,GE,S,SA,8,A,LE.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
@@ -467,7 +467,7 @@ func TestSearchRangeMfNoHigherAlpha(t *testing.T) {
 	tree := &SearchTree{platform: searchInfo.platform}
 	fields := make(map[string]bool)
 	searchInfo.extractBinding(tree, searchInfo.search, fields)
-	assert.Equal(t, "SA,8,A,S,SA,8,A,N,SA,8,A.", tree.SearchBuffer())
+	assert.Equal(t, "SA,8,A,S,SA,8,A,N,SA,8,A.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
@@ -498,7 +498,7 @@ func TestSearchRangeMfNoBorder(t *testing.T) {
 	if !assert.NoError(t, serr) {
 		return
 	}
-	assert.Equal(t, "AA,8,B,S,AA,8,B,N,AA,8,B,D,AA,8,B,NE.", tree.SearchBuffer())
+	assert.Equal(t, "AA,8,B,S,AA,8,B,N,AA,8,B,D,AA,8,B,NE.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
@@ -538,7 +538,7 @@ func TestSearchValue(t *testing.T) {
 	if !assert.NoError(t, serr) {
 		return
 	}
-	assert.Equal(t, "AA,8,B,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "AA,8,B,EQ.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
@@ -575,7 +575,7 @@ func TestSearchFields(t *testing.T) {
 	if !assert.NoError(t, serr) {
 		return
 	}
-	assert.Equal(t, "AA,8,B,EQ,D,BC,1,B,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "AA,8,B,EQ,D,BC,1,B,EQ.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
@@ -667,7 +667,7 @@ func TestSearchComplex(t *testing.T) {
 	}
 	Central.Log.Debugf("Search Tree: %s", tree.String())
 
-	assert.Equal(t, "AA,8,B,GT,S,AA,8,B,LE,D,AD,5,A,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "AA,8,B,GT,S,AA,8,B,LE,D,AD,5,A,EQ.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()
@@ -705,7 +705,7 @@ func TestSearchExtractOr2Binding(t *testing.T) {
 	}
 	assert.NoError(t, err)
 	Central.Log.Debugf(tree.String())
-	assert.Equal(t, "AA,8,B,EQ,R,BC,1,B,EQ,R,AC,1,P,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "AA,8,B,EQ,R,BC,1,B,EQ,R,AC,1,P,EQ.", string(tree.SearchBuffer()))
 	assert.True(t, searchInfo.NeedSearch)
 }
 
@@ -784,7 +784,7 @@ func TestSuperDescriptor(t *testing.T) {
 	}
 	assert.NoError(t, err)
 	Central.Log.Debugf(tree.String())
-	assert.Equal(t, "S1,4,A,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "S1,4,A,EQ.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	assert.Equal(t, "EMPL", buffer.String())
@@ -807,7 +807,7 @@ func TestTwoFields(t *testing.T) {
 	}
 	assert.NoError(t, err)
 	Central.Log.Debugf(tree.String())
-	assert.Equal(t, "S1,4,A,EQ,O,S1,3,A,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "S1,4,A,EQ,O,S1,3,A,EQ.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	assert.Equal(t, "EMPLABC", buffer.String())
@@ -830,7 +830,7 @@ func TestMainframeEqual(t *testing.T) {
 	}
 	assert.NoError(t, err)
 	Central.Log.Debugf(tree.String())
-	assert.Equal(t, "SA,3,A,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "SA,3,A,EQ.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	assert.Equal(t, "ABC", buffer.String())
@@ -844,7 +844,7 @@ func TestMainframeEqual(t *testing.T) {
 	}
 	assert.NoError(t, err)
 	Central.Log.Debugf(tree.String())
-	assert.Equal(t, "SA,3,A,S,SA,3,A.", tree.SearchBuffer())
+	assert.Equal(t, "SA,3,A,S,SA,3,A.", string(tree.SearchBuffer()))
 	buffer = bytes.Buffer{}
 	tree.ValueBuffer(&buffer)
 	assert.Equal(t, "ABCABC", buffer.String())
@@ -868,7 +868,7 @@ func TestSingleLessLength(t *testing.T) {
 	}
 	assert.NoError(t, err)
 	Central.Log.Debugf(tree.String())
-	assert.Equal(t, "SA,3,A,EQ.", tree.SearchBuffer())
+	assert.Equal(t, "SA,3,A,EQ.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	assert.Equal(t, "ABC", buffer.String())
@@ -917,7 +917,7 @@ func TestSearchTest(t *testing.T) {
 			return
 		}
 		Central.Log.Debugf(tree.String())
-		if !assert.Equal(t, search.searchBuffer, tree.SearchBuffer()) {
+		if !assert.Equal(t, search.searchBuffer, string(tree.SearchBuffer())) {
 			return
 		}
 		var buffer bytes.Buffer
@@ -963,7 +963,7 @@ func TestComplexSearchTest(t *testing.T) {
 		}
 		fmt.Println("Got Tree : ", search.searchQuery)
 		Central.Log.Debugf(tree.String())
-		if !assert.Equal(t, search.searchBuffer, tree.SearchBuffer()) {
+		if !assert.Equal(t, search.searchBuffer, string(tree.SearchBuffer())) {
 			fmt.Println("Search buffer mismatch")
 			return
 		}
@@ -996,7 +996,7 @@ func TestSearchEqual(t *testing.T) {
 	}
 	Central.Log.Debugf("Search Tree: %s", tree.String())
 
-	assert.Equal(t, "AA,8,B,EQ,D,AA,8,B,EQ,D,AA,8,B,GT.", tree.SearchBuffer())
+	assert.Equal(t, "AA,8,B,EQ,D,AA,8,B,EQ,D,AA,8,B,GT.", string(tree.SearchBuffer()))
 	var buffer bytes.Buffer
 	tree.ValueBuffer(&buffer)
 	valueBuffer := buffer.Bytes()

@@ -1,5 +1,5 @@
 /*
-* Copyright © 2021 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2021-2022 Software AG, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -25,7 +25,8 @@ import (
 
 // UpdateLOBRecord update lob records in an stream, call will write segment to offset of LOB
 func (request *StoreRequest) UpdateLOBRecord(isn adatypes.Isn, field string, offset uint64, data []byte) (err error) {
-	if adatypes.Central.IsDebugLevel() {
+	debug := adatypes.Central.IsDebugLevel()
+	if debug {
 		adatypes.Central.Log.Debugf("Store LOB record initiated ...")
 	}
 	err = request.Open()
@@ -37,7 +38,7 @@ func (request *StoreRequest) UpdateLOBRecord(isn adatypes.Isn, field string, off
 		adatypes.Central.Log.Debugf("Store fields error ...%#v", err)
 		return err
 	}
-	if adatypes.Central.IsDebugLevel() {
+	if debug {
 		adatypes.Central.Log.Debugf("LOB Definition generated ...BlockSize=%d", len(data))
 	}
 	var record *Record
@@ -51,7 +52,7 @@ func (request *StoreRequest) UpdateLOBRecord(isn adatypes.Isn, field string, off
 		adatypes.Central.Log.Debugf("Set partial value error ...%#v", err)
 		return err
 	}
-	if adatypes.Central.IsDebugLevel() {
+	if debug {
 		adatypes.Central.Log.Debugf("Update LOB with ...%#v", field)
 	}
 
@@ -60,7 +61,7 @@ func (request *StoreRequest) UpdateLOBRecord(isn adatypes.Isn, field string, off
 		return prepareErr
 	}
 	err = request.update(adabasRequest, record)
-	if adatypes.Central.IsDebugLevel() {
+	if debug {
 		adatypes.Central.Log.Debugf("Error reading %v", err)
 	}
 

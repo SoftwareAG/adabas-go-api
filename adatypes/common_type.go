@@ -261,7 +261,9 @@ func (commonType *CommonType) SetRange(r *AdaRange) {
 // SetParent set the parent of the type
 func (commonType *CommonType) SetParent(parentType IAdaType) {
 	if parentType != nil {
-		Central.Log.Debugf("%s parent is set to %s", commonType.name, parentType.Name())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("%s parent is set to %s", commonType.name, parentType.Name())
+		}
 		if parentType.HasFlagSet(FlagOptionPE) {
 			commonType.AddFlag(FlagOptionPE)
 		}
@@ -405,16 +407,22 @@ func (commonType *CommonType) HasFlagSet(flagOption FlagOption) bool {
 // AddFlag add the flag to the type flag set
 func (commonType *CommonType) AddFlag(flagOption FlagOption) {
 	if commonType.HasFlagSet(flagOption) {
-		Central.Log.Debugf("Flag %s to %d already done", commonType.shortName, flagOption.Bit())
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Flag %s to %d already done", commonType.shortName, flagOption.Bit())
+		}
 		return
 	}
-	Central.Log.Debugf("Set Flag %s to %d", commonType.shortName, flagOption.Bit())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Set Flag %s to %d", commonType.shortName, flagOption.Bit())
+	}
 	commonType.flags |= flagOption.Bit()
 
 	if flagOption == FlagOptionAtomicFB || flagOption == FlagOptionSingleIndex {
 		p := commonType.GetParent()
 		for p != nil && p.ShortName() != "" {
-			Central.Log.Debugf("Set Parent Flag %s to %d", p.ShortName(), flagOption.Bit())
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Set Parent Flag %s to %d", p.ShortName(), flagOption.Bit())
+			}
 			if p.HasFlagSet(flagOption) {
 				break
 			}
@@ -425,7 +433,9 @@ func (commonType *CommonType) AddFlag(flagOption FlagOption) {
 			// Only work in period group or group
 			//			if !p.HasFlagSet(flagOption) {
 			for _, s := range commonType.SubTypes {
-				Central.Log.Debugf("Set Children Flag %s to %d", s.ShortName(), flagOption.Bit())
+				if Central.IsDebugLevel() {
+					Central.Log.Debugf("Set Children Flag %s to %d", s.ShortName(), flagOption.Bit())
+				}
 				if !s.HasFlagSet(flagOption) {
 					s.AddFlag(flagOption)
 				}
@@ -433,7 +443,9 @@ func (commonType *CommonType) AddFlag(flagOption FlagOption) {
 			//			}
 		}
 	}
-	Central.Log.Debugf("Set Flag %s to %d done", commonType.shortName, flagOption.Bit())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("Set Flag %s to %d done", commonType.shortName, flagOption.Bit())
+	}
 }
 
 // RemoveFlag add the flag to the type flag set
