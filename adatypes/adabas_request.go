@@ -557,10 +557,11 @@ func (adabasRequest *Request) readMultifetch(multifetchHelper *BufferHelper) (re
 		err = isnErr
 		return
 	}
-	Central.Log.Debugf("Got ISN %d", isn)
+	Central.Log.Debugf("Got ISN %d request=%p", isn, adabasRequest)
 	adabasRequest.Isn = Isn(isn)
 	if adabasRequest.StoreIsn {
 		adabasRequest.CbIsn = Isn(isn)
+		Central.Log.Debugf("Store ISN %d request=%p", isn, adabasRequest)
 	}
 	quantity, qerr := multifetchHelper.ReceiveUInt32()
 	if qerr != nil {

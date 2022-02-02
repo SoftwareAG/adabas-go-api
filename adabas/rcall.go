@@ -46,7 +46,7 @@ func NewAdabasID() *ID {
 	adaid := AID{level: 3, size: adabasIDSize}
 	adaid.Timestamp = uint64(time.Now().UnixNano() / 1000)
 	adaid.Pid = uint32((adaid.Timestamp - (adaid.Timestamp % 100)) + uint64(id))
-	aid := ID{AdaID: &adaid, connectionMap: make(map[string]*Status)}
+	aid := ID{AdaID: &adaid, connectionMap: make(map[string]*Status), instances: make(map[*Adabas]bool)}
 	curUser, err := user.Current()
 	if err != nil {
 		copy(adaid.User[:], ([]byte("Unknown"))[:8])

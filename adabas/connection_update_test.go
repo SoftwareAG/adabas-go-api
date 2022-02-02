@@ -23,12 +23,13 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
 )
 
 func updateStream(record *Record, x interface{}) error {
 	tc := x.(*testCopy)
-	// fmt.Printf("Update %d -> %d\n", record.Isn, record.Quantity)
+	adatypes.Central.Log.Debugf("TEST: Update ISN %d -> quantity %d\n", record.Isn, record.Quantity)
 	err := record.SetValue(tc.indexField, fmt.Sprintf("%05d", tc.i))
 	if err != nil {
 		return err
@@ -203,8 +204,10 @@ type EmployeesUpdate struct {
 func TestConnectionInterfaceStoreCopyUpdate(t *testing.T) {
 	initTestLogWithFile(t, "connection_store.log")
 
-	clearAdabasFile(t, adabasModDBIDs, 16)
-	clearAdabasFile(t, adabasModDBIDs, 249)
+	// target := "adatcp://localhost:64023"
+	target := adabasModDBIDs
+	clearAdabasFile(t, target, 16)
+	clearAdabasFile(t, target, 249)
 
 	err := prepareMaps(t, "EMPLOYEES-NAT-DDM.json")
 	if err != nil {
@@ -217,7 +220,7 @@ func TestConnectionInterfaceStoreCopyUpdate(t *testing.T) {
 	if !assert.Len(t, maps, 1) {
 		return
 	}
-	u, _ := NewURL(adabasModDBIDs)
+	u, _ := NewURL(target)
 	maps[0].Repository = &DatabaseURL{URL: *u, Fnr: 249}
 	maps[0].Name = "EmployeesUpdate"
 	maps[0].Data.Fnr = 16
@@ -226,13 +229,13 @@ func TestConnectionInterfaceStoreCopyUpdate(t *testing.T) {
 		return
 	}
 
-	err = copyAdabasMap(t, "*", adabasModDBIDs, 249, origMap, destMap)
+	err = copyAdabasMap(t, "*", target, 249, origMap, destMap)
 	if !assert.NoError(t, err) {
 		return
 	}
-	checkContent(t, "checkTestInterfaceCopy", adabasModDBIDs, 16)
+	checkContent(t, "checkTestInterfaceCopy", target, 16)
 
-	connection, err := NewConnection(fmt.Sprintf("acj;map;config=[%s,%d]", adabasModDBIDs, 249))
+	connection, err := NewConnection(fmt.Sprintf("acj;map;config=[%s,%d]", target, 249))
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -261,5 +264,5 @@ func TestConnectionInterfaceStoreCopyUpdate(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	checkContent(t, "checkTestInterfaceUpdate", adabasModDBIDs, 16)
+	checkContent(t, "checkTestInterfaceUpdate", target, 16)
 }
