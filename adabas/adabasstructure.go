@@ -165,13 +165,14 @@ type Status struct {
 	open             bool
 	openTransactions uint32
 	platform         *adatypes.Platform
-	adabas           *Adabas
+	adabas           []*Adabas
 	version          string
 }
 
 // ID Adabas Id
 type ID struct {
 	connectionMap map[string]*Status
+	instances     map[*Adabas]bool
 	AdaID         *AID
 	user          string
 	pwd           string
@@ -183,7 +184,7 @@ type ID struct {
 func (adaid *ID) Clone() *ID {
 	AdaID := AID{level: 3, size: adabasIDSize}
 	aid := ID{AdaID: &AdaID, connectionMap: make(map[string]*Status),
-		user: adaid.user, pwd: adaid.pwd}
+		instances: make(map[*Adabas]bool), user: adaid.user, pwd: adaid.pwd}
 	copy(AdaID.User[:], adaid.AdaID.User[:])
 	copy(AdaID.Node[:], adaid.AdaID.Node[:])
 	id := atomic.AddUint32(&idCounter, 1)
@@ -244,36 +245,54 @@ func (adaid *ID) platform(url string) *adatypes.Platform {
 	return s.platform
 }
 
-func (adaid *ID) changeOpenState(url string, open bool) {
+func (adaid *ID) changeOpenState(url string, p *Adabas, open bool) {
 	adatypes.Central.Log.Debugf("Register open=%v to url=%s", open, url)
 	s := adaid.status(url)
 	if s == nil {
 		return
 	}
 	s.open = open
+	if adatypes.Central.IsDebugLevel() {
+		var buffer bytes.Buffer
+		for i := range adaid.instances {
+			buffer.WriteString(fmt.Sprintf("%p,", i))
+		}
+		adatypes.Central.Log.Debugf("Change open state %d %v %p instances %s", len(adaid.instances), open, s.adabas, buffer.String())
+	}
 	if !open {
 		s.openTransactions = 0
+		adaid.instances[p] = true
+	} else {
+		delete(adaid.instances, p)
 	}
+}
+
+func (adaid *ID) checkAdabas(url *URL) *Adabas {
+	s := adaid.status(url.String())
+	if len(s.adabas) > 0 {
+		return s.adabas[0]
+	}
+	return nil
 }
 
 func (adaid *ID) getAdabas(url *URL) *Adabas {
 	s := adaid.status(url.String())
-	if s.adabas == nil {
+	if s.adabas == nil || len(s.adabas) == 0 {
 		a, err := NewAdabas(url, adaid)
 		if err != nil {
 			return nil
 		}
 		return a
 	}
-	return s.adabas
+	return s.adabas[0]
 }
 
-func (adaid *ID) setAdabas(a *Adabas) {
+func (adaid *ID) addAdabas(a *Adabas) {
 	s := adaid.status(a.URL.String())
-	if s.adabas == nil {
-		s.adabas = a
+	if s.adabas == nil || len(s.adabas) == 0 {
+		s.adabas = append(s.adabas, a)
 	} else {
-		a.transactions = s.adabas.transactions
+		a.transactions = s.adabas[0].transactions
 	}
 }
 
@@ -284,7 +303,18 @@ func (adaid *ID) isOpen(url string) bool {
 	}
 	open := s.open
 	adatypes.Central.Log.Debugf("Check is open=%v to url=%s", open, url)
+	// debug.PrintStack()
 	return open
+}
+
+func (adaid *ID) requestOpen(p *Adabas, url string) bool {
+	b := adaid.isOpen(url)
+	if b {
+		if ok, _ := adaid.instances[p]; !ok {
+			adaid.instances[p] = false
+		}
+	}
+	return b
 }
 
 func (adaid *ID) transactions(url string) uint32 {
@@ -314,6 +344,10 @@ func (adaid *ID) clearTransactions(url string) {
 // Close close all open adabas instance for this ID
 func (adaid *ID) Close() {
 	for _, s := range adaid.connectionMap {
-		s.adabas.Close()
+		if s.adabas != nil && len(s.adabas) > 0 {
+			s.adabas[0].Close()
+		}
 	}
+	adatypes.Central.Log.Debugf("Close %d open instances", len(adaid.instances))
+	adaid.instances = make(map[*Adabas]bool)
 }

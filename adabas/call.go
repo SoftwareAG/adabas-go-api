@@ -38,7 +38,7 @@ var idCounter uint32
 // of the pid is used.
 func NewAdabasID() *ID {
 	AdaID := AID{level: 3, size: adabasIDSize}
-	aid := ID{AdaID: &AdaID, connectionMap: make(map[string]*Status)}
+	aid := ID{AdaID: &AdaID, connectionMap: make(map[string]*Status), instances: make(map[*Adabas]bool)}
 	//	C.lnk_get_adabas_id(adabasIDSize, (*C.uchar)(unsafe.Pointer(&AdaID)))
 	curUser, err := user.Current()
 	if err != nil {
@@ -71,6 +71,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 	defer TimeTrack(time.Now(), "Call adabas", adabas)
 
 	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Adabas instance: %c%c %p", adabas.Acbx.Acbxcmd[0], adabas.Acbx.Acbxcmd[1], adabas)
 		adatypes.Central.Log.Debugf("Send calling CC %c%c adabasp=%p URL=%s Adabas ID=%v",
 			adabas.Acbx.Acbxcmd[0], adabas.Acbx.Acbxcmd[1],
 			adabas, adabas.URL.String(), adabas.ID.String())
@@ -121,7 +122,7 @@ func (adabas *Adabas) CallAdabas() (err error) {
 	switch adabas.Acbx.Acbxrsp {
 	case AdaAnact, AdaTransactionAborted, AdaSysCe:
 		adabas.ID.clearTransactions(adabas.URL.String())
-		adabas.ID.changeOpenState(adabas.URL.String(), false)
+		adabas.ID.changeOpenState(adabas.URL.String(), adabas, false)
 	}
 	if adabas.Acbx.Acbxrsp > AdaEOF {
 		return NewError(adabas)

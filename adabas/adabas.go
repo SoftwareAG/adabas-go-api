@@ -106,7 +106,7 @@ func init() {
 func NewClonedAdabas(clone *Adabas) *Adabas {
 	acbx := newAcbx(clone.Acbx.Acbxdbid)
 
-	return &Adabas{
+	ada := &Adabas{
 		ID:           clone.ID,
 		status:       clone.ID.status(clone.URL.String()),
 		Acbx:         acbx,
@@ -115,6 +115,12 @@ func NewClonedAdabas(clone *Adabas) *Adabas {
 		statistics:   clone.statistics,
 		lock:         &sync.Mutex{},
 	}
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Create clone Adabas instance %p", ada)
+	}
+
+	clone.ID.addAdabas(ada)
+	return ada
 }
 
 // NewAdabas create a new Adabas struct instance
@@ -149,6 +155,10 @@ func NewAdabas(p ...interface{}) (ada *Adabas, err error) {
 		err = adatypes.NewGenericError(67, url.Dbid, 1, MaxDatabasesID)
 		return nil, err
 	}
+	ada = adaID.checkAdabas(url)
+	if ada != nil {
+		return ada, nil
+	}
 
 	acbx := newAcbx(url.Dbid)
 	ada = &Adabas{
@@ -160,7 +170,10 @@ func NewAdabas(p ...interface{}) (ada *Adabas, err error) {
 		statistics:   newStatistics(),
 		lock:         &sync.Mutex{},
 	}
-	adaID.setAdabas(ada)
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Create Adabas instance %p", ada)
+	}
+	adaID.addAdabas(ada)
 	return ada, nil
 
 }
@@ -220,13 +233,15 @@ func (adabas *Adabas) Open() (err error) {
 func (adabas *Adabas) OpenUser(user string) (err error) {
 	url := adabas.URL.String()
 	if adabas.ID.isOpen(url) {
-		adatypes.Central.Log.Debugf("Database %s already opened by ID %#v", url, adabas.ID)
+		adatypes.Central.Log.Debugf("Database %s already opened (request) by ID %#v", url, adabas.ID)
 		return
 	}
+	adatypes.Central.Log.Debugf("Database %s no opened by ID %#v", url, adabas.ID)
 	adabas.lock.Lock()
 	defer adabas.lock.Unlock()
 	if adatypes.Central.IsDebugLevel() {
-		adatypes.Central.Log.Debugf("Open database %d %s", adabas.Acbx.Acbxdbid, adabas.ID.String())
+		adatypes.Central.Log.Debugf("Open calling response locked")
+		adatypes.Central.Log.Debugf("Open database %03d %s", adabas.Acbx.Acbxdbid, adabas.ID.String())
 	}
 
 	adabas.Acbx.Acbxcmd = op.code()
@@ -241,8 +256,13 @@ func (adabas *Adabas) OpenUser(user string) (err error) {
 	}
 
 	// Create default buffers to open with able to update records in all files
+	adabas.AdabasBuffers = nil
 	adabas.AdabasBuffers = append(adabas.AdabasBuffers, NewBufferWithSize(AbdAQFb, 1))
 	adabas.AdabasBuffers = append(adabas.AdabasBuffers, NewSendBuffer(AbdAQRb, []byte("UPD.")))
+
+	adatypes.Central.Log.Debugf("Send RB send=%d,recv=%d size=%d nr buffers=%d",
+		adabas.AdabasBuffers[1].abd.Abdsend, adabas.AdabasBuffers[1].abd.Abdrecv,
+		adabas.AdabasBuffers[1].abd.Abdsize, len(adabas.AdabasBuffers))
 
 	err = adabas.CallAdabas()
 	if err != nil {
@@ -251,17 +271,17 @@ func (adabas *Adabas) OpenUser(user string) (err error) {
 	}
 	if adabas.Acbx.Acbxrsp == AdaNormal {
 		if adatypes.Central.IsDebugLevel() {
-			adatypes.Central.Log.Debugf("Open call response success")
+			adatypes.Central.Log.Debugf("Open calling response success")
 		}
-		adabas.ID.changeOpenState(adabas.URL.String(), true)
+		adabas.ID.changeOpenState(adabas.URL.String(), adabas, true)
 		adabas.status.open = true
 		adabas.status.platform = adatypes.NewPlatformIsl(adabas.Acbx.Acbxisl)
 		adabas.status.version = parseVersion(adabas.Acbx.Acbxisq)
 	} else {
 		err = NewError(adabas)
-		adatypes.Central.Log.Debugf("Error calling open", err)
+		adatypes.Central.Log.Debugf("Error open calling response %v", err)
 		adabas.status.open = false
-		adabas.ID.changeOpenState(adabas.URL.String(), false)
+		adabas.ID.changeOpenState(adabas.URL.String(), adabas, false)
 	}
 	return err
 }
@@ -291,8 +311,9 @@ func (adabas *Adabas) Close() {
 	adabas.AdabasBuffers = nil
 	adabas.Acbx.Acbxcmd = cl.code()
 	ret := adabas.CallAdabas()
-	adatypes.Central.Log.Debugf("Close call response ret=%v %s", ret, adabas.ID.String())
-	adabas.ID.changeOpenState(adabas.URL.String(), false)
+	adatypes.Central.Log.Debugf("Close call response ret=%v id=%s buflen=%d", ret,
+		adabas.ID.String(), len(adabas.AdabasBuffers))
+	adabas.ID.changeOpenState(adabas.URL.String(), adabas, false)
 }
 
 // ReleaseCmdID Release any command id resource in the database of the session are released
@@ -371,7 +392,13 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 	cacheName := adabas.URL.String() + "_" + strconv.Itoa(int(fileNr))
 	definition = adatypes.CreateDefinitionByCache(cacheName)
 	if definition != nil {
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Read file definition in cache: %s", cacheName)
+		}
 		return
+	}
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Read file definition not in cache: %s", cacheName)
 	}
 
 	err = adabas.Open()
@@ -380,9 +407,15 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 	}
 	adabas.lock.Lock()
 	defer adabas.lock.Unlock()
-	debug := adatypes.Central.IsDebugLevel()
-	if debug {
+	return adabas.ReadFileDefinitionUnlocked(fileNr)
+}
+
+// ReadFileDefinitionUnlocked Read file definition out of Adabas file
+func (adabas *Adabas) ReadFileDefinitionUnlocked(fileNr Fnr) (definition *adatypes.Definition, err error) {
+	debugLevel := adatypes.Central.IsDebugLevel()
+	if debugLevel {
 		adatypes.Central.Log.Debugf("Read file definition with %s", lf.command())
+		// debug.PrintStack()
 	}
 	adabas.Acbx.Acbxcmd = lf.code()
 	adabas.Acbx.resetCop()
@@ -398,7 +431,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 
 	adabas.Acbx.Acbxfnr = fileNr
 	err = adabas.CallAdabas()
-	if debug {
+	if debugLevel {
 		adatypes.Central.Log.Debugf("Read file definition error=%v rsp=%d", err, adabas.Acbx.Acbxrsp)
 	}
 	if err == nil {
@@ -411,7 +444,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 			adatypes.Central.Log.Debugf("ERROR parse FDT: %v", err)
 			return
 		}
-		if debug {
+		if debugLevel {
 			adatypes.Central.Log.Debugf("Format read field definition")
 		}
 		definition, err = createFieldDefinitionTable(fdtDefinition)
@@ -419,8 +452,9 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 			adatypes.Central.Log.Debugf("ERROR create FDT: %v", err)
 			return
 		}
+		cacheName := adabas.URL.String() + "_" + strconv.Itoa(int(fileNr))
 		definition.PutCache(cacheName)
-		if debug {
+		if debugLevel {
 			definition.DumpTypes(true, true, "FDT read")
 			adatypes.Central.Log.Debugf("Ready parse Format read field definition")
 		}
@@ -864,6 +898,9 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 			adatypes.Central.Log.Debugf("Error parser not defined")
 			break
 		}
+		if debug {
+			adatypes.Central.Log.Debugf("Loop step request=%p cbIsn=%d currentISN=%d", adabasRequest, adabasRequest.CbIsn, adabas.Acbx.Acbxisn)
+		}
 		adabasRequest.CbIsn = adabas.Acbx.Acbxisn
 		if adabasRequest.IsnIncrease {
 			adabas.Acbx.Acbxisn++
@@ -875,7 +912,7 @@ func (adabas *Adabas) loopCall(adabasRequest *adatypes.Request, x interface{}) (
 		}
 		adabas.Acbx.Acbxisn = adabasRequest.CbIsn
 		if debug {
-			adatypes.Central.Log.Debugf("Loop step ended Limit=%d count=%d", adabasRequest.Limit, count)
+			adatypes.Central.Log.Debugf("Loop step ended Limit=%d count=%d currentISN=%d", adabasRequest.Limit, count, adabas.Acbx.Acbxisn)
 		}
 		if (adabasRequest.Limit > 0) && (count >= adabasRequest.Limit) {
 			adatypes.Central.Log.Debugf("Limit reached")
@@ -1100,12 +1137,14 @@ func (adabas *Adabas) SetURL(URL *URL) {
 	if adabas.URL == URL {
 		return
 	}
+	adatypes.Central.Log.Debugf("Change URL %v to %v", adabas.URL, URL)
 	adabas.Close()
 	adabas.Acbx.Acbxdbid = URL.Dbid
 	adabas.URL = URL
 	adabas.transactions.connection = nil
 	// Different adabas instance, need to update status
 	adabas.status = adabas.ID.status(adabas.URL.String())
+	adatypes.Central.Log.Debugf("Change done from URL %v to %v", adabas.URL, URL)
 }
 
 // SetDbid set new database id
@@ -1205,7 +1244,7 @@ func (adabas *Adabas) EndTransaction() (err error) {
 	adabas.AdabasBuffers = nil
 
 	err = adabas.CallAdabas()
-	adatypes.Central.Log.Debugf("End of transction response ret=%v", err)
+	adatypes.Central.Log.Debugf("End of transaction response ret=%v", err)
 	if err != nil {
 		return
 	}
@@ -1241,7 +1280,8 @@ func (adabas *Adabas) WriteBuffer(buffer *bytes.Buffer, order binary.ByteOrder, 
 		if !serverMode {
 			abd.abd.Abdrecv = abd.abd.Abdsize
 		}
-		adatypes.Central.Log.Debugf("Add %d ABD header", index)
+		adatypes.Central.Log.Debugf("Add %d ABD header (send=%d,recv=%d)",
+			index, abd.abd.Abdsend, abd.abd.Abdrecv)
 
 		if abd.abd.Abdver[0] != 'G' {
 			adatypes.Central.Log.Debugf("ABD error %p", abd)
@@ -1259,7 +1299,7 @@ func (adabas *Adabas) WriteBuffer(buffer *bytes.Buffer, order binary.ByteOrder, 
 		buffer.Write(b)
 		adatypes.Central.Log.Debugf("Add ADABAS ABD: %d to len buffer=%d", index, buffer.Len())
 	}
-	adatypes.Central.Log.Debugf("Index of end ABD: %d/%X", buffer.Len(), buffer.Len())
+	adatypes.Central.Log.Debugf("Index of end ABD: %d/%X servermode=%v", buffer.Len(), buffer.Len(), serverMode)
 	for index, abd := range adabas.AdabasBuffers {
 		var transferSize uint64
 		if serverMode {
