@@ -22,6 +22,7 @@ package adabas
 import (
 	"bytes"
 	"fmt"
+	"sync"
 	"sync/atomic"
 	"time"
 	"unsafe"
@@ -167,6 +168,7 @@ type Status struct {
 	platform         *adatypes.Platform
 	adabas           *Adabas
 	version          string
+	lock             sync.Mutex
 }
 
 // ID Adabas Id
