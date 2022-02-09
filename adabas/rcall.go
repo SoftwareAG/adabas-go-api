@@ -69,6 +69,9 @@ func NewAdabasID() *ID {
 // AdabasClient library support
 func (adabas *Adabas) CallAdabas() (err error) {
 	defer TimeTrack(time.Now(), "RCall adabas", adabas)
+	s := adabas.status
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
 	if adatypes.Central.IsDebugLevel() {
 		adatypes.Central.Log.Debugf("Call Adabas (local disabled) adabasp=%p  %s%v", adabas, adabas.URL.String(), adabas.ID.String())
