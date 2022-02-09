@@ -99,7 +99,7 @@ ADAGE0F07F=Reptor: No preceding Create FDT for Create Table
 ADAGE0F080=Reptor: Conversion to Open Systems FDT failed
 ADAGE0F081=Reptor: Converted FDT exceeds buffer
 ADAGE10000=Ein Teilkommand des MC Kommandos ist fehl geschlagen
-ADAGE11000=Falscher oder nicht authorizierte File-Nummer
+ADAGE11000=Falsche oder nicht authorizierte File-Nummer
 ADAGE11001=The program tried to access system file 1 or 2, and no OP command was issued.
 ADAGE11002=The program tried to access system file 1 or 2, and the user is not authorized.
 ADAGE11004=One of the following occurred:- The specified file number is invalid. The file number might be equal to "0" or greater than the maximum allowed. When running with ADARUN DTP={RM | TM}, an attempt was made by a non-Adabas Transaction Manager user to access/update an Adabas Transaction Manager system file.

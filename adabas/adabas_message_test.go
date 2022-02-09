@@ -101,7 +101,7 @@ func TestAdabasMessageTranslate(t *testing.T) {
 	ada.Acbx.Acbxrsp = AdaNormal
 	assert.Equal(t, "Erfolgreich beendet (rsp=0,subrsp=0,dbid=21,file=0)", NewError(ada).Translate("de"))
 	ada.Acbx.Acbxrsp = AdaInvalidFileNumber
-	assert.Equal(t, "Falscher oder nicht authorizierte File-Nummer (rsp=17,subrsp=0,dbid=21,file=0)", NewError(ada).Translate("de"))
+	assert.Equal(t, "Falsche oder nicht authorizierte File-Nummer (rsp=17,subrsp=0,dbid=21,file=0)", NewError(ada).Translate("de"))
 	ada.Acbx.Acbxerrc = AdaISNNotSorted
 	assert.Equal(t, "The program tried to access system file 1 or 2, and no OP command was issued. (rsp=17,subrsp=1,dbid=21,file=0)", NewError(ada).Translate("de"))
 	ada.Acbx.Acbxrsp = 120
