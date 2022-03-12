@@ -55,7 +55,7 @@ func (value *uint16Value) Bytes() []byte {
 }
 
 func (value *uint16Value) SetStringValue(stValue string) {
-	iv, err := strconv.Atoi(stValue)
+	iv, err := strconv.ParseInt(stValue, 0, 64)
 	if err == nil && iv >= 0 && iv <= math.MaxUint16 {
 		value.value = uint16(iv)
 	}
@@ -189,7 +189,7 @@ func (value *int16Value) Bytes() []byte {
 }
 
 func (value *int16Value) SetStringValue(stValue string) {
-	iv, err := strconv.Atoi(stValue)
+	iv, err := strconv.ParseInt(stValue, 0, 64)
 	if err == nil && iv >= math.MinInt16 && iv <= math.MaxInt16 {
 		value.value = int16(iv)
 	}

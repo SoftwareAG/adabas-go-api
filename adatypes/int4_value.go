@@ -55,7 +55,7 @@ func (value *uint32Value) Bytes() []byte {
 }
 
 func (value *uint32Value) SetStringValue(stValue string) {
-	iv, err := strconv.Atoi(stValue)
+	iv, err := strconv.ParseInt(stValue, 0, 64)
 	if err == nil {
 		if iv < 0 || iv > math.MaxUint32 {
 			return
