@@ -245,7 +245,7 @@ func (adavalue *adaValue) commonUInt64Convert(x interface{}) (uint64, error) {
 		if v == "" {
 			return 0, NewGenericError(101, fmt.Sprintf("empty string (%T,%s)", x, v))
 		}
-		sval, err := strconv.Atoi(v)
+		sval, err := strconv.ParseInt(v, 0, 64)
 		if err != nil {
 			return 0, err
 		}

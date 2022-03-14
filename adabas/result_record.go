@@ -215,11 +215,11 @@ func (record *Record) SetValue(field string, value interface{}) (err error) {
 		e := strings.IndexRune(field, ']')
 		if c > 0 {
 			eField := field[:i]
-			index1, xerr := strconv.Atoi(field[i+1 : i+c])
+			index1, xerr := strconv.ParseInt(field[i+1:i+c], 0, 64)
 			if xerr != nil {
 				return xerr
 			}
-			index2, xerr := strconv.Atoi(field[i+c+1 : e])
+			index2, xerr := strconv.ParseInt(field[i+c+1:e], 0, 64)
 			if xerr != nil {
 				return xerr
 			}
@@ -232,7 +232,7 @@ func (record *Record) SetValue(field string, value interface{}) (err error) {
 			return record.SetValueWithIndex(eField, []uint32{uint32(index1), uint32(index2)}, value)
 		}
 
-		index, xerr := strconv.Atoi(field[i+1 : e])
+		index, xerr := strconv.ParseInt(field[i+1:e], 0, 64)
 		if xerr != nil {
 			return xerr
 		}
@@ -246,7 +246,7 @@ func (record *Record) SetValue(field string, value interface{}) (err error) {
 			return record.SetValueWithIndex(eField, []uint32{uint32(index)}, value)
 		}
 		e = strings.IndexRune(f, ']')
-		muindex, merr := strconv.Atoi(f[i+1 : e])
+		muindex, merr := strconv.ParseInt(f[i+1:e], 0, 64)
 		if merr != nil {
 			return merr
 		}

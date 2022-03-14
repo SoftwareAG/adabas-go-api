@@ -84,7 +84,7 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 				s := strings.ToLower(p[0])
 				switch s {
 				case "fractionalshift":
-					fs, ferr := strconv.Atoi(p[1])
+					fs, ferr := strconv.ParseInt(p[1], 0, 64)
 					if ferr != nil {
 						return ferr
 					}
@@ -100,7 +100,7 @@ func traverseAdaptType(adaType adatypes.IAdaType, parentType adatypes.IAdaType, 
 						adaType.SetFormatType(rune(p[1][0]))
 					}
 				case "length":
-					fs, ferr := strconv.Atoi(p[1])
+					fs, ferr := strconv.ParseInt(p[1], 0, 64)
 					if ferr != nil {
 						return ferr
 					}

@@ -100,7 +100,7 @@ func (value *byteArrayValue) SetStringValue(stValue string) {
 				}
 				endian().PutUint16(value.value, uint16(iv))
 			case len(value.value) >= 1:
-				x, aerr := strconv.Atoi(stValue)
+				x, aerr := strconv.ParseInt(stValue, 0, 64)
 				if aerr != nil {
 					return
 				}
