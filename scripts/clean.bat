@@ -1,6 +1,6 @@
 @echo off
 rem 
-rem Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+rem Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
 rem
 rem SPDX-License-Identifier: Apache-2.0
 rem
