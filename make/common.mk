@@ -271,6 +271,7 @@ doc: ; $(info $(M) running GODOC…) @ ## Run go doc on all source files
 .PHONY: vendor-update
 vendor-update:
 	@echo "Uses GO modules"
+	CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" $(GO) get -d -u ./...
 
 .PHONY: version
 version:
