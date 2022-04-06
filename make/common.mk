@@ -1,5 +1,5 @@
 #
-# Copyright © 2018-2019 Software AG, Darmstadt, Germany and/or its licensors
+# Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -96,12 +96,18 @@ $(BINTOOLS)/%: $(BINTOOLS) ; $(info $(M) building tool $(BINTOOLS) on $(REPOSITO
 		(GOPATH=$$tmp go clean -modcache ./...); \
 		rm -rf $$tmp ; exit $$ret
 
+$(INSTALLTOOLS):
+	@mkdir -p $@
+$(INSTALLTOOLS)/%: $(INSTALLTOOLS) ; $(info $(M) installing tool $(INSTALLTOOLS) on $(REPOSITORY)…)
+	$Q CGO_CFLAGS= CGO_LDFLAGS= \
+		go install $(REPOSITORY)
+
 $(BINTESTS):
 	@mkdir -p $@
 
 # Tools
-GOLINT = $(BINTOOLS)/golint
-$(BINTOOLS)/golint: REPOSITORY=golang.org/x/lint/golint
+GOLINT = $(INSTALLTOOLS)/golint
+$(INSTALLTOOLS)/golint: REPOSITORY=golang.org/x/lint/golint@latest
 
 GOCILINT = $(BINTOOLS)/golangci-lint
 $(BINTOOLS)/golangci-lint: REPOSITORY=github.com/golangci/golangci-lint/cmd/golangci-lint
@@ -265,6 +271,7 @@ doc: ; $(info $(M) running GODOC…) @ ## Run go doc on all source files
 .PHONY: vendor-update
 vendor-update:
 	@echo "Uses GO modules"
+	CGO_CFLAGS="$(CGO_CFLAGS)" CGO_LDFLAGS="$(CGO_LDFLAGS) $(CGO_EXT_LDFLAGS)" $(GO) get -d -u ./...
 
 .PHONY: version
 version:

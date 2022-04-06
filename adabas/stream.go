@@ -124,7 +124,16 @@ func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocks
 			return
 		}
 		fieldValue := request.definition.Search(field)
-		lob := fieldValue.(adatypes.ILob)
+		if fieldValue == nil {
+			return nil, adatypes.NewGenericError(184, field)
+		}
+		var lob adatypes.ILob
+		switch t := fieldValue.(type) {
+		case adatypes.ILob:
+			lob = t
+		default:
+			return nil, adatypes.NewGenericError(185, field)
+		}
 		lob.SetLobBlockSize(blocksize)
 		lob.SetLobPartRead(true)
 		if debug {

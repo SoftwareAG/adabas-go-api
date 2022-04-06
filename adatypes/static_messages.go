@@ -1752,4 +1752,6 @@ var staticMessages = []struct {
 	{"ADG0000181", "en", "Too many occurrence entries"},
 	{"ADG0000182", "en", "Occurence for {0} exceed to {1}"},
 	{"ADG0000183", "en", "Searched LOB entry not found"},
+	{"ADG0000184", "en", "Searched LOB field {0} not in definition"},
+	{"ADG0000185", "en", "Searched field {0} not a Large object (LOB)"},
 }
