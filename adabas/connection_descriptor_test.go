@@ -19,6 +19,8 @@
 package adabas
 
 import (
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"runtime"
 	"strings"
@@ -309,6 +311,16 @@ func TestConnectionSuperDescriptors(t *testing.T) {
 		assert.Equal(t, "ISN=2 quantity=1\n S3=\"'DKK' 100000\"\n", result.Values[0].String())
 		assert.Equal(t, "ISN=5 quantity=1\n S3=\"'DKK' 140000\"\n", result.Values[3].String())
 	}
+	jsonHistogram, err := json.Marshal(result)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	validateFile(t, "s3histogramJSON", jsonHistogram, jsonType)
+	xmlHistogram, err := xml.Marshal(result)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	validateFile(t, "s3histogramXML", xmlHistogram, jsonType)
 }
 
 func TestDescriptor(t *testing.T) {

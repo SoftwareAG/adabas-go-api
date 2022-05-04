@@ -1403,3 +1403,51 @@ func ExampleDefinition_treecopy() {
 	//  S1= ; S1
 
 }
+
+func TestDefinitionRestrictCheck(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	for _, x := range [][]string{{"U4,I2,U8", "[U4 I2 U8]"}, {"U4,B1,U8", "[U4 B1 U8]"},
+		{"GP", "[PG GP]"}, {"PG,U8", "[U8 PG GC GS PM PM GP]"}} {
+		testDefinition := createLayoutWithPEandMU()
+		Central.Log.Infof("_______ Restrict fields")
+		err = testDefinition.ShouldRestrictToFields(x[0])
+		fmt.Println("TEST -> ", x[0], testDefinition.Fieldnames())
+		if !assert.Equal(t, x[1], fmt.Sprintf("%v", testDefinition.Fieldnames())) && !assert.NoError(t, err) {
+			return
+		}
+		// testDefinition.DumpTypes(false, true, x[0])
+	}
+
+	testDefinition := createLayoutWithPEandMU()
+	Central.Log.Infof("_______ Restrict fields")
+	err = testDefinition.ShouldRestrictToFields("PM[1]")
+	fmt.Println("TEST -> ", testDefinition.Fieldnames())
+	if !assert.NoError(t, err) {
+		return
+	}
+	pmField := testDefinition.activeFields["PM"]
+	assert.NotNil(t, pmField)
+	assert.Equal(t, "PM", pmField.Name())
+	assert.Equal(t, 1, pmField.MultipleRange().from)
+	assert.Equal(t, -2, pmField.MultipleRange().to)
+	assert.Nil(t, pmField.PartialRange())
+
+	testDefinition = createLayoutWithPEandMU()
+	Central.Log.Infof("_______ Restrict fields")
+	err = testDefinition.ShouldRestrictToFields("PM[1][1]")
+	fmt.Println("TEST -> ", testDefinition.Fieldnames())
+	if !assert.NoError(t, err) {
+		return
+	}
+	pmField = testDefinition.activeFields["PM"]
+	assert.NotNil(t, pmField)
+	assert.Equal(t, "PM", pmField.Name())
+	assert.Equal(t, 1, pmField.MultipleRange().from)
+	assert.Equal(t, -2, pmField.MultipleRange().to)
+	assert.Nil(t, pmField.PartialRange())
+}

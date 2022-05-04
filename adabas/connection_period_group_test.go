@@ -19,9 +19,11 @@
 package adabas
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
+	"github.com/SoftwareAG/adabas-go-api/adatypes"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -431,4 +433,37 @@ func TestPeriodGroupDescriptor(t *testing.T) {
 	}
 	assert.Equal(t, uint64(4), result.Values[0].Quantity)
 
+}
+
+func TestPEAndMU(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "connection.log")
+
+	adatypes.Central.Log.Infof("TEST: %s", t.Name())
+	connection, err := NewConnection("ada;target=" + adabasStatDBIDs)
+	if !assert.NoError(t, err) {
+		return
+	}
+	defer connection.Close()
+	readRequest, rErr := connection.CreateFileReadRequest(9)
+	if !assert.NoError(t, rErr) {
+		return
+	}
+	err = readRequest.QueryFields("SC[1][1]")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	readRequest.Limit = 4
+	result, rerr := readRequest.ReadISN(216)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	jsonHistogram, err := json.Marshal(result)
+	if !assert.NoError(t, rerr) {
+		return
+	}
+	validateFile(t, "PEandMU", jsonHistogram, jsonType)
 }
