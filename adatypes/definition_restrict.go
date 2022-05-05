@@ -367,13 +367,13 @@ func (def *Definition) ShouldRestrictToFields(fields string) (err error) {
 	}
 	var field []string
 	if fields != "" {
-		var re = regexp.MustCompile(`(?P<field>[^\[\(\]\),]+(\[[\dN]+,?[\dN]*\])?(\(\d+,\d+\))?),?`)
+		var re = regexp.MustCompile(`(?P<field>[^\[\(\]\),]+(\[[\dN]+\]\[[\dN]*\])?(\[[\dN]+,?[\dN]*\])?(\(\d+,\d+\))?),?`)
 		mt := re.FindAllStringSubmatch(fields, -1)
 		for _, f := range mt {
 			field = append(field, f[1])
 		}
 	}
-	Central.Log.Debugf("Split field into slice to %#v", field)
+	Central.Log.Debugf("Split field %s into slice to %#v", fields, field)
 	return def.ShouldRestrictToFieldSlice(field)
 }
 
@@ -445,7 +445,7 @@ func (def *Definition) newFieldMap(field []string) (*fieldMap, error) {
 			}
 		}
 	}
-	Central.Log.Debugf("initialized field hash map")
+	Central.Log.Debugf("Initialized field hash map of select fields")
 	return fieldMap, nil
 }
 
