@@ -36,20 +36,24 @@ type storeRecordTraverserStructure struct {
 	option *adatypes.BufferOption
 }
 
-func createStoreRecordBuffer(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
+func createStoreRecordBufferTraverser(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	if adaValue.Type().HasFlagSet(adatypes.FlagOptionReadOnly) {
 		return adatypes.Continue, nil
 	}
 	record := x.(*storeRecordTraverserStructure)
-	if adatypes.Central.IsDebugLevel() {
-		adatypes.Central.Log.Debugf("Store record buffer for %s current helper position is %d/%x",
-			adaValue.Type().Name(), record.helper.Offset(), record.helper.Offset())
+	if record.record.definition.CheckField(adaValue.Type().Name()) {
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.Central.Log.Debugf("Store record buffer for %s current helper position is %d/%x -> %v",
+				adaValue.Type().Name(), record.helper.Offset(), record.helper.Offset(),
+				record.record.definition.CheckField(adaValue.Type().Name()))
+		}
+		err := adaValue.StoreBuffer(record.helper, record.option)
+		if adatypes.Central.IsDebugLevel() {
+			adatypes.LogMultiLineString(true, adatypes.FormatByteBuffer("DATA: ", record.helper.Buffer()))
+		}
+		return adatypes.Continue, err
 	}
-	err := adaValue.StoreBuffer(record.helper, record.option)
-	if adatypes.Central.IsDebugLevel() {
-		adatypes.LogMultiLineString(true, adatypes.FormatByteBuffer("DATA: ", record.helper.Buffer()))
-	}
-	return adatypes.Continue, err
+	return adatypes.Continue, nil
 }
 
 // Response contains the result information of the request

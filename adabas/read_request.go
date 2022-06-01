@@ -231,6 +231,7 @@ func (request *ReadRequest) Open() (opened bool, err error) {
 // Prepare read request for special parts in read
 func (request *ReadRequest) prepareRequest(descriptorRead bool) (adabasRequest *adatypes.Request, err error) {
 	if request.definition == nil {
+		adatypes.Central.Log.Debugf("Prepare request creating definition")
 		err = request.loadDefinition()
 		if err != nil {
 			return
@@ -247,6 +248,7 @@ func (request *ReadRequest) prepareRequest(descriptorRead bool) (adabasRequest *
 		DescriptorRead: descriptorRead, SecondCall: 0,
 		Mainframe: request.adabas.status.platform.IsMainframe(),
 		BlockSize: request.BlockSize, PartialRead: request.PartialRead}
+	adatypes.Central.Log.Debugf("Prepare request creating Adabas request")
 	adabasRequest, err = request.definition.CreateAdabasRequest(parameter)
 	if err != nil {
 		return

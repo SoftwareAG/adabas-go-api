@@ -114,7 +114,7 @@ func recordValuesTraverser(adaValue adatypes.IAdaValue, x interface{}) (adatypes
 // createRecordBuffer create a record buffer
 func (record *Record) createRecordBuffer(helper *adatypes.BufferHelper, option *adatypes.BufferOption) (err error) {
 	adatypes.Central.Log.Debugf("Create store record buffer")
-	t := adatypes.TraverserValuesMethods{EnterFunction: createStoreRecordBuffer}
+	t := adatypes.TraverserValuesMethods{EnterFunction: createStoreRecordBufferTraverser}
 	stRecTraverser := &storeRecordTraverserStructure{record: record, helper: helper, option: option}
 	_, err = record.Traverse(t, stRecTraverser)
 	if adatypes.Central.IsDebugLevel() {
@@ -658,4 +658,25 @@ func (record *Record) Bytes(parameter ...interface{}) []byte {
 		return v.Bytes()
 	}
 	return nil
+}
+
+// createRecordBuffer create a record buffer
+func (record *Record) SelectValue(definition *adatypes.Definition) []adatypes.IAdaValue {
+	activeValues := make([]adatypes.IAdaValue, 0)
+	fn := definition.Fieldnames()
+	for _, v := range record.Value {
+		if contains(fn, v.Type().Name()) {
+			activeValues = append(activeValues, v)
+		}
+	}
+	return activeValues
+}
+
+func contains(array []string, str string) bool {
+	for _, a := range array {
+		if a == str {
+			return true
+		}
+	}
+	return false
 }

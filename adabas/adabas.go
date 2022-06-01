@@ -357,7 +357,6 @@ func (adabas *Adabas) callAdabasDriver() (err error) {
 		}
 		adabas.transactions.connection = driver
 	} else {
-		adatypes.Central.Log.Debugf("Use context for %p %p ", adabas, adabas.transactions.connection)
 		driver = adabas.transactions.connection
 	}
 	adatypes.Central.Log.Debugf("Call %T driver url: %s", driver, adabas.URL)

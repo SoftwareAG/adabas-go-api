@@ -558,8 +558,12 @@ func (connection *Connection) prepareMapUsage(mapName string) (err error) {
 // CreateMapStoreRequest this method creates a store request using an Go struct which
 // struct field names fit to an Adabas Map field. The struct name will be used to search
 // the Adabas Map.
+// Possible parameter options are:
+// * struct,int or Fnr -> inmap usage of query with structure
+// * string -> Map name of Adabas Map to be used in store request
 func (connection *Connection) CreateMapStoreRequest(param ...interface{}) (request *StoreRequest, err error) {
 	t := reflect.TypeOf(param[0])
+	adatypes.Central.Log.Debugf("Create map store request")
 	switch t.Kind() {
 	case reflect.Ptr, reflect.Struct:
 		if connection.repository == nil {
@@ -577,19 +581,31 @@ func (connection *Connection) CreateMapStoreRequest(param ...interface{}) (reque
 					return
 				}
 
-				if request.definition == nil {
+				if len(param) > 1 {
+					switch t := param[1].(type) {
+					case int:
+						connection.fnr = Fnr(t)
+						request.repository.Fnr = Fnr(t)
+					case Fnr:
+						connection.fnr = t
+						request.repository.Fnr = t
+					}
+				}
+				/*if request.definition == nil {
 					err = request.loadDefinition()
 					if err != nil {
 						adatypes.Central.Log.Debugf("Load definition error: %v", err)
 						return
 					}
+					adatypes.Central.Log.Debugf("Load definition for storing")
 				}
+				adatypes.Central.Log.Debugf("Set dynamics")
 				request.dynamic = request.adabasMap.dynamic
 				err = request.adabasMap.adaptFieldType(request.definition, request.dynamic)
 				if err != nil {
 					adatypes.Central.Log.Debugf("Adapt fields error request definition %v", err)
 					return
-				}
+				}*/
 			} else {
 				adatypes.Central.Log.Debugf("No repository used: %#v", connection.adabasToMap)
 				request, err = NewStoreRequest(param[0], connection.adabasToMap)

@@ -20,6 +20,11 @@
 package adabas
 
 import (
+	"fmt"
+	"math"
+	"regexp"
+	"strconv"
+
 	"github.com/SoftwareAG/adabas-go-api/adatypes"
 )
 
@@ -123,9 +128,28 @@ func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocks
 		if err != nil {
 			return
 		}
-		fieldValue := request.definition.Search(field)
+		if debug {
+			adatypes.Central.Log.Debugf("LOB create values, types defined")
+			request.definition.DumpTypes(true, true)
+			adatypes.Central.Log.Debugf("LOB list of values")
+			request.definition.DumpValues(true)
+			adatypes.Central.Log.Debugf("Search field: %s", field)
+		}
+		sc, scerr := request.definition.SearchType("SC")
+		fmt.Printf("%T %s -> %v - [%s][%s]", sc, sc, scerr, sc.PartialRange().FormatBuffer(), sc.PeriodicRange().FormatBuffer())
+
+		fieldName, index := parseField(field)
+		fieldValue, ferr := request.definition.SearchByIndex(fieldName, index, true)
+		if ferr != nil {
+			return nil, ferr
+		}
 		if fieldValue == nil {
 			return nil, adatypes.NewGenericError(184, field)
+		}
+		if debug {
+			adatypes.Central.Log.Debugf("LOB after defined")
+			request.definition.DumpValues(true)
+			adatypes.Central.Log.Debugf("Found field: %s for %d,%d", fieldValue.Type().Name(), fieldValue.MultipleIndex(), fieldValue.PeriodIndex())
 		}
 		var lob adatypes.ILob
 		switch t := fieldValue.(type) {
@@ -209,4 +233,65 @@ func (request *ReadRequest) readSteamSegment(search, descriptors string) (result
 		adatypes.Central.Log.Debugf("read LOB >1 segments")
 	}
 	return request.ReadLOBRecord(0, search, uint64(request.BlockSize))
+}
+
+func parseField(field string) (string, []uint32) {
+	var re = regexp.MustCompile(`(?m)^(\w\w+)$|^(\w\w+)\[([N\d]*)\]$|^(\w\w+)\[([N\d]*),([N\d]*)\]$|^(\w\w+)\[([N\d]*)\]\[([N\d]*)\]$`)
+	for _, match := range re.FindAllStringSubmatch(field, -1) {
+		switch {
+		case match[1] != "":
+			return match[1], []uint32{}
+		case match[2] != "":
+			index := make([]uint32, 0)
+			idx, err := parseIndex(match[3])
+			if err != nil {
+				return "", nil
+			}
+			index = append(index, idx)
+			return match[2], index
+		case match[4] != "":
+			index := make([]uint32, 0)
+			idx, err := parseIndex(match[5])
+			if err != nil {
+				return "", nil
+			}
+			index = append(index, idx)
+			if match[6] != "" {
+				idx, err := parseIndex(match[6])
+				if err != nil {
+					return "", nil
+				}
+				index = append(index, idx)
+			}
+			return match[4], index
+		case match[7] != "":
+			index := make([]uint32, 0)
+			idx, err := parseIndex(match[8])
+			if err != nil {
+				return "", nil
+			}
+			index = append(index, idx)
+			idx, err = parseIndex(match[9])
+			if err != nil {
+				return "", nil
+			}
+			index = append(index, idx)
+			return match[7], index
+		}
+	}
+	return "", nil
+}
+
+func parseIndex(strIndex string) (uint32, error) {
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Parse index -> %s", strIndex)
+	}
+	if strIndex == "N" {
+		return math.MaxUint32, nil
+	}
+	i64, err := strconv.ParseUint(strIndex, 10, 0)
+	if err != nil {
+		return 0, err
+	}
+	return uint32(i64), nil
 }

@@ -19,6 +19,11 @@
 
 package adatypes
 
+import (
+	"strconv"
+	"strings"
+)
+
 type search struct {
 	name    string
 	adaType IAdaType
@@ -64,10 +69,31 @@ func traverseSearchValueByNameEnd(adaValue IAdaValue, x interface{}) (TraverseRe
 
 // Search search for a specific field structure in the tree
 func (def *Definition) Search(fieldName string) IAdaValue {
-	Central.Log.Debugf("Indexless search of %s", fieldName)
-	x := searchByName{name: fieldName}
+	x := &searchByName{name: fieldName}
+	fi := strings.Index(fieldName, "[")
+	if fi != -1 {
+		x.name = fieldName[:fi]
+		fi1 := strings.Index(fieldName, "]")
+		index, err := strconv.Atoi(fieldName[fi+1 : fi1])
+		if err != nil {
+			Central.Log.Debugf("Error parsing search index: %v", err)
+			return nil
+		}
+		x.muIndex = uint32(index)
+		fi2 := strings.Index(fieldName[fi1:], "[")
+		if fi2 != -1 {
+			index2, err := strconv.Atoi(fieldName[fi+1 : fi1])
+			if err != nil {
+				Central.Log.Debugf("Error parsing search index: %v", err)
+				return nil
+			}
+			x.peIndex = x.muIndex
+			x.muIndex = uint32(index2)
+		}
+	}
+	Central.Log.Debugf("Indexless search of %#v", x)
 	t := TraverserValuesMethods{EnterFunction: traverseSearchValueByName}
-	_, err := def.TraverseValues(t, &x)
+	_, err := def.TraverseValues(t, x)
 	if err == nil {
 		return x.found
 	}
@@ -84,6 +110,7 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 		return
 	}
 
+	Central.Log.Debugf("Search field %s index: %#v", fieldName, index)
 	// Receive main parent
 	c := t
 	for c.GetParent() != nil && c.GetParent().Name() != "" {

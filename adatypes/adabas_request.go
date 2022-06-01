@@ -135,26 +135,24 @@ func (adabasRequest *Request) GetValue(name string) (IAdaValue, error) {
 	return vs.adaValue, nil
 }
 
-// Traverser callback to create format buffer per field type
+// Traverser callback to create format buffer per field type. This method is called on each value entry working to generate
+// Format Buffer dependent on the corresponding field types
 func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
 	adabasRequest := x.(*Request)
 	if adaValue.Type().HasFlagSet(FlagOptionReadOnly) || adaValue.Type().HasFlagSet(FlagOptionReference) {
 		return Continue, nil
 	}
 	Central.Log.Debugf("Add format buffer for %s", adaValue.Type().Name())
+	// In case of structure generate
 	if adaValue.Type().IsStructure() {
 		// Reset if period group starts
 		if adaValue.Type().Level() == 1 && adaValue.Type().Type() == FieldTypePeriodGroup {
 			adabasRequest.PeriodLength = 0
 		}
-		len := adaValue.FormatBuffer(&(adabasRequest.FormatBuffer), adabasRequest.Option)
-		adabasRequest.RecordBufferLength += len
-		adabasRequest.PeriodLength += len
-	} else {
-		len := adaValue.FormatBuffer(&(adabasRequest.FormatBuffer), adabasRequest.Option)
-		adabasRequest.RecordBufferLength += len
-		adabasRequest.PeriodLength += len
 	}
+	len := adaValue.FormatBuffer(&(adabasRequest.FormatBuffer), adabasRequest.Option)
+	adabasRequest.RecordBufferLength += len
+	adabasRequest.PeriodLength += len
 	if adabasRequest.Option.SecondCall > 0 &&
 		adaValue.Type().Type() == FieldTypeMultiplefield && adaValue.Type().HasFlagSet(FlagOptionPE) {
 		return SkipTree, nil
@@ -419,6 +417,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 // AdabasRequestParameter Adabas request parameter defining type of Adabas request
 type AdabasRequestParameter struct {
 	Store          bool
+	SingleRead     bool
 	DescriptorRead bool
 	PartialRead    bool
 	SecondCall     uint32

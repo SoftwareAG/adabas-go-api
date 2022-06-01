@@ -549,6 +549,47 @@ func createPeriodGroupSuperDescriptor() *Definition {
 	return testDefinition
 }
 
+func createPeriodGroupMultiplerLobField() *Definition {
+	multipleLayout := []IAdaType{
+		NewTypeWithLength(FieldTypeLBString, "GM", 0),
+	}
+	for _, l := range multipleLayout {
+		l.SetLevel(2)
+		l.AddFlag(FlagOptionSecondCall)
+		l.AddFlag(FlagOptionMUGhost)
+	}
+	multipleLayout[0].AddOption(FieldOptionMU)
+	multipleLayout[0].AddOption(FieldOptionNU)
+	multipleLayout[0].AddOption(FieldOptionNB)
+	multipleLayout[0].AddOption(FieldOptionNV)
+	groupLayout := []IAdaType{
+		NewType(FieldTypeCharacter, "GC"),
+		NewStructureList(FieldTypeMultiplefield, "GM", OccNone, multipleLayout),
+		NewType(FieldTypeString, "GS"),
+		NewType(FieldTypePacked, "GP"),
+	}
+	for _, l := range groupLayout {
+		l.SetLevel(2)
+	}
+	// groupLayout[1].AddOption(FieldOptionMU)
+	layout := []IAdaType{
+		NewType(FieldTypeUInt4, "U4"),
+		NewType(FieldTypeByte, "B1"),
+		NewType(FieldTypeUByte, "UB"),
+		NewType(FieldTypeUInt2, "I2"),
+		NewType(FieldTypeUInt8, "U8"),
+		NewStructureList(FieldTypePeriodGroup, "GR", OccNone, groupLayout),
+		NewType(FieldTypeUInt8, "I8"),
+	}
+	for _, l := range layout {
+		l.SetLevel(1)
+	}
+
+	testDefinition := NewDefinitionWithTypes(layout)
+	testDefinition.InitReferences()
+	return testDefinition
+}
+
 func ExampleDefinition_dumpValues() {
 	err := initLogWithFile("definition.log")
 	if err != nil {
@@ -1450,4 +1491,157 @@ func TestDefinitionRestrictCheck(t *testing.T) {
 	assert.Equal(t, 1, pmField.MultipleRange().from)
 	assert.Equal(t, -2, pmField.MultipleRange().to)
 	assert.Nil(t, pmField.PartialRange())
+}
+
+func TestDefinitionPEMUSingle(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	testDefinition := createPeriodGroupMultiplerLobField()
+	err = testDefinition.ShouldRestrictToFields("GM[1,2]")
+	assert.Nil(t, err)
+	testDefinition.CreateValues(false)
+	testDefinition.DumpTypes(false, true, "XX")
+	testDefinition.DumpValues(false)
+	v, err := testDefinition.SearchByIndex("GM", []uint32{1, 2}, true)
+	testDefinition.DumpTypes(false, true, "XX")
+	testDefinition.DumpValues(false)
+
+	// Assert Nil
+	assert.Nil(t, err)
+	assert.Equal(t, "   3, GM, 0, A ,MU,LB ; GM", v.Type().String())
+	parameter := &AdabasRequestParameter{Store: false, DescriptorRead: false,
+		SecondCall: 0, Mainframe: false}
+	request, err := testDefinition.CreateAdabasRequest(parameter)
+	assert.Nil(t, err)
+
+	assert.Equal(t, "GM1(2),0,A.",
+		request.FormatBuffer.String())
+
+}
+
+func TestDefinitionPEMUFieldSingle(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	testDefinition := createPeriodGroupMultiplerLobField()
+	err = testDefinition.ShouldRestrictToFields("GM[1,2]")
+	assert.Nil(t, err)
+	testDefinition.CreateValues(false)
+	testDefinition.DumpTypes(false, true, "XX")
+	testDefinition.DumpValues(false)
+	v := testDefinition.Search("GM[1][2]")
+	testDefinition.DumpTypes(false, true, "XX")
+	testDefinition.DumpValues(false)
+
+	// Assert Nil
+	assert.Nil(t, err)
+	assert.NotNil(t, v)
+	parameter := &AdabasRequestParameter{Store: false, DescriptorRead: false,
+		SecondCall: 0, Mainframe: false}
+	request, err := testDefinition.CreateAdabasRequest(parameter)
+	assert.Nil(t, err)
+
+	sc, scerr := testDefinition.SearchType("GM")
+	fmt.Printf("%T %s -> %v - [%s][%s]", sc, sc, scerr, sc.PartialRange().FormatBuffer(), sc.PeriodicRange().FormatBuffer())
+
+	assert.Equal(t, "GM1(2),0,A.",
+		request.FormatBuffer.String())
+
+}
+
+func employeeDefinition() *Definition {
+	multipleLayout := []IAdaType{
+		NewTypeWithLength(FieldTypePacked, "AT", 5),
+	}
+	for _, l := range multipleLayout {
+		l.SetLevel(2)
+		l.AddFlag(FlagOptionMUGhost)
+	}
+	multipleLayout[0].AddOption(FieldOptionMU)
+	multipleLayout[0].AddOption(FieldOptionNU)
+	multipleLayout[0].AddOption(FieldOptionNB)
+	multipleLayout[0].AddOption(FieldOptionNV)
+	peGroupLayout := []IAdaType{
+		NewTypeWithLength(FieldTypeString, "AR", 3),
+		NewTypeWithLength(FieldTypePacked, "AS", 3),
+		NewStructureList(FieldTypeMultiplefield, "AT", OccNone, multipleLayout),
+	}
+	groupLayout := []IAdaType{
+		NewTypeWithLength(FieldTypeString, "AC", 20),
+		NewTypeWithLength(FieldTypeString, "AD", 20),
+		NewTypeWithLength(FieldTypeString, "AE", 20),
+	}
+	groupLayout2 := []IAdaType{
+		NewTypeWithLength(FieldTypeString, "AN", 6),
+		NewTypeWithLength(FieldTypeString, "AM", 15),
+	}
+	for _, l := range groupLayout {
+		l.SetLevel(2)
+		l.AddOption(FieldOptionNU)
+	}
+	for _, l := range groupLayout2 {
+		l.SetLevel(2)
+		l.AddOption(FieldOptionNU)
+	}
+	// groupLayout[1].AddOption(FieldOptionMU)
+	layout := []IAdaType{
+		NewTypeWithLength(FieldTypeString, "AA", 8),
+		NewStructureList(FieldTypeGroup, "AB", OccNone, groupLayout),
+		NewStructureList(FieldTypeGroup, "A2", OccNone, groupLayout2),
+		NewStructureList(FieldTypePeriodGroup, "AQ", OccNone, peGroupLayout),
+	}
+	for i, l := range layout {
+		l.SetLevel(1)
+		if i != 0 {
+			l.AddOption(FieldOptionNU)
+		}
+	}
+	layout[0].AddOption(FieldOptionDE)
+	layout[0].AddOption(FieldOptionUQ)
+	testDefinition := NewDefinitionWithTypes(layout)
+	testDefinition.InitReferences()
+	return testDefinition
+}
+
+func TestEmployeeDefinition(t *testing.T) {
+	definitionEmployees := employeeDefinition()
+	fmt.Println(definitionEmployees.String())
+	req, err := CreateTestRequest(true, definitionEmployees)
+	assert.NoError(t, err)
+	err = definitionEmployees.CreateValues(true)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "AA,8,A,AC,20,A,AD,20,A,AE,20,A,AN,6,A,AM,15,A.", req.FormatBuffer.String())
+}
+
+func CreateTestRequest(store bool, testDefinition *Definition) (*Request, error) {
+	if testDefinition == nil {
+		return nil, fmt.Errorf("test definition not defined")
+	}
+	adabasParameter := &AdabasRequestParameter{Store: store, DescriptorRead: false,
+		SecondCall: 0, Mainframe: false}
+	req, err := testDefinition.CreateAdabasRequest(adabasParameter)
+	if err != nil {
+		fmt.Println("Create request", err)
+		return nil, err
+	}
+	helper := NewDynamicHelper(endian())
+	req.RecordBuffer = helper
+	req.Parser = testParser
+	req.Limit = 1
+	req.Multifetch = 1
+	req.Isn = 10
+	req.Definition = testDefinition
+	req.RecordBuffer.PutInt32(2)
+	req.RecordBuffer.PutInt32(10)
+	req.RecordBuffer.offset = 0
+	return req, nil
 }

@@ -302,7 +302,7 @@ func (request *StoreRequest) Store(storeRecord *Record) error {
 			return sErr
 		}
 	}
-	request.definition.Values = storeRecord.Value
+	request.definition.Values = storeRecord.SelectValue(request.definition)
 	adatypes.Central.Log.Debugf("Prepare store request")
 	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
@@ -375,7 +375,8 @@ func (request *StoreRequest) Update(storeRecord *Record) error {
 			return sErr
 		}
 	}
-	request.definition.Values = storeRecord.Value
+	storeRecord.definition = request.definition
+	request.definition.Values = storeRecord.SelectValue(request.definition)
 	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
 		return prepareErr
@@ -390,7 +391,7 @@ func (request *StoreRequest) Update(storeRecord *Record) error {
 
 // Exchange exchange a record
 func (request *StoreRequest) Exchange(storeRecord *Record) error {
-	request.definition.Values = storeRecord.Value
+	request.definition.Values = storeRecord.SelectValue(request.definition)
 	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
 		return prepareErr

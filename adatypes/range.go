@@ -128,6 +128,9 @@ func NewLastRange() *AdaRange {
 
 // FormatBuffer generate corresponding format buffer
 func (adaRange *AdaRange) FormatBuffer() string {
+	if adaRange == nil {
+		return ""
+	}
 	var buffer bytes.Buffer
 	if adaRange.from == lastEntry {
 		buffer.WriteRune('N')
