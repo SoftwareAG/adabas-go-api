@@ -660,7 +660,7 @@ func (record *Record) Bytes(parameter ...interface{}) []byte {
 	return nil
 }
 
-// createRecordBuffer create a record buffer
+// SelectValue provide selected list of value
 func (record *Record) SelectValue(definition *adatypes.Definition) []adatypes.IAdaValue {
 	activeValues := make([]adatypes.IAdaValue, 0)
 	fn := definition.Fieldnames()

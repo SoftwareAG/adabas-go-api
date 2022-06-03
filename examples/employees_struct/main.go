@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// Employees example exmployee native inmap usage
 type Employees struct {
 	Index    uint64         `adabas:":isn"`
 	ID       string         `adabas:":key:AA"`
@@ -18,12 +19,14 @@ type Employees struct {
 	Income   []*IncomeInMap `adabas:"::AQ"`
 }
 
+// FullNameInMap full name inmap database reference
 type FullNameInMap struct {
 	FirstName  string `adabas:"::AC"`
 	MiddleName string `adabas:"::AD"`
 	Name       string `adabas:"::AE"`
 }
 
+// IncomeInMap income inmap database reference
 type IncomeInMap struct {
 	Salary   uint64   `adabas:"::AS"`
 	Bonus    []uint64 `adabas:"::AT"`
