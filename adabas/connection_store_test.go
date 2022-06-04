@@ -80,7 +80,8 @@ type testCopy struct {
 
 func copyStream(record *Record, x interface{}) error {
 	tc := x.(*testCopy)
-	// fmt.Printf("Store %d -> %d\n", record.Isn, record.Quantity)
+	fmt.Printf("Store %d -> %d\n", record.Isn, record.Quantity)
+	record.DumpValues()
 	err := tc.store.Store(record)
 	tc.i++
 	return err
