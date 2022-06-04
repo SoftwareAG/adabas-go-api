@@ -43,7 +43,7 @@ func createStoreRecordBufferTraverser(adaValue adatypes.IAdaValue, x interface{}
 	record := x.(*storeRecordTraverserStructure)
 	if record.record.definition.CheckField(adaValue.Type().Name()) {
 		if adatypes.Central.IsDebugLevel() {
-			adatypes.Central.Log.Debugf("Store record buffer for %s current helper position is %d/%x -> %v",
+			adatypes.Central.Log.Debugf("Store record buffer for %s current helper position is %d/%x -> check field=%v",
 				adaValue.Type().Name(), record.helper.Offset(), record.helper.Offset(),
 				record.record.definition.CheckField(adaValue.Type().Name()))
 		}
@@ -52,6 +52,8 @@ func createStoreRecordBufferTraverser(adaValue adatypes.IAdaValue, x interface{}
 			adatypes.LogMultiLineString(true, adatypes.FormatByteBuffer("DATA: ", record.helper.Buffer()))
 		}
 		return adatypes.Continue, err
+	} else {
+		adatypes.Central.Log.Debugf("Skip storing field %s", adaValue.Type().Name())
 	}
 	return adatypes.Continue, nil
 }

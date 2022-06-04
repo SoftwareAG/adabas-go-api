@@ -609,7 +609,7 @@ func (request *StoreRequest) evaluateKeyIsn(record reflect.Value, storeRecord *R
 	}
 	storeRecord.Isn = resultRead.Values[0].Isn
 	if debug {
-		adatypes.Central.Log.Debugf("Update ISN", storeRecord.Isn)
+		adatypes.Central.Log.Debugf("Update ISN %d", storeRecord.Isn)
 	}
 	return nil
 }

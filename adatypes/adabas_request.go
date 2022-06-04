@@ -22,6 +22,7 @@ package adatypes
 import (
 	"bytes"
 	"fmt"
+	"runtime/debug"
 )
 
 // RequestParser function callback used to go through the list of received buffer
@@ -142,14 +143,26 @@ func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResu
 	if adaValue.Type().HasFlagSet(FlagOptionReadOnly) || adaValue.Type().HasFlagSet(FlagOptionReference) {
 		return Continue, nil
 	}
+	if adabasRequest.Definition == nil {
+		fmt.Println("Definition not defined")
+		debug.PrintStack()
+	}
+	if adabasRequest.Definition != nil && !adabasRequest.Definition.CheckField(adaValue.Type().Name()) {
+		Central.Log.Debugf("Skip format buffer for %s", adaValue.Type().Name())
+		return Continue, nil
+	}
 	Central.Log.Debugf("Add format buffer for %s", adaValue.Type().Name())
 	// In case of structure generate
 	if adaValue.Type().IsStructure() {
 		// Reset if period group starts
 		if adaValue.Type().Level() == 1 && adaValue.Type().Type() == FieldTypePeriodGroup {
 			adabasRequest.PeriodLength = 0
+		} else {
+			Central.Log.Debugf("Skip structure %s", adaValue.Type().Name())
+			return Continue, nil
 		}
 	}
+	Central.Log.Debugf("Do %s", adaValue.Type().Name())
 	len := adaValue.FormatBuffer(&(adabasRequest.FormatBuffer), adabasRequest.Option)
 	adabasRequest.RecordBufferLength += len
 	adabasRequest.PeriodLength += len
@@ -431,6 +444,7 @@ func (def *Definition) CreateAdabasRequest(parameter *AdabasRequestParameter) (a
 		Multifetch: DefaultMultifetchLimit, DescriptorRead: parameter.DescriptorRead, PartialLobSize: parameter.BlockSize}
 	adabasRequest.Option.DescriptorRead = parameter.DescriptorRead
 	adabasRequest.Option.PartialRead = parameter.PartialRead
+	adabasRequest.Definition = def
 
 	Central.Log.Debugf("Create format buffer. Init Buffer: %s second=%v", adabasRequest.FormatBuffer.String(), parameter.SecondCall)
 	if parameter.Store || parameter.SecondCall > 0 {

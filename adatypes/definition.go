@@ -462,6 +462,10 @@ func (def *Definition) Fieldnames() []string {
 // CheckField check field part of active fields
 func (def *Definition) CheckField(name string) bool {
 	_, ok := def.activeFields[name]
+	// for k, v := range def.activeFields {
+	// 	fmt.Println("searching for", name, "in", k, v.Name())
+	// }
+	// fmt.Println("returning", ok)
 	return ok
 }
 
