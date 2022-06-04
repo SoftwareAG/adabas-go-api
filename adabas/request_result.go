@@ -52,9 +52,9 @@ func createStoreRecordBufferTraverser(adaValue adatypes.IAdaValue, x interface{}
 			adatypes.LogMultiLineString(true, adatypes.FormatByteBuffer("DATA: ", record.helper.Buffer()))
 		}
 		return adatypes.Continue, err
-	} else {
-		adatypes.Central.Log.Debugf("Skip storing field %s", adaValue.Type().Name())
 	}
+	adatypes.Central.Log.Debugf("Skip storing field %s", adaValue.Type().Name())
+
 	return adatypes.Continue, nil
 }
 
