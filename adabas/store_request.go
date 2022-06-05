@@ -451,13 +451,13 @@ func searchDynamicValue(value reflect.Value, fn []string) (v reflect.Value, ok b
 
 // storeValue used in dynamic interface mode to store records
 func (request *StoreRequest) storeValue(record reflect.Value, store, etData bool) error {
-	if request.definition == nil {
-		q := request.dynamic.CreateQueryFields()
-		err := request.StoreFields(q)
-		if err != nil {
-			return err
-		}
+	//if request.definition == nil {
+	q := request.dynamic.CreateQueryFields()
+	err := request.StoreFields(q)
+	if err != nil {
+		return err
 	}
+	//}
 
 	if record.Kind() == reflect.Ptr {
 		record = record.Elem()
@@ -469,7 +469,7 @@ func (request *StoreRequest) storeValue(record reflect.Value, store, etData bool
 	debug := adatypes.Central.IsDebugLevel()
 	if debug {
 		for k, v := range request.dynamic.FieldNames {
-			adatypes.Central.Log.Debugf("FN: %s=%v", k, v)
+			adatypes.Central.Log.Debugf("FN: %s=%v %v", k, v, request.definition.CheckField(k))
 		}
 		adatypes.Central.Log.Debugf("Slice index: %v", record)
 		request.definition.DumpTypes(true, true, "Active store entries")

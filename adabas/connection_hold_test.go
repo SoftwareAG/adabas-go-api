@@ -42,7 +42,7 @@ func TestHoldResponse(t *testing.T) {
 		return
 	}
 	defer connection.Close()
-	fmt.Println(connection)
+	//fmt.Println(connection)
 	err = connection.Open()
 	if !assert.NoError(t, err) {
 		return
@@ -59,9 +59,9 @@ func TestHoldResponse(t *testing.T) {
 	fmt.Println("Read hold ....")
 	_, rerr := readRequest.ReadISN(1)
 	if !assert.Error(t, rerr) {
+		fmt.Println("Got error", rerr)
 		return
 	}
-	fmt.Println("Got error", rerr)
 	assert.True(t, strings.HasPrefix(rerr.Error(), "ADAGE91000:"))
 	end <- true
 	for w {
@@ -92,7 +92,7 @@ func TestHoldRead(t *testing.T) {
 		return
 	}
 	defer connection.Close()
-	fmt.Println(connection)
+	//fmt.Println(connection)
 	connection.Open()
 	readRequest, rErr := connection.CreateFileReadRequest(11)
 	assert.NoError(t, rErr)
@@ -126,7 +126,7 @@ func parallelAccessHoldResponse(t *testing.T, wait chan bool, end chan bool, use
 		return
 	}
 	defer connection.Close()
-	fmt.Println(connection)
+	//fmt.Println(connection)
 	connection.Open()
 	readRequest, rErr := connection.CreateFileReadRequest(11)
 	assert.NoError(t, rErr)
