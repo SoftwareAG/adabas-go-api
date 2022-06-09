@@ -270,13 +270,15 @@ func (def *Definition) SearchType(fieldName string) (adaType IAdaType, err error
 	// err = nil
 	// if search.adaType == nil {
 	// 	Central.Log.Debugf("AdaType not found ", fieldName)
-	Central.Log.Debugf("AdaType %s not found in file fields %#v %#v", fieldName, def.fileFields, def.fileFieldTree)
-	for k, v := range def.fileFields {
-		Central.Log.Debugf("%s:%s->%s", k, v.ShortName(), v.Name())
-	}
-	Central.Log.Debugf("AdaType not found in active fields")
-	for k, v := range def.activeFields {
-		Central.Log.Debugf("%s:%s->%s", k, v.ShortName(), v.Name())
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("AdaType %s not found in file fields %#v %#v", fieldName, def.fileFields, def.fileFieldTree)
+		for k, v := range def.fileFields {
+			Central.Log.Debugf("%s:%s->%s", k, v.ShortName(), v.Name())
+		}
+		Central.Log.Debugf("AdaType not found in active fields")
+		for k, v := range def.activeFields {
+			Central.Log.Debugf("%s:%s->%s", k, v.ShortName(), v.Name())
+		}
 	}
 	err = NewGenericError(42, fieldName)
 	return

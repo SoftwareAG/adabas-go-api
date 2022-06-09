@@ -204,6 +204,9 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 	if ok {
 		delete(fieldMap.set, adaType.Name())
 		fieldMap.definition.activeFields[adaType.Name()] = adaType
+		Central.Log.Debugf("Add active field %s", adaType.Name())
+	} else {
+		Central.Log.Debugf("Not active field %s", adaType.Name())
 	}
 	// Structure need to be copied each time because of tree to nodes of fields
 	switch {
@@ -224,6 +227,7 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 			}
 			return nil
 		}
+		Central.Log.Debugf("Removing structure %s", adaType.Name())
 		removeStructure(adaType, fieldMap, fq, ok, parentType.Name() != "" && fieldMap.lastStructure.Name() == parentType.Name())
 	default:
 		if debug {
@@ -300,6 +304,7 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 				newType.muRange = fieldMap.lastStructure.muRange
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
 				newType.RemoveFlag(FlagOptionToBeRemoved)
+				fieldMap.definition.activeFields[adaType.Name()] = adaType
 			case FieldTypeHyperDesc, FieldTypePhonetic, FieldTypeCollation, FieldTypeReferential, FieldTypeRedefinition:
 			default:
 				newType := &AdaType{}
@@ -334,6 +339,8 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 					Central.Log.Debugf("Add type entry in structure %s", newType.Name())
 				}
 				newType.RemoveFlag(FlagOptionToBeRemoved)
+				fieldMap.definition.activeFields[adaType.Name()] = adaType
+
 				if fieldMap.lastStructure.HasFlagSet(FlagOptionPart) {
 					newType.AddFlag(FlagOptionPart)
 				}

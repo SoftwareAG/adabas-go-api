@@ -158,10 +158,10 @@ func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResu
 		if adaValue.Type().Level() == 1 && adaValue.Type().Type() == FieldTypePeriodGroup {
 			adabasRequest.PeriodLength = 0
 		} else {
-			if adabasRequest.Option.StoreCall {
+			/*if adabasRequest.Option.StoreCall {
 				Central.Log.Debugf("Skip structure %s", adaValue.Type().Name())
 				return Continue, nil
-			}
+			}*/
 		}
 	}
 	Central.Log.Debugf("Do %s", adaValue.Type().Name())

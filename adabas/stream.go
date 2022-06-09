@@ -20,7 +20,6 @@
 package adabas
 
 import (
-	"fmt"
 	"math"
 	"regexp"
 	"strconv"
@@ -135,8 +134,6 @@ func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocks
 			request.definition.DumpValues(true)
 			adatypes.Central.Log.Debugf("Search field: %s", field)
 		}
-		sc, scerr := request.definition.SearchType("SC")
-		fmt.Printf("%T %s -> %v - [%s][%s]", sc, sc, scerr, sc.PartialRange().FormatBuffer(), sc.PeriodicRange().FormatBuffer())
 
 		fieldName, index := parseField(field)
 		fieldValue, ferr := request.definition.SearchByIndex(fieldName, index, true)
