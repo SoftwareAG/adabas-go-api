@@ -548,13 +548,17 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 	if debug {
 		Central.Log.Debugf("Create value for level=%d %s -> %d", level, adaType.Name(), adaType.Level())
 	}
+	isPeRange := adaType.PeriodicRange() != nil && adaType.PeriodicRange().from > 0
 	if adaType.IsStructure() && adaType.Type() != FieldTypeRedefinition {
 		if adaType.Type() != FieldTypePeriodGroup && adaType.HasFlagSet(FlagOptionPE) {
-			return nil
+			if !isPeRange {
+				Central.Log.Debugf("No PE group for reading %#v", adaType.PeriodicRange())
+				return nil
+			}
 		}
 		parameter.stack.Push(parameter.structureValue)
 		if debug {
-			Central.Log.Debugf("Create structure value for %s", adaType.Name())
+			Central.Log.Debugf("Create structure value for %s -> %s", adaType.Name(), adaType.PartialRange().FormatBuffer())
 		}
 		value, subErr := adaType.Value()
 		if subErr != nil {
@@ -568,16 +572,18 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 		parameter.structureValue = value.(*StructureValue)
 	} else {
 		// Don't create Period group field elements
-		if adaType.HasFlagSet(FlagOptionPE) {
+		if adaType.HasFlagSet(FlagOptionPE) && !isPeRange {
+			Central.Log.Debugf("No PE element, skip it")
 			return nil
 		}
 		// Don't create ghost nodes for MU fields
-		if adaType.HasFlagSet(FlagOptionMUGhost) {
+		if adaType.HasFlagSet(FlagOptionMUGhost) && !isPeRange {
+			Central.Log.Debugf("No MU ghost element, skip it")
 			return nil
 		}
 		if parameter.structureValue == nil {
 			if debug {
-				Central.Log.Debugf("Add node value %s to main", adaType.Name())
+				Central.Log.Debugf("Add node value %s to main %s", adaType.Name(), adaType.PeriodicRange().FormatBuffer())
 			}
 			value, subErr := adaType.Value()
 			if subErr != nil {
@@ -593,7 +599,9 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 			}
 			if !ok {
 				if debug {
-					Central.Log.Debugf("Add node value %s to structure", adaType.Name())
+					Central.Log.Debugf("Add node value %s to structure %s %s", adaType.Name(),
+						adaType.PartialRange().FormatBuffer(), adaType.MultipleRange().FormatBuffer())
+					Central.Log.Debugf("PE %d", parameter.structureValue.PeriodIndex())
 				}
 				value, subErr := adaType.Value()
 				if subErr != nil {
@@ -603,6 +611,12 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 				subErr = addValueToStructure(parameter, value)
 				if subErr != nil {
 					return subErr
+				}
+				if isPeRange {
+					value.setPeriodIndex(uint32(adaType.PeriodicRange().from))
+				}
+				if adaType.MultipleRange() != nil && adaType.MultipleRange().from > 0 {
+					value.setMultipleIndex(uint32(adaType.MultipleRange().from))
 				}
 			} else {
 				if debug {
@@ -619,6 +633,7 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 
 // CreateValues Create new value tree
 func (def *Definition) CreateValues(forStoring bool) (err error) {
+	// Reset values
 	def.Values = nil
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Create values from types for storing=%v -> %#v", forStoring, def.activeFieldTree)

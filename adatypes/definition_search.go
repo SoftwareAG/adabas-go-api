@@ -69,20 +69,26 @@ func traverseSearchValueByNameEnd(adaValue IAdaValue, x interface{}) (TraverseRe
 
 // Search search for a specific field structure in the tree
 func (def *Definition) Search(fieldName string) IAdaValue {
+	Central.Log.Debugf("Search field value of %s in definition", fieldName)
 	x := &searchByName{name: fieldName}
 	fi := strings.Index(fieldName, "[")
 	if fi != -1 {
 		x.name = fieldName[:fi]
 		fi1 := strings.Index(fieldName, "]")
+		Central.Log.Debugf("Parse index %s", fieldName[fi+1:fi1])
 		index, err := strconv.Atoi(fieldName[fi+1 : fi1])
 		if err != nil {
 			Central.Log.Debugf("Error parsing search index: %v", err)
 			return nil
 		}
 		x.muIndex = uint32(index)
-		fi2 := strings.Index(fieldName[fi1:], "[")
+		Central.Log.Debugf("Parse index %s", fieldName[fi1:])
+		rest := fieldName[fi1+1:]
+		fi2 := strings.Index(rest, "[")
 		if fi2 != -1 {
-			index2, err := strconv.Atoi(fieldName[fi+1 : fi1])
+			fi3 := strings.Index(rest, "]")
+			Central.Log.Debugf("Parse index %s %d", rest[fi2+1:], fi3)
+			index2, err := strconv.Atoi(rest[fi2+1 : fi3])
 			if err != nil {
 				Central.Log.Debugf("Error parsing search index: %v", err)
 				return nil

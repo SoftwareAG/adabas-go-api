@@ -1467,11 +1467,14 @@ func TestDefinitionRestrictCheck(t *testing.T) {
 	testDefinition := createLayoutWithPEandMU()
 	Central.Log.Infof("_______ Restrict fields")
 	err = testDefinition.ShouldRestrictToFields("PM[1]")
+	testDefinition.DumpTypes(false, true, "AA")
+	testDefinition.DumpValues(false)
 	fmt.Println("TEST -> ", testDefinition.Fieldnames())
 	if !assert.NoError(t, err) {
 		return
 	}
 	pmField := testDefinition.activeFields["PM"]
+	fmt.Printf("%d", pmField.Type())
 	assert.NotNil(t, pmField)
 	assert.Equal(t, "PM", pmField.Name())
 	assert.Equal(t, 1, pmField.MultipleRange().from)
@@ -1512,7 +1515,7 @@ func TestDefinitionPEMUSingle(t *testing.T) {
 
 	// Assert Nil
 	assert.Nil(t, err)
-	assert.Equal(t, "   3, GM, 0, A ,MU,LB ; GM", v.Type().String())
+	assert.Equal(t, "   3, GM, 0, A ,NU,NV,NB,MU,LB ; GM", v.Type().String())
 	parameter := &AdabasRequestParameter{Store: false, DescriptorRead: false,
 		SecondCall: 0, Mainframe: false}
 	request, err := testDefinition.CreateAdabasRequest(parameter)
@@ -1532,24 +1535,34 @@ func TestDefinitionPEMUFieldSingle(t *testing.T) {
 
 	testDefinition := createPeriodGroupMultiplerLobField()
 	err = testDefinition.ShouldRestrictToFields("GM[1,2]")
-	assert.Nil(t, err)
+	if !assert.Nil(t, err) {
+		return
+	}
+	testDefinition.DumpTypes(true, true, "Before values")
+	testDefinition.DumpValues(true)
+	Central.Log.Debugf("Create values ... for testing")
 	testDefinition.CreateValues(false)
-	testDefinition.DumpTypes(false, true, "XX")
-	testDefinition.DumpValues(false)
+	testDefinition.DumpValues(true)
 	v := testDefinition.Search("GM[1][2]")
+	if !assert.NotNil(t, v) {
+		fmt.Printf("v=%#v", v)
+		return
+	}
 	testDefinition.DumpTypes(false, true, "XX")
 	testDefinition.DumpValues(false)
 
 	// Assert Nil
-	assert.Nil(t, err)
-	assert.NotNil(t, v)
+	assert.Nil(t, err, err)
 	parameter := &AdabasRequestParameter{Store: false, DescriptorRead: false,
 		SecondCall: 0, Mainframe: false}
 	request, err := testDefinition.CreateAdabasRequest(parameter)
-	assert.Nil(t, err)
+	assert.Nil(t, err, err)
 
 	sc, scerr := testDefinition.SearchType("GM")
-	fmt.Printf("%T %s -> %v - [%s][%s]", sc, sc, scerr, sc.PartialRange().FormatBuffer(), sc.PeriodicRange().FormatBuffer())
+	assert.Nil(t, scerr)
+	assert.Equal(t, "  2, GM, 0, A ,NU,NV,NB,MU,LB; GM",
+		sc.String())
+	// fmt.Printf("%T %s -> %v - [%s][%s]", sc, sc, scerr, sc.PartialRange().FormatBuffer(), sc.PeriodicRange().FormatBuffer())
 
 	assert.Equal(t, "GM1(2),0,A.",
 		request.FormatBuffer.String())
