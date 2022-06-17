@@ -525,7 +525,7 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 	debug := Central.IsDebugLevel()
 	if parameter.structureValue != nil {
 		if debug {
-			Central.Log.Debugf("parent is %s %d for %d", parameter.structureValue.Type().Name(), parameter.structureValue.Type().Level(), adaType.Level())
+			Central.Log.Debugf("parent is %s level %d for level %d", parameter.structureValue.Type().Name(), parameter.structureValue.Type().Level(), adaType.Level())
 		}
 		for parameter.structureValue != nil && parameter.structureValue.Type().Level() != (adaType.Level()-1) {
 			element, _ := parameter.stack.Pop()
@@ -617,6 +617,9 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 				}
 				if adaType.MultipleRange() != nil && adaType.MultipleRange().from > 0 {
 					value.setMultipleIndex(uint32(adaType.MultipleRange().from))
+				}
+				if debug {
+					Central.Log.Debugf("Added PE element %s[%d,%d]", value.Type().Name(), value.PeriodIndex(), value.MultipleIndex())
 				}
 			} else {
 				if debug {

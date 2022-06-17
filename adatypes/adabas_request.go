@@ -517,6 +517,7 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 			if err != nil {
 				return
 			}
+			adabasRequest.Definition.DumpValues(true)
 			Central.Log.Debugf("Ready parse buffer .... %p values avail.=%v", adabasRequest.Definition, (adabasRequest.Definition.Values == nil))
 			if adabasRequest.Caller != nil {
 				err = adabasRequest.Caller.SendSecondCall(adabasRequest, x)
@@ -524,6 +525,7 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 					return
 				}
 			}
+			adabasRequest.Definition.DumpValues(true)
 			Central.Log.Debugf("Found parser .... values avail.=%v", (adabasRequest.Definition.Values == nil))
 			err = adabasRequest.Parser(adabasRequest, x)
 			if err != nil {

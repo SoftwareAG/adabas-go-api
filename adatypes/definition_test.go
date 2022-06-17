@@ -1569,6 +1569,92 @@ func TestDefinitionPEMUFieldSingle(t *testing.T) {
 
 }
 
+func TestDefinitionPEMUFieldTwo(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	testDefinition := createPeriodGroupMultiplerLobField()
+	err = testDefinition.ShouldRestrictToFields("GM[1,2],GM[1,11]")
+	if !assert.Nil(t, err) {
+		return
+	}
+	testDefinition.DumpTypes(true, true, "Before values")
+	testDefinition.DumpValues(true)
+	Central.Log.Debugf("Create values ... for testing")
+	testDefinition.CreateValues(false)
+	testDefinition.DumpValues(true)
+	v := testDefinition.Search("GM[1][11]")
+	if !assert.NotNil(t, v) {
+		fmt.Printf("v=%#v", v)
+		return
+	}
+	testDefinition.DumpTypes(false, true, "XX")
+	testDefinition.DumpValues(false)
+
+	// Assert Nil
+	assert.Nil(t, err, err)
+	parameter := &AdabasRequestParameter{Store: false, DescriptorRead: false,
+		SecondCall: 0, Mainframe: false}
+	request, err := testDefinition.CreateAdabasRequest(parameter)
+	assert.Nil(t, err, err)
+
+	sc, scerr := testDefinition.SearchType("GM")
+	assert.Nil(t, scerr)
+	assert.Equal(t, "  2, GM, 0, A ,NU,NV,NB,MU,LB; GM",
+		sc.String())
+	// fmt.Printf("%T %s -> %v - [%s][%s]", sc, sc, scerr, sc.PartialRange().FormatBuffer(), sc.PeriodicRange().FormatBuffer())
+
+	assert.Equal(t, "GM1(2),0,A,GM1(11),0,A.",
+		request.FormatBuffer.String())
+
+}
+
+func TestDefinitionPEMUFieldTwoPeriods(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
+
+	testDefinition := createPeriodGroupMultiplerLobField()
+	err = testDefinition.ShouldRestrictToFields("GM[1,2],GM[2,11]")
+	if !assert.Nil(t, err) {
+		return
+	}
+	testDefinition.DumpTypes(true, true, "Before values")
+	testDefinition.DumpValues(true)
+	Central.Log.Debugf("Create values ... for testing")
+	testDefinition.CreateValues(false)
+	testDefinition.DumpValues(true)
+	v := testDefinition.Search("GM[2][11]")
+	if !assert.NotNil(t, v) {
+		fmt.Printf("v=%#v", v)
+		return
+	}
+	testDefinition.DumpTypes(false, true, "XX")
+	testDefinition.DumpValues(false)
+
+	// Assert Nil
+	assert.Nil(t, err, err)
+	parameter := &AdabasRequestParameter{Store: false, DescriptorRead: false,
+		SecondCall: 0, Mainframe: false}
+	request, err := testDefinition.CreateAdabasRequest(parameter)
+	assert.Nil(t, err, err)
+
+	sc, scerr := testDefinition.SearchType("GM")
+	assert.Nil(t, scerr)
+	assert.Equal(t, "  2, GM, 0, A ,NU,NV,NB,MU,LB; GM",
+		sc.String())
+	// fmt.Printf("%T %s -> %v - [%s][%s]", sc, sc, scerr, sc.PartialRange().FormatBuffer(), sc.PeriodicRange().FormatBuffer())
+
+	assert.Equal(t, "GM1(2),0,A,GM2(11),0,A.",
+		request.FormatBuffer.String())
+
+}
+
 func employeeDefinition() *Definition {
 	multipleLayout := []IAdaType{
 		NewTypeWithLength(FieldTypePacked, "AT", 5),
