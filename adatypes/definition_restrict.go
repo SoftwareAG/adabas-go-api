@@ -349,7 +349,9 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 				}
 				newType.RemoveFlag(FlagOptionToBeRemoved)
 				if _, ok := fieldMap.definition.activeFields[adaType.Name()]; !ok {
-					Central.Log.Debugf("Add active field %s[%d,%d]", adaType.Name(), adaType.PartialRange().from, adaType.PartialRange().to)
+					if adaType.PartialRange() != nil {
+						Central.Log.Debugf("Add active field %s[%d,%d]", adaType.Name(), adaType.PartialRange().from, adaType.PartialRange().to)
+					}
 					fieldMap.definition.activeFields[adaType.Name()] = adaType
 				} else {
 					Central.Log.Debugf("Skip to add active field %s", adaType.Name())
