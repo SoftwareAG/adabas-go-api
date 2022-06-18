@@ -138,11 +138,11 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 			return
 		}
 		Central.Log.Debugf("Use index for field %v", index[0])
-		element := strv.elementMap[index[0]-1]
+		element := strv.elementMap[index[0]]
 		if element == nil {
 			if create {
 				Central.Log.Debugf("Create new Element %d", index[0])
-				strv.initSubValues(index[0]-1, index[0], true)
+				strv.initSubValues(index[0], index[0], true)
 				element = strv.elementMap[index[0]-1]
 			} else {
 				err = NewGenericError(122)
