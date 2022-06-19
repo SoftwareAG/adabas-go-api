@@ -30,7 +30,7 @@ func TestRangeInt(t *testing.T) {
 	r := NewRange(1, 2)
 	assert.Equal(t, "1-2", r.FormatBuffer())
 	assert.Equal(t, 2, r.multiplier())
-	r = NewRange(1, lastEntry)
+	r = NewRange(1, LastEntry)
 	assert.Equal(t, "1-N", r.FormatBuffer())
 	assert.Equal(t, allEntries, r.multiplier())
 	assert.Equal(t, uint32(1), r.index(1, 10))
@@ -51,7 +51,7 @@ func TestRangeInt(t *testing.T) {
 	r = NewSingleRange(2)
 	assert.Equal(t, "2", r.FormatBuffer())
 	assert.Equal(t, 1, r.multiplier())
-	r = NewSingleRange(lastEntry)
+	r = NewSingleRange(LastEntry)
 	assert.Equal(t, "N", r.FormatBuffer())
 	assert.Equal(t, uint32(10), r.index(1, 10))
 	assert.Equal(t, 1, r.multiplier())
@@ -74,8 +74,8 @@ func TestRangeParser(t *testing.T) {
 	if !assert.NotNil(t, r) {
 		return
 	}
-	assert.Equal(t, lastEntry, r.from)
-	assert.Equal(t, lastEntry, r.to)
+	assert.Equal(t, LastEntry, r.from)
+	assert.Equal(t, LastEntry, r.to)
 	assert.Equal(t, "N", r.FormatBuffer())
 	r = NewRangeParser("1")
 	assert.Equal(t, "1", r.FormatBuffer())

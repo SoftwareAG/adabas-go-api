@@ -548,7 +548,8 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 	if debug {
 		Central.Log.Debugf("Create value for level=%d %s -> %d", level, adaType.Name(), adaType.Level())
 	}
-	isPeRange := adaType.PeriodicRange() != nil && adaType.PeriodicRange().from > 0
+	isPeRange := adaType.PeriodicRange() != nil && adaType.PeriodicRange().from != 1 &&
+		adaType.PeriodicRange().to != LastEntry
 	if adaType.IsStructure() && adaType.Type() != FieldTypeRedefinition {
 		if adaType.Type() != FieldTypePeriodGroup && adaType.HasFlagSet(FlagOptionPE) {
 			if !isPeRange {
@@ -571,6 +572,13 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 		}
 		parameter.structureValue = value.(*StructureValue)
 	} else {
+		Central.Log.Debugf("Is PE range %v", isPeRange)
+		if isPeRange {
+			Central.Log.Debugf("PE range %d:%d",
+				adaType.PeriodicRange().from,
+				adaType.PeriodicRange().to)
+
+		}
 		// Don't create Period group field elements
 		if adaType.HasFlagSet(FlagOptionPE) && !isPeRange {
 			Central.Log.Debugf("No PE element, skip it")
