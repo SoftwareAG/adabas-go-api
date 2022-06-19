@@ -439,7 +439,7 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 			return SkipTree, NewGenericError(182, value.Type().Name(), occNumber)
 		}
 	}
-	Central.Log.Debugf("Occurrence %d period index=%d", occNumber, value.peIndex)
+	Central.Log.Debugf("Occurrence %d period parent index=%d", occNumber, value.peIndex)
 	switch value.Type().Type() {
 	case FieldTypePeriodGroup:
 		Central.Log.Debugf("Init period group values occurrence=%d mainframe=%v", occNumber, option.Mainframe)
@@ -454,7 +454,7 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 			return
 		}
 		for i := uint32(0); i < uint32(occNumber); i++ {
-			value.initSubValues(i, i+1, true)
+			value.initSubValues(i+1, i+1, true)
 		}
 		Central.Log.Debugf("Init period group sub values finished, elements=%d ", value.NrElements())
 		return
