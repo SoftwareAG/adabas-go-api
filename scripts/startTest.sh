@@ -22,7 +22,9 @@ if [ $# -gt 1 ]; then
 fi
 PARA=
 if [ $# -gt 0 ]; then
-   PARA="-test.run $*"
+   if [ ! $1 = "all" ]; then
+      PARA="-test.run $1"
+   fi
 else
    echo "Start all tests"
 fi

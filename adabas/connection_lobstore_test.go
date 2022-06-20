@@ -312,7 +312,7 @@ func TestReadLogicalWithSingleCall_LOB(t *testing.T) {
 
 }
 
-func TestReadLogicalWithCursoring_LOB(t *testing.T) {
+func TestReadLogicalLOBWithCursoring(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}

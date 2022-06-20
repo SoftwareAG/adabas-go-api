@@ -622,7 +622,7 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 				if subErr != nil {
 					return subErr
 				}
-				if isPeRange {
+				if isPeRange && adaType.PeriodicRange().from > 0 {
 					value.setPeriodIndex(uint32(adaType.PeriodicRange().from))
 				}
 				if adaType.MultipleRange() != nil && adaType.MultipleRange().from > 0 {

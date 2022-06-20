@@ -322,7 +322,11 @@ func (repository *Repository) LoadAllMaps(adabas *Adabas) (adabasMaps []*Map, er
 // parseMap Adabas read parser of the Map names used during read
 func parseMapNames(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	repository := x.(*Repository)
+	adatypes.Central.Log.Debugf("Search for map ... " + mapFieldName.fieldName())
 	v := adabasRequest.Definition.Search(mapFieldName.fieldName())
+	if v == nil {
+		return adatypes.NewGenericError(28, mapFieldName.fieldName())
+	}
 	name := v.String()
 	repository.Lock()
 	defer repository.Unlock()

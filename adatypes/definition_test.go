@@ -1551,9 +1551,11 @@ func TestDefinitionPEMUFieldSingle(t *testing.T) {
 	}
 	testDefinition.DumpTypes(true, true, "Before values")
 	testDefinition.DumpValues(true)
-	Central.Log.Debugf("Create values ... for testing")
+	fmt.Println("Create values ... for testing")
 	testDefinition.CreateValues(false)
-	testDefinition.DumpValues(true)
+	fmt.Println("Dump values ... for testing")
+	testDefinition.DumpValues(false)
+	Central.Log.Debugf("Search value ... for testing")
 	v := testDefinition.Search("GM[1][2]")
 	if !assert.NotNil(t, v) {
 		fmt.Printf("v=%#v", v)
