@@ -512,9 +512,9 @@ func addValueToStructure(parameter *stackParameter, value IAdaValue) error {
 		parameter.definition.Values = append(parameter.definition.Values, value)
 	} else {
 		if parameter.structureValue.Type().Type() == FieldTypePeriodGroup {
-			return parameter.structureValue.addValue(value, 1)
+			return parameter.structureValue.addValue(value, 1, 0)
 		}
-		return parameter.structureValue.addValue(value, 0)
+		return parameter.structureValue.addValue(value, 0, 0)
 	}
 	return nil
 }
@@ -572,15 +572,17 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 		}
 		parameter.structureValue = value.(*StructureValue)
 	} else {
-		Central.Log.Debugf("Is PE range %v", isPeRange)
-		if isPeRange {
-			Central.Log.Debugf("PE range %d:%d",
-				adaType.PeriodicRange().from,
-				adaType.PeriodicRange().to)
+		if debug {
+			Central.Log.Debugf("Is PE range %v", isPeRange)
+			if isPeRange {
+				Central.Log.Debugf("PE range %d:%d",
+					adaType.PeriodicRange().from,
+					adaType.PeriodicRange().to)
 
+			}
 		}
 		// Don't create Period group field elements
-		if adaType.HasFlagSet(FlagOptionPE) && !isPeRange {
+		if adaType.HasFlagSet(FlagOptionPE) {
 			Central.Log.Debugf("No PE element, skip it")
 			return nil
 		}
@@ -680,7 +682,7 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 			return NewGenericError(63, name)
 		}
 	} else {
-		Central.Log.Debugf("Search indexed period group ....")
+		Central.Log.Debugf("Search indexed period group ....%s %d", name, index)
 		val, err = def.SearchByIndex(name, index, true)
 		if err != nil {
 			return err
@@ -717,7 +719,11 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 		if err != nil {
 			return err
 		}
-		err = sv.addValue(subValue, index[0])
+		muIndex := uint32(0)
+		if len(index) > 1 {
+			muIndex = index[1]
+		}
+		err = sv.addValue(subValue, index[0], muIndex)
 		// subValue.setMultipleIndex(index[0])
 		// sv.Elements[0].Values = append(sv.Elements[0].Values, subValue)
 		// }

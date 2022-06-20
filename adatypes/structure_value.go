@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"math"
 	"reflect"
+	"runtime/debug"
 	"strconv"
 	"strings"
 )
@@ -74,8 +75,8 @@ func (value *StructureValue) initSubValues(index uint32, peIndex uint32, initMuF
  */
 func (value *StructureValue) initMultipleSubValues(index uint32, peIndex uint32, muIndex uint32, initMuFields bool) {
 	subType := value.adatype.(*StructureType)
-	Central.Log.Debugf("Init sub values for %s[%d,%d] -> |%d,%d| - %d", value.adatype.Name(), value.PeriodIndex(),
-		value.MultipleIndex(), peIndex, muIndex, index)
+	Central.Log.Debugf("Init sub values for %s[%d,%d] -> |%d,%d| - %d init MU fields=%v", value.adatype.Name(), value.PeriodIndex(),
+		value.MultipleIndex(), peIndex, muIndex, index, initMuFields)
 
 	if value.Type().Type() != FieldTypeMultiplefield || initMuFields {
 		for _, st := range subType.SubTypes {
@@ -90,22 +91,25 @@ func (value *StructureValue) initMultipleSubValues(index uint32, peIndex uint32,
 				return
 			}
 			stv.setPeriodIndex(peIndex)
-			stv.setMultipleIndex(muIndex)
+			/*if st.Type() == FieldTypeMultiplefield {
+				stv.setMultipleIndex(muIndex)
+			}*/
 			Central.Log.Debugf("Add to %s[%d,%d] element %s[%d,%d] --> index=%d", value.Type().Name(), value.PeriodIndex(),
 				value.MultipleIndex(), stv.Type().Name(),
 				stv.PeriodIndex(), stv.MultipleIndex(), peIndex)
-			err = value.addValue(stv, index)
+			err = value.addValue(stv, index, muIndex)
 			if err != nil {
 				Central.Log.Debugf("Error (addValue) %v", err)
 				return
 			}
 			if stv.Type().IsStructure() {
-				stv.(*StructureValue).initSubValues(index, peIndex, false)
+				stv.(*StructureValue).initMultipleSubValues(index, peIndex, muIndex, initMuFields)
 			}
 		}
 		Central.Log.Debugf("Finished Init sub values for %s len=%d", value.Type().Name(), len(value.Elements))
 	} else {
 		Central.Log.Debugf("Skip Init sub values for %s", value.Type().Name())
+		debug.PrintStack()
 	}
 }
 
@@ -304,7 +308,7 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 						sv.setMultipleIndex(muIndex + 1)
 						//sv.setPeriodIndex(uint32(i + 1))
 						sv.setPeriodIndex(v.PeriodIndex())
-						muStructure.addValue(sv, muIndex)
+						muStructure.addValue(sv, v.PeriodIndex(), muIndex)
 						if st.PeriodicRange().IsSingleIndex() {
 							_, err = sv.parseBuffer(helper, option)
 							if err != nil {
@@ -504,7 +508,7 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 		if len(value.Elements) <= index {
 			element := newStructureElement()
 			value.Elements = append(value.Elements, element)
-			value.elementMap[uint32(index)] = element
+			value.elementMap[uint32(index+1)] = element
 		}
 		if values != nil && value.adatype.Type() != FieldTypeGroup {
 			value.Elements[index].Values = values
@@ -713,7 +717,7 @@ func (value *StructureValue) SetValue(v interface{}) error {
 				sv.setMultipleIndex(uint32(i + 1))
 				sv.setPeriodIndex(value.PeriodIndex())
 				sv.SetValue(vi.Index(i).Interface())
-				value.addValue(sv, uint32(i+1))
+				value.addValue(sv, value.PeriodIndex(), uint32(i+1))
 			}
 		case FieldTypePeriodGroup:
 			if Central.IsDebugLevel() {
@@ -729,7 +733,7 @@ func (value *StructureValue) SetValue(v interface{}) error {
 				Central.Log.Debugf("Work on group entry %s -> %s", ti.Name(), string(jsonV))
 			}
 			for i := 0; i < vi.Len(); i++ {
-				value.initMultipleSubValues(uint32(i), uint32(i+1), 0, false)
+				value.initMultipleSubValues(uint32(i+1), uint32(i+1), 0, false)
 				if Central.IsDebugLevel() {
 					Central.Log.Debugf("%d. Element len is %d", i, len(value.Elements))
 				}
@@ -922,10 +926,14 @@ func (value *StructureValue) StoreBuffer(helper *BufferHelper, option *BufferOpt
 }
 
 // addValue Add sub value with given index
-func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
+func (value *StructureValue) addValue(subValue IAdaValue, index uint32, muindex uint32) error {
 	if Central.IsDebugLevel() {
-		Central.Log.Debugf("Add value index %d to list for %s[%d,%d], appending %s[%d,%d] %p", index, value.Type().Name(), value.PeriodIndex(), value.MultipleIndex(),
+		Central.Log.Debugf("Add value index %d,%d to list for %s[%d,%d], appending %s[%d,%d] %p", index, muindex, value.Type().Name(), value.PeriodIndex(), value.MultipleIndex(),
 			subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex(), value)
+	}
+	if value.Type().Type() == FieldTypeMultiplefield && muindex == 0 {
+		Central.Log.Debugf("Skip MU index")
+		return nil
 	}
 	//Central.Log.Debugf("Stack trace:\n%s", string(debug.Stack()))
 	subValue.SetParent(value)
@@ -955,17 +963,14 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 			Central.Log.Debugf("Elements already part of map %d", curIndex)
 		}
 	}
-	//if value.Type().Type() == FieldTypeMultiplefield {
 	if subValue.PeriodIndex() == 0 {
 		subValue.setPeriodIndex(curIndex)
 	}
-	//}
+	if value.Type().Type() == FieldTypeMultiplefield && subValue.MultipleIndex() == 0 {
+		subValue.setMultipleIndex(muindex)
+	}
 	Central.Log.Debugf("Current period index for %s[%d:%d]", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
 	s := convertMapIndex(subValue)
-	if Central.IsDebugLevel() {
-		Central.Log.Debugf("Search %s", s)
-	}
-	//	s := fmt.Sprintf("%s-%d-%d", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Search for %s", s)
 	}
@@ -982,8 +987,14 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 				Central.Log.Debugf("Create new list for %s and append", value.Type().Name())
 			}
 			// If MU field and index not already initialized, define index
-			if value.Type().Type() == FieldTypeMultiplefield && subValue.MultipleIndex() == 0 {
-				subValue.setMultipleIndex(1)
+			if value.Type().Type() == FieldTypeMultiplefield {
+				/*if subValue.MultipleIndex() == 0 {
+					subValue.setMultipleIndex(1)
+				} else {*/
+				if value.MultipleIndex() != 0 {
+					subValue.setMultipleIndex(value.MultipleIndex())
+				}
+				//}
 			}
 			var values []IAdaValue
 			values = append(values, subValue)

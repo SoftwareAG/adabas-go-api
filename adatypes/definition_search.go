@@ -45,6 +45,7 @@ func traverseSearchValueByName(adaValue IAdaValue, x interface{}) (TraverseResul
 		if search.peIndex == adaValue.PeriodIndex() &&
 			search.muIndex == adaValue.MultipleIndex() {
 			search.found = adaValue
+			Central.Log.Debugf("End traverse, found entry")
 			return EndTraverser, nil
 		}
 		if adaValue.Type().IsStructure() {
@@ -118,17 +119,19 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 
 	Central.Log.Debugf("Search field %s index: %#v", fieldName, index)
 	// Receive main parent
-	c := t
-	for c.GetParent() != nil && c.GetParent().Name() != "" {
-		c = c.GetParent()
+	parent := t
+	for parent.GetParent() != nil && parent.GetParent().Name() != "" {
+		parent = parent.GetParent()
 	}
 
 	// Main group name if period group use other
-	Central.Log.Debugf("Main group parent name : %s", c.Name())
-	if c.Type() == FieldTypePeriodGroup || c.Type() == FieldTypeMultiplefield {
+	Central.Log.Debugf("Main group parent name : %s", parent.Name())
+	if parent.Type() == FieldTypePeriodGroup || parent.Type() == FieldTypeMultiplefield {
 		var v IAdaValue
+
 		for _, v = range def.Values {
-			if v.Type().Name() == c.Name() {
+			Central.Log.Debugf("Search: %s -> %s", parent.Name(), v.Type().Name())
+			if v.Type().Name() == parent.Name() {
 				break
 			}
 		}
@@ -137,78 +140,97 @@ func (def *Definition) SearchByIndex(fieldName string, index []uint32, create bo
 			err = NewGenericError(121)
 			return
 		}
-		Central.Log.Debugf("Use index for field %v", index[0])
-		element := strv.elementMap[index[0]]
+
+		Central.Log.Debugf("Structure value : %s[%d,%d]", strv.Type().Name(), strv.PeriodIndex(), strv.MultipleIndex())
+		curIndex := index[0]
+		muIndex := uint32(0)
+		if parent.Type() == FieldTypeMultiplefield {
+			if len(index) < 2 {
+				err = NewGenericError(121)
+				return
+			}
+			muIndex = index[1]
+			curIndex = index[1]
+			Central.Log.Debugf("Use MU index %v for field", curIndex)
+		} else {
+			Central.Log.Debugf("Use PE index %v for field", curIndex)
+		}
+		element := strv.elementMap[curIndex]
 		if element == nil {
+			Central.Log.Debugf("Element not found")
 			if create {
-				Central.Log.Debugf("Create new Element %d", index[0])
-				strv.initSubValues(index[0], index[0], true)
-				element = strv.elementMap[index[0]-1]
+				Central.Log.Debugf("Create new Element %d", curIndex)
+				strv.initMultipleSubValues(index[0], index[0], muIndex, true)
+				element = strv.elementMap[curIndex]
 			} else {
 				err = NewGenericError(122)
 				return
 			}
 		}
-		Central.Log.Debugf("Element : %#v", element)
-		for _, v = range element.Values {
-			x := searchByName{name: fieldName}
-			switch {
-			case index == nil:
-			case len(index) > 1:
-				x.peIndex = index[0]
-				x.muIndex = index[1]
-			case len(index) > 0:
-				if c.Type() == FieldTypeMultiplefield {
-					x.muIndex = index[0]
-				} else {
+		if element != nil {
+			Central.Log.Debugf("Check Element : %#v", element)
+			for _, v = range element.Values {
+				Central.Log.Debugf("Check value : %s[%d,%d]", v.Type().Name(), v.PeriodIndex(), v.MultipleIndex())
+				x := searchByName{name: fieldName}
+				switch {
+				case index == nil:
+				case len(index) > 1:
 					x.peIndex = index[0]
+					x.muIndex = index[1]
+				case len(index) > 0:
+					if parent.Type() == FieldTypeMultiplefield {
+						x.muIndex = index[0]
+					} else {
+						x.peIndex = index[0]
+					}
+				default:
 				}
-			default:
-			}
-			tvm := TraverserValuesMethods{EnterFunction: traverseSearchValueByName, LeaveFunction: traverseSearchValueByNameEnd}
-			_, err = strv.Traverse(tvm, &x)
-			if err == nil {
-				if x.found != nil {
-					Central.Log.Debugf("Found value searching %s under %s", x.found.Type().Name(), strv.Type().Name())
-					if x.found.Type().Type() == FieldTypeMultiplefield {
-						if len(index) < 2 {
-							//return nil, NewGenericError(61)
-						} else {
-							strv := x.found.(*StructureValue)
-							element := strv.elementMap[index[1]]
-							if element == nil {
-								err = NewGenericError(123)
-								return
+				tvm := TraverserValuesMethods{EnterFunction: traverseSearchValueByName, LeaveFunction: traverseSearchValueByNameEnd}
+				_, err = strv.Traverse(tvm, &x)
+				if err == nil {
+					if x.found != nil {
+						Central.Log.Debugf("Found value searching %s under %s", x.found.Type().Name(), strv.Type().Name())
+						if x.found.Type().Type() == FieldTypeMultiplefield {
+							if len(index) < 2 {
+								//return nil, NewGenericError(61)
+							} else {
+								strv := x.found.(*StructureValue)
+								element := strv.elementMap[index[1]]
+								if element == nil {
+									def.DumpValues(false)
+									err = NewGenericError(123)
+									return
+								}
 							}
 						}
-					}
-					value = x.found
-					Central.Log.Debugf("Found element: %v", value.Type().Name())
-					return
-				}
-				if x.grFound != nil {
-					Central.Log.Debugf("Element not found, but group found: %v[%d:%d]", x.grFound.Type().Name(),
-						x.grFound.PeriodIndex(), x.grFound.MultipleIndex())
-					if create {
-						strv := x.grFound.(*StructureValue)
-						st := x.grFound.Type().(*StructureType)
-						value, err = st.SubTypes[0].Value()
-						if err != nil {
-							Central.Log.Debugf("Error creating sub types %v", err)
-							value = nil
-							return
-						}
-						value.setPeriodIndex(index[0])
-						value.setMultipleIndex(index[1])
-						err = strv.addValue(value, index[0])
-						Central.Log.Debugf("New MU value index %d:%d -> %d:%d", index[0], index[1], value.PeriodIndex(), value.MultipleIndex())
+						value = x.found
+						Central.Log.Debugf("Found element: %v", value.Type().Name())
 						return
+					}
+					if x.grFound != nil {
+						Central.Log.Debugf("Element not found, but group found: %v[%d:%d]", x.grFound.Type().Name(),
+							x.grFound.PeriodIndex(), x.grFound.MultipleIndex())
+						if create {
+							strv := x.grFound.(*StructureValue)
+							st := x.grFound.Type().(*StructureType)
+							value, err = st.SubTypes[0].Value()
+							if err != nil {
+								Central.Log.Debugf("Error creating sub types %v", err)
+								value = nil
+								return
+							}
+							value.setPeriodIndex(index[0])
+							// value.setMultipleIndex(index[1])
+							err = strv.addValue(value, index[0], index[1])
+							Central.Log.Debugf("New MU value index %d:%d -> %d:%d", index[0], index[1], value.PeriodIndex(), value.MultipleIndex())
+							return
+
+						}
 
 					}
-
 				}
+				Central.Log.Debugf("Not found or error searching: %v", err)
 			}
-			Central.Log.Debugf("Not found or error searching: %v", err)
 		}
 	} else {
 		// No period group

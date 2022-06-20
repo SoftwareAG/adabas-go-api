@@ -460,7 +460,7 @@ func TestDefinitionQueryMultipleField(t *testing.T) {
 	muV, err := st.SubTypes[0].Value()
 	muV.setMultipleIndex(1)
 	assert.NoError(t, err)
-	sv.addValue(muV, 0)
+	sv.addValue(muV, 0, 0)
 
 	testDefinition.DumpValues(false)
 	Central.Log.Debugf(" ------------------------ before create adabas request 0 0")
@@ -775,8 +775,10 @@ func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
 	assert.Nil(t, err)
 	testDefinition.DumpValues(false)
 	Central.Log.Debugf(" ------------------------ after create adabas request 0 0")
-	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,GRC,4,B,GC1-N,1,A,GS1-N,1,A,GP1-N,1,P,I8,8,B.",
-		request.FormatBuffer.String())
+	if !assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,GRC,4,B,GC1-N,1,A,GS1-N,1,A,GP1-N,1,P,I8,8,B.",
+		request.FormatBuffer.String()) {
+		return
+	}
 
 	// Generate format buffer for first store call
 	adabasParameter = &AdabasRequestParameter{Store: true, DescriptorRead: false,
@@ -791,9 +793,13 @@ func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
 		request.FormatBuffer.String(), "Wrong store format buffer")
 
 	err = testDefinition.SetValueWithIndex("GM", []uint32{1, 1}, 1)
-	assert.NoError(t, err)
+	if !assert.NoError(t, err) {
+		return
+	}
+	testDefinition.DumpValues(false)
 	err = testDefinition.SetValueWithIndex("GM", nil, 1)
 	assert.Error(t, err)
+	testDefinition.DumpValues(false)
 	// v := testDefinition.Search("GM")
 	// sv := v.(*StructureValue)
 	// st := v.Type().(*StructureType)
@@ -810,8 +816,10 @@ func TestDefinitionQueryPeriodGroupMultipleField(t *testing.T) {
 	request, err = testDefinition.CreateAdabasRequest(adabasParameter)
 	assert.Nil(t, err)
 	Central.Log.Debugf(" ------------------------ after create adabas request with data 1 0")
-	assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,GC1,1,A,GM1(1),5,P,GS1,1,A,GP1,1,P,I8,8,B.",
-		request.FormatBuffer.String(), "Wrong store format buffer with PE/MU data")
+	if !assert.Equal(t, "U4,4,B,B1,1,F,UB,1,B,I2,2,B,U8,8,B,GC1,1,A,GM1(1),5,P,GS1,1,A,GP1,1,P,I8,8,B.",
+		request.FormatBuffer.String(), "Wrong store format buffer with PE/MU data") {
+		return
+	}
 
 	testDefinition.DumpValues(false)
 	Central.Log.Debugf(" ------------------------ before create adabas request 0 0")
@@ -1515,6 +1523,9 @@ func TestDefinitionPEMUSingle(t *testing.T) {
 
 	// Assert Nil
 	assert.Nil(t, err)
+	if !assert.NotNil(t, v) {
+		return
+	}
 	assert.Equal(t, "   3, GM, 0, A ,NU,NV,NB,MU,LB ; GM", v.Type().String())
 	parameter := &AdabasRequestParameter{Store: false, DescriptorRead: false,
 		SecondCall: 0, Mainframe: false}
