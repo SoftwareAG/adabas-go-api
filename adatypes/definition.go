@@ -579,16 +579,18 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 			Central.Log.Debugf("Error %v", subErr)
 			return subErr
 		}
-		if value.Type().Type() != FieldTypePeriodGroup {
+		peIndex := uint32(0)
+		if value.Type().Type() != FieldTypePeriodGroup && adaType.PeriodicRange().from > 0 {
 			Central.Log.Debugf("Set PE index %d", adaType.PeriodicRange().from)
-			value.setPeriodIndex(uint32(adaType.PeriodicRange().from))
+			peIndex = uint32(adaType.PeriodicRange().from)
+			value.setPeriodIndex(peIndex)
 		}
 		muIndex := uint32(0)
-		if adaType.HasFlagSet(FlagOptionMUGhost) {
+		if adaType.HasFlagSet(FlagOptionMUGhost) && adaType.PeriodicRange().from > 0 {
 			muIndex = uint32(adaType.PeriodicRange().from)
 			value.setMultipleIndex(muIndex)
 		}
-		subErr = addValueToStructure(parameter, value, uint32(adaType.PeriodicRange().from), muIndex)
+		subErr = addValueToStructure(parameter, value, peIndex, muIndex)
 		if subErr != nil {
 			return subErr
 		}
@@ -643,13 +645,17 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 					Central.Log.Debugf("Error %v", subErr)
 					return subErr
 				}
-				value.setPeriodIndex(uint32(adaType.PeriodicRange().from))
+				peIndex := uint32(0)
+				if adaType.PeriodicRange().from > 0 {
+					peIndex = uint32(adaType.PeriodicRange().from)
+					value.setPeriodIndex(peIndex)
+				}
 				muIndex := uint32(0)
-				if adaType.HasFlagSet(FlagOptionMUGhost) {
+				if adaType.HasFlagSet(FlagOptionMUGhost) && adaType.PeriodicRange().from > 0 {
 					muIndex = uint32(adaType.PeriodicRange().from)
 					value.setMultipleIndex(muIndex)
 				}
-				subErr = addValueToStructure(parameter, value, uint32(adaType.PeriodicRange().from), muIndex)
+				subErr = addValueToStructure(parameter, value, peIndex, muIndex)
 				if subErr != nil {
 					return subErr
 				}
