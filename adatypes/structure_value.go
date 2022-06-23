@@ -934,9 +934,9 @@ func (value *StructureValue) StoreBuffer(helper *BufferHelper, option *BufferOpt
 }
 
 // addValue Add sub value with given index
-func (value *StructureValue) addValue(subValue IAdaValue, index uint32, muindex uint32) error {
+func (value *StructureValue) addValue(subValue IAdaValue, peindex uint32, muindex uint32) error {
 	if Central.IsDebugLevel() {
-		Central.Log.Debugf("Add value index %d,%d to list for %s[%d,%d], appending %s[%d,%d] %p", index, muindex, value.Type().Name(), value.PeriodIndex(), value.MultipleIndex(),
+		Central.Log.Debugf("Add value index %d,%d to list for %s[%d,%d], appending %s[%d,%d] %p", peindex, muindex, value.Type().Name(), value.PeriodIndex(), value.MultipleIndex(),
 			subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex(), value)
 	}
 	if value.Type().Type() == FieldTypeMultiplefield && muindex == 0 {
@@ -955,8 +955,10 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32, muindex 
 		}
 		lenElements = len(value.Elements)
 	}
-	curIndex := index
-	// subValue.setPeriodIndex(curIndex)
+	curIndex := peindex
+	if subValue.Type().HasFlagSet(FlagOptionMUGhost) {
+		curIndex = muindex
+	}
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Current add value index = %d lenElements=%d", curIndex, lenElements)
 	}
@@ -973,7 +975,7 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32, muindex 
 		}
 	}
 	if subValue.PeriodIndex() == 0 {
-		subValue.setPeriodIndex(curIndex)
+		subValue.setPeriodIndex(peindex)
 	}
 	if value.Type().Type() == FieldTypeMultiplefield && subValue.MultipleIndex() == 0 {
 		subValue.setMultipleIndex(muindex)
