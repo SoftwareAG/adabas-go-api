@@ -83,6 +83,9 @@ func copyStream(record *Record, x interface{}) error {
 	fmt.Printf("Store %d -> %d\n", record.Isn, record.Quantity)
 	record.DumpValues()
 	err := tc.store.Store(record)
+	if err != nil {
+		fmt.Println("Error storing", err)
+	}
 	tc.i++
 	return err
 }

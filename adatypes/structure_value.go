@@ -93,10 +93,10 @@ func (value *StructureValue) initMultipleSubValues(index uint32, peIndex uint32,
 			/*if st.Type() == FieldTypeMultiplefield {
 				stv.setMultipleIndex(muIndex)
 			}*/
-			Central.Log.Debugf("Add to %s[%d,%d] element %s[%d,%d] --> index=%d", value.Type().Name(), value.PeriodIndex(),
+			Central.Log.Debugf("Add to %s[%d,%d] element %s[%d,%d] --> PEindex=%d MUindex=%d index=%d", value.Type().Name(), value.PeriodIndex(),
 				value.MultipleIndex(), stv.Type().Name(),
-				stv.PeriodIndex(), stv.MultipleIndex(), peIndex)
-			err = value.addValue(stv, index, muIndex)
+				stv.PeriodIndex(), stv.MultipleIndex(), peIndex, muIndex, index)
+			err = value.addValue(stv, peIndex, muIndex)
 			if err != nil {
 				Central.Log.Debugf("Error (addValue) %v", err)
 				return
@@ -589,8 +589,9 @@ func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (
 			}
 			for i, v := range val.Values {
 				if Central.IsDebugLevel() {
-					Central.Log.Debugf("Traverse node %d.element and %d.value at %s[%d,%d] for %s[%d,%d]", e, i, v.Type().Name(),
-						v.PeriodIndex(), v.MultipleIndex(), value.Type().Name(), value.PeriodIndex(), value.MultipleIndex())
+					Central.Log.Debugf("Traverse node %d.element  and %d.value at %s[%d,%d] (%s) for %s[%d,%d] (%s)", e, i, v.Type().Name(),
+						v.PeriodIndex(), v.MultipleIndex(), v.Type().Type().name(), value.Type().Name(), value.PeriodIndex(),
+						value.MultipleIndex(), value.Type().Type().name())
 					if value.PeriodIndex() != v.PeriodIndex() {
 						if value.Type().Type() != FieldTypePeriodGroup {
 							Central.Log.Debugf("!!!!----> Error index parent not correct for %s of %s", v.Type().Name(), value.Type().Name())
