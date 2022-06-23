@@ -226,13 +226,13 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 				return value.parsePeriodMultiple(helper, option)
 			}
 			return value.parsePeriodGroup(helper, option, occNumber)
-		} else {
-			for _, e := range value.Elements {
-				for _, v := range e.Values {
-					v.parseBuffer(helper, option)
-				}
+		}
+		for _, e := range value.Elements {
+			for _, v := range e.Values {
+				v.parseBuffer(helper, option)
 			}
 		}
+
 	}
 	Central.Log.Debugf("No occurrence, check shift of PE empty part, sn=%s mainframe=%v need second=%v pos=%d", value.Type().Name(), option.Mainframe,
 		option.NeedSecondCall, helper.offset)
