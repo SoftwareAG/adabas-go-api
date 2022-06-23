@@ -24,7 +24,6 @@ import (
 	"encoding/json"
 	"math"
 	"reflect"
-	"runtime/debug"
 	"strconv"
 	"strings"
 )
@@ -109,7 +108,7 @@ func (value *StructureValue) initMultipleSubValues(index uint32, peIndex uint32,
 		Central.Log.Debugf("Finished Init sub values for %s len=%d", value.Type().Name(), len(value.Elements))
 	} else {
 		Central.Log.Debugf("Skip Init sub values for %s", value.Type().Name())
-		debug.PrintStack()
+		// debug.PrintStack()
 	}
 }
 
@@ -933,7 +932,7 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32, muindex 
 	}
 	if value.Type().Type() == FieldTypeMultiplefield && muindex == 0 {
 		Central.Log.Debugf("Skip MU index")
-		debug.PrintStack()
+		// debug.PrintStack()
 		return nil
 	}
 	//Central.Log.Debugf("Stack trace:\n%s", string(debug.Stack()))

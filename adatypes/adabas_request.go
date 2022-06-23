@@ -22,7 +22,6 @@ package adatypes
 import (
 	"bytes"
 	"fmt"
-	"runtime/debug"
 )
 
 // RequestParser function callback used to go through the list of received buffer
@@ -143,10 +142,10 @@ func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResu
 	if adaValue.Type().HasFlagSet(FlagOptionReadOnly) || adaValue.Type().HasFlagSet(FlagOptionReference) {
 		return Continue, nil
 	}
-	if adabasRequest.Definition == nil {
+	/*	if adabasRequest.Definition == nil {
 		fmt.Println("Definition not defined")
 		debug.PrintStack()
-	}
+	}*/
 	if adabasRequest.Definition != nil && !adabasRequest.Definition.CheckField(adaValue.Type().Name()) {
 		Central.Log.Debugf("Skip format buffer for %s", adaValue.Type().Name())
 		return Continue, nil
