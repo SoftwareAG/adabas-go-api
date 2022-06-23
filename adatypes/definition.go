@@ -562,13 +562,14 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 	// }
 	isDefaultPeRange := adaType.PeriodicRange() == nil || (adaType.PeriodicRange().from == 1 &&
 		adaType.PeriodicRange().to == LastEntry)
-	Central.Log.Debugf("Is PE range %v", isDefaultPeRange)
+	Central.Log.Debugf("Is PE range %v, PE flag %v", isDefaultPeRange, adaType.HasFlagSet(FlagOptionPE))
 	if adaType.IsStructure() && adaType.Type() != FieldTypeRedefinition {
 		if adaType.Type() != FieldTypePeriodGroup && adaType.HasFlagSet(FlagOptionPE) {
 			if isDefaultPeRange {
 				Central.Log.Debugf("No PE group for reading %#v", adaType.PeriodicRange())
 				return nil
 			}
+			Central.Log.Debugf("PE group but PE Flag")
 		}
 		parameter.stack.Push(parameter.structureValue)
 		if debug {
@@ -610,7 +611,7 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 			}
 		}
 		// Don't create Period group field elements
-		if adaType.HasFlagSet(FlagOptionPE) && isDefaultPeRange {
+		if adaType.HasFlagSet(FlagOptionPE) && (isDefaultPeRange || adaType.PeriodicRange().from == 0) {
 			Central.Log.Debugf("No PE element, skip it")
 			return nil
 		}
