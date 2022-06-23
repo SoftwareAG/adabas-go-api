@@ -209,22 +209,30 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 			Central.Log.Debugf("Too many occurrences")
 			return SkipTree, NewGenericError(181)
 		}
-		peIndex := value.peIndex
-		muIndex := uint32(0)
-		for i := uint32(0); i < uint32(occNumber); i++ {
-			if value.Type().Type() == FieldTypePeriodGroup {
-				peIndex = adaType.peRange.index(i+1, lastNumber)
-			} else {
-				muIndex = i + 1
+		if len(value.Elements) != occNumber {
+			peIndex := value.peIndex
+			muIndex := uint32(0)
+			for i := uint32(0); i < uint32(occNumber); i++ {
+				if value.Type().Type() == FieldTypePeriodGroup {
+					peIndex = adaType.peRange.index(i+1, lastNumber)
+				} else {
+					muIndex = i + 1
+				}
+				Central.Log.Debugf("Work on %s[%d,%d] (%d-%d)", adaType.Name(), peIndex, lastNumber, value.peIndex, adaType.PeriodicRange().from)
+				value.initMultipleSubValues(i+1, peIndex, muIndex, true)
 			}
-			Central.Log.Debugf("Work on %s[%d,%d]", adaType.Name(), peIndex, lastNumber)
-			value.initMultipleSubValues(i+1, peIndex, muIndex, true)
+			if option.SecondCall > 0 &&
+				(value.Type().HasFlagSet(FlagOptionPE) && value.Type().Type() == FieldTypeMultiplefield) {
+				return value.parsePeriodMultiple(helper, option)
+			}
+			return value.parsePeriodGroup(helper, option, occNumber)
+		} else {
+			for _, e := range value.Elements {
+				for _, v := range e.Values {
+					v.parseBuffer(helper, option)
+				}
+			}
 		}
-		if option.SecondCall > 0 &&
-			(value.Type().HasFlagSet(FlagOptionPE) && value.Type().Type() == FieldTypeMultiplefield) {
-			return value.parsePeriodMultiple(helper, option)
-		}
-		return value.parsePeriodGroup(helper, option, occNumber)
 	}
 	Central.Log.Debugf("No occurrence, check shift of PE empty part, sn=%s mainframe=%v need second=%v pos=%d", value.Type().Name(), option.Mainframe,
 		option.NeedSecondCall, helper.offset)

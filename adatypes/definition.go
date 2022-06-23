@@ -652,9 +652,10 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 				}
 				muIndex := uint32(0)
 				if adaType.HasFlagSet(FlagOptionMUGhost) && adaType.PeriodicRange().from > 0 {
-					muIndex = uint32(adaType.PeriodicRange().from)
+					muIndex = uint32(adaType.MultipleRange().from)
 					value.setMultipleIndex(muIndex)
 				}
+				Central.Log.Debugf("Add index %d,%d", peIndex, muIndex)
 				subErr = addValueToStructure(parameter, value, peIndex, muIndex)
 				if subErr != nil {
 					return subErr
