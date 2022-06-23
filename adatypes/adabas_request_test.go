@@ -144,7 +144,9 @@ func TestAdabasRequestParser_osEmptyPeriod(t *testing.T) {
 	testDefinition.CreateValues(false)
 	testDefinition.DumpValues(false)
 	v := testDefinition.Search("PG")
-	assert.NotNil(t, v)
+	if !assert.NotNil(t, v) {
+		return
+	}
 	if assert.IsType(t, &StructureValue{}, v) {
 		sv := v.(*StructureValue)
 		if !assert.Equal(t, 0, sv.NrElements()) {

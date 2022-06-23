@@ -39,8 +39,8 @@ type searchByName struct {
 
 func traverseSearchValueByName(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
 	search := x.(*searchByName)
-	Central.Log.Debugf("Search value by name %s and index %d:%d, found %s %d/%d", search.name, search.peIndex,
-		search.muIndex, adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex())
+	Central.Log.Debugf("Search value by name %s and index %d:%d, found %s %d/%d %s", search.name, search.peIndex,
+		search.muIndex, adaValue.Type().Name(), adaValue.PeriodIndex(), adaValue.MultipleIndex(), adaValue.Type().Type().name())
 	if adaValue.Type().Name() == search.name {
 		if search.peIndex == adaValue.PeriodIndex() &&
 			search.muIndex == adaValue.MultipleIndex() {

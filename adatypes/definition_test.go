@@ -449,7 +449,7 @@ func TestDefinitionQueryMultipleField(t *testing.T) {
 	assert.Nil(t, err)
 
 	Central.Log.Debugf(" ------------------------ after create adabas request 1 0")
-	testDefinition.DumpValues(false)
+	testDefinition.DumpValues(true)
 
 	assert.Equal(t, "U4,4,B,GS,1,A.",
 		request.FormatBuffer.String())
@@ -462,7 +462,7 @@ func TestDefinitionQueryMultipleField(t *testing.T) {
 	assert.NoError(t, err)
 	sv.addValue(muV, 0, 0)
 
-	testDefinition.DumpValues(false)
+	testDefinition.DumpValues(true)
 	Central.Log.Debugf(" ------------------------ before create adabas request 0 0")
 
 	parameter = &AdabasRequestParameter{Store: false, DescriptorRead: false,
@@ -1723,6 +1723,11 @@ func employeeDefinition() *Definition {
 }
 
 func TestEmployeeDefinition(t *testing.T) {
+	err := initLogWithFile("definition.log")
+	if !assert.NoError(t, err) {
+		return
+	}
+	Central.Log.Infof("TEST: %s", t.Name())
 	definitionEmployees := employeeDefinition()
 	fmt.Println(definitionEmployees.String())
 	req, err := CreateTestRequest(true, definitionEmployees)
@@ -1731,6 +1736,7 @@ func TestEmployeeDefinition(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
+	definitionEmployees.DumpValues(false)
 	assert.Equal(t, "AA,8,A,AC,20,A,AD,20,A,AE,20,A,AN,6,A,AM,15,A.", req.FormatBuffer.String())
 }
 

@@ -164,7 +164,7 @@ func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResu
 			}*/
 		}
 	}
-	Central.Log.Debugf("Do %s", adaValue.Type().Name())
+	Central.Log.Debugf("Do %s %s", adaValue.Type().Name(), adaValue.Type().Type().name())
 	len := adaValue.FormatBuffer(&(adabasRequest.FormatBuffer), adabasRequest.Option)
 	adabasRequest.RecordBufferLength += len
 	adabasRequest.PeriodLength += len
