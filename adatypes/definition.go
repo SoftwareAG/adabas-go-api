@@ -729,8 +729,8 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 		}
 	}
 	if Central.IsDebugLevel() {
-		Central.Log.Debugf("Found value to add to %s[%d,%d] type=%v %T %T", val.Type().Name(),
-			val.PeriodIndex(), val.MultipleIndex(), val.Type().Type().name(), val, val.Type())
+		Central.Log.Debugf("Found value to add to %s[%d,%d] type=%v %T %T index=%#v", val.Type().Name(),
+			val.PeriodIndex(), val.MultipleIndex(), val.Type().Type().name(), val, val.Type(), index)
 	}
 	switch val.Type().Type() {
 	case FieldTypeMultiplefield:
@@ -756,11 +756,26 @@ func (def *Definition) SetValueWithIndex(name string, index []uint32, x interfac
 		if err != nil {
 			return err
 		}
-		muIndex := uint32(0)
-		if len(index) > 1 {
-			muIndex = index[1]
+		peIndex := uint32(0)
+		curIndex := 0
+		if typ.HasFlagSet(FlagOptionPE) {
+			if len(index) > 0 {
+				peIndex = index[curIndex]
+				curIndex++
+			} else {
+				return fmt.Errorf("XXX")
+			}
 		}
-		err = sv.addValue(subValue, index[0], muIndex)
+		muIndex := uint32(0)
+		if typ.Type() == FieldTypeMultiplefield || typ.HasFlagSet(FlagOptionMUGhost) {
+			if len(index) > curIndex {
+				muIndex = index[curIndex]
+			} else {
+				return fmt.Errorf("XXX")
+			}
+		}
+		Central.Log.Debugf("Set indexes to PE=%d MU=%d current=%d", peIndex, muIndex, curIndex)
+		err = sv.addValue(subValue, peIndex, muIndex)
 		// subValue.setMultipleIndex(index[0])
 		// sv.Elements[0].Values = append(sv.Elements[0].Values, subValue)
 		// }

@@ -933,6 +933,7 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32, muindex 
 	}
 	if value.Type().Type() == FieldTypeMultiplefield && muindex == 0 {
 		Central.Log.Debugf("Skip MU index")
+		debug.PrintStack()
 		return nil
 	}
 	//Central.Log.Debugf("Stack trace:\n%s", string(debug.Stack()))

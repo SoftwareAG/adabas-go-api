@@ -336,7 +336,11 @@ func TestRequestResultWithMUWithContent(t *testing.T) {
 			fmt.Println("Set MU error", err)
 			return
 		}
+		adatypes.Central.Log.Infof("Done set MU entry of %d", (i + 1))
 	}
+	fmt.Println("Dump values")
+	d.DumpValues(false)
+	fmt.Println("Set normal field values")
 	err = record.SetValue("AA", 2)
 	if !assert.NoError(t, err) {
 		fmt.Println("Set PA error", err)
