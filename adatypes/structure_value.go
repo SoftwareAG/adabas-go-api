@@ -390,10 +390,20 @@ func (value *StructureValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 // Evaluate the occurrence of the structure
 func (value *StructureValue) evaluateOccurrence(helper *BufferHelper) (occNumber int, err error) {
 	subStructureType := value.adatype.(*StructureType)
-	if subStructureType.HasFlagSet(FlagOptionSingleIndex) {
-		Central.Log.Debugf("Single index occurence only 1")
+	switch {
+	case subStructureType.Type() == FieldTypePeriodGroup && subStructureType.peRange.IsSingleIndex():
+		Central.Log.Debugf("Single PE index occurence only 1")
 		return 1, nil
+	case subStructureType.Type() == FieldTypeMultiplefield && subStructureType.muRange.IsSingleIndex():
+		Central.Log.Debugf("Single MU index occurence only 1")
+		return 1, nil
+	default:
+		Central.Log.Debugf("Single index flag: %v", subStructureType.HasFlagSet(FlagOptionSingleIndex))
 	}
+	// if subStructureType.HasFlagSet(FlagOptionSingleIndex) {
+	// 	Central.Log.Debugf("Single index occurence only 1")
+	// 	return 1, nil
+	// }
 	occNumber = math.MaxInt32
 	Central.Log.Debugf("Current structure occurrence %d", subStructureType.occ)
 	if subStructureType.occ > 0 {
@@ -661,8 +671,9 @@ func (value *StructureValue) Get(fieldName string, index int) IAdaValue {
 		Central.Log.Debugf("Got value map entry %#v", structElement.valueMap)
 		return vr
 	}
-	Central.Log.Debugf("Values %#v", structElement.Values)
+	Central.Log.Debugf("Nr values %d", len(structElement.Values))
 	for _, vr := range structElement.Values {
+		Central.Log.Debugf("Check %s -> %s", vr.Type().Name(), fieldName)
 		if vr.Type().Name() == fieldName {
 			Central.Log.Debugf("Found index %d to %s[%d,%d]", index, vr.Type().Name(), vr.PeriodIndex(), vr.MultipleIndex())
 			return vr
@@ -674,6 +685,7 @@ func (value *StructureValue) Get(fieldName string, index int) IAdaValue {
 			}
 		}
 	}
+	Central.Log.Debugf("No %s entry found with index=%d", fieldName, index)
 	return nil
 }
 

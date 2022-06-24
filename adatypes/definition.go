@@ -217,6 +217,9 @@ func parseBufferTypes(helper *BufferHelper, option *BufferOption, str interface{
 		}
 		// If part of multiple field or period group set index value
 		if value.Type().HasFlagSet(FlagOptionPE) {
+			if Central.IsDebugLevel() {
+				Central.Log.Debugf("Set PE index to %d", (peIndex + 1))
+			}
 			value.setPeriodIndex(peIndex + 1)
 		}
 		if value.Type().HasFlagSet(FlagOptionMUGhost) {
@@ -581,13 +584,15 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 			return subErr
 		}
 		peIndex := uint32(0)
-		if value.Type().Type() != FieldTypePeriodGroup && adaType.PeriodicRange().from > 0 {
+		if value.Type().Type() != FieldTypePeriodGroup &&
+			(adaType.PeriodicRange().from > 0 || adaType.PeriodicRange().from == LastEntry) {
 			Central.Log.Debugf("Set PE index %d", adaType.PeriodicRange().from)
 			peIndex = uint32(adaType.PeriodicRange().from)
 			value.setPeriodIndex(peIndex)
 		}
 		muIndex := uint32(0)
-		if adaType.HasFlagSet(FlagOptionMUGhost) && adaType.PeriodicRange().from > 0 {
+		if adaType.HasFlagSet(FlagOptionMUGhost) &&
+			(adaType.PeriodicRange().from > 0 || adaType.PeriodicRange().from == LastEntry) {
 			muIndex = uint32(adaType.PeriodicRange().from)
 			value.setMultipleIndex(muIndex)
 		}
@@ -647,12 +652,13 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 					return subErr
 				}
 				peIndex := uint32(0)
-				if adaType.PeriodicRange().from > 0 {
+				if adaType.PeriodicRange().from > 0 || adaType.PeriodicRange().from == LastEntry {
 					peIndex = uint32(adaType.PeriodicRange().from)
 					value.setPeriodIndex(peIndex)
 				}
 				muIndex := uint32(0)
-				if adaType.HasFlagSet(FlagOptionMUGhost) && adaType.PeriodicRange().from > 0 {
+				if adaType.HasFlagSet(FlagOptionMUGhost) &&
+					(adaType.PeriodicRange().from > 0 || adaType.PeriodicRange().from == LastEntry) {
 					muIndex = uint32(adaType.MultipleRange().from)
 					value.setMultipleIndex(muIndex)
 				}
@@ -661,7 +667,8 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 				if subErr != nil {
 					return subErr
 				}
-				if !isDefaultPeRange && adaType.PeriodicRange().from > 0 {
+				if !isDefaultPeRange &&
+					(adaType.PeriodicRange().from > 0 || adaType.PeriodicRange().from == LastEntry) {
 					value.setPeriodIndex(uint32(adaType.PeriodicRange().from))
 				}
 				if adaType.MultipleRange() != nil && adaType.MultipleRange().from > 0 {
@@ -696,6 +703,7 @@ func (def *Definition) CreateValues(forStoring bool) (err error) {
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Done creating values ... %v", err)
 		Central.Log.Debugf("Created %d values", len(def.Values))
+		def.DumpValues(true)
 	}
 	return
 }
