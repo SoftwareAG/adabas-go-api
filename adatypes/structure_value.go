@@ -397,8 +397,14 @@ func (value *StructureValue) evaluateOccurrence(helper *BufferHelper) (occNumber
 	case subStructureType.Type() == FieldTypeMultiplefield && subStructureType.muRange.IsSingleIndex():
 		Central.Log.Debugf("Single MU index occurence only 1")
 		return 1, nil
+	case subStructureType.Type() == FieldTypePeriodGroup && subStructureType.HasFlagSet(FlagOptionSingleIndex):
+		return len(value.Elements), nil
 	default:
-		Central.Log.Debugf("Single index flag: %v", subStructureType.HasFlagSet(FlagOptionSingleIndex))
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Single index flag: %v (%s)", subStructureType.HasFlagSet(FlagOptionSingleIndex), subStructureType.Type().name())
+			Central.Log.Debugf("PE range: %s", subStructureType.peRange.FormatBuffer())
+			Central.Log.Debugf("MU range: %s", subStructureType.muRange.FormatBuffer())
+		}
 	}
 	// if subStructureType.HasFlagSet(FlagOptionSingleIndex) {
 	// 	Central.Log.Debugf("Single index occurence only 1")
