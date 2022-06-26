@@ -400,7 +400,10 @@ func (value *StructureValue) evaluateOccurrence(helper *BufferHelper) (occNumber
 		Central.Log.Debugf("Single MU index occurence only 1")
 		return 1, nil
 	case subStructureType.Type() == FieldTypePeriodGroup && subStructureType.HasFlagSet(FlagOptionSingleIndex):
-		return len(value.Elements), nil
+		if len(value.Elements) > 0 {
+			return len(value.Elements), nil
+		}
+		subStructureType.occ = 1
 	default:
 		if Central.IsDebugLevel() {
 			Central.Log.Debugf("Single index flag: %v (%s)", subStructureType.HasFlagSet(FlagOptionSingleIndex), subStructureType.Type().name())
