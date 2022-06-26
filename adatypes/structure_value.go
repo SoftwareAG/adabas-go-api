@@ -218,7 +218,9 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 				} else {
 					muIndex = i + 1
 				}
-				Central.Log.Debugf("Work on %s[%d,%d] (%d-%d)", adaType.Name(), peIndex, lastNumber, value.peIndex, adaType.PeriodicRange().from)
+				Central.Log.Debugf("Work on %s PE=%d MU=%d last=%d PEv=%d PErange=%d MUrange=%d",
+					adaType.Name(), peIndex, muIndex, lastNumber, value.peIndex,
+					adaType.PeriodicRange().from, adaType.MultipleRange().from)
 				value.initMultipleSubValues(i+1, peIndex, muIndex, true)
 			}
 			if option.SecondCall > 0 &&
@@ -969,16 +971,17 @@ func (value *StructureValue) addValue(subValue IAdaValue, peindex uint32, muinde
 	lenElements := 0
 	if value.Elements != nil {
 		if Central.IsDebugLevel() {
-			Central.Log.Debugf("Elements in list %d", len(value.Elements))
+			Central.Log.Debugf("Before Elements in list %d", len(value.Elements))
 		}
 		lenElements = len(value.Elements)
 	}
 	curIndex := peindex
-	if subValue.Type().HasFlagSet(FlagOptionMUGhost) {
+	if value.Type().Type() == FieldTypeMultiplefield {
 		curIndex = muindex
 	}
 	if Central.IsDebugLevel() {
-		Central.Log.Debugf("Current add value index = %d lenElements=%d", curIndex, lenElements)
+		Central.Log.Debugf("curIndex=%d PE index=%d MU index=%d ghost=%v", curIndex, peindex, muindex, subValue.Type().HasFlagSet(FlagOptionMUGhost))
+		Central.Log.Debugf("Current add check current index = %d lenElements=%d", curIndex, lenElements)
 	}
 	if element, ok = value.elementMap[curIndex]; !ok {
 		element = newStructureElement()
