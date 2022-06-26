@@ -66,5 +66,5 @@ func TestMapRepositoryRead(t *testing.T) {
 	// fmt.Println(">", employeeMap.String())
 	x := employeeMap.fieldMap["AA"]
 	assert.NotNil(t, x)
-	fmt.Printf("%#v", x)
+	// fmt.Printf("%#v", x)
 }
