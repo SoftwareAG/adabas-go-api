@@ -394,10 +394,10 @@ func getIndexRange(adaType IAdaType) string {
 		Central.Log.Debugf("PE range %s", adaType.PeriodicRange().FormatBuffer())
 		Central.Log.Debugf("MU range %s", adaType.MultipleRange().FormatBuffer())
 	}
-	if adaType.PeriodicRange().to != LastEntry {
+	if adaType.PeriodicRange().from != 0 && adaType.PeriodicRange().to != LastEntry {
 		indexRange = fmt.Sprintf("%d", adaType.PeriodicRange().from)
 	}
-	if adaType.MultipleRange().to != LastEntry {
+	if adaType.MultipleRange().from != 0 && adaType.MultipleRange().to != LastEntry {
 		if indexRange != "" {
 			indexRange += fmt.Sprintf("(%d)", adaType.MultipleRange().from)
 		} else {
