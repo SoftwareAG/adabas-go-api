@@ -1754,4 +1754,5 @@ var staticMessages = []struct {
 	{"ADG0000183", "en", "Searched LOB entry not found"},
 	{"ADG0000184", "en", "Searched LOB field {0} not in definition"},
 	{"ADG0000185", "en", "Searched field {0} not a Large object (LOB)"},
+	{"ADG0000186", "en", "Searched field query empty"},
 }
