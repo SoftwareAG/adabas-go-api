@@ -125,15 +125,16 @@ func (value *unicodeValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOpti
 			value.adatype.Type().name(), value.adatype.Length(), option.StoreCall)
 	}
 	if value.adatype.Type() == FieldTypeLBUnicode && value.adatype.Length() == 0 && !option.StoreCall {
+		indexRange := getValueIndexRange(value)
 		// If LOB field is read, use part
 		if option.SecondCall > 0 {
-			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), PartialLobSize+1, value.lobSize))
+			buffer.WriteString(fmt.Sprintf("%s%s(%d,%d)", value.Type().ShortName(), indexRange, PartialLobSize+1, value.lobSize))
 			len = value.lobSize // - PartialLobSize
 		} else {
 			if buffer.Len() > 0 {
 				buffer.WriteString(",")
 			}
-			buffer.WriteString(fmt.Sprintf("%sL,4,%s(0,%d)", value.Type().ShortName(), value.Type().ShortName(), PartialLobSize))
+			buffer.WriteString(fmt.Sprintf("%s%sL,4,%s%s(0,%d)", value.Type().ShortName(), indexRange, value.Type().ShortName(), indexRange, PartialLobSize))
 			len = 4 + PartialLobSize
 		}
 	} else {

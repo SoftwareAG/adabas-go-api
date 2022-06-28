@@ -883,6 +883,10 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 	if option.SecondCall > 0 {
 		return value.formatBufferSecondCall(buffer, option)
 	}
+	if value.Type().Type() == FieldTypeMultiplefield && value.Type().HasFlagSet(FlagOptionSingleIndex) {
+		Central.Log.Debugf("Single index FB?")
+		return 0
+	}
 	structureType := value.Type().(*StructureType)
 	recordBufferLength := uint32(0)
 	if structureType.NrFields() > 0 {
@@ -959,7 +963,7 @@ func (value *StructureValue) StoreBuffer(helper *BufferHelper, option *BufferOpt
 // addValue Add sub value with given index
 func (value *StructureValue) addValue(subValue IAdaValue, peindex uint32, muindex uint32) error {
 	if Central.IsDebugLevel() {
-		Central.Log.Debugf("Add value index %d,%d to list for %s[%d,%d], appending %s[%d,%d] %p", peindex, muindex, value.Type().Name(), value.PeriodIndex(), value.MultipleIndex(),
+		Central.Log.Debugf("Add value index PE=%d MU=%d to list for %s[%d,%d], appending %s[%d,%d] %p", peindex, muindex, value.Type().Name(), value.PeriodIndex(), value.MultipleIndex(),
 			subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex(), value)
 	}
 	if value.Type().Type() == FieldTypeMultiplefield && muindex == 0 {

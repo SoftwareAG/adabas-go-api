@@ -150,7 +150,7 @@ func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResu
 		Central.Log.Debugf("Skip format buffer for %s", adaValue.Type().Name())
 		return Continue, nil
 	}
-	Central.Log.Debugf("Add format buffer for %s", adaValue.Type().Name())
+	Central.Log.Debugf("Add format buffer for %s(%s)", adaValue.Type().Name(), adaValue.Type().Type().name())
 	// In case of structure generate
 	if adaValue.Type().IsStructure() {
 		// Reset if period group starts
@@ -163,7 +163,7 @@ func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResu
 			}*/
 		}
 	}
-	Central.Log.Debugf("Do %s %s", adaValue.Type().Name(), adaValue.Type().Type().name())
+	Central.Log.Debugf("Generate format buffer %s %s", adaValue.Type().Name(), adaValue.Type().Type().name())
 	len := adaValue.FormatBuffer(&(adabasRequest.FormatBuffer), adabasRequest.Option)
 	adabasRequest.RecordBufferLength += len
 	adabasRequest.PeriodLength += len
@@ -230,8 +230,15 @@ func generateFormatBufferMultipleField(adabasRequest *Request, adaType IAdaType)
 		// r := structureType.peRange.FormatBuffer()
 		// buffer.WriteString(adaType.ShortName() + r + "C,4,B")
 		if Central.IsDebugLevel() {
-			Central.Log.Debugf("Periodic range FB PE CS: %s", structureType.PeriodicRange().FormatBuffer())
-			Central.Log.Debugf("Multiple range FB PE CS: %s", structureType.MultipleRange().FormatBuffer())
+			Central.Log.Debugf("Periodic range FB: %s", structureType.PeriodicRange().FormatBuffer())
+			Central.Log.Debugf("Multiple range FB: %s", structureType.MultipleRange().FormatBuffer())
+			Central.Log.Debugf("Partial  range FB: %s", structureType.PartialRange().FormatBuffer())
+			Central.Log.Debugf("Single index: %v", structureType.HasFlagSet(FlagOptionSingleIndex))
+			Central.Log.Debugf("Part: %v", structureType.HasFlagSet(FlagOptionPart))
+		}
+		if adaType.Type() == FieldTypeMultiplefield && structureType.HasFlagSet(FlagOptionSingleIndex) {
+			Central.Log.Debugf("Single index, skip MU FormatBuffer")
+			return
 		}
 		if adaType.PeriodicRange().IsSingleIndex() {
 			structureType := adaType.(*StructureType)
@@ -320,13 +327,14 @@ func generateFormatBufferField(adabasRequest *Request, adaType IAdaType) {
 					genType = adaType.(*RedefinitionType).MainType
 				}
 				if adaType.Type() == FieldTypeLBString {
+					indexRange := getIndexRange(adaType)
 					partialRange := adaType.PartialRange()
 					if partialRange != nil {
 						Central.Log.Debugf("Partial Range %d:%d\n", partialRange.from, partialRange.to)
 						if partialRange.from == 0 {
-							buffer.WriteString(fmt.Sprintf("%s(*,%d)", adaType.ShortName(), partialRange.to))
+							buffer.WriteString(fmt.Sprintf("%s%s(*,%d)", adaType.ShortName(), indexRange, partialRange.to))
 						} else {
-							buffer.WriteString(fmt.Sprintf("%s(%d,%d)", adaType.ShortName(), partialRange.from, partialRange.to))
+							buffer.WriteString(fmt.Sprintf("%s%s(%d,%d)", adaType.ShortName(), indexRange, partialRange.from, partialRange.to))
 						}
 						adabasRequest.RecordBufferLength += uint32(partialRange.to)
 					} else {
@@ -335,10 +343,10 @@ func generateFormatBufferField(adabasRequest *Request, adaType IAdaType) {
 							fieldIndex = t.peRange.FormatBuffer()
 						}
 						if adabasRequest.Option.PartialRead {
-							buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(*,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
+							buffer.WriteString(fmt.Sprintf("%sL%s,4,%s%s(*,%d)", adaType.ShortName(), indexRange, adaType.ShortName(), fieldIndex,
 								adabasRequest.PartialLobSize))
 						} else {
-							buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(1,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
+							buffer.WriteString(fmt.Sprintf("%sL%s,4,%s%s(1,%d)", adaType.ShortName(), indexRange, adaType.ShortName(), fieldIndex,
 								adabasRequest.PartialLobSize))
 						}
 						adabasRequest.RecordBufferLength += (4 + adabasRequest.PartialLobSize)
@@ -366,13 +374,38 @@ func generateFormatBufferField(adabasRequest *Request, adaType IAdaType) {
 						genType.Length(), genType.Type().FormatCharacter()))
 				}
 			} else {
-				Central.Log.Debugf("MU ghost or PE")
+				Central.Log.Debugf("MU ghost or PE of %s (%s)", adaType.Name(), adaType.Type().name())
+				Central.Log.Debugf("PeriodRange %s", adaType.PeriodicRange().FormatBuffer())
+				Central.Log.Debugf("MultipleRange %s", adaType.MultipleRange().FormatBuffer())
+				if adaType.HasFlagSet(FlagOptionSingleIndex) {
+					Central.Log.Debugf("Create single index FB")
+				}
 			}
 		}
 	} else {
-		Central.Log.Debugf("Unknown FB generator: %v", adaType.Name())
+		Central.Log.Infof("Unknown FB generator: %v", adaType.Name())
 	}
 
+}
+
+func getIndexRange(adaType IAdaType) string {
+	indexRange := ""
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("PE range %s", adaType.PeriodicRange().FormatBuffer())
+		Central.Log.Debugf("MU range %s", adaType.MultipleRange().FormatBuffer())
+	}
+	if adaType.PeriodicRange().to != LastEntry {
+		indexRange = fmt.Sprintf("%d", adaType.PeriodicRange().from)
+	}
+	if adaType.MultipleRange().to != LastEntry {
+		if indexRange != "" {
+			indexRange += fmt.Sprintf("(%d)", adaType.MultipleRange().from)
+		} else {
+			indexRange += fmt.Sprintf("%d", adaType.MultipleRange().from)
+		}
+	}
+	Central.Log.Debugf("Index Range %s", indexRange)
+	return indexRange
 }
 
 func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
@@ -448,7 +481,7 @@ func (def *Definition) CreateAdabasRequest(parameter *AdabasRequestParameter) (a
 	adabasRequest.Definition = def
 
 	Central.Log.Debugf("Create format buffer. Init Buffer: %s second=%v", adabasRequest.FormatBuffer.String(), parameter.SecondCall)
-	if parameter.Store || parameter.SecondCall > 0 {
+	if parameter.Store || parameter.SecondCall > 0 || def.Values != nil {
 		t := TraverserValuesMethods{EnterFunction: formatBufferTraverserEnter, LeaveFunction: formatBufferTraverserLeave}
 		_, err = def.TraverseValues(t, adabasRequest)
 		if err != nil {

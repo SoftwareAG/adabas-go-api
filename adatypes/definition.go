@@ -506,7 +506,9 @@ type stackParameter struct {
 
 func addValueToStructure(parameter *stackParameter, value IAdaValue, peIndex, muIndex uint32) error {
 	if Central.IsDebugLevel() {
-		Central.Log.Debugf("Add value to structure for %s = %v %s[%d,%d]", value.Type().Name(), value.String(), value.Type().Type().name(), peIndex, muIndex)
+		Central.Log.Debugf("Add sub value %s to structure for %s = %v %s[%d,%d]",
+			value.Type().Type().name(), value.Type().Name(), value.String(),
+			value.Type().Type().name(), peIndex, muIndex)
 	}
 	if parameter.structureValue == nil {
 		if Central.IsDebugLevel() {
@@ -557,12 +559,6 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 	if debug {
 		Central.Log.Debugf("Create value for level=%d %s -> %d", level, adaType.Name(), adaType.Level())
 	}
-	// if adaType.PeriodicRange() != nil {
-	// 	fmt.Println("PE", adaType.Type() == FieldTypeMultiplefield, adaType.Name(), adaType.PeriodicRange().from, "-", adaType.PeriodicRange().to)
-	// }
-	// if adaType.MultipleRange() != nil {
-	// 	fmt.Println("MU", adaType.Type() == FieldTypeMultiplefield, adaType.Name(), adaType.MultipleRange().from, "-", adaType.MultipleRange().to)
-	// }
 	isDefaultPeRange := adaType.PeriodicRange() == nil || (adaType.PeriodicRange().from == 1 &&
 		adaType.PeriodicRange().to == LastEntry)
 	Central.Log.Debugf("Is PE range %v, PE flag %v", isDefaultPeRange, adaType.HasFlagSet(FlagOptionPE))
@@ -572,11 +568,13 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 				Central.Log.Debugf("No PE group for reading %#v", adaType.PeriodicRange())
 				return nil
 			}
-			Central.Log.Debugf("PE group but PE Flag")
+			Central.Log.Debugf("No PE group but PE Flag")
 		}
 		parameter.stack.Push(parameter.structureValue)
 		if debug {
 			Central.Log.Debugf("Create structure value for %s -> %s", adaType.Name(), adaType.PartialRange().FormatBuffer())
+			Central.Log.Debugf("Create structure value for %s -> %s", adaType.Name(), adaType.PeriodicRange().FormatBuffer())
+			Central.Log.Debugf("Create structure value for %s -> %s", adaType.Name(), adaType.MultipleRange().FormatBuffer())
 		}
 		value, subErr := adaType.Value()
 		if subErr != nil {
@@ -586,16 +584,16 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 		peIndex := uint32(0)
 		if value.Type().Type() != FieldTypePeriodGroup &&
 			(adaType.PeriodicRange().from > 0 || adaType.PeriodicRange().from == LastEntry) {
-			Central.Log.Debugf("Set PE index %d", adaType.PeriodicRange().from)
 			peIndex = uint32(adaType.PeriodicRange().from)
 			value.setPeriodIndex(peIndex)
 		}
 		muIndex := uint32(0)
 		if adaType.HasFlagSet(FlagOptionMUGhost) &&
-			(adaType.PeriodicRange().from > 0 || adaType.PeriodicRange().from == LastEntry) {
-			muIndex = uint32(adaType.PeriodicRange().from)
+			(adaType.MultipleRange().from > 0 || adaType.MultipleRange().from == LastEntry) {
+			muIndex = uint32(adaType.MultipleRange().from)
 			value.setMultipleIndex(muIndex)
 		}
+		Central.Log.Debugf("Set PE index %d and MU index %d", peIndex, muIndex)
 		subErr = addValueToStructure(parameter, value, peIndex, muIndex)
 		if subErr != nil {
 			return subErr
@@ -603,6 +601,7 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 		parameter.structureValue = value.(*StructureValue)
 	} else {
 		if debug {
+			Central.Log.Debugf("Create no structure value %s %s", adaType.Name(), adaType.Type().name())
 			if isDefaultPeRange {
 				Central.Log.Debugf("PE default range")
 
@@ -685,7 +684,8 @@ func traverserCreateValue(adaType IAdaType, parentType IAdaType, level int, x in
 		}
 	}
 	if debug {
-		Central.Log.Debugf("Finished creating value level=%d name=%s", adaType.Level(), adaType.Name())
+		Central.Log.Debugf("Finished creating value level=%d name=%s (%s)",
+			adaType.Level(), adaType.Name(), adaType.Type().name())
 	}
 	return nil
 }

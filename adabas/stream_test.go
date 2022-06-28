@@ -312,7 +312,7 @@ func TestDirectStreamPEMU(t *testing.T) {
 	if !assert.NotNil(t, segment) {
 		return
 	}
-	assert.Equal(t, "", segment)
+	assert.Equal(t, []byte{}, segment)
 }
 
 func TestParseFields(t *testing.T) {

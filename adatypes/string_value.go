@@ -256,18 +256,31 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 		} else {
 			partialRange := value.Type().PartialRange()
 			if Central.IsDebugLevel() {
-				Central.Log.Debugf("Partial Range %#v\n------\n", partialRange)
+				Central.Log.Debugf("String value Partial Range %#v", partialRange)
 			}
+			indexRange := getValueIndexRange(value)
+			// indexRange := ""
+			// if value.Type().PeriodicRange().to != LastEntry {
+			// 	indexRange = fmt.Sprintf("%d", value.Type().PeriodicRange().from)
+			// }
+			// if value.Type().MultipleRange().to != LastEntry {
+			// 	if indexRange != "" {
+			// 		indexRange += ","
+			// 	}
+			// 	indexRange += fmt.Sprintf("%d", value.Type().MultipleRange().from)
+			// }
 			if partialRange != nil {
 				if partialRange.to == 0 {
-					buffer.WriteString(fmt.Sprintf("%s(*,%d)", value.Type().ShortName(), partialRange.to))
+					buffer.WriteString(fmt.Sprintf("%s%s(*,%d)", value.Type().ShortName(), indexRange, partialRange.to))
 					recLength = uint32(partialRange.to)
 				} else {
-					buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), partialRange.from, partialRange.to))
+					buffer.WriteString(fmt.Sprintf("%s%s(%d,%d)", value.Type().ShortName(), indexRange, partialRange.from, partialRange.to))
 					recLength = uint32(partialRange.to)
 				}
 			} else {
-				buffer.WriteString(fmt.Sprintf("%sL,4,%s(0,%d)", value.Type().ShortName(), value.Type().ShortName(), value.PartialLobSize))
+				buffer.WriteString(fmt.Sprintf("%sL%s,4,%s%s(*,%d)",
+					value.Type().ShortName(), indexRange,
+					value.Type().ShortName(), indexRange, value.PartialLobSize))
 				recLength = 4 + value.PartialLobSize
 			}
 		}
@@ -303,6 +316,26 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 		}
 	}
 	return recLength
+}
+
+func getValueIndexRange(value IAdaValue) string {
+	indexRange := ""
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("PE range %d", value.PeriodIndex())
+		Central.Log.Debugf("MU range %d", value.MultipleIndex())
+	}
+	if value.PeriodIndex() > 0 {
+		indexRange = fmt.Sprintf("%d", value.PeriodIndex())
+	}
+	if value.MultipleIndex() > 0 {
+		if indexRange != "" {
+			indexRange += fmt.Sprintf("(%d)", value.MultipleIndex())
+		} else {
+			indexRange += fmt.Sprintf("%d", value.MultipleIndex())
+		}
+	}
+	Central.Log.Debugf("Index Range %s", indexRange)
+	return indexRange
 }
 
 func (value *stringValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {

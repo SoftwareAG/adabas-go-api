@@ -191,7 +191,30 @@ func (record *Record) DumpValues() {
 
 // searchValue search a value using a given field name
 func (record *Record) searchValue(field string) (adatypes.IAdaValue, bool) {
-	if adaValue, ok := record.HashFields[field]; ok {
+	fq, err := NewFieldQuery(field)
+	if err != nil {
+		adatypes.Central.Log.Debugf("Query failure: %v", err)
+		return nil, false
+	}
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Search field %s (%s)", fq.Name, field)
+		for k, v := range record.HashFields {
+			adatypes.Central.Log.Debugf("Key: %s %#v", k, v)
+		}
+	}
+	if adaValue, ok := record.HashFields[fq.Name]; ok {
+		adatypes.Central.Log.Debugf("Found value %s (%v)", adaValue.Type().Name(), adaValue.Type().Type())
+		if adaValue.Type().Type() == adatypes.FieldTypeMultiplefield && (fq.MultipleIndex > 0 || fq.PeriodicIndex > 0) {
+			sv := adaValue.(*adatypes.StructureValue)
+			for _, ve := range sv.Elements {
+				for _, v := range ve.Values {
+					adatypes.Central.Log.Debugf("PE %d MU %d", v.PeriodIndex(), v.MultipleIndex())
+					if fq.PeriodicIndex == v.PeriodIndex() && fq.MultipleIndex == v.MultipleIndex() {
+						return v, true
+					}
+				}
+			}
+		}
 		return adaValue, true
 	}
 	return nil, false
