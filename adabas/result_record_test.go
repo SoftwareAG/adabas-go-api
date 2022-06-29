@@ -161,7 +161,10 @@ func TestRecord_MarshalLink(t *testing.T) {
 		verr = result.SetValue("S4", "1234567")
 		assert.Error(t, verr)
 		verr = result.SetValue("@Link", "4200")
-		assert.NoError(t, verr)
+		if !assert.NoError(t, verr) {
+			result.DumpValues()
+			return
+		}
 
 		xout, xerr := xml.Marshal(result)
 		assert.NoError(t, xerr)

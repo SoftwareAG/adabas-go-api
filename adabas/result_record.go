@@ -202,7 +202,11 @@ func (record *Record) searchValue(field string) (adatypes.IAdaValue, bool) {
 			adatypes.Central.Log.Debugf("Key: %s %#v", k, v)
 		}
 	}
-	if adaValue, ok := record.HashFields[fq.Name]; ok {
+	name := fq.Name
+	if fq.Prefix != ' ' {
+		name = string(fq.Prefix) + fq.Name
+	}
+	if adaValue, ok := record.HashFields[name]; ok {
 		adatypes.Central.Log.Debugf("Found value %s (%v)", adaValue.Type().Name(), adaValue.Type().Type())
 		if adaValue.Type().Type() == adatypes.FieldTypeMultiplefield && (fq.MultipleIndex > 0 || fq.PeriodicIndex > 0) {
 			sv := adaValue.(*adatypes.StructureValue)
@@ -216,6 +220,12 @@ func (record *Record) searchValue(field string) (adatypes.IAdaValue, bool) {
 			}
 		}
 		return adaValue, true
+	}
+	adatypes.Central.Log.Debugf("Found no value for %s", name)
+	if adatypes.Central.IsDebugLevel() {
+		for k, v := range record.HashFields {
+			adatypes.Central.Log.Debugf("Key valid %s -> %s(%d)", k, v.Type().Name(), v.Type().Type())
+		}
 	}
 	return nil, false
 }
