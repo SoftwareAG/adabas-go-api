@@ -51,7 +51,6 @@ type parserBufferTr struct {
 
 func parseBufferValues(adaValue IAdaValue, x interface{}) (result TraverseResult, err error) {
 	parameter := x.(*parserBufferTr)
-
 	if adaValue.Type().HasFlagSet(FlagOptionReference) {
 		if Central.IsDebugLevel() {
 			Central.Log.Debugf("Skip parsing value .... %s", adaValue.Type().Name())

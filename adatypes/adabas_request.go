@@ -22,6 +22,7 @@ package adatypes
 import (
 	"bytes"
 	"fmt"
+	"strings"
 )
 
 // RequestParser function callback used to go through the list of received buffer
@@ -142,20 +143,21 @@ func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResu
 	if adaValue.Type().HasFlagSet(FlagOptionReadOnly) || adaValue.Type().HasFlagSet(FlagOptionReference) {
 		return Continue, nil
 	}
-	/*	if adabasRequest.Definition == nil {
-		fmt.Println("Definition not defined")
-		debug.PrintStack()
-	}*/
 	Central.Log.Debugf("Add format buffer for %s(%s)", adaValue.Type().Name(), adaValue.Type().Type().name())
+	switch {
 	// In case of structure generate
-	if adaValue.Type().IsStructure() {
+	case adaValue.Type().IsStructure():
 		// Reset if period group starts
 		if adaValue.Type().Level() == 1 && adaValue.Type().Type() == FieldTypePeriodGroup {
 			adabasRequest.PeriodLength = 0
 		}
-	} else if adabasRequest.Definition != nil && !adabasRequest.Definition.CheckField(adaValue.Type().Name()) {
+	// special formater
+	case strings.HasPrefix(adaValue.Type().Name(), "#") || strings.HasPrefix(adaValue.Type().Name(), "@"):
+	case adabasRequest.Definition != nil && !adabasRequest.Definition.CheckField(adaValue.Type().Name()):
 		Central.Log.Debugf("Skip format buffer for %s", adaValue.Type().Name())
 		return Continue, nil
+
+	default:
 	}
 
 	Central.Log.Debugf("Generate format buffer %s %s", adaValue.Type().Name(), adaValue.Type().Type().name())
