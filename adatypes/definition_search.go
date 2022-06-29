@@ -24,10 +24,10 @@ import (
 	"strings"
 )
 
-type search struct {
-	name    string
-	adaType IAdaType
-}
+// type search struct {
+// 	name    string
+// 	adaType IAdaType
+// }
 
 type searchByName struct {
 	name    string

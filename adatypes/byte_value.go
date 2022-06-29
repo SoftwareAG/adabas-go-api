@@ -220,7 +220,7 @@ func (value *ubyteValue) SetValue(v interface{}) error {
 	if err != nil {
 		return err
 	}
-	if val < 0 || val > math.MaxUint8 {
+	if val > math.MaxUint8 {
 		return NewGenericError(117, val)
 	}
 

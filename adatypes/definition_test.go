@@ -862,12 +862,13 @@ func TestDefinitionRestrictPeriodic(t *testing.T) {
 	testDefinition := NewDefinitionWithTypes(layout)
 	testDefinition.InitReferences()
 	err = testDefinition.ShouldRestrictToFields("U4,PG")
+	assert.NoError(t, err)
 	testDefinition.DumpTypes(false, false)
 	testDefinition.DumpTypes(false, true)
 	parameter := &AdabasRequestParameter{Store: false, DescriptorRead: false,
 		SecondCall: 0, Mainframe: false}
 	request, err := testDefinition.CreateAdabasRequest(parameter)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	assert.Equal(t, "U4,4,B,PGC,4,B,PG1-N.",
 		request.FormatBuffer.String())
@@ -941,10 +942,11 @@ func TestDefinitionRestrictPeriodicWithMU(t *testing.T) {
 	testDefinition := createLayoutWithPEandMU()
 	testDefinition.DumpValues(false)
 	err = testDefinition.ShouldRestrictToFields("U4,PG")
+	assert.NoError(t, err)
 	adabasParameter := &AdabasRequestParameter{Store: false, DescriptorRead: false,
 		SecondCall: 0, Mainframe: false}
 	request, err := testDefinition.CreateAdabasRequest(adabasParameter)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	assert.Equal(t, "U4,4,B,PGC,4,B,GC1-N,1,A,GS1-N,1,A,GP1-N,1,P.",
 		request.FormatBuffer.String())
@@ -1260,6 +1262,7 @@ func TestDefinitionMultipleField(t *testing.T) {
 	}
 	// Reset tree
 	err = testDefinition.ShouldRestrictToFields("*")
+	assert.NoError(t, err)
 	// TODO Implement range for partial lob
 	assert.Equal(t, "U4,4,B,GMC,4,B,GM1-N,1,P.", req.FormatBuffer.String())
 	err = testDefinition.ShouldRestrictToFieldSlice([]string{"U4", "PM[1]"})

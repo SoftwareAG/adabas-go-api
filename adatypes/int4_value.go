@@ -69,7 +69,7 @@ func (value *uint32Value) SetValue(v interface{}) error {
 	if err != nil {
 		return err
 	}
-	if x >= 0 && x <= math.MaxUint32 {
+	if x <= math.MaxUint32 {
 		value.value = uint32(x)
 		return nil
 	}

@@ -67,7 +67,7 @@ func (value *lengthValue) SetValue(v interface{}) error {
 	if err != nil {
 		return err
 	}
-	if val < 0 || val > math.MaxUint32 {
+	if val > math.MaxUint32 {
 		return NewGenericError(117, val)
 	}
 	value.value = uint32(val)

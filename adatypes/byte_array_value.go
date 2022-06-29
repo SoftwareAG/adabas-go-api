@@ -89,13 +89,13 @@ func (value *byteArrayValue) SetStringValue(stValue string) {
 			case len(value.value) >= 8:
 				endian().PutUint64(value.value, iv)
 			case len(value.value) >= 4:
-				if iv < 0 || iv > math.MaxUint32 {
+				if iv > math.MaxUint32 {
 					return
 				}
 
 				endian().PutUint32(value.value, uint32(iv))
 			case len(value.value) >= 2:
-				if iv < 0 || iv > math.MaxUint16 {
+				if iv > math.MaxUint16 {
 					return
 				}
 				endian().PutUint16(value.value, uint16(iv))

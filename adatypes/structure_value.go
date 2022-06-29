@@ -30,7 +30,6 @@ import (
 
 type structureElement struct {
 	Values   []IAdaValue
-	peIndex  uint32
 	valueMap map[string]IAdaValue
 }
 
