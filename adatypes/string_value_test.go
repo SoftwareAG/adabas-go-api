@@ -189,7 +189,7 @@ func TestStringLBFormatBufferVariable(t *testing.T) {
 	option := &BufferOption{}
 	var buffer bytes.Buffer
 	len := adaValue.FormatBuffer(&buffer, option)
-	assert.Equal(t, "XXL,4,XX(0,4096)", buffer.String())
+	assert.Equal(t, "XXL,4,XX(1,4096)", buffer.String())
 	assert.Equal(t, uint32(4100), len)
 }
 

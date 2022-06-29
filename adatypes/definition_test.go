@@ -1066,7 +1066,9 @@ func TestDefinition_restrict(t *testing.T) {
 		fmt.Println("Create request", rerr)
 		return
 	}
-	assert.Equal(t, "P1C,4,B,GC1-N,1,A,GS1-N,1,A.", req.FormatBuffer.String())
+	if !assert.Equal(t, "P1C,4,B,GC1-N,1,A,GS1-N,1,A.", req.FormatBuffer.String()) {
+		return
+	}
 	rerr = testDefinition.RestrictFieldSlice([]string{"GC[N]"})
 	if !assert.NoError(t, rerr) {
 		fmt.Println("Restrict request", rerr)
@@ -1532,7 +1534,7 @@ func TestDefinitionPEMUSingle(t *testing.T) {
 	request, err := testDefinition.CreateAdabasRequest(parameter)
 	assert.Nil(t, err)
 
-	assert.Equal(t, "GM1(2),0,A.",
+	assert.Equal(t, "GML1(2),4,GM1(2)(1,4096).",
 		request.FormatBuffer.String())
 
 }
@@ -1577,7 +1579,7 @@ func TestDefinitionPEMUFieldSingle(t *testing.T) {
 		sc.String())
 	// fmt.Printf("%T %s -> %v - [%s][%s]", sc, sc, scerr, sc.PartialRange().FormatBuffer(), sc.PeriodicRange().FormatBuffer())
 
-	assert.Equal(t, "GM1(2),0,A.",
+	assert.Equal(t, "GML1(2),4,GM1(2)(1,4096).",
 		request.FormatBuffer.String())
 
 }

@@ -468,11 +468,6 @@ func (def *Definition) CheckField(name string) bool {
 	if len(def.activeFields) == 0 && len(def.Values) > 0 {
 		return true
 	}
-	if Central.IsDebugLevel() {
-		for k, v := range def.activeFields {
-			Central.Log.Debugf("searching for %s in %s %s", name, k, v.Name())
-		}
-	}
 	Central.Log.Debugf("returning %v %d %d", ok, len(def.activeFields), len(def.Values))
 	return ok
 }

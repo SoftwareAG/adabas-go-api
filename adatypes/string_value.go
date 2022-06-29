@@ -278,9 +278,19 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 					recLength = uint32(partialRange.to)
 				}
 			} else {
-				buffer.WriteString(fmt.Sprintf("%sL%s,4,%s%s(*,%d)",
-					value.Type().ShortName(), indexRange,
-					value.Type().ShortName(), indexRange, value.PartialLobSize))
+				if !option.PartialRead {
+					blockSize := option.BlockSize
+					if blockSize == 0 {
+						blockSize = PartialLobSize
+					}
+					buffer.WriteString(fmt.Sprintf("%sL%s,4,%s%s(1,%d)",
+						value.Type().ShortName(), indexRange,
+						value.Type().ShortName(), indexRange, blockSize))
+				} else {
+					buffer.WriteString(fmt.Sprintf("%sL%s,4,%s%s(*,%d)",
+						value.Type().ShortName(), indexRange,
+						value.Type().ShortName(), indexRange, value.PartialLobSize))
+				}
 				recLength = 4 + value.PartialLobSize
 			}
 		}

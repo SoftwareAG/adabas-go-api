@@ -57,6 +57,7 @@ type BufferOption struct {
 	LowerLimit     uint64
 	SecondCall     uint32
 	PartialRead    bool
+	BlockSize      uint32
 }
 
 // NewBufferOption create option to parse the buffer
@@ -185,16 +186,29 @@ func (adavalue *adaValue) commonFormatBuffer(buffer *bytes.Buffer, option *Buffe
 		Central.Log.Debugf("PE flag set=%v Type is MU %v[%v] MU ghost=%v[%v]", adavalue.adatype.HasFlagSet(FlagOptionPE),
 			(adavalue.adatype.Type() == FieldTypeMultiplefield), adavalue.adatype.Type(),
 			adavalue.adatype.HasFlagSet(FlagOptionMUGhost), adavalue.adatype.HasFlagSet(FlagOptionAtomicFB))
+		Central.Log.Debugf("Singleindex=%v PE %d MU %d Range PE %s MU %s", adavalue.Type().HasFlagSet(FlagOptionSingleIndex),
+			adavalue.peIndex, adavalue.muIndex, adavalue.Type().PeriodicRange().FormatBuffer(), adavalue.Type().MultipleRange().FormatBuffer())
 	}
 	// Skip PE fields with MU fields
-	if adavalue.adatype.HasFlagSet(FlagOptionPE) && adavalue.Type().HasFlagSet(FlagOptionMUGhost) {
-		Central.Log.Debugf("Skip ... because PE and MU ghost")
-		return 0
-	}
-	if adavalue.Type().HasFlagSet(FlagOptionMUGhost) && option.StoreCall {
-		buffer.WriteString(fmt.Sprintf(",%s%d,%d,%s", adavalue.Type().ShortName(),
-			adavalue.muIndex, adavalue.Type().Length(), adavalue.Type().Type().FormatCharacter()))
-		return adavalue.Type().Length()
+	// if adavalue.adatype.HasFlagSet(FlagOptionPE) && (adavalue.Type().HasFlagSet(FlagOptionMUGhost) && adavalue.muIndex == 0) {
+	// 	Central.Log.Debugf("Skip ... because PE and MU ghost")
+	// 	return 0
+	// }
+	if adavalue.Type().HasFlagSet(FlagOptionMUGhost) {
+		switch {
+		case option.StoreCall:
+			buffer.WriteString(fmt.Sprintf(",%s%d,%d,%s", adavalue.Type().ShortName(),
+				adavalue.muIndex, adavalue.Type().Length(), adavalue.Type().Type().FormatCharacter()))
+			return adavalue.Type().Length()
+		case adavalue.peIndex > 0 && adavalue.muIndex > 0:
+			buffer.WriteString(fmt.Sprintf("%s%d(%d),%d,%s", adavalue.Type().ShortName(),
+				adavalue.peIndex, adavalue.muIndex, adavalue.Type().Length(), adavalue.Type().Type().FormatCharacter()))
+			return adavalue.Type().Length()
+		case adavalue.muIndex > 0:
+			buffer.WriteString(fmt.Sprintf("%s%d,%d,%s", adavalue.Type().ShortName(),
+				adavalue.muIndex, adavalue.Type().Length(), adavalue.Type().Type().FormatCharacter()))
+			return adavalue.Type().Length()
+		}
 	}
 	if adavalue.adatype.HasFlagSet(FlagOptionPE) {
 		if !adavalue.Type().HasFlagSet(FlagOptionAtomicFB) && !adavalue.Type().HasFlagSet(FlagOptionPart) {
