@@ -202,9 +202,6 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 	}
 	// If store is request and lobsize is bigger then chunk size, do partial lob store calls
 	if option.StoreCall && len(value.value) > PartialStoreLobSizeChunks {
-		if buffer.Len() > 0 {
-			buffer.WriteString(",")
-		}
 		if Central.IsDebugLevel() {
 			Central.Log.Debugf("Generate FormatBuffer second call %d", option.SecondCall)
 		}
@@ -222,11 +219,17 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			if Central.IsDebugLevel() {
 				Central.Log.Debugf("%d.Partial %s -> %d/%d of %d", option.SecondCall, value.Type().ShortName(), start, end, len(value.value))
 			}
+			if buffer.Len() > 0 {
+				buffer.WriteString(",")
+			}
 			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), start, end))
 		} else {
 			partialRange := value.Type().PartialRange()
 			if Central.IsDebugLevel() {
 				Central.Log.Debugf("Partial Range %#v\n", partialRange)
+			}
+			if buffer.Len() > 0 {
+				buffer.WriteString(",")
 			}
 			if partialRange != nil {
 				if partialRange.from == 0 {
@@ -245,12 +248,12 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 		return recLength
 	}
 	if value.adatype.Type() == FieldTypeLBString && value.adatype.Length() == 0 && !option.StoreCall {
-		if buffer.Len() > 0 {
-			buffer.WriteString(",")
-		}
 		// If LOB field is read, use part
 		if option.SecondCall > 0 {
 			if value.lobSize > value.PartialLobSize {
+				if buffer.Len() > 0 {
+					buffer.WriteString(",")
+				}
 				buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), value.PartialLobSize+1, value.lobSize-value.PartialLobSize))
 				recLength = value.lobSize - value.PartialLobSize
 			}
@@ -270,6 +273,9 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			// 	}
 			// 	indexRange += fmt.Sprintf("%d", value.Type().MultipleRange().from)
 			// }
+			if buffer.Len() > 0 {
+				buffer.WriteString(",")
+			}
 			if partialRange != nil {
 				if partialRange.to == 0 {
 					buffer.WriteString(fmt.Sprintf("%s%s(*,%d)", value.Type().ShortName(), indexRange, partialRange.to))
@@ -300,6 +306,9 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 		if partial != nil {
 			if Central.IsDebugLevel() {
 				Central.Log.Debugf("Generate partial format buffer %d,%d", partial.from, partial.to)
+			}
+			if buffer.Len() > 0 {
+				buffer.WriteString(",")
 			}
 			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), partial.from, partial.to))
 			recLength = uint32(partial.to)
