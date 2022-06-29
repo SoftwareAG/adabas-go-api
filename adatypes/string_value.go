@@ -22,6 +22,7 @@ package adatypes
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 )
@@ -334,17 +335,17 @@ func getValueIndexRange(value IAdaValue) string {
 		Central.Log.Debugf("PE range %d", value.PeriodIndex())
 		Central.Log.Debugf("MU range %d", value.MultipleIndex())
 	}
-	if value.PeriodIndex() > 0 {
+	if value.PeriodIndex() > 0 && value.PeriodIndex() < math.MaxUint32-2 {
 		indexRange = fmt.Sprintf("%d", value.PeriodIndex())
 	}
-	if value.MultipleIndex() > 0 {
+	if value.MultipleIndex() > 0 && value.MultipleIndex() < math.MaxUint32-2 {
 		if indexRange != "" {
 			indexRange += fmt.Sprintf("(%d)", value.MultipleIndex())
 		} else {
 			indexRange += fmt.Sprintf("%d", value.MultipleIndex())
 		}
 	}
-	Central.Log.Debugf("Index Range %s", indexRange)
+	Central.Log.Debugf("Value index Range %s", indexRange)
 	return indexRange
 }
 
