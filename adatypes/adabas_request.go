@@ -22,6 +22,7 @@ package adatypes
 import (
 	"bytes"
 	"fmt"
+	"strings"
 )
 
 // RequestParser function callback used to go through the list of received buffer
@@ -135,26 +136,34 @@ func (adabasRequest *Request) GetValue(name string) (IAdaValue, error) {
 	return vs.adaValue, nil
 }
 
-// Traverser callback to create format buffer per field type
+// Traverser callback to create format buffer per field type. This method is called on each value entry working to generate
+// Format Buffer dependent on the corresponding field types
 func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
 	adabasRequest := x.(*Request)
 	if adaValue.Type().HasFlagSet(FlagOptionReadOnly) || adaValue.Type().HasFlagSet(FlagOptionReference) {
 		return Continue, nil
 	}
-	Central.Log.Debugf("Add format buffer for %s", adaValue.Type().Name())
-	if adaValue.Type().IsStructure() {
+	Central.Log.Debugf("Add format buffer for %s(%s)", adaValue.Type().Name(), adaValue.Type().Type().name())
+	switch {
+	// In case of structure generate
+	case adaValue.Type().IsStructure():
 		// Reset if period group starts
 		if adaValue.Type().Level() == 1 && adaValue.Type().Type() == FieldTypePeriodGroup {
 			adabasRequest.PeriodLength = 0
 		}
-		len := adaValue.FormatBuffer(&(adabasRequest.FormatBuffer), adabasRequest.Option)
-		adabasRequest.RecordBufferLength += len
-		adabasRequest.PeriodLength += len
-	} else {
-		len := adaValue.FormatBuffer(&(adabasRequest.FormatBuffer), adabasRequest.Option)
-		adabasRequest.RecordBufferLength += len
-		adabasRequest.PeriodLength += len
+	// special formater
+	case strings.HasPrefix(adaValue.Type().Name(), "#") || strings.HasPrefix(adaValue.Type().Name(), "@"):
+	case adabasRequest.Definition != nil && !adabasRequest.Definition.CheckField(adaValue.Type().Name()):
+		Central.Log.Debugf("Skip format buffer for %s", adaValue.Type().Name())
+		return Continue, nil
+
+	default:
 	}
+
+	Central.Log.Debugf("Generate format buffer %s %s", adaValue.Type().Name(), adaValue.Type().Type().name())
+	len := adaValue.FormatBuffer(&(adabasRequest.FormatBuffer), adabasRequest.Option)
+	adabasRequest.RecordBufferLength += len
+	adabasRequest.PeriodLength += len
 	if adabasRequest.Option.SecondCall > 0 &&
 		adaValue.Type().Type() == FieldTypeMultiplefield && adaValue.Type().HasFlagSet(FlagOptionPE) {
 		return SkipTree, nil
@@ -167,23 +176,54 @@ func formatBufferTraverserEnter(adaValue IAdaValue, x interface{}) (TraverseResu
 	return Continue, nil
 }
 
+type traverseSubType struct {
+	enable  bool
+	field   string
+	request *Request
+}
+
 // Traverse callback function to create format buffer and record buffer length
 func formatBufferTraverserLeave(adaValue IAdaValue, x interface{}) (TraverseResult, error) {
 	Central.Log.Debugf("Leave structure %s %v", adaValue.Type().Name(), adaValue.Type().Type())
 	if adaValue.Type().IsStructure() {
 		// Reset if period group starts
 		if adaValue.Type().Level() == 1 && adaValue.Type().Type() == FieldTypePeriodGroup {
-			fb := x.(*Request)
-			if fb.PeriodLength == 0 {
-				fb.PeriodLength += 10
+			request := x.(*Request)
+			if request.PeriodLength == 0 {
+				request.PeriodLength += 10
 			}
-			Central.Log.Debugf("Increase period buffer 10 times with %d", fb.PeriodLength)
-			fb.RecordBufferLength += (10 * fb.PeriodLength)
-			fb.PeriodLength = 0
+			Central.Log.Debugf("Increase period buffer 10 times with %d", request.PeriodLength)
+			request.RecordBufferLength += (10 * request.PeriodLength)
+			request.PeriodLength = 0
+
+			sv := adaValue.(*StructureValue)
+			if !request.Option.StoreCall && len(sv.Elements) == 0 {
+				Central.Log.Debugf("Traverse single index")
+				t := TraverserMethods{EnterFunction: formatBufferPeriodReadTraverser}
+				err := request.Definition.TraverseTypes(t, true,
+					&traverseSubType{false, adaValue.Type().Name(), request})
+				if err != nil {
+					return EndTraverser, err
+				}
+			}
 		}
 	}
 	Central.Log.Debugf("Leave %s", adaValue.Type().Name())
 	return Continue, nil
+}
+
+func formatBufferPeriodReadTraverser(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
+	tst := x.(*traverseSubType)
+	if level == 1 {
+		if tst.field == adaType.Name() {
+			tst.enable = true
+		} else {
+			tst.enable = false
+		}
+	} else if tst.enable {
+		return formatBufferReadTraverser(adaType, parentType, level, tst.request)
+	}
+	return nil
 }
 
 func generateFormatBufferPeriodGroup(adabasRequest *Request, adaType IAdaType) {
@@ -218,8 +258,11 @@ func generateFormatBufferMultipleField(adabasRequest *Request, adaType IAdaType)
 		// r := structureType.peRange.FormatBuffer()
 		// buffer.WriteString(adaType.ShortName() + r + "C,4,B")
 		if Central.IsDebugLevel() {
-			Central.Log.Debugf("Periodic range FB PE CS: %s", structureType.PeriodicRange().FormatBuffer())
-			Central.Log.Debugf("Multiple range FB PE CS: %s", structureType.MultipleRange().FormatBuffer())
+			Central.Log.Debugf("Periodic range FB: %s", structureType.PeriodicRange().FormatBuffer())
+			Central.Log.Debugf("Multiple range FB: %s", structureType.MultipleRange().FormatBuffer())
+			Central.Log.Debugf("Partial  range FB: %s", structureType.PartialRange().FormatBuffer())
+			Central.Log.Debugf("Single index: %v", structureType.HasFlagSet(FlagOptionSingleIndex))
+			Central.Log.Debugf("Part: %v", structureType.HasFlagSet(FlagOptionPart))
 		}
 		if adaType.PeriodicRange().IsSingleIndex() {
 			structureType := adaType.(*StructureType)
@@ -235,6 +278,10 @@ func generateFormatBufferMultipleField(adabasRequest *Request, adaType IAdaType)
 			buffer.WriteString(fmt.Sprintf("%s%s(%s),%d,%s",
 				at.ShortName(), at.PeriodicRange().FormatBuffer(), at.MultipleRange().FormatBuffer(),
 				at.Length(), at.Type().FormatCharacter()))
+		}
+		if adaType.Type() == FieldTypeMultiplefield && adaType.MultipleRange().IsSingleIndex() {
+			Central.Log.Debugf("Single index, skip MU FormatBuffer")
+			return
 		}
 	} else {
 		structureType := adaType.(*StructureType)
@@ -308,13 +355,14 @@ func generateFormatBufferField(adabasRequest *Request, adaType IAdaType) {
 					genType = adaType.(*RedefinitionType).MainType
 				}
 				if adaType.Type() == FieldTypeLBString {
+					indexRange := getIndexRange(adaType)
 					partialRange := adaType.PartialRange()
 					if partialRange != nil {
 						Central.Log.Debugf("Partial Range %d:%d\n", partialRange.from, partialRange.to)
 						if partialRange.from == 0 {
-							buffer.WriteString(fmt.Sprintf("%s(*,%d)", adaType.ShortName(), partialRange.to))
+							buffer.WriteString(fmt.Sprintf("%s%s(*,%d)", adaType.ShortName(), indexRange, partialRange.to))
 						} else {
-							buffer.WriteString(fmt.Sprintf("%s(%d,%d)", adaType.ShortName(), partialRange.from, partialRange.to))
+							buffer.WriteString(fmt.Sprintf("%s%s(%d,%d)", adaType.ShortName(), indexRange, partialRange.from, partialRange.to))
 						}
 						adabasRequest.RecordBufferLength += uint32(partialRange.to)
 					} else {
@@ -323,10 +371,10 @@ func generateFormatBufferField(adabasRequest *Request, adaType IAdaType) {
 							fieldIndex = t.peRange.FormatBuffer()
 						}
 						if adabasRequest.Option.PartialRead {
-							buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(*,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
+							buffer.WriteString(fmt.Sprintf("%sL%s,4,%s%s(*,%d)", adaType.ShortName(), indexRange, adaType.ShortName(), fieldIndex,
 								adabasRequest.PartialLobSize))
 						} else {
-							buffer.WriteString(fmt.Sprintf("%sL,4,%s%s(1,%d)", adaType.ShortName(), adaType.ShortName(), fieldIndex,
+							buffer.WriteString(fmt.Sprintf("%sL%s,4,%s%s(1,%d)", adaType.ShortName(), indexRange, adaType.ShortName(), fieldIndex,
 								adabasRequest.PartialLobSize))
 						}
 						adabasRequest.RecordBufferLength += (4 + adabasRequest.PartialLobSize)
@@ -354,13 +402,38 @@ func generateFormatBufferField(adabasRequest *Request, adaType IAdaType) {
 						genType.Length(), genType.Type().FormatCharacter()))
 				}
 			} else {
-				Central.Log.Debugf("MU ghost or PE")
+				Central.Log.Debugf("MU ghost or PE of %s (%s)", adaType.Name(), adaType.Type().name())
+				Central.Log.Debugf("PeriodRange %s", adaType.PeriodicRange().FormatBuffer())
+				Central.Log.Debugf("MultipleRange %s", adaType.MultipleRange().FormatBuffer())
+				if adaType.HasFlagSet(FlagOptionSingleIndex) {
+					Central.Log.Debugf("Create single index FB")
+				}
 			}
 		}
 	} else {
-		Central.Log.Debugf("Unknown FB generator: %v", adaType.Name())
+		Central.Log.Infof("Unknown FB generator: %v", adaType.Name())
 	}
 
+}
+
+func getIndexRange(adaType IAdaType) string {
+	indexRange := ""
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("PE range %s", adaType.PeriodicRange().FormatBuffer())
+		Central.Log.Debugf("MU range %s", adaType.MultipleRange().FormatBuffer())
+	}
+	if adaType.PeriodicRange().from > 0 && adaType.PeriodicRange().to != LastEntry {
+		indexRange = fmt.Sprintf("%d", adaType.PeriodicRange().from)
+	}
+	if adaType.MultipleRange().from > 0 && adaType.MultipleRange().to != LastEntry {
+		if indexRange != "" {
+			indexRange += fmt.Sprintf("(%d)", adaType.MultipleRange().from)
+		} else {
+			indexRange += fmt.Sprintf("%d", adaType.MultipleRange().from)
+		}
+	}
+	Central.Log.Debugf("Index Range %s", indexRange)
+	return indexRange
 }
 
 func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int, x interface{}) error {
@@ -419,6 +492,7 @@ func formatBufferReadTraverser(adaType IAdaType, parentType IAdaType, level int,
 // AdabasRequestParameter Adabas request parameter defining type of Adabas request
 type AdabasRequestParameter struct {
 	Store          bool
+	SingleRead     bool
 	DescriptorRead bool
 	PartialRead    bool
 	SecondCall     uint32
@@ -432,15 +506,24 @@ func (def *Definition) CreateAdabasRequest(parameter *AdabasRequestParameter) (a
 		Multifetch: DefaultMultifetchLimit, DescriptorRead: parameter.DescriptorRead, PartialLobSize: parameter.BlockSize}
 	adabasRequest.Option.DescriptorRead = parameter.DescriptorRead
 	adabasRequest.Option.PartialRead = parameter.PartialRead
+	adabasRequest.Definition = def
+	if parameter.BlockSize == 0 {
+		adabasRequest.PartialLobSize = PartialLobSize
+		adabasRequest.Option.BlockSize = PartialLobSize
+	} else {
+		adabasRequest.PartialLobSize = parameter.BlockSize
+		adabasRequest.Option.BlockSize = parameter.BlockSize
+	}
 
-	Central.Log.Debugf("Create format buffer. Init Buffer: %s second=%v", adabasRequest.FormatBuffer.String(), parameter.SecondCall)
-	if parameter.Store || parameter.SecondCall > 0 {
+	if parameter.Store || parameter.SecondCall > 0 || def.Values != nil {
+		Central.Log.Debugf("Create defined on values format buffer. Init Buffer: %s second=%v", adabasRequest.FormatBuffer.String(), parameter.SecondCall)
 		t := TraverserValuesMethods{EnterFunction: formatBufferTraverserEnter, LeaveFunction: formatBufferTraverserLeave}
 		_, err = def.TraverseValues(t, adabasRequest)
 		if err != nil {
 			return
 		}
 	} else {
+		Central.Log.Debugf("Create defined on types format buffer. Init Buffer: %s second=%v", adabasRequest.FormatBuffer.String(), parameter.SecondCall)
 		t := TraverserMethods{EnterFunction: formatBufferReadTraverser}
 		err = def.TraverseTypes(t, true, adabasRequest)
 		if err != nil {
@@ -502,6 +585,7 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 			if err != nil {
 				return
 			}
+			adabasRequest.Definition.DumpValues(true)
 			Central.Log.Debugf("Ready parse buffer .... %p values avail.=%v", adabasRequest.Definition, (adabasRequest.Definition.Values == nil))
 			if adabasRequest.Caller != nil {
 				err = adabasRequest.Caller.SendSecondCall(adabasRequest, x)
@@ -509,6 +593,7 @@ func (adabasRequest *Request) ParseBuffer(count *uint64, x interface{}) (respons
 					return
 				}
 			}
+			adabasRequest.Definition.DumpValues(true)
 			Central.Log.Debugf("Found parser .... values avail.=%v", (adabasRequest.Definition.Values == nil))
 			err = adabasRequest.Parser(adabasRequest, x)
 			if err != nil {

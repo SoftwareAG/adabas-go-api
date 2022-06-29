@@ -225,7 +225,7 @@ func (adabasMap *Map) String() string {
 	} else {
 		buffer.WriteString("Data Repository: URL=" + adabasMap.Data.URL.String() + " fnr=" + strconv.Itoa(int(adabasMap.Data.Fnr)) + "\n")
 	}
-	buffer.WriteString("Fields:\n")
+	buffer.WriteString(fmt.Sprintf("%d Fields:\n", len(adabasMap.Fields)))
 	for _, f := range adabasMap.Fields {
 		buffer.WriteString("  sn=" + f.ShortName + " ln=" + f.LongName + " len=" + strconv.Itoa(int(f.Length)) + "\n")
 		buffer.WriteString("  contenttype=" + f.ContentType + " ft=" + f.FormatType + " rem=" + f.Remarks + "\n")
@@ -256,11 +256,13 @@ func (adabasMap *Map) URL() *URL {
 // write the definition into the Adabas Map repository file
 func traverseExtractMapField(adaValue adatypes.IAdaValue, x interface{}) (adatypes.TraverseResult, error) {
 	adabasMap := x.(*Map)
+	adatypes.Central.Log.Debugf("Begin Map: %d\n%s", len(adabasMap.Fields), adabasMap.String())
 	adatypes.Central.Log.Debugf("Extract map field=%s >%s< pe index=%d", adaValue.Type().Name(), adaValue.String(), adaValue.PeriodIndex())
 	if adaValue.PeriodIndex() > 0 {
 
 		var mapField *MapField
 		adatypes.Central.Log.Debugf("Adabas Map index=%d of %d", adaValue.PeriodIndex(), len(adabasMap.Fields))
+		adatypes.Central.Log.Debugf("Check new map %d < %d", len(adabasMap.Fields), int(adaValue.PeriodIndex()))
 		if len(adabasMap.Fields) < int(adaValue.PeriodIndex()) {
 			adatypes.Central.Log.Debugf("Create new map")
 			mapField = &MapField{}
@@ -338,6 +340,7 @@ func traverseExtractMapField(adaValue adatypes.IAdaValue, x interface{}) (adatyp
 			}
 		}
 	}
+	adatypes.Central.Log.Debugf("Partial Map: %d\n%s", len(adabasMap.Fields), adabasMap.String())
 	return adatypes.Continue, nil
 }
 

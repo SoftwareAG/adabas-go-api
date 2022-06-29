@@ -60,11 +60,11 @@ func NewStructureEmpty(fType FieldType, name string, occByteShort int16,
 	var mr *AdaRange
 	switch fType {
 	case FieldTypePeriodGroup:
-		pr = NewRange(1, lastEntry)
+		pr = NewRange(1, LastEntry)
 		mr = NewEmptyRange()
 	case FieldTypeMultiplefield:
 		pr = NewEmptyRange()
-		mr = NewRange(1, lastEntry)
+		mr = NewRange(1, LastEntry)
 	default:
 		pr = NewEmptyRange()
 		mr = NewEmptyRange()
@@ -109,9 +109,9 @@ func NewStructureList(fType FieldType, name string, occByteShort int16, subField
 	}
 	switch fType {
 	case FieldTypePeriodGroup:
-		st.peRange = *NewRange(1, lastEntry)
+		st.peRange = *NewRange(1, LastEntry)
 	case FieldTypeMultiplefield:
-		st.muRange = *NewRange(1, lastEntry)
+		st.muRange = *NewRange(1, LastEntry)
 	default:
 	}
 	st.adaptSubFields()

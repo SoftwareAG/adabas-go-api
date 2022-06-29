@@ -123,9 +123,26 @@ func (request *ReadRequest) ReadLOBRecord(isn adatypes.Isn, field string, blocks
 		if err != nil {
 			return
 		}
-		fieldValue := request.definition.Search(field)
+		if debug {
+			adatypes.Central.Log.Debugf("LOB create values, types defined")
+			request.definition.DumpTypes(true, true)
+			adatypes.Central.Log.Debugf("LOB list of values")
+			request.definition.DumpValues(true)
+			adatypes.Central.Log.Debugf("Search field: %s", field)
+		}
+
+		fieldName, index := parseField(field)
+		fieldValue, ferr := request.definition.SearchByIndex(fieldName, index, true)
+		if ferr != nil {
+			return nil, ferr
+		}
 		if fieldValue == nil {
 			return nil, adatypes.NewGenericError(184, field)
+		}
+		if debug {
+			adatypes.Central.Log.Debugf("LOB after defined")
+			request.definition.DumpValues(true)
+			adatypes.Central.Log.Debugf("Found field: %s for %d,%d", fieldValue.Type().Name(), fieldValue.MultipleIndex(), fieldValue.PeriodIndex())
 		}
 		var lob adatypes.ILob
 		switch t := fieldValue.(type) {

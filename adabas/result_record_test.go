@@ -161,7 +161,10 @@ func TestRecord_MarshalLink(t *testing.T) {
 		verr = result.SetValue("S4", "1234567")
 		assert.Error(t, verr)
 		verr = result.SetValue("@Link", "4200")
-		assert.NoError(t, verr)
+		if !assert.NoError(t, verr) {
+			result.DumpValues()
+			return
+		}
 
 		xout, xerr := xml.Marshal(result)
 		assert.NoError(t, xerr)
@@ -252,4 +255,123 @@ func TestRecordGroupValues(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, `{"BI":1,"G2":{"G3":{"I3":0,"U3":0},"I2":1231,"U2":0},"P2":[{"IP":1023,"UP":100}],"UI":"ANCXXX"}`, string(j))
 
+}
+
+func TestRecordStoreTest(t *testing.T) {
+	definitionEmployees := employeeDefinition()
+	fmt.Println(definitionEmployees.String())
+	req, err := CreateTestRequest(true, definitionEmployees)
+	assert.NoError(t, err)
+	err = definitionEmployees.CreateValues(true)
+	if !assert.NoError(t, err) {
+		return
+	}
+	record, xerr := NewRecord(definitionEmployees)
+	if !assert.NoError(t, xerr) {
+		return
+	}
+	assert.Equal(t, "ISN=0 quantity=0\n AA=\"        \"\n AB=\"\"\n AC=\"                    \"\n AD=\"                    \"\n AE=\"                    \"\n A2=\"\"\n AN=\"      \"\n AM=\"               \"\n AQ=\"\"\n", record.String())
+	assert.Equal(t, "AA,8,A,AC,20,A,AD,20,A,AE,20,A,AN,6,A,AM,15,A.", req.FormatBuffer.String())
+	definitionEmployees.RestrictFieldSlice([]string{"AS"})
+	record, xerr = NewRecord(definitionEmployees)
+	if !assert.NoError(t, xerr) {
+		return
+	}
+	err = record.SetValueWithIndex("AS", []uint32{1}, 12345)
+	if !assert.NoError(t, err) {
+		return
+	}
+	err = record.SetValueWithIndex("AS", []uint32{2}, 112345)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "ISN=0 quantity=0\n AQ=\"\"\n AS=\"12345\"\n AS=\"112345\"\n", record.String())
+	record.DumpValues()
+	req, err = CreateTestRequest(true, definitionEmployees)
+	assert.NoError(t, err)
+	err = definitionEmployees.CreateValues(true)
+	if !assert.NoError(t, err) {
+		return
+	}
+	req.Definition.Values = record.Value
+
+	assert.Equal(t, "AS1,5,P,AS2,5,P.", req.FormatBuffer.String())
+
+}
+
+func CreateTestRequest(store bool, testDefinition *adatypes.Definition) (*adatypes.Request, error) {
+	if testDefinition == nil {
+		return nil, fmt.Errorf("test definition not defined")
+	}
+	adabasParameter := &adatypes.AdabasRequestParameter{Store: store, DescriptorRead: false,
+		SecondCall: 0, Mainframe: false}
+	req, err := testDefinition.CreateAdabasRequest(adabasParameter)
+	if err != nil {
+		fmt.Println("Create request", err)
+		return nil, err
+	}
+	helper := adatypes.NewDynamicHelper(Endian())
+	req.RecordBuffer = helper
+	req.Parser = testParser
+	req.Limit = 1
+	req.Multifetch = 1
+	req.Isn = 10
+	req.Definition = testDefinition
+	req.RecordBuffer.PutInt32(2)
+	req.RecordBuffer.PutInt32(10)
+	return req, nil
+}
+
+func employeeDefinition() *adatypes.Definition {
+	multipleLayout := []adatypes.IAdaType{
+		adatypes.NewTypeWithLength(adatypes.FieldTypePacked, "AT", 5),
+	}
+	for _, l := range multipleLayout {
+		l.SetLevel(2)
+		l.AddFlag(adatypes.FlagOptionMUGhost)
+	}
+	multipleLayout[0].AddOption(adatypes.FieldOptionMU)
+	multipleLayout[0].AddOption(adatypes.FieldOptionNU)
+	multipleLayout[0].AddOption(adatypes.FieldOptionNB)
+	multipleLayout[0].AddOption(adatypes.FieldOptionNV)
+	peGroupLayout := []adatypes.IAdaType{
+		adatypes.NewTypeWithLength(adatypes.FieldTypeString, "AR", 3),
+		adatypes.NewTypeWithLength(adatypes.FieldTypePacked, "AS", 5),
+		adatypes.NewStructureList(adatypes.FieldTypeMultiplefield, "AT", adatypes.OccNone, multipleLayout),
+	}
+	groupLayout := []adatypes.IAdaType{
+		adatypes.NewTypeWithLength(adatypes.FieldTypeString, "AC", 20),
+		adatypes.NewTypeWithLength(adatypes.FieldTypeString, "AD", 20),
+		adatypes.NewTypeWithLength(adatypes.FieldTypeString, "AE", 20),
+	}
+	groupLayout2 := []adatypes.IAdaType{
+		adatypes.NewTypeWithLength(adatypes.FieldTypeString, "AN", 6),
+		adatypes.NewTypeWithLength(adatypes.FieldTypeString, "AM", 15),
+	}
+	for _, l := range groupLayout {
+		l.SetLevel(2)
+		l.AddOption(adatypes.FieldOptionNU)
+	}
+	for _, l := range groupLayout2 {
+		l.SetLevel(2)
+		l.AddOption(adatypes.FieldOptionNU)
+	}
+	// groupLayout[1].AddOption(FieldOptionMU)
+	layout := []adatypes.IAdaType{
+		adatypes.NewTypeWithLength(adatypes.FieldTypeString, "AA", 8),
+		adatypes.NewStructureList(adatypes.FieldTypeGroup, "AB", adatypes.OccNone, groupLayout),
+		adatypes.NewStructureList(adatypes.FieldTypeGroup, "A2", adatypes.OccNone, groupLayout2),
+		adatypes.NewStructureList(adatypes.FieldTypePeriodGroup, "AQ", adatypes.OccNone, peGroupLayout),
+	}
+	for i, l := range layout {
+		l.SetLevel(1)
+		if i != 0 {
+			l.AddOption(adatypes.FieldOptionNU)
+		}
+	}
+	layout[0].AddOption(adatypes.FieldOptionDE)
+	layout[0].AddOption(adatypes.FieldOptionUQ)
+	testDefinition := adatypes.NewDefinitionWithTypes(layout)
+	testDefinition.InitReferences()
+	return testDefinition
 }

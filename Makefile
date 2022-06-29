@@ -31,7 +31,7 @@ BINTOOLS      = $(CURDIR)/bin/tools/$(GOOS)_$(GOARCH)
 INSTALLTOOLS  = $(GOPATH)/bin
 LOGPATH       = $(CURDIR)/logs
 TESTFILES     = $(CURDIR)/files
-OBJECTS       = adabas/*.go adatypes/*.go
+OBJECTS       = adabas/*.go adatypes/*.go examples/*/*.go
 REFERENCES    = $(TESTFILES)/references
 MESSAGES      = $(CURDIR)/messages
 
@@ -46,7 +46,7 @@ DOCKER_GO     = 1.12
 # Executables
 EXECS         = $(BIN)/tools/employee_client $(BIN)/tools/testsuite $(BIN)/tools/simple_read $(BIN)/tools/query \
     $(BIN)/tools/querym $(BIN)/tools/lobload $(BIN)/tools/clear_map_reference \
-	$(BIN)/tools/betacluster
+	$(BIN)/tools/betacluster $(BIN)/examples/employees $(BIN)/examples/employees_map $(BIN)/examples/employees_struct
 LIBS          = 
 
 include $(CURDIR)/make/common.mk

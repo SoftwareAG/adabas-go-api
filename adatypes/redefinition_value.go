@@ -161,8 +161,9 @@ func (value *RedefinitionValue) Float() (float64, error) {
 // Traverse traverse redefinition fields
 func (value *RedefinitionValue) Traverse(t TraverserValuesMethods, x interface{}) (ret TraverseResult, err error) {
 	for e, v := range value.subValues {
-		Central.Log.Debugf("Traverse node %d.element at %s[%d,%d] for %s[%d,%d]", e, v.Type().Name(),
-			v.PeriodIndex(), v.MultipleIndex(), value.Type().Name(), value.PeriodIndex(), value.MultipleIndex())
+		Central.Log.Debugf("Traverse node %d.element at %s[%d,%d] (%s) for %s[%d,%d] (%s)", e, v.Type().Name(),
+			v.PeriodIndex(), v.MultipleIndex(), v.Type().Type().name(), value.Type().Name(), value.PeriodIndex(),
+			value.MultipleIndex(), value.Type().Type().name())
 		if value.PeriodIndex() != v.PeriodIndex() {
 			if value.Type().Type() != FieldTypePeriodGroup {
 				Central.Log.Debugf("!!!!----> Error index parent not correct for %s of %s", v.Type().Name(), value.Type().Name())

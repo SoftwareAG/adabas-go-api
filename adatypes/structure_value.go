@@ -30,7 +30,6 @@ import (
 
 type structureElement struct {
 	Values   []IAdaValue
-	peIndex  uint32
 	valueMap map[string]IAdaValue
 }
 
@@ -74,8 +73,8 @@ func (value *StructureValue) initSubValues(index uint32, peIndex uint32, initMuF
  */
 func (value *StructureValue) initMultipleSubValues(index uint32, peIndex uint32, muIndex uint32, initMuFields bool) {
 	subType := value.adatype.(*StructureType)
-	Central.Log.Debugf("Init sub values for %s[%d,%d] -> |%d,%d| - %d", value.adatype.Name(), value.PeriodIndex(),
-		value.MultipleIndex(), peIndex, muIndex, index)
+	Central.Log.Debugf("Init sub values for %s[%d,%d] -> |%d,%d| - %d init MU fields=%v", value.adatype.Name(), value.PeriodIndex(),
+		value.MultipleIndex(), peIndex, muIndex, index, initMuFields)
 
 	if value.Type().Type() != FieldTypeMultiplefield || initMuFields {
 		for _, st := range subType.SubTypes {
@@ -90,22 +89,25 @@ func (value *StructureValue) initMultipleSubValues(index uint32, peIndex uint32,
 				return
 			}
 			stv.setPeriodIndex(peIndex)
-			stv.setMultipleIndex(muIndex)
-			Central.Log.Debugf("Add to %s[%d,%d] element %s[%d,%d] --> index=%d", value.Type().Name(), value.PeriodIndex(),
+			/*if st.Type() == FieldTypeMultiplefield {
+				stv.setMultipleIndex(muIndex)
+			}*/
+			Central.Log.Debugf("Add to %s[%d,%d] element %s[%d,%d] --> PEindex=%d MUindex=%d index=%d", value.Type().Name(), value.PeriodIndex(),
 				value.MultipleIndex(), stv.Type().Name(),
-				stv.PeriodIndex(), stv.MultipleIndex(), peIndex)
-			err = value.addValue(stv, index)
+				stv.PeriodIndex(), stv.MultipleIndex(), peIndex, muIndex, index)
+			err = value.addValue(stv, peIndex, muIndex)
 			if err != nil {
 				Central.Log.Debugf("Error (addValue) %v", err)
 				return
 			}
 			if stv.Type().IsStructure() {
-				stv.(*StructureValue).initSubValues(index, peIndex, false)
+				stv.(*StructureValue).initMultipleSubValues(index, peIndex, muIndex, initMuFields)
 			}
 		}
 		Central.Log.Debugf("Finished Init sub values for %s len=%d", value.Type().Name(), len(value.Elements))
 	} else {
 		Central.Log.Debugf("Skip Init sub values for %s", value.Type().Name())
+		// debug.PrintStack()
 	}
 }
 
@@ -206,22 +208,32 @@ func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *B
 			Central.Log.Debugf("Too many occurrences")
 			return SkipTree, NewGenericError(181)
 		}
-		peIndex := value.peIndex
-		muIndex := uint32(0)
-		for i := uint32(0); i < uint32(occNumber); i++ {
-			if value.Type().Type() == FieldTypePeriodGroup {
-				peIndex = adaType.peRange.index(i+1, lastNumber)
-			} else {
-				muIndex = i + 1
+		if len(value.Elements) != occNumber {
+			peIndex := value.peIndex
+			muIndex := uint32(0)
+			for i := uint32(0); i < uint32(occNumber); i++ {
+				if value.Type().Type() == FieldTypePeriodGroup {
+					peIndex = adaType.peRange.index(i+1, lastNumber)
+				} else {
+					muIndex = i + 1
+				}
+				Central.Log.Debugf("Work on %s PE=%d MU=%d last=%d PEv=%d PErange=%d MUrange=%d",
+					adaType.Name(), peIndex, muIndex, lastNumber, value.peIndex,
+					adaType.PeriodicRange().from, adaType.MultipleRange().from)
+				value.initMultipleSubValues(i+1, peIndex, muIndex, true)
 			}
-			Central.Log.Debugf("Work on %d/%d", peIndex, lastNumber)
-			value.initMultipleSubValues(i, peIndex, muIndex, true)
+			if option.SecondCall > 0 &&
+				(value.Type().HasFlagSet(FlagOptionPE) && value.Type().Type() == FieldTypeMultiplefield) {
+				return value.parsePeriodMultiple(helper, option)
+			}
+			return value.parsePeriodGroup(helper, option, occNumber)
 		}
-		if option.SecondCall > 0 &&
-			(value.Type().HasFlagSet(FlagOptionPE) && value.Type().Type() == FieldTypeMultiplefield) {
-			return value.parsePeriodMultiple(helper, option)
+		for _, e := range value.Elements {
+			for _, v := range e.Values {
+				v.parseBuffer(helper, option)
+			}
 		}
-		return value.parsePeriodGroup(helper, option, occNumber)
+
 	}
 	Central.Log.Debugf("No occurrence, check shift of PE empty part, sn=%s mainframe=%v need second=%v pos=%d", value.Type().Name(), option.Mainframe,
 		option.NeedSecondCall, helper.offset)
@@ -263,7 +275,6 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 			}
 			v := value.Get(n, i+1)
 			if v == nil {
-				// debug.PrintStack()
 				return EndTraverser, NewGenericError(171)
 			}
 			//v.setPeriodIndex(uint32(i + 1))
@@ -305,7 +316,7 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 						sv.setMultipleIndex(muIndex + 1)
 						//sv.setPeriodIndex(uint32(i + 1))
 						sv.setPeriodIndex(v.PeriodIndex())
-						muStructure.addValue(sv, muIndex)
+						muStructure.addValue(sv, v.PeriodIndex(), muIndex)
 						if st.PeriodicRange().IsSingleIndex() {
 							_, err = sv.parseBuffer(helper, option)
 							if err != nil {
@@ -331,7 +342,7 @@ func (value *StructureValue) parsePeriodGroup(helper *BufferHelper, option *Buff
 				if err != nil {
 					return
 				}
-				Central.Log.Debugf("%s parsed to %d,%d", v.Type().Name(), v.PeriodIndex(), v.MultipleIndex())
+				Central.Log.Debugf("Parsed to %s[%d,%d] index is %d", v.Type().Name(), v.PeriodIndex(), v.MultipleIndex(), i+1)
 				// if value.Type().Type() == FieldTypeMultiplefield {
 				// 	v.setMultipleIndex(uint32(i + 1))
 				// 	Central.Log.Debugf("MU index %d,%d -> %d", v.PeriodIndex(), v.MultipleIndex(), i)
@@ -380,10 +391,29 @@ func (value *StructureValue) parseBuffer(helper *BufferHelper, option *BufferOpt
 // Evaluate the occurrence of the structure
 func (value *StructureValue) evaluateOccurrence(helper *BufferHelper) (occNumber int, err error) {
 	subStructureType := value.adatype.(*StructureType)
-	if subStructureType.HasFlagSet(FlagOptionSingleIndex) {
-		Central.Log.Debugf("Single index occurence only 1")
+	switch {
+	case subStructureType.Type() == FieldTypePeriodGroup && subStructureType.peRange.IsSingleIndex():
+		Central.Log.Debugf("Single PE index occurence only 1")
 		return 1, nil
+	case subStructureType.Type() == FieldTypeMultiplefield && subStructureType.muRange.IsSingleIndex():
+		Central.Log.Debugf("Single MU index occurence only 1")
+		return 1, nil
+	case subStructureType.Type() == FieldTypePeriodGroup && subStructureType.HasFlagSet(FlagOptionSingleIndex):
+		if len(value.Elements) > 0 {
+			return len(value.Elements), nil
+		}
+		subStructureType.occ = 1
+	default:
+		if Central.IsDebugLevel() {
+			Central.Log.Debugf("Single index flag: %v (%s)", subStructureType.HasFlagSet(FlagOptionSingleIndex), subStructureType.Type().name())
+			Central.Log.Debugf("PE range: %s", subStructureType.peRange.FormatBuffer())
+			Central.Log.Debugf("MU range: %s", subStructureType.muRange.FormatBuffer())
+		}
 	}
+	// if subStructureType.HasFlagSet(FlagOptionSingleIndex) {
+	// 	Central.Log.Debugf("Single index occurence only 1")
+	// 	return 1, nil
+	// }
 	occNumber = math.MaxInt32
 	Central.Log.Debugf("Current structure occurrence %d", subStructureType.occ)
 	if subStructureType.occ > 0 {
@@ -440,7 +470,7 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 			return SkipTree, NewGenericError(182, value.Type().Name(), occNumber)
 		}
 	}
-	Central.Log.Debugf("Occurrence %d period index=%d", occNumber, value.peIndex)
+	Central.Log.Debugf("Occurrence %d period parent index=%d", occNumber, value.peIndex)
 	switch value.Type().Type() {
 	case FieldTypePeriodGroup:
 		Central.Log.Debugf("Init period group values occurrence=%d mainframe=%v", occNumber, option.Mainframe)
@@ -455,7 +485,7 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 			return
 		}
 		for i := uint32(0); i < uint32(occNumber); i++ {
-			value.initSubValues(i, i+1, true)
+			value.initSubValues(i+1, i+1, true)
 		}
 		Central.Log.Debugf("Init period group sub values finished, elements=%d ", value.NrElements())
 		return
@@ -505,7 +535,7 @@ func (value *StructureValue) parseBufferWithoutMUPE(helper *BufferHelper, option
 		if len(value.Elements) <= index {
 			element := newStructureElement()
 			value.Elements = append(value.Elements, element)
-			value.elementMap[uint32(index)] = element
+			value.elementMap[uint32(index+1)] = element
 		}
 		if values != nil && value.adatype.Type() != FieldTypeGroup {
 			value.Elements[index].Values = values
@@ -587,8 +617,9 @@ func (value *StructureValue) Traverse(t TraverserValuesMethods, x interface{}) (
 			}
 			for i, v := range val.Values {
 				if Central.IsDebugLevel() {
-					Central.Log.Debugf("Traverse node %d.element and %d.value at %s[%d,%d] for %s[%d,%d]", e, i, v.Type().Name(),
-						v.PeriodIndex(), v.MultipleIndex(), value.Type().Name(), value.PeriodIndex(), value.MultipleIndex())
+					Central.Log.Debugf("Traverse node %d.element  and %d.value at %s[%d,%d] (%s) for %s[%d,%d] (%s)", e, i, v.Type().Name(),
+						v.PeriodIndex(), v.MultipleIndex(), v.Type().Type().name(), value.Type().Name(), value.PeriodIndex(),
+						value.MultipleIndex(), value.Type().Type().name())
 					if value.PeriodIndex() != v.PeriodIndex() {
 						if value.Type().Type() != FieldTypePeriodGroup {
 							Central.Log.Debugf("!!!!----> Error index parent not correct for %s of %s", v.Type().Name(), value.Type().Name())
@@ -642,14 +673,19 @@ func (value *StructureValue) Get(fieldName string, index int) IAdaValue {
 		Central.Log.Debugf("Get field %s index %d -> %d", fieldName, index, len(value.Elements))
 	}
 	if len(value.Elements) < index {
+		Central.Log.Debugf("Not got index")
 		return nil
 	}
-	v := value.Elements[index-1]
-	if vr, ok := v.valueMap[fieldName]; ok {
+	structElement := value.Elements[index-1]
+	if vr, ok := structElement.valueMap[fieldName]; ok {
+		Central.Log.Debugf("Got value map entry %#v", structElement.valueMap)
 		return vr
 	}
-	for _, vr := range v.Values {
+	Central.Log.Debugf("Nr values %d", len(structElement.Values))
+	for _, vr := range structElement.Values {
+		Central.Log.Debugf("Check %s -> %s", vr.Type().Name(), fieldName)
 		if vr.Type().Name() == fieldName {
+			Central.Log.Debugf("Found index %d to %s[%d,%d]", index, vr.Type().Name(), vr.PeriodIndex(), vr.MultipleIndex())
 			return vr
 		}
 		if vr.Type().IsStructure() {
@@ -659,6 +695,7 @@ func (value *StructureValue) Get(fieldName string, index int) IAdaValue {
 			}
 		}
 	}
+	Central.Log.Debugf("No %s entry found with index=%d", fieldName, index)
 	return nil
 }
 
@@ -710,7 +747,7 @@ func (value *StructureValue) SetValue(v interface{}) error {
 				sv.setMultipleIndex(uint32(i + 1))
 				sv.setPeriodIndex(value.PeriodIndex())
 				sv.SetValue(vi.Index(i).Interface())
-				value.addValue(sv, uint32(i+1))
+				value.addValue(sv, value.PeriodIndex(), uint32(i+1))
 			}
 		case FieldTypePeriodGroup:
 			if Central.IsDebugLevel() {
@@ -726,7 +763,7 @@ func (value *StructureValue) SetValue(v interface{}) error {
 				Central.Log.Debugf("Work on group entry %s -> %s", ti.Name(), string(jsonV))
 			}
 			for i := 0; i < vi.Len(); i++ {
-				value.initMultipleSubValues(uint32(i), uint32(i+1), 0, false)
+				value.initMultipleSubValues(uint32(i+1), uint32(i+1), 0, false)
 				if Central.IsDebugLevel() {
 					Central.Log.Debugf("%d. Element len is %d", i, len(value.Elements))
 				}
@@ -845,6 +882,10 @@ func (value *StructureValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOp
 	if option.SecondCall > 0 {
 		return value.formatBufferSecondCall(buffer, option)
 	}
+	if value.Type().Type() == FieldTypeMultiplefield && value.Type().HasFlagSet(FlagOptionSingleIndex) {
+		Central.Log.Debugf("Single index FB?")
+		return 0
+	}
 	structureType := value.Type().(*StructureType)
 	recordBufferLength := uint32(0)
 	if structureType.NrFields() > 0 {
@@ -919,24 +960,34 @@ func (value *StructureValue) StoreBuffer(helper *BufferHelper, option *BufferOpt
 }
 
 // addValue Add sub value with given index
-func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
+func (value *StructureValue) addValue(subValue IAdaValue, peindex uint32, muindex uint32) error {
 	if Central.IsDebugLevel() {
-		Central.Log.Debugf("Add value to list for %s[%d,%d], appending %s[%d,%d]", value.Type().Name(), value.PeriodIndex(), value.MultipleIndex(),
-			subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
+		Central.Log.Debugf("Add value index PE=%d MU=%d to list for %s[%d,%d], appending %s[%d,%d] %p", peindex, muindex, value.Type().Name(), value.PeriodIndex(), value.MultipleIndex(),
+			subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex(), value)
 	}
+	if value.Type().Type() == FieldTypeMultiplefield && muindex == 0 {
+		Central.Log.Debugf("Skip MU index")
+		// debug.PrintStack()
+		return nil
+	}
+	//Central.Log.Debugf("Stack trace:\n%s", string(debug.Stack()))
 	subValue.SetParent(value)
 	var element *structureElement
 	var ok bool
 	lenElements := 0
 	if value.Elements != nil {
 		if Central.IsDebugLevel() {
-			Central.Log.Debugf("Elements in list %d", len(value.Elements))
+			Central.Log.Debugf("Before Elements in list %d", len(value.Elements))
 		}
 		lenElements = len(value.Elements)
 	}
-	curIndex := index
+	curIndex := peindex
+	if value.Type().Type() == FieldTypeMultiplefield {
+		curIndex = muindex
+	}
 	if Central.IsDebugLevel() {
-		Central.Log.Debugf("Current add value index = %d lenElements=%d", curIndex, lenElements)
+		Central.Log.Debugf("curIndex=%d PE index=%d MU index=%d ghost=%v", curIndex, peindex, muindex, subValue.Type().HasFlagSet(FlagOptionMUGhost))
+		Central.Log.Debugf("Current add check current index = %d lenElements=%d", curIndex, lenElements)
 	}
 	if element, ok = value.elementMap[curIndex]; !ok {
 		element = newStructureElement()
@@ -950,18 +1001,21 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 			Central.Log.Debugf("Elements already part of map %d", curIndex)
 		}
 	}
+	if subValue.PeriodIndex() == 0 {
+		subValue.setPeriodIndex(peindex)
+	}
+	if value.Type().Type() == FieldTypeMultiplefield && subValue.MultipleIndex() == 0 {
+		subValue.setMultipleIndex(muindex)
+	}
+	Central.Log.Debugf("Current period index for %s[%d:%d]", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
 	s := convertMapIndex(subValue)
-	//	s := fmt.Sprintf("%s-%d-%d", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())
 	if Central.IsDebugLevel() {
 		Central.Log.Debugf("Search for %s", s)
-	}
-	if value.Type().Type() == FieldTypeMultiplefield {
-		subValue.setPeriodIndex(value.PeriodIndex())
 	}
 	var v IAdaValue
 	if v, ok = element.valueMap[s]; ok {
 		if Central.IsDebugLevel() {
-			Central.Log.Debugf("Add sub value found %s[%d:%d] %T",
+			Central.Log.Debugf("Found sub value found %s[%d:%d] %T",
 				v.Type().Name(), v.PeriodIndex(), v.MultipleIndex(), v)
 		}
 	} else {
@@ -971,8 +1025,14 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 				Central.Log.Debugf("Create new list for %s and append", value.Type().Name())
 			}
 			// If MU field and index not already initialized, define index
-			if value.Type().Type() == FieldTypeMultiplefield && subValue.MultipleIndex() == 0 {
-				subValue.setMultipleIndex(1)
+			if value.Type().Type() == FieldTypeMultiplefield {
+				/*if subValue.MultipleIndex() == 0 {
+					subValue.setMultipleIndex(1)
+				} else {*/
+				if value.MultipleIndex() != 0 {
+					subValue.setMultipleIndex(value.MultipleIndex())
+				}
+				//}
 			}
 			var values []IAdaValue
 			values = append(values, subValue)
@@ -990,8 +1050,8 @@ func (value *StructureValue) addValue(subValue IAdaValue, index uint32) error {
 			element.Values = append(element.Values, subValue)
 		}
 		if Central.IsDebugLevel() {
-			Central.Log.Debugf("Add sub value new %s[%d:%d] %T previous %s",
-				subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex(), subValue, s)
+			Central.Log.Debugf("Add sub value new %s[%d:%d] %T previous %s mapIndex %s",
+				subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex(), subValue, s, convertMapIndex(subValue))
 		}
 		element.valueMap[convertMapIndex(subValue)] = subValue
 		//element.valueMap[fmt.Sprintf("%s-%d-%d", subValue.Type().Name(), subValue.PeriodIndex(), subValue.MultipleIndex())] = subValue

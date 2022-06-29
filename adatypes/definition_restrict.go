@@ -162,12 +162,14 @@ func removeStructure(adaType IAdaType, fieldMap *fieldMap, fq *fieldQuery, ok bo
 	switch {
 	case newStructure.peRange.IsSingleIndex() && newStructure.HasFlagSet(FlagOptionPE):
 		if Central.IsDebugLevel() {
-			Central.Log.Debugf("%s/%s: set single index due to PE range", newStructure.Name(), newStructure.ShortName())
+			Central.Log.Debugf("%s/%s(%s): set single index due to PE range",
+				newStructure.Name(), newStructure.ShortName(), newStructure.Type().name())
 		}
 		newStructure.AddFlag(FlagOptionSingleIndex)
 	case newStructure.muRange.IsSingleIndex() && newStructure.Type() == FieldTypeMultiplefield:
 		if Central.IsDebugLevel() {
-			Central.Log.Debugf("%s/%s: set single index due to MU range and Type MU", newStructure.Name(), newStructure.ShortName())
+			Central.Log.Debugf("%s/%s(%s): set single index due to MU range and Type MU",
+				newStructure.Name(), newStructure.ShortName(), newStructure.Type().name())
 		}
 		newStructure.AddFlag(FlagOptionSingleIndex)
 	default:
@@ -196,20 +198,27 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 	fieldMap := x.(*fieldMap)
 	debug := Central.IsDebugLevel()
 	if debug {
-		Central.Log.Debugf("Check remove field on type %s with parent %s(parent remove=%v)", adaType.Name(), parentType.Name(),
-			parentType.HasFlagSet(FlagOptionToBeRemoved))
+		Central.Log.Debugf("Check remove field on type %s with parent %s(parent remove=%v structure=%v ->  %T)", adaType.Name(), parentType.Name(),
+			parentType.HasFlagSet(FlagOptionToBeRemoved), adaType.IsStructure(), adaType)
 	}
 	// Check if field is in request
-	fq, ok := fieldMap.set[adaType.Name()]
-	if ok {
+	queryField, isPartOfQuery := fieldMap.set[adaType.Name()]
+	if isPartOfQuery {
+		/*if adaType.IsStructure() {
+			adaType.RemoveFlag(FlagOptionToBeRemoved)
+			return nil
+		}*/
 		delete(fieldMap.set, adaType.Name())
 		fieldMap.definition.activeFields[adaType.Name()] = adaType
+		Central.Log.Debugf("Add active field %s because in field map %#v %#v", adaType.Name(), queryField, adaType)
+	} else {
+		Central.Log.Debugf("Not active field %s", adaType.Name())
 	}
 	// Structure need to be copied each time because of tree to nodes of fields
 	switch {
 	case adaType.Type() == FieldTypeRedefinition:
 		Central.Log.Debugf("Check redefintion %s", adaType.Name())
-		if ok {
+		if isPartOfQuery {
 			redType := adaType.(*RedefinitionType)
 			adaType.RemoveFlag(FlagOptionToBeRemoved)
 			for _, s := range redType.SubTypes {
@@ -218,36 +227,40 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 			fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, redType)
 		}
 	case adaType.IsStructure():
-		if adaType.Type() == FieldTypeMultiplefield && !ok && fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved) {
+		if adaType.Type() == FieldTypeMultiplefield && !isPartOfQuery && fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved) {
 			if debug {
 				Central.Log.Debugf("Skip removing MU field %s", adaType.Name())
 			}
 			return nil
 		}
-		removeStructure(adaType, fieldMap, fq, ok, parentType.Name() != "" && fieldMap.lastStructure.Name() == parentType.Name())
+		Central.Log.Debugf("Removing structure %s", adaType.Name())
+		removeStructure(adaType, fieldMap, queryField, isPartOfQuery, parentType.Name() != "" && fieldMap.lastStructure.Name() == parentType.Name())
 	default:
 		if debug {
-			Central.Log.Debugf("Field %s in map=%v Level=%d < %d", adaType.Name(), ok, fieldMap.lastStructure.Level(),
-				adaType.Level())
+			Central.Log.Debugf("Field %s in map=%v Level=%d < %d %T", adaType.Name(), isPartOfQuery, fieldMap.lastStructure.Level(),
+				adaType.Level(), adaType)
 		}
 		fieldMap.evaluateTopLevelStructure(adaType.Level())
 
-		if fq != nil && len(fq.fieldRange) > 0 {
-			Central.Log.Debugf("Field range for %s -> %s", adaType.Name(), fq.fieldRange[0].FormatBuffer())
+		if queryField != nil && len(queryField.fieldRange) > 0 {
+			Central.Log.Debugf("Field range for %s -> %s %T", adaType.Name(), queryField.fieldRange[0].FormatBuffer(), adaType)
 			index := 0
 			t := adaType.(*AdaType)
+
 			if adaType.HasFlagSet(FlagOptionPE) {
-				t.peRange = *fq.fieldRange[index]
+				t.peRange = *queryField.fieldRange[index]
 				index++
+				Central.Log.Debugf("PE range type %#v", t.peRange)
 				if adaType.HasFlagSet(FlagOptionMUGhost) {
-					pt := parentType.(*AdaType)
+					pt := parentType.(*StructureType)
 					pt.peRange = t.peRange
 				}
 			}
-			if len(fq.fieldRange) > index && adaType.HasFlagSet(FlagOptionMUGhost) {
-				t.muRange = *fq.fieldRange[index]
-				pt := parentType.(*AdaType)
+			if len(queryField.fieldRange) > index && adaType.HasFlagSet(FlagOptionMUGhost) {
+				t.muRange = *queryField.fieldRange[index]
+				pt := parentType.(*StructureType)
 				pt.muRange = t.muRange
+				Central.Log.Debugf("MU range type %#v", t.muRange)
 			}
 		}
 		Central.Log.Debugf("Field range %s peRange=%s muRange=%s",
@@ -260,18 +273,15 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 		}
 
 		// Needed to check if not group is selected in query
-		remove := fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved)
 		// But not if root node
-		if fieldMap.lastStructure.Name() == "" {
-			remove = true
-		}
+		remove := fieldMap.lastStructure.Name() == "" || fieldMap.lastStructure.HasFlagSet(FlagOptionToBeRemoved)
 		if debug {
 			Central.Log.Debugf("Parent node %s has %v", fieldMap.lastStructure.Name(), remove)
 		}
-		if !ok && remove {
+		if !isPartOfQuery && remove {
 			if debug {
 				Central.Log.Debugf("Skip copy to active field, because field %s is not part of map map=%v remove=%v",
-					adaType.Name(), ok, remove)
+					adaType.Name(), isPartOfQuery, remove)
 			}
 			var p IAdaType
 			p = fieldMap.lastStructure
@@ -286,8 +296,8 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 			}
 		} else {
 			if debug {
-				Central.Log.Debugf("Current parent %d %s -> %d %s map=%v remove=%v", fieldMap.lastStructure.Level(), fieldMap.lastStructure.Name(),
-					adaType.Level(), adaType.Name(), ok, remove)
+				Central.Log.Debugf("Current parent %d %s -> %d %s part of query=%v remove=%v", fieldMap.lastStructure.Level(), fieldMap.lastStructure.Name(),
+					adaType.Level(), adaType.Name(), isPartOfQuery, remove)
 			}
 			// Dependent on type create copy of field
 			switch adaType.Type() {
@@ -300,12 +310,18 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 				newType.muRange = fieldMap.lastStructure.muRange
 				fieldMap.lastStructure.SubTypes = append(fieldMap.lastStructure.SubTypes, newType)
 				newType.RemoveFlag(FlagOptionToBeRemoved)
+				if _, ok := fieldMap.definition.activeFields[adaType.Name()]; !ok {
+					Central.Log.Debugf("Add active field %s", adaType.Name())
+					fieldMap.definition.activeFields[adaType.Name()] = adaType
+				} else {
+					Central.Log.Debugf("Skip to add active field %s", adaType.Name())
+				}
 			case FieldTypeHyperDesc, FieldTypePhonetic, FieldTypeCollation, FieldTypeReferential, FieldTypeRedefinition:
 			default:
 				newType := &AdaType{}
 				oldType := adaType.(*AdaType)
 				*newType = *oldType
-				if fq != nil && fq.reference {
+				if queryField != nil && queryField.reference {
 					newType.fieldType = FieldTypeString
 					newType.length = 0
 					newType.AddFlag(FlagOptionReference)
@@ -313,9 +329,9 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 				newType.SetParent(fieldMap.lastStructure)
 				newType.peRange = fieldMap.lastStructure.peRange
 				newType.muRange = fieldMap.lastStructure.muRange
-				if fq != nil {
-					newType.partialRange = fq.partialRange
-					for i, r := range fq.fieldRange {
+				if queryField != nil {
+					newType.partialRange = queryField.partialRange
+					for i, r := range queryField.fieldRange {
 						if i == 0 && newType.HasFlagSet(FlagOptionPE) {
 							newType.peRange = *r
 						} else {
@@ -334,6 +350,15 @@ func searchFieldToSetRemoveFlagTrav(adaType IAdaType, parentType IAdaType, level
 					Central.Log.Debugf("Add type entry in structure %s", newType.Name())
 				}
 				newType.RemoveFlag(FlagOptionToBeRemoved)
+				if _, ok := fieldMap.definition.activeFields[adaType.Name()]; !ok {
+					if adaType.PartialRange() != nil {
+						Central.Log.Debugf("Add active field %s[%d,%d]", adaType.Name(), adaType.PartialRange().from, adaType.PartialRange().to)
+					}
+					fieldMap.definition.activeFields[adaType.Name()] = adaType
+				} else {
+					Central.Log.Debugf("Skip to add active field %s", adaType.Name())
+				}
+
 				if fieldMap.lastStructure.HasFlagSet(FlagOptionPart) {
 					newType.AddFlag(FlagOptionPart)
 				}
@@ -500,7 +525,7 @@ func (def *Definition) ShouldRestrictToFieldSlice(field []string) (err error) {
 		}
 	}
 
-	Central.Log.Debugf("Remove/Cleanup empty structures ...")
+	Central.Log.Debugf("Remove/Cleanup empty structures ...%#v", fieldMap.strCount)
 	for _, strType := range fieldMap.strCount {
 		removeFromTree(strType)
 	}

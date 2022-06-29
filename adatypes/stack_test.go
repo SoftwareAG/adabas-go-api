@@ -33,6 +33,6 @@ func TestStack(t *testing.T) {
 	assert.Equal(t, "ABC", v)
 	v, err = st.Pop()
 	assert.Error(t, err)
-	assert.Equal(t, "Empty Stack", err.Error())
+	assert.Equal(t, "empty Stack", err.Error())
 	assert.Nil(t, v)
 }

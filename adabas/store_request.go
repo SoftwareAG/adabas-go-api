@@ -302,7 +302,7 @@ func (request *StoreRequest) Store(storeRecord *Record) error {
 			return sErr
 		}
 	}
-	request.definition.Values = storeRecord.Value
+	request.definition.Values = storeRecord.SelectValue(request.definition)
 	adatypes.Central.Log.Debugf("Prepare store request")
 	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
@@ -375,7 +375,8 @@ func (request *StoreRequest) Update(storeRecord *Record) error {
 			return sErr
 		}
 	}
-	request.definition.Values = storeRecord.Value
+	storeRecord.definition = request.definition
+	request.definition.Values = storeRecord.SelectValue(request.definition)
 	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
 		return prepareErr
@@ -390,7 +391,7 @@ func (request *StoreRequest) Update(storeRecord *Record) error {
 
 // Exchange exchange a record
 func (request *StoreRequest) Exchange(storeRecord *Record) error {
-	request.definition.Values = storeRecord.Value
+	request.definition.Values = storeRecord.SelectValue(request.definition)
 	adabasRequest, prepareErr := request.prepareRequest(false)
 	if prepareErr != nil {
 		return prepareErr
@@ -450,13 +451,13 @@ func searchDynamicValue(value reflect.Value, fn []string) (v reflect.Value, ok b
 
 // storeValue used in dynamic interface mode to store records
 func (request *StoreRequest) storeValue(record reflect.Value, store, etData bool) error {
-	if request.definition == nil {
-		q := request.dynamic.CreateQueryFields()
-		err := request.StoreFields(q)
-		if err != nil {
-			return err
-		}
+	//if request.definition == nil {
+	q := request.dynamic.CreateQueryFields()
+	err := request.StoreFields(q)
+	if err != nil {
+		return err
 	}
+	//}
 
 	if record.Kind() == reflect.Ptr {
 		record = record.Elem()
@@ -468,7 +469,7 @@ func (request *StoreRequest) storeValue(record reflect.Value, store, etData bool
 	debug := adatypes.Central.IsDebugLevel()
 	if debug {
 		for k, v := range request.dynamic.FieldNames {
-			adatypes.Central.Log.Debugf("FN: %s=%v", k, v)
+			adatypes.Central.Log.Debugf("FN: %s=%v %v", k, v, request.definition.CheckField(k))
 		}
 		adatypes.Central.Log.Debugf("Slice index: %v", record)
 		request.definition.DumpTypes(true, true, "Active store entries")
@@ -608,7 +609,7 @@ func (request *StoreRequest) evaluateKeyIsn(record reflect.Value, storeRecord *R
 	}
 	storeRecord.Isn = resultRead.Values[0].Isn
 	if debug {
-		adatypes.Central.Log.Debugf("Update ISN", storeRecord.Isn)
+		adatypes.Central.Log.Debugf("Update ISN %d", storeRecord.Isn)
 	}
 	return nil
 }

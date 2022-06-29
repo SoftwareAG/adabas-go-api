@@ -285,3 +285,47 @@ func TestFitLOBSegment(t *testing.T) {
 	}
 	fmt.Println("Called LOB data with ", counter, "segments, read data", dataRead)
 }
+
+func TestDirectStreamPEMU(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping malloc count in short mode")
+	}
+	initTestLogWithFile(t, "stream.log")
+
+	connection, cerr := NewConnection("acj;target=24")
+	if !assert.NoError(t, cerr) {
+		fmt.Println("Error creating new connection", cerr)
+		return
+	}
+	defer connection.Close()
+	request, rerr := connection.CreateFileReadRequest(9)
+	if !assert.NoError(t, rerr) {
+		fmt.Println("Error creating map read request", rerr)
+		return
+	}
+
+	segment, derr := request.ReadLOBSegment(216, "SC[1][1]", 4096)
+	if !assert.NoError(t, derr) {
+		fmt.Println("Error read LOB segment", derr)
+		return
+	}
+	if !assert.NotNil(t, segment) {
+		return
+	}
+	assert.Equal(t, []byte{}, segment)
+}
+
+func TestParseFields(t *testing.T) {
+	f, i := parseField("AA")
+	assert.Equal(t, "AA", f)
+	assert.Equal(t, []uint32{}, i)
+	f, i = parseField("A1[10]")
+	assert.Equal(t, "A1", f)
+	assert.Equal(t, []uint32{10}, i)
+	f, i = parseField("BB[1,2]")
+	assert.Equal(t, "BB", f)
+	assert.Equal(t, []uint32{1, 2}, i)
+	f, i = parseField("CC[3][4]")
+	assert.Equal(t, "CC", f)
+	assert.Equal(t, []uint32{3, 4}, i)
+}

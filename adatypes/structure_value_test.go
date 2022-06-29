@@ -215,7 +215,9 @@ func TestStructureValuePeriodMU(t *testing.T) {
 	assert.Equal(t, uint8(0x0), gc1b.Value())
 	assert.Equal(t, gc1a, gc1b)
 	gc2 := vsl.Get("GC", 2)
-	assert.NotNil(t, gc2)
+	if !assert.NotNil(t, gc2) {
+		return
+	}
 	assert.Equal(t, uint8(0x0), gc2.Value())
 	assert.NotEqual(t, gc1a, gc2)
 

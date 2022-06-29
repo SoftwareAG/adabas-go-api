@@ -22,6 +22,7 @@ package adatypes
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 )
@@ -201,9 +202,6 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 	}
 	// If store is request and lobsize is bigger then chunk size, do partial lob store calls
 	if option.StoreCall && len(value.value) > PartialStoreLobSizeChunks {
-		if buffer.Len() > 0 {
-			buffer.WriteString(",")
-		}
 		if Central.IsDebugLevel() {
 			Central.Log.Debugf("Generate FormatBuffer second call %d", option.SecondCall)
 		}
@@ -221,11 +219,17 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 			if Central.IsDebugLevel() {
 				Central.Log.Debugf("%d.Partial %s -> %d/%d of %d", option.SecondCall, value.Type().ShortName(), start, end, len(value.value))
 			}
+			if buffer.Len() > 0 {
+				buffer.WriteString(",")
+			}
 			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), start, end))
 		} else {
 			partialRange := value.Type().PartialRange()
 			if Central.IsDebugLevel() {
 				Central.Log.Debugf("Partial Range %#v\n", partialRange)
+			}
+			if buffer.Len() > 0 {
+				buffer.WriteString(",")
 			}
 			if partialRange != nil {
 				if partialRange.from == 0 {
@@ -244,30 +248,56 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 		return recLength
 	}
 	if value.adatype.Type() == FieldTypeLBString && value.adatype.Length() == 0 && !option.StoreCall {
-		if buffer.Len() > 0 {
-			buffer.WriteString(",")
-		}
 		// If LOB field is read, use part
 		if option.SecondCall > 0 {
 			if value.lobSize > value.PartialLobSize {
+				if buffer.Len() > 0 {
+					buffer.WriteString(",")
+				}
 				buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), value.PartialLobSize+1, value.lobSize-value.PartialLobSize))
 				recLength = value.lobSize - value.PartialLobSize
 			}
 		} else {
 			partialRange := value.Type().PartialRange()
 			if Central.IsDebugLevel() {
-				Central.Log.Debugf("Partial Range %#v\n------\n", partialRange)
+				Central.Log.Debugf("String value Partial Range %#v", partialRange)
+			}
+			indexRange := getValueIndexRange(value)
+			// indexRange := ""
+			// if value.Type().PeriodicRange().to != LastEntry {
+			// 	indexRange = fmt.Sprintf("%d", value.Type().PeriodicRange().from)
+			// }
+			// if value.Type().MultipleRange().to != LastEntry {
+			// 	if indexRange != "" {
+			// 		indexRange += ","
+			// 	}
+			// 	indexRange += fmt.Sprintf("%d", value.Type().MultipleRange().from)
+			// }
+			if buffer.Len() > 0 {
+				buffer.WriteString(",")
 			}
 			if partialRange != nil {
 				if partialRange.to == 0 {
-					buffer.WriteString(fmt.Sprintf("%s(*,%d)", value.Type().ShortName(), partialRange.to))
+					buffer.WriteString(fmt.Sprintf("%s%s(*,%d)", value.Type().ShortName(), indexRange, partialRange.to))
 					recLength = uint32(partialRange.to)
 				} else {
-					buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), partialRange.from, partialRange.to))
+					buffer.WriteString(fmt.Sprintf("%s%s(%d,%d)", value.Type().ShortName(), indexRange, partialRange.from, partialRange.to))
 					recLength = uint32(partialRange.to)
 				}
 			} else {
-				buffer.WriteString(fmt.Sprintf("%sL,4,%s(0,%d)", value.Type().ShortName(), value.Type().ShortName(), value.PartialLobSize))
+				if !option.PartialRead {
+					blockSize := option.BlockSize
+					if blockSize == 0 {
+						blockSize = PartialLobSize
+					}
+					buffer.WriteString(fmt.Sprintf("%sL%s,4,%s%s(1,%d)",
+						value.Type().ShortName(), indexRange,
+						value.Type().ShortName(), indexRange, blockSize))
+				} else {
+					buffer.WriteString(fmt.Sprintf("%sL%s,4,%s%s(*,%d)",
+						value.Type().ShortName(), indexRange,
+						value.Type().ShortName(), indexRange, value.PartialLobSize))
+				}
 				recLength = 4 + value.PartialLobSize
 			}
 		}
@@ -276,6 +306,9 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 		if partial != nil {
 			if Central.IsDebugLevel() {
 				Central.Log.Debugf("Generate partial format buffer %d,%d", partial.from, partial.to)
+			}
+			if buffer.Len() > 0 {
+				buffer.WriteString(",")
 			}
 			buffer.WriteString(fmt.Sprintf("%s(%d,%d)", value.Type().ShortName(), partial.from, partial.to))
 			recLength = uint32(partial.to)
@@ -303,6 +336,26 @@ func (value *stringValue) FormatBuffer(buffer *bytes.Buffer, option *BufferOptio
 		}
 	}
 	return recLength
+}
+
+func getValueIndexRange(value IAdaValue) string {
+	indexRange := ""
+	if Central.IsDebugLevel() {
+		Central.Log.Debugf("PE range %d", value.PeriodIndex())
+		Central.Log.Debugf("MU range %d", value.MultipleIndex())
+	}
+	if value.PeriodIndex() > 0 && value.PeriodIndex() < math.MaxUint32-2 {
+		indexRange = fmt.Sprintf("%d", value.PeriodIndex())
+	}
+	if value.MultipleIndex() > 0 && value.MultipleIndex() < math.MaxUint32-2 {
+		if indexRange != "" {
+			indexRange += fmt.Sprintf("(%d)", value.MultipleIndex())
+		} else {
+			indexRange += fmt.Sprintf("%d", value.MultipleIndex())
+		}
+	}
+	Central.Log.Debugf("Value index Range %s", indexRange)
+	return indexRange
 }
 
 func (value *stringValue) StoreBuffer(helper *BufferHelper, option *BufferOption) error {

@@ -27,7 +27,8 @@ import (
 )
 
 const (
-	lastEntry  = -2
+	// LastEntry last N name index for Adabas
+	LastEntry  = -2
 	noEntry    = -1
 	allEntries = -124
 )
@@ -61,8 +62,8 @@ func NewRangeParser(r string) *AdaRange {
 	var err error
 	if len(match) > 1 {
 		if match[1] == "N" {
-			from = lastEntry
-			to = lastEntry
+			from = LastEntry
+			to = LastEntry
 		} else {
 			from, err = strconv.Atoi(match[1])
 			if err != nil {
@@ -73,9 +74,9 @@ func NewRangeParser(r string) *AdaRange {
 	}
 	if len(match) > 2 && match[2] != "" {
 		if match[2] == "N" {
-			to = lastEntry
+			to = LastEntry
 		} else {
-			if from == lastEntry {
+			if from == LastEntry {
 				return nil
 			}
 			to, err = strconv.Atoi(match[2])
@@ -88,9 +89,9 @@ func NewRangeParser(r string) *AdaRange {
 		}
 	}
 	if to < from {
-		if to != lastEntry {
+		if to != LastEntry {
 			if Central.IsDebugLevel() {
-				Central.Log.Debugf("Last entry error: %s -> %d < %d", r, to, lastEntry)
+				Central.Log.Debugf("Last entry error: %s -> %d < %d", r, to, LastEntry)
 			}
 			return nil
 		}
@@ -114,7 +115,7 @@ func NewPartialRange(from, to int) *AdaRange {
 // NewRange new range from a dimension to a dimension
 func NewRange(from, to int) *AdaRange {
 	if from > to {
-		if to != lastEntry {
+		if to != LastEntry {
 			return nil
 		}
 	}
@@ -123,19 +124,22 @@ func NewRange(from, to int) *AdaRange {
 
 // NewLastRange range defining only the last entry
 func NewLastRange() *AdaRange {
-	return &AdaRange{from: lastEntry, to: lastEntry}
+	return &AdaRange{from: LastEntry, to: LastEntry}
 }
 
 // FormatBuffer generate corresponding format buffer
 func (adaRange *AdaRange) FormatBuffer() string {
+	if adaRange == nil {
+		return ""
+	}
 	var buffer bytes.Buffer
-	if adaRange.from == lastEntry {
+	if adaRange.from == LastEntry {
 		buffer.WriteRune('N')
 	} else if adaRange.from > 0 {
 		buffer.WriteString(fmt.Sprintf("%d", adaRange.from))
 	}
 	if adaRange.to != 0 && adaRange.from != adaRange.to {
-		if adaRange.to == lastEntry {
+		if adaRange.to == LastEntry {
 			buffer.WriteString("-N")
 		} else {
 			buffer.WriteString(fmt.Sprintf("-%d", adaRange.to))
@@ -148,14 +152,14 @@ func (adaRange *AdaRange) multiplier() int {
 	if adaRange.to == adaRange.from {
 		return 1
 	}
-	if adaRange.to != lastEntry && adaRange.from != lastEntry {
+	if adaRange.to != LastEntry && adaRange.from != LastEntry {
 		return adaRange.to - adaRange.from + 1
 	}
 	return allEntries
 }
 
 func (adaRange *AdaRange) index(pos uint32, max uint32) uint32 {
-	if adaRange.from == lastEntry {
+	if adaRange.from == LastEntry {
 		return max
 	}
 	if adaRange.from > 0 {

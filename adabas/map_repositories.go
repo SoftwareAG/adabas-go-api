@@ -322,7 +322,11 @@ func (repository *Repository) LoadAllMaps(adabas *Adabas) (adabasMaps []*Map, er
 // parseMap Adabas read parser of the Map names used during read
 func parseMapNames(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	repository := x.(*Repository)
+	adatypes.Central.Log.Debugf("Search for map ... " + mapFieldName.fieldName())
 	v := adabasRequest.Definition.Search(mapFieldName.fieldName())
+	if v == nil {
+		return adatypes.NewGenericError(28, mapFieldName.fieldName())
+	}
 	name := v.String()
 	repository.Lock()
 	defer repository.Unlock()
@@ -334,7 +338,7 @@ func parseMapNames(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	return
 }
 
-// parseMap Adabas read parser of the Map definition used during read
+// parseMaps Adabas read parser of the Map definition used during read
 func parseMaps(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	repository := x.(*Repository)
 	adabasMap := NewAdabasMap(&repository.DatabaseURL, &DatabaseURL{})
@@ -342,6 +346,7 @@ func parseMaps(adabasRequest *adatypes.Request, x interface{}) (err error) {
 	if err != nil {
 		return
 	}
+	adatypes.Central.Log.Debugf("Map:\n%s", adabasMap.String())
 
 	dbid, dbidErr := adabasMap.Repository.dbid()
 	if dbidErr != nil {

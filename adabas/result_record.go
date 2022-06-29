@@ -114,7 +114,7 @@ func recordValuesTraverser(adaValue adatypes.IAdaValue, x interface{}) (adatypes
 // createRecordBuffer create a record buffer
 func (record *Record) createRecordBuffer(helper *adatypes.BufferHelper, option *adatypes.BufferOption) (err error) {
 	adatypes.Central.Log.Debugf("Create store record buffer")
-	t := adatypes.TraverserValuesMethods{EnterFunction: createStoreRecordBuffer}
+	t := adatypes.TraverserValuesMethods{EnterFunction: createStoreRecordBufferTraverser}
 	stRecTraverser := &storeRecordTraverserStructure{record: record, helper: helper, option: option}
 	_, err = record.Traverse(t, stRecTraverser)
 	if adatypes.Central.IsDebugLevel() {
@@ -191,8 +191,41 @@ func (record *Record) DumpValues() {
 
 // searchValue search a value using a given field name
 func (record *Record) searchValue(field string) (adatypes.IAdaValue, bool) {
-	if adaValue, ok := record.HashFields[field]; ok {
+	fq, err := NewFieldQuery(field)
+	if err != nil {
+		adatypes.Central.Log.Debugf("Query failure: %v", err)
+		return nil, false
+	}
+	if adatypes.Central.IsDebugLevel() {
+		adatypes.Central.Log.Debugf("Search field %s (%s)", fq.Name, field)
+		for k, v := range record.HashFields {
+			adatypes.Central.Log.Debugf("Key: %s %#v", k, v)
+		}
+	}
+	name := fq.Name
+	if fq.Prefix != ' ' {
+		name = string(fq.Prefix) + fq.Name
+	}
+	if adaValue, ok := record.HashFields[name]; ok {
+		adatypes.Central.Log.Debugf("Found value %s (%v)", adaValue.Type().Name(), adaValue.Type().Type())
+		if adaValue.Type().Type() == adatypes.FieldTypeMultiplefield && (fq.MultipleIndex > 0 || fq.PeriodicIndex > 0) {
+			sv := adaValue.(*adatypes.StructureValue)
+			for _, ve := range sv.Elements {
+				for _, v := range ve.Values {
+					adatypes.Central.Log.Debugf("PE %d MU %d", v.PeriodIndex(), v.MultipleIndex())
+					if fq.PeriodicIndex == v.PeriodIndex() && fq.MultipleIndex == v.MultipleIndex() {
+						return v, true
+					}
+				}
+			}
+		}
 		return adaValue, true
+	}
+	adatypes.Central.Log.Debugf("Found no value for %s", name)
+	if adatypes.Central.IsDebugLevel() {
+		for k, v := range record.HashFields {
+			adatypes.Central.Log.Debugf("Key valid %s -> %s(%d)", k, v.Type().Name(), v.Type().Type())
+		}
 	}
 	return nil, false
 }
@@ -658,4 +691,25 @@ func (record *Record) Bytes(parameter ...interface{}) []byte {
 		return v.Bytes()
 	}
 	return nil
+}
+
+// SelectValue provide selected list of value
+func (record *Record) SelectValue(definition *adatypes.Definition) []adatypes.IAdaValue {
+	activeValues := make([]adatypes.IAdaValue, 0)
+	fn := definition.Fieldnames()
+	for _, v := range record.Value {
+		if contains(fn, v.Type().Name()) {
+			activeValues = append(activeValues, v)
+		}
+	}
+	return activeValues
+}
+
+func contains(array []string, str string) bool {
+	for _, a := range array {
+		if a == str {
+			return true
+		}
+	}
+	return false
 }

@@ -115,6 +115,7 @@ func TestAdabasRequestParser_withPeriod(t *testing.T) {
 	assert.NoError(t, perr)
 	assert.Equal(t, 0, int(responseCode))
 	assert.Equal(t, uint64(1), count)
+	assert.Equal(t, "A8,8,A,PGC,4,B,PG1-N.", adabasRequest.FormatBuffer.String())
 	assert.Equal(t, uint32(20), adabasRequest.MultifetchBuffer.offset)
 	assert.Equal(t, uint32(28), adabasRequest.RecordBuffer.offset)
 	Central.Log.Debugf("Test dump values")
@@ -141,6 +142,17 @@ func TestAdabasRequestParser_osEmptyPeriod(t *testing.T) {
 		return
 	}
 	testDefinition.CreateValues(false)
+	testDefinition.DumpValues(false)
+	v := testDefinition.Search("PG")
+	if !assert.NotNil(t, v) {
+		return
+	}
+	if assert.IsType(t, &StructureValue{}, v) {
+		sv := v.(*StructureValue)
+		if !assert.Equal(t, 0, sv.NrElements()) {
+			return
+		}
+	}
 	parameter := &AdabasRequestParameter{Store: false, DescriptorRead: false,
 		SecondCall: 0, Mainframe: false}
 	adabasRequest, aerr := testDefinition.CreateAdabasRequest(parameter)
@@ -167,15 +179,18 @@ func TestAdabasRequestParser_osEmptyPeriod(t *testing.T) {
 	assert.NoError(t, perr)
 	assert.Equal(t, 0, int(responseCode))
 	assert.Equal(t, uint64(1), count)
+	assert.Equal(t, "A8,8,A,PGC,4,B,PG1-N.", adabasRequest.FormatBuffer.String())
 	assert.Equal(t, uint32(len(multifetchData)), adabasRequest.MultifetchBuffer.offset)
 	assert.Equal(t, uint32(len(dataContent)), adabasRequest.RecordBuffer.offset)
 	Central.Log.Debugf("Test dump values")
 	testDefinition.DumpValues(true)
-	v := testDefinition.Search("PG")
+	v = testDefinition.Search("PG")
 	assert.NotNil(t, v)
 	if assert.IsType(t, &StructureValue{}, v) {
 		sv := v.(*StructureValue)
-		assert.Equal(t, 0, sv.NrElements())
+		if !assert.Equal(t, 0, sv.NrElements()) {
+			return
+		}
 	}
 }
 

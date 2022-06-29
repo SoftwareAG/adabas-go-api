@@ -166,3 +166,4 @@ ADG0000182=Occurence for {0} exceed to {1}
 ADG0000183=Searched LOB entry not found
 ADG0000184=Searched LOB field {0} not in definition
 ADG0000185=Searched field {0} not a Large object (LOB)
+ADG0000186=Searched field query empty

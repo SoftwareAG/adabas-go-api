@@ -52,7 +52,7 @@ func (s *Stack) Pop() (interface{}, error) {
 
 	l := len(s.s)
 	if l == 0 {
-		return nil, errors.New("Empty Stack")
+		return nil, errors.New("empty Stack")
 	}
 
 	res := s.s[l-1]
