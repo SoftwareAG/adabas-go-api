@@ -77,7 +77,7 @@ func (def *Definition) Search(fieldName string) IAdaValue {
 		x.name = fieldName[:fi]
 		fi1 := strings.Index(fieldName, "]")
 		Central.Log.Debugf("Parse index %s", fieldName[fi+1:fi1])
-		index, err := strconv.Atoi(fieldName[fi+1 : fi1])
+		index, err := strconv.ParseUint(fieldName[fi+1:fi1], 10, 32)
 		if err != nil {
 			Central.Log.Debugf("Error parsing search index: %v", err)
 			return nil
@@ -89,7 +89,7 @@ func (def *Definition) Search(fieldName string) IAdaValue {
 		if fi2 != -1 {
 			fi3 := strings.Index(rest, "]")
 			Central.Log.Debugf("Parse index %s %d", rest[fi2+1:], fi3)
-			index2, err := strconv.Atoi(rest[fi2+1 : fi3])
+			index2, err := strconv.ParseUint(rest[fi2+1:fi3], 10, 32)
 			if err != nil {
 				Central.Log.Debugf("Error parsing search index: %v", err)
 				return nil
