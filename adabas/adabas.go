@@ -392,6 +392,7 @@ func (adabas *Adabas) ReadFileDefinition(fileNr Fnr) (definition *adatypes.Defin
 		return
 	}
 
+	// default Open command
 	err = adabas.Open()
 	if err != nil {
 		return
