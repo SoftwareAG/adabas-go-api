@@ -217,7 +217,7 @@ func (adabas *Adabas) Open() (err error) {
 // The value provided for the USERID must be unique for this user (not used by any other user), and must begin with a digit or an uppercase letter.
 //
 // Users for whom none of the above conditions are true should set this field to blanks.
-func (adabas *Adabas) OpenUser(user string) (err error) {
+func (adabas *Adabas) OpenUser(user string, recordBuf ...string) (err error) {
 	url := adabas.URL.String()
 	if adabas.ID.isOpen(url) {
 		adatypes.Central.Log.Debugf("Database %s already opened by ID %#v", url, adabas.ID)
@@ -239,11 +239,19 @@ func (adabas *Adabas) OpenUser(user string) (err error) {
 		}
 		copy(adabas.Acbx.Acbxadd1[:l], user[:l])
 	}
+	
+	rb := "UPD."
+	if len(recordBuf) > 0 {
+		rb = recordBuf[0]
+	}
+	if strings.Contains(strings.ToUpper(rb), "UTI") {
+		adabas.Acbx.Acbxisn = 9999
+	}
 
 	// Create default buffers to open with able to update records in all files
 	adabas.AdabasBuffers = nil
 	adabas.AdabasBuffers = append(adabas.AdabasBuffers, NewBufferWithSize(AbdAQFb, 1))
-	adabas.AdabasBuffers = append(adabas.AdabasBuffers, NewSendBuffer(AbdAQRb, []byte("UPD.")))
+	adabas.AdabasBuffers = append(adabas.AdabasBuffers, NewSendBuffer(AbdAQRb, []byte(rb)))
 
 	err = adabas.CallAdabas()
 	if err != nil {
@@ -334,6 +342,16 @@ func (adabas *Adabas) ACBX() *Acbx {
 // SetAbd Set ABD to adabas structure
 func (adabas *Adabas) SetAbd(abd []*Buffer) {
 	adabas.AdabasBuffers = abd
+}
+
+//CreateFieldDefinitionTable create field definition table definition useds to parse Adabas LF call
+func (adabas *Adabas) CreateFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatypes.Definition, err error) {
+	return createFieldDefinitionTable(fdtDef)
+}
+
+// CreateFdtDefintion create used definition to read FDT
+func (adabas *Adabas) CreateFdtDefintion() *adatypes.Definition {
+	return createFdtDefintion()
 }
 
 func (adabas *Adabas) callAdabasDriver() (err error) {
