@@ -89,7 +89,7 @@ func (URL *URL) examineURL(url string) error {
 	re := regexp.MustCompile(`([0-9]+)\((\w*):\/\/([^:]*?):([^?]*)(\?.*)?\)`)
 	match := re.FindStringSubmatch(url)
 	if len(match) == 0 {
-		adatypes.Central.Log.Debugf("No match parse adtcp:")
+		adatypes.Central.Log.Debugf("No match parse adatcp:")
 		re := regexp.MustCompile(`^(adatcp[s]?):\/\/([^:]*?):([^?]*)\??(.*)?`)
 		match := re.FindStringSubmatch(url)
 		if len(match) == 0 {

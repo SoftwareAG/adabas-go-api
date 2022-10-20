@@ -123,7 +123,7 @@ var fdt = []adatypes.IAdaType{
 	adatypes.NewType(adatypes.FieldTypeUByte, "fieldDeactivate"), // 10
 	adatypes.NewType(adatypes.FieldTypeUInt4, "fieldLength"),
 	adatypes.NewType(adatypes.FieldTypeUInt2, "superLength"),
-	adatypes.NewType(adatypes.FieldTypeByte, "superOption2"),
+	adatypes.NewType(adatypes.FieldTypeUByte, "superOption2"),
 	adatypes.NewStructureList(adatypes.FieldTypeStructure, "superList", adatypes.OccByte, fdtFieldEntry),
 	adatypes.NewType(adatypes.FieldTypeUInt2, "subLength"), // 15
 	adatypes.NewType(adatypes.FieldTypeUByte, "subOption2"),
@@ -398,6 +398,7 @@ func createSubSuperDescriptorType(fdt *adatypes.StructureValue, index int) (fiel
 	superList := fdt.Get("superList", index).(*adatypes.StructureValue)
 	fdtFormat := fdt.Get("fieldFormat", index).Value().(byte)
 	option := fdt.Get("fieldOption", index).Value().(byte)
+
 	superType := adatypes.NewSuperType(name, option)
 	superType.FdtFormat = fdtFormat
 	for _, sub := range superList.Elements {

@@ -25,6 +25,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestSuperSubDescOptions(t *testing.T) {
+	opt1 := byte(0x10) | byte(0x02) | byte(0x04) // NU,PF,NC
+	superType := NewSuperType("SS", opt1)
+	superType.AddSubEntry("AX", 1, 3)
+	superType.AddSubEntry("AZ", 1, 2)
+	superType.FdtFormat = 'A'
+
+	v, err := superType.Value()
+	assert.NoError(t, err)
+	assert.Equal(t, "", v.String())
+
+	opt := superType.Option()
+	assert.Equal(t, "NU,NC,PF", opt)
+}
+
 func TestSuperDesc(t *testing.T) {
 	opt := byte(0x1)
 	superType := NewSuperType("AA", opt)

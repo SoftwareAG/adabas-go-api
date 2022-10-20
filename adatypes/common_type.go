@@ -355,6 +355,8 @@ const (
 	FieldOptionPE
 	// FieldOptionMU field option for multiple fields
 	FieldOptionMU
+	// FieldOptionPF field option for Packed F
+	FieldOptionPF
 	// FieldOptionLA field option for large alpha
 	FieldOptionLA
 	// FieldOptionLB field option for large objects
@@ -363,7 +365,7 @@ const (
 	FieldOptionColExit
 )
 
-var fieldOptions = []string{"UQ", "NU", "FI", "DE", "NC", "NN", "HF", "NV", "NB", "HE", "PE", "MU"}
+var fieldOptions = []string{"UQ", "NU", "FI", "DE", "NC", "NN", "HF", "NV", "NB", "HE", "PE", "MU", "PF"}
 
 // FlagOption flag option used to omit traversal through the tree (example is MU and PE)
 type FlagOption uint32

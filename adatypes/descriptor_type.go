@@ -59,6 +59,17 @@ func NewSuperType(name string, option byte) *AdaSuperType {
 	if (option & 0x20) > 0 {
 		superType.AddOption(FieldOptionMU)
 	}
+	// if (option & 0x80) > 0 {
+	// 	superType.AddOption(FieldOptionDE)
+	// }
+
+	if (option & 0x02) > 0 {
+		superType.AddOption(FieldOptionPF)
+	}
+	if (option & 0x04) > 0 {
+		superType.AddOption(FieldOptionNC)
+	}
+
 	return superType
 }
 

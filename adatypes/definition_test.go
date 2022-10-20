@@ -1625,7 +1625,7 @@ func TestDefinitionPEMUFieldTwo(t *testing.T) {
 		sc.String())
 	// fmt.Printf("%T %s -> %v - [%s][%s]", sc, sc, scerr, sc.PartialRange().FormatBuffer(), sc.PeriodicRange().FormatBuffer())
 
-	assert.Equal(t, "GM1(2),0,A,GM1(11),0,A.",
+	assert.Equal(t, "GML1(11),4,GM1(11)(1,4096).",
 		request.FormatBuffer.String())
 
 }
@@ -1668,7 +1668,7 @@ func TestDefinitionPEMUFieldTwoPeriods(t *testing.T) {
 		sc.String())
 	// fmt.Printf("%T %s -> %v - [%s][%s]", sc, sc, scerr, sc.PartialRange().FormatBuffer(), sc.PeriodicRange().FormatBuffer())
 
-	assert.Equal(t, "GM1(2),0,A,GM2(11),0,A.",
+	assert.Equal(t, "GML2(11),4,GM2(11)(1,4096).",
 		request.FormatBuffer.String())
 
 }
