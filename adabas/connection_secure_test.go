@@ -53,7 +53,7 @@ func TestConnectionSecure_fail(t *testing.T) {
 	}
 	err = request.QueryFields("AA")
 	if assert.Error(t, err) {
-		assert.Equal(t, "ADAGEC801F: Security violation: Authentication error (rsp=200,subrsp=31,dbid=25,file=0)", err.Error())
+		assert.Equal(t, "ADAGEC801F: Security violation: Authentication error (rsp=200,subrsp=31,add2=[0 0 31 0],dbid=25,file=0)", err.Error())
 	}
 }
 
@@ -136,7 +136,7 @@ func TestConnectionSecureAdaTcp_pwd(t *testing.T) {
 	switch e := err.(type) {
 	case *Error:
 		assert.Equal(t, "ADAGEC801F", e.Code, "Wrong:"+e.Code)
-		assert.True(t, strings.HasPrefix(e.Message, "Security violation: Authentication error (rsp=200,subrsp=31,dbid="), "Wrong:"+e.Error())
+		assert.True(t, strings.HasPrefix(e.Message, "Security violation: Authentication error (rsp=200,subrsp=31,add2=[0 0 31 0],dbid="), "Wrong:"+e.Error())
 		assert.True(t, strings.HasPrefix(e.Translate("DE"), "Security violation: Authentication error"), "Wrong:"+e.Error())
 	default:
 		assert.Fail(t, "Should not be other error then adatypes.Error!!!!!")

@@ -20,6 +20,7 @@
 package adabas
 
 import (
+	"bytes"
 	"fmt"
 	"time"
 
@@ -43,8 +44,18 @@ func (adabas *Adabas) getAdabasMessage() []string {
 	if msg == "" {
 		msg = fmt.Sprintf("Unknown error response %d subcode %d (%s)", adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxerrc, msgCode)
 	}
-	msg = fmt.Sprintf("%s (rsp=%d,subrsp=%d,dbid=%s,file=%d)", msg, adabas.Acbx.Acbxrsp,
-		adabas.Acbx.Acbxerrc, adabas.URL.String(), adabas.Acbx.Acbxfnr)
+	
+	if bytes.Equal(adabas.Acbx.Acbxadd2[:], []byte{0x00, 0x00, 0x00, 0x00}) || bytes.Equal(adabas.Acbx.Acbxadd2[:], []byte{0x20, 0x20, 0x20, 0x20}) {
+		msg = fmt.Sprintf("%s (rsp=%d,subrsp=%d,dbid=%s,file=%d)", msg, adabas.Acbx.Acbxrsp,
+			adabas.Acbx.Acbxerrc, adabas.URL.String(), adabas.Acbx.Acbxfnr)
+	} else {
+
+		msg = fmt.Sprintf("%s (rsp=%d,subrsp=%d,add2=%v,dbid=%s,file=%d)", msg, adabas.Acbx.Acbxrsp,
+			adabas.Acbx.Acbxerrc,
+			adabas.Acbx.Acbxadd2,
+			adabas.URL.String(), adabas.Acbx.Acbxfnr)
+	}
+	
 	if adabas.Acbx.Acbxrsp > 3 {
 		adatypes.Central.Log.Infof("Error message %s", msg)
 		adatypes.Central.Log.Infof("Add1: %v", adabas.Acbx.Acbxadd1)
@@ -83,9 +94,17 @@ func NewError(adbas *Adabas) *Error {
 }
 
 func acbxSuffix(URL *URL, acbx *Acbx) string {
-	return fmt.Sprintf(" (rsp=%d,subrsp=%d,dbid=%s,file=%d)", acbx.Acbxrsp,
-		acbx.Acbxerrc, URL.String(), acbx.Acbxfnr)
-
+	message := ""
+	if bytes.Equal(acbx.Acbxadd2[:], []byte{0x00, 0x00, 0x00, 0x00}) || bytes.Equal(acbx.Acbxadd2[:], []byte{0x20, 0x20, 0x20, 0x20}) {
+		message = fmt.Sprintf(" (rsp=%d,subrsp=%d,dbid=%s,file=%d)", acbx.Acbxrsp,
+			acbx.Acbxerrc, URL.String(), acbx.Acbxfnr)
+	} else {
+		message = fmt.Sprintf(" (rsp=%d,subrsp=%d,add2=%v,dbid=%s,file=%d)", acbx.Acbxrsp,
+			acbx.Acbxerrc,
+			acbx.Acbxadd2,
+			URL.String(), acbx.Acbxfnr)
+	}
+	return message
 }
 
 // Response return the response code of adabas call
