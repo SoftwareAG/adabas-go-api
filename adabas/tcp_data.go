@@ -59,6 +59,8 @@ const defaultNodeListLength = (64 * 1024)
 // AdaTCPDataHeaderLength length of AdaTCPDataHeader structure
 const AdaTCPDataHeaderLength = 24
 
+const maxReadBytes = 10 * 1024 * 1024
+
 func newAdatcpDataHeader(dataType TransferDataType) AdaTCPDataHeader {
 	header := AdaTCPDataHeader{DataType: dataType}
 	copy(header.Eyecatcher[:], adatcpDataHeaderEyecatcher)
@@ -185,8 +187,15 @@ func (connection *AdaTCP) ReceiveData(buffer *bytes.Buffer, expected TransferDat
 	hl := int(headerLength + dataHeaderLength)
 	rcvHeaderBuffer := make([]byte, headerLength+dataHeaderLength)
 	var n int
-	//	n, err = io.ReadFull(connection.connection, rcvHeaderBuffer)
-	n, err = io.ReadAtLeast(connection.connection, rcvHeaderBuffer, hl)
+
+	limitedReader := io.LimitReader(connection.connection, int64(maxReadBytes))
+
+	n, err = io.ReadAtLeast(limitedReader, rcvHeaderBuffer, hl)
+	if err != nil {
+		adatypes.Central.Log.Debugf("Read limit error: %v", err)
+		return
+	}
+
 	if err != nil {
 		adatypes.Central.Log.Debugf("Receive TCP data error: %v", err)
 		return
