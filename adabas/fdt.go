@@ -404,7 +404,6 @@ func createSubSuperDescriptorType(fdt *adatypes.StructureValue, index int) (fiel
 	for _, sub := range superList.Elements {
 		superType.AddSubEntry(string(sub.Values[0].Value().([]byte)), sub.Values[1].Value().(uint16), sub.Values[2].Value().(uint16))
 	}
-
 	fieldType = superType
 
 	return
