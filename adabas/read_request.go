@@ -648,9 +648,15 @@ func (request *ReadRequest) ReadLogicalWithWithParser(search string, resultParse
 		} else {
 			adabasRequest.Isn = 0
 			if searchInfo.NeedSearch {
+				if request.Start > 0 {
+					adabasRequest.IsnLowerLimit = request.Start
+				}
 				adatypes.Central.Log.Debugf("search logical with ...%#v", adabasRequest.Descriptors)
 				err = request.adabas.SearchLogicalWith(request.repository.Fnr, adabasRequest, x)
 			} else {
+				if request.Start > 0 {
+					adabasRequest.Isn = adatypes.Isn(request.Start)
+				}
 				adatypes.Central.Log.Debugf("read logical with ...%#v", adabasRequest.Descriptors)
 				err = request.adabas.ReadLogicalWith(request.repository.Fnr, adabasRequest, x)
 			}
@@ -882,7 +888,9 @@ func (request *ReadRequest) histogramWithWithParser(search string, resultParser 
 }
 
 // SearchAndOrder performs a search call and orders the result using defined descriptors
-//  A search term will
+//
+//	A search term will
+//
 // be used to search for and a descriptor defines the final result order.
 func (request *ReadRequest) SearchAndOrder(search, descriptors string) (result *Response, err error) {
 	result = &Response{Definition: request.definition}

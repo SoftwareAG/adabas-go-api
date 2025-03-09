@@ -211,8 +211,9 @@ func (adabas *Adabas) Open() (err error) {
 
 // OpenUser opens a session to the database using a user session.
 // A USERID must be provided if the user intends to store and/or read user data, and the user wants this data to be available during a subsequent user– or Adabas session.
-//    The user intends to store and/or read user data, and the user wants this data to be available during a subsequent user- or Adabas session;
-//    The user is to be assigned a special processing priority;
+//
+//	The user intends to store and/or read user data, and the user wants this data to be available during a subsequent user- or Adabas session;
+//	The user is to be assigned a special processing priority;
 //
 // The value provided for the USERID must be unique for this user (not used by any other user), and must begin with a digit or an uppercase letter.
 //
@@ -239,7 +240,7 @@ func (adabas *Adabas) OpenUser(user string, recordBuf ...string) (err error) {
 		}
 		copy(adabas.Acbx.Acbxadd1[:l], user[:l])
 	}
-	
+
 	rb := "UPD."
 	if len(recordBuf) > 0 {
 		rb = recordBuf[0]
@@ -344,7 +345,7 @@ func (adabas *Adabas) SetAbd(abd []*Buffer) {
 	adabas.AdabasBuffers = abd
 }
 
-//CreateFieldDefinitionTable create field definition table definition useds to parse Adabas LF call
+// CreateFieldDefinitionTable create field definition table definition useds to parse Adabas LF call
 func (adabas *Adabas) CreateFieldDefinitionTable(fdtDef *adatypes.Definition) (definition *adatypes.Definition, err error) {
 	return createFieldDefinitionTable(fdtDef)
 }
@@ -657,7 +658,6 @@ func (adabas *Adabas) ReadLogicalWith(fileNr Fnr, adabasRequest *adatypes.Reques
 		adabas.Acbx.Acbxcmd = l3.code()
 	}
 	adabas.Acbx.resetCop()
-	adabas.Acbx.Acbxisn = adabasRequest.Isn
 	adabas.Acbx.Acbxisl = 0
 	adabas.Acbx.Acbxcop[1] = 'A'
 	if adabasRequest.Multifetch > 1 {
@@ -674,7 +674,12 @@ func (adabas *Adabas) ReadLogicalWith(fileNr Fnr, adabasRequest *adatypes.Reques
 	}
 	adabas.Acbx.Acbxcop[2] = adabasRequest.HoldRecords.HoldOption()
 
-	adabas.Acbx.Acbxisn = 0
+	if adabasRequest.Isn > 0 {
+		adabas.Acbx.Acbxisn = adabasRequest.Isn
+	} else {
+		adabas.Acbx.Acbxisn = 0
+	}
+
 	adabas.Acbx.Acbxisq = 0
 	adabas.Acbx.Acbxcid = [4]uint8{0xff, 0xff, 0xff, 0xff}
 
@@ -735,7 +740,12 @@ func (adabas *Adabas) SearchLogicalWith(fileNr Fnr, adabasRequest *adatypes.Requ
 	}
 
 	adabas.Acbx.Acbxisn = 0
-	adabas.Acbx.Acbxisl = 0
+	if adabasRequest.IsnLowerLimit > 0 {
+		adabas.Acbx.Acbxisl = adabasRequest.IsnLowerLimit
+	} else {
+		adabas.Acbx.Acbxisl = 0
+	}
+
 	adabas.Acbx.Acbxisq = 0
 	adabas.Acbx.Acbxcid = [4]uint8{0xff, 0xff, 0xff, 0xff}
 
@@ -1421,7 +1431,8 @@ func (adabas *Adabas) multifetchBuffer() (helper *adatypes.BufferHelper, err err
 }
 
 // TimeTrack defer function measure the difference end log it to log management, like
-//    defer TimeTrack(time.Now(), "CallAdabas "+string(adabas.Acbx.Acbxcmd[:]))
+//
+//	defer TimeTrack(time.Now(), "CallAdabas "+string(adabas.Acbx.Acbxcmd[:]))
 func TimeTrack(start time.Time, name string, adabas *Adabas) {
 	elapsed := time.Since(start)
 	if adabas == nil {
