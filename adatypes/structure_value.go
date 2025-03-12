@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2025 Software GmbH, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -166,8 +166,8 @@ func countPEsize(adaType IAdaType, parentType IAdaType, level int, x interface{}
 }
 
 /*
- Parse buffer if a period group contains multiple fields. In that case the buffer parser need to parse
- field by field and not the group alltogether
+Parse buffer if a period group contains multiple fields. In that case the buffer parser need to parse
+field by field and not the group alltogether
 */
 func (value *StructureValue) parseBufferWithMUPE(helper *BufferHelper, option *BufferOption) (res TraverseResult, err error) {
 	Central.Log.Debugf("Parse Buffer structure with (MUPE) name=%s offset=%d remaining=%d length=%d value length=%d", value.Type().Name(),

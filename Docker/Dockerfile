@@ -19,7 +19,7 @@ RUN groupadd -g $group_id sagadmin && \
 COPY --from=adabas /etc/profile.d/sagenv.sh /etc/profile.d/sagenv.sh
 COPY goenv.sh /etc/profile.d/goenv.sh
 
-# Software AG basic environment
+# Software GmbH basic environment
 ENV SAG /opt/softwareag
 ENV ADAPROGDIR /opt/softwareag/Adabas
 

@@ -20,7 +20,7 @@
 ## Content
 
 This documentation describes the Go-based Adabas API. The API can
-provide access to Adabas database data. It is the Go-based implementation of the Adabas Client for Java delivered by Software AG.
+provide access to Adabas database data. It is the Go-based implementation of the Adabas Client for Java delivered by Software GmbH.
 
 This Go implementation contains various access methods to query Adabas database content.
 
@@ -230,7 +230,7 @@ result, err := request.ReadLogicalWithStream("AE='SMITH'", dumpStream, &i)
 Inside a `Connection` instance a chain of different requests can define a transaction. A read request combined with a store request can finally end using either the end of transaction or the backout transaction method.
 
 ______________________
-These tools are provided as-is and without warranty or support. They do not constitute part of the Software AG product suite. Users are free to use, fork and modify them, subject to the license agreement. While Software AG welcomes contributions, we cannot guarantee to include every contribution in the master project.	
+These tools are provided as-is and without warranty or support. They do not constitute part of the Software GmbH product suite. Users are free to use, fork and modify them, subject to the license agreement. While Software GmbH welcomes contributions, we cannot guarantee to include every contribution in the master project.	
 
 Contact us at [TECHcommunity](mailto:technologycommunity@softwareag.com?subject=Github/SoftwareAG) if you have any questions.
 

@@ -2,7 +2,7 @@
 // +build adalnk,cgo
 
 /*
-* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2025 Software GmbH, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *

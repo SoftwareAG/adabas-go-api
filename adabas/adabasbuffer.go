@@ -1,5 +1,5 @@
 /*
-* Copyright © 2019-2022 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2019-2025 Software GmbH, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -33,8 +33,8 @@ import (
  */
 const abdEyecatcher = 'G' /*      G - EYECATCHER              */
 const abdVersion = '2'    /*      2 - VERSION                 */
-//const E_ABD_EYECATCHER = 0xc7 /* EBCDIC G - EYECATCHER            */
-//const E_ABD_VERSION = 0xf2    /* EBCDIC 2 - VERSION               */
+// const E_ABD_EYECATCHER = 0xc7 /* EBCDIC G - EYECATCHER            */
+// const E_ABD_VERSION = 0xf2    /* EBCDIC 2 - VERSION               */
 const (
 	AbdAQFb  = ('F') /*      F-Format Buffer             */
 	AbdAQRb  = ('R') /*      R-Record Buffer             */

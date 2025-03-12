@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2025 Software GmbH, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -44,7 +44,7 @@ func (adabas *Adabas) getAdabasMessage() []string {
 	if msg == "" {
 		msg = fmt.Sprintf("Unknown error response %d subcode %d (%s)", adabas.Acbx.Acbxrsp, adabas.Acbx.Acbxerrc, msgCode)
 	}
-	
+
 	if bytes.Equal(adabas.Acbx.Acbxadd2[:], []byte{0x00, 0x00, 0x00, 0x00}) || bytes.Equal(adabas.Acbx.Acbxadd2[:], []byte{0x20, 0x20, 0x20, 0x20}) {
 		msg = fmt.Sprintf("%s (rsp=%d,subrsp=%d,dbid=%s,file=%d)", msg, adabas.Acbx.Acbxrsp,
 			adabas.Acbx.Acbxerrc, adabas.URL.String(), adabas.Acbx.Acbxfnr)
@@ -55,7 +55,7 @@ func (adabas *Adabas) getAdabasMessage() []string {
 			adabas.Acbx.Acbxadd2,
 			adabas.URL.String(), adabas.Acbx.Acbxfnr)
 	}
-	
+
 	if adabas.Acbx.Acbxrsp > 3 {
 		adatypes.Central.Log.Infof("Error message %s", msg)
 		adatypes.Central.Log.Infof("Add1: %v", adabas.Acbx.Acbxadd1)

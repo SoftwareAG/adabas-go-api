@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2025 Software GmbH, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -56,6 +56,7 @@ var onceBody = func() {
 //   - Database id: 23
 //   - Adabas TCP on port 60023:  23(adatcp://pchost:60023)
 //   - Adabas Entire Network (Java only): 23(tcpip://pchost:50001)
+//
 // The connection string must contain:
 //   - To access database classic targets
 //     acj;target=<database url>
@@ -72,6 +73,7 @@ func NewConnection(connectionString string) (*Connection, error) {
 //   - Database id: 23
 //   - Adabas TCP on port 60023:  23(adatcp://pchost:60023)
 //   - Adabas Entire Network (Java only): 23(tcpip://pchost:50001)
+//
 // The connection string must contain:
 //   - To access database classic targets
 //     acj;target=<database url>
