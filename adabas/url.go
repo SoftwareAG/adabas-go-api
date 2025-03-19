@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2025 Software GmbH, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -31,9 +31,9 @@ import (
 
 // URL define the desination of the host. Possible types are
 //
-//  - Local call with Driver="" and Port=0
-//  - Entire Network calls with Driver="tcpip" and corresponding host and port
-//  - Adabas TCP/IP calls with Driver="adatcp" and corresponding host and port
+//   - Local call with Driver="" and Port=0
+//   - Entire Network calls with Driver="tcpip" and corresponding host and port
+//   - Adabas TCP/IP calls with Driver="adatcp" and corresponding host and port
 //
 // Dependent on the Driver the corresponding connection is used. To use the local
 // call access the Adabas Client native library is used.

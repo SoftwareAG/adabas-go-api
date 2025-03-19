@@ -1,5 +1,5 @@
 /*
-* Copyright © 2019-2022 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2019-2025 Software GmbH, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -154,7 +154,7 @@ var staticMessages = []struct {
 	{"ADAGE11017", "de", "ECS object could not be located. The following objects must be available in the encoding objects library: File Alpha, File Wide EDD, User Alpha, User Wide EDD, and the PTOs for the combinations between file/user alpha/wide encodings."},
 	{"ADAGE11018", "de", "ECS function get_attribute() failed."},
 	{"ADAGE11019", "de", "One of the following occurred: - A required encoding attribute was missing in an ECS object (encoding type, class, and flags) - The default space character length was > 4 - Default space table allocation failed - If DBCS-only plane exists, wide space character was undefined, or the length > 4, or wide space table allocation failed"},
-	{"ADAGE1101D", "de", "An Adabas Review communication error has occurred. Contact your Software AG support representative."},
+	{"ADAGE1101D", "de", "An Adabas Review communication error has occurred. Contact your Software GmbH support representative."},
 	{"ADAGE110F9", "de", "This sub-code is given only when Adabas Vista is in use. Review the Adabas Vista documentation for more information."},
 	{"ADAGE12000", "de", "File-Nummer wurde während der Kommandosequenze geändert"},
 	{"ADAGE13000", "de", "Kommando für ACC User nicht erlaubt"},
@@ -1005,7 +1005,7 @@ var staticMessages = []struct {
 	{"ADAGE11017", "en", "ECS object could not be located. The following objects must be available in the encoding objects library: File Alpha, File Wide EDD, User Alpha, User Wide EDD, and the PTOs for the combinations between file/user alpha/wide encodings."},
 	{"ADAGE11018", "en", "ECS function get_attribute() failed."},
 	{"ADAGE11019", "en", "One of the following occurred: - A required encoding attribute was missing in an ECS object (encoding type, class, and flags) - The default space character length was > 4 - Default space table allocation failed - If DBCS-only plane exists, wide space character was undefined, or the length > 4, or wide space table allocation failed"},
-	{"ADAGE1101D", "en", "An Adabas Review communication error has occurred. Contact your Software AG support representative."},
+	{"ADAGE1101D", "en", "An Adabas Review communication error has occurred. Contact your Software GmbH support representative."},
 	{"ADAGE110F9", "en", "This sub-code is given only when Adabas Vista is in use. Review the Adabas Vista documentation for more information."},
 	{"ADAGE12000", "en", "File number changed during command sequence"},
 	{"ADAGE13000", "en", "Command not allowed for ACC user"},

@@ -27,7 +27,7 @@ For details have a look at the API documentation. It can be referenced here: <ht
 
 In general, users of the Adabas API for Go do **not** need to know a basic level of Adabas APIs such as Adabas control blocks or Adabas buffer layouts.
 The Adabas API for Go provides a more user friendly and optimized use of Adabas files and fields.
-It is similar to the `Adabas Client for Java` product delivered by Software AG.
+It is similar to the `Adabas Client for Java` product delivered by Software GmbH.
 
 This is a list of features which the Adabas API for Go supports:
 
@@ -90,7 +90,7 @@ Independent of the used environment of Docker (like Kubernetes or others), it de
 
 ### Standard usage
 
-The logical view of the data can be defined using Adabas Maps. The Adabas Maps are introduced in the *Adabas Client for Java* product delivered by Software AG. A detailed description of Adabas maps is available [here](.//doc//AdabasMap.md).
+The logical view of the data can be defined using Adabas Maps. The Adabas Maps are introduced in the *Adabas Client for Java* product delivered by Software GmbH. A detailed description of Adabas maps is available [here](.//doc//AdabasMap.md).
 
 The creation of Adabas maps is done by the infrastructure of the *Adabas Client for Java*. The product contains a Adabas Data Designer rich client or Eclipse plugin. The tools provide the management of Adabas map definitions. A programmatical approach to create Adabas maps is part of the Adabas API for Go.
 
@@ -261,10 +261,10 @@ By using the native `AdabasClient` library, you can access all platforms Adabas 
 Step by step all relevant Adabas features are or will be supported.
 
 ______________________
-These tools are provided as-is and without warranty or support. They do not constitute part of the Software AG product suite. Users are free to use, fork and modify them, subject to the license agreement. While Software AG welcomes contributions, we cannot guarantee to include every contribution in the master project.
+These tools are provided as-is and without warranty or support. They do not constitute part of the Software GmbH product suite. Users are free to use, fork and modify them, subject to the license agreement. While Software GmbH welcomes contributions, we cannot guarantee to include every contribution in the master project.
 ______________
 For more information you can Ask a Question in the [TECHcommunity Forums](https://tech.forums.softwareag.com/tag/adabas).
 
-You can find additional information in the [Software AG TECHcommunity](http://techcommunity.softwareag.com/home/-/product/name/adabas).
+You can find additional information in the [Software GmbH TECHcommunity](http://techcommunity.softwareag.com/home/-/product/name/adabas).
 ______________
 Contact us at [TECHcommunity](mailto:technologycommunity@softwareag.com?subject=Github/SoftwareAG) if you have any questions.

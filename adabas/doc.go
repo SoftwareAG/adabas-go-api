@@ -1,5 +1,5 @@
 /*
-* Copyright © 2019-2022 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2019-2025 Software GmbH, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -28,7 +28,7 @@
 // 2. The new Adabas TCP/IP communication for a direct point-to-point access to the database. This is
 // support since Adabas version v6.7.
 //
-// Database reference
+// # Database reference
 //
 // The Adabas database is referenced using a Adabas database URL. Local databases can be referenced using
 // the database id, the Adabas map or a remote reference with port 0. It is possible to reference remote
@@ -42,102 +42,109 @@
 // ADALNK library references.
 // See documentation here: https://github.com/SoftwareAG/adabas-go-api
 //
-// Example
+// # Example
 //
 // Here a short example showing a database read accces using Adabas maps
-//  connection, cerr := NewConnection("acj;map;config=[24,4]")
-//  if cerr != nil {
-//  	return cerr
-//  }
-//  defer connection.Close()
-//  request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
-//  if rerr != nil {
-//  	fmt.Println("Error create request", rerr)
-//  	return rerr
-//  }
-//  err := request.QueryFields("NAME,FIRST-NAME,PERSONNEL-ID")
-//  if !assert.NoError(b, err) {
-//  	return err
-//  }
-//  request.Limit = 0
-//  result, rErr := request.ReadLogicalBy("NAME")
-//  result.DumpValues()
 //
-// Read logic
+//	connection, cerr := NewConnection("acj;map;config=[24,4]")
+//	if cerr != nil {
+//		return cerr
+//	}
+//	defer connection.Close()
+//	request, rerr := connection.CreateMapReadRequest("EMPLOYEES-NAT-DDM")
+//	if rerr != nil {
+//		fmt.Println("Error create request", rerr)
+//		return rerr
+//	}
+//	err := request.QueryFields("NAME,FIRST-NAME,PERSONNEL-ID")
+//	if !assert.NoError(b, err) {
+//		return err
+//	}
+//	request.Limit = 0
+//	result, rErr := request.ReadLogicalBy("NAME")
+//	result.DumpValues()
+//
+// # Read logic
 //
 // You may read using search values and descriptor sorted searches.
 // The received records can be analyzed using traversation logic.
 // See documentation here:  https://github.com/SoftwareAG/adabas-go-api/blob/master/doc/QUERY.md
 //
-// Adabas maps
+// # Adabas maps
 //
 // For long name and database name usage, a new Adabas map concept is introduced. The Adabas maps
 // are stored inside the database.
 // See documentation here: https://github.com/SoftwareAG/adabas-go-api/blob/master/doc/AdabasMap.md
 //
-// Stream
+// # Stream
 //
 // It is possible to work with the records just-in-time they received
 // in a stream. A callback function will be called to process the current
 // received record.
 //
 // Example using stream:
-//   func dumpStream(record *Record, x interface{}) error {
-//  	i := x.(*uint32)
-//  	a, _ := record.SearchValue("AE")
-//  	fmt.Printf("Read %d -> %s = %d\n", record.Isn, a, record.Quantity)
-//  	(*i)++
-//   	return nil
-//   }
-//   result, err := request.ReadLogicalWithStream("AE='SMITH'", dumpStream, &i)
 //
-// Struct usage
+//	 func dumpStream(record *Record, x interface{}) error {
+//		i := x.(*uint32)
+//		a, _ := record.SearchValue("AE")
+//		fmt.Printf("Read %d -> %s = %d\n", record.Isn, a, record.Quantity)
+//		(*i)++
+//	 	return nil
+//	 }
+//	 result, err := request.ReadLogicalWithStream("AE='SMITH'", dumpStream, &i)
+//
+// # Struct usage
 //
 // Example for a structure:
-//   type FullName struct {
-//      FirstName string
-//      LastName  string
-//   }
-//   type EmployeeMap struct {
-//      ID         string `adabas:"Id:key"`
-//      Name       *FullName
-//      Department []byte
-//   }
+//
+//	type FullName struct {
+//	   FirstName string
+//	   LastName  string
+//	}
+//	type EmployeeMap struct {
+//	   ID         string `adabas:"Id:key"`
+//	   Name       *FullName
+//	   Department []byte
+//	}
 //
 // For a Adabas Map called EmployeeMap you can use the structure to read and write
 // Adabas data into the database.
 //
 // Example to read Adabas data using the structure:
-//   request, rerr := connection.CreateMapReadRequest((*EmployeeMap)(nil))
-//   err := request.QueryFields("FullName")
-//   result, err = request.ReadLogicalBy("LastName")
+//
+//	request, rerr := connection.CreateMapReadRequest((*EmployeeMap)(nil))
+//	err := request.QueryFields("FullName")
+//	result, err = request.ReadLogicalBy("LastName")
 //
 // The result list of structure entries will be in the result. You can reference
 // the list using the result.Data list.
 // If using the stream callback method, then the stream will get an EmployeesMap
 // instance instead of a Record instance.
 //
-// Partial large objects
+// # Partial large objects
 //
 // You can read a large objects using the
-//   ReadStream()
+//
+//	ReadStream()
 //
 // method to subdivide a
 // big large object into slices reading parts of the large objects instead of
 // read one big record of the large object.
 // The blocksize read in one stream call is defined in the
-//   ReadRequest.Blocksize
+//
+//	ReadRequest.Blocksize
 //
 // In addition the field definition does have partial lob API to read a part
 // of the partial lob only.
 // A partial lob can be defined using the offset and length in brackets.
 // This query fields will read field RA (Large alpha object) beginning from
 // first entry. It will read a block of size 1000.
-//   err = request.QueryFields("RA(1,1000)")
+//
+//	err = request.QueryFields("RA(1,1000)")
 //
 // To define the range in a read or store call procedure, the value instance
 // of the field can set the partial lob range using
-//   partialValue := value.(adatypes.PartialValue)
-//   partialValue.SetPartial(offset, uint32(len(data)))
 //
+//	partialValue := value.(adatypes.PartialValue)
+//	partialValue.SetPartial(offset, uint32(len(data)))
 package adabas

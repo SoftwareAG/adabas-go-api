@@ -20,7 +20,7 @@ To be part of the Go community, all data stores must provide a Go-based interfac
 The Adabas API for Go provides the possibility to maintain and handle Adabas metadata.
 Besides Java, Natural and 3GL languages it is compulsory and a logical way to have a state-of-the-art Go based interface for Adabas to be considered as a data store that can be easily used in projects.
 
-The new interface addresses developers and software designers who work primarily with Go and related concepts. However, developers who are used to working with other programming languages also can benefit from this approach. The usage is similar to the Adabas Client for Java product that Software AG provides to work in Java environments.
+The new interface addresses developers and software designers who work primarily with Go and related concepts. However, developers who are used to working with other programming languages also can benefit from this approach. The usage is similar to the Adabas Client for Java product that Software GmbH provides to work in Java environments.
 
 The Adabas API for Go
 
@@ -39,7 +39,7 @@ Actually, although it's notcompulsory for an interface, but worth mentioning, th
 
 ## Feature set
 
-Software AG does not guarantee support if there are issues with the Adabas API for Go.
+Software GmbH does not guarantee support if there are issues with the Adabas API for Go.
 All current Adabas database versions are accessible. On Adabas Mainframe there might be some issues. Current features include:
 
 - Read, insert, update and delete records. Reference data in Adabas fields with Adabas short name or logical field names defined in Adabas maps
@@ -67,7 +67,7 @@ Included in the sources is a test package that provides a selection of example G
 
 Most customers using Adabas have worked with Natural in the past. An important matter when migrating an application is the possibility to use Natural or Predict logical views.
 Adabas only allows using Adabas short name field definitions and the database ID. To provide a logical name of a database file and a logical name reference to the Adabas short name, a new Adabas Map is introduced. This Adabas Map will be stored inside the Adabas database in an extra Adabas repository file.
-Tools managing the Adabas Maps are part of the Adabas Client for Java product Software AG provides.
+Tools managing the Adabas Maps are part of the Adabas Client for Java product Software GmbH provides.
 
 The new Adabas Map technology is needed because the Natural and Predict logical views are stored separate from the Adabas database. In order to use the logical view independent of Natural storage in Adabas is elementary. The benefit is that the logical view and the data can now be part of a backup strategy and multiple logical views, dependent on the work case, can be provided.
 

@@ -1,5 +1,5 @@
 /*
-* Copyright © 2018-2022 Software AG, Darmstadt, Germany and/or its licensors
+* Copyright © 2018-2025 Software GmbH, Darmstadt, Germany and/or its licensors
 *
 * SPDX-License-Identifier: Apache-2.0
 *
@@ -32,8 +32,8 @@ import (
 
 const acbxEyecatcher = 'F' /*      F - EYECATCHER              */
 const acbxVersion = '2'    /*      2 - VERSION                 */
-//const eAcbxEyecatcher = 0xc6 /* EBCDIC F - EYECATCHER            */
-//const eAcbxVersion = 0xf2    /* EBCDIC 2 - VERSION               */
+// const eAcbxEyecatcher = 0xc6 /* EBCDIC F - EYECATCHER            */
+// const eAcbxVersion = 0xf2    /* EBCDIC 2 - VERSION               */
 const acbxLength = 192
 
 // Dbid Adabas database identifier
